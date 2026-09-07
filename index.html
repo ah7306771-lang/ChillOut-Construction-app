@@ -287,6 +287,30 @@
   .home-tile-icon img{width:60px;height:60px;object-fit:contain;}
   .home-tile-label{font-size:13px;font-weight:700;line-height:1.4;}
 
+  /* ---------- ATTENDANCE (حضور وانصراف) ---------- */
+  .attendance-hint{font-size:13px;color:var(--ink-soft);margin:-6px 0 16px;line-height:1.6;}
+  .attendance-list{display:flex;flex-direction:column;gap:10px;}
+  .attendance-row{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+    background:#fff;border:1px solid var(--panel-line);border-radius:12px;padding:12px 14px;
+  }
+  .attendance-name{font-weight:700;font-size:15px;color:var(--ink);}
+  .attendance-actions{display:flex;gap:8px;flex-shrink:0;}
+  .btn-check{
+    border:none;border-radius:8px;padding:9px 16px;font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:13px;cursor:pointer;transition:transform .15s,opacity .15s;
+  }
+  .btn-check:active{transform:scale(0.95);}
+  .btn-check:disabled{opacity:.55;cursor:default;transform:none;}
+  .btn-check-in{background:var(--ok);color:#fff;}
+  .btn-check-out{background:var(--steel);color:#fff;}
+  .attendance-row-msg{width:100%;font-size:12px;margin-top:2px;color:var(--ink-soft);}
+  @media (max-width:380px){
+    .attendance-row{flex-direction:column;align-items:stretch;}
+    .attendance-actions{width:100%;}
+    .btn-check{flex:1;}
+  }
+
   .back-bar{
     position:sticky;top:0;z-index:20;background:var(--panel-ink);
     border-bottom:1px solid var(--panel-line);padding:10px 14px;
@@ -618,8 +642,30 @@
       </svg></span>
       <span class="home-tile-label">نماذج</span>
     </button>
+    <button type="button" class="home-tile" id="openAttendanceBtn">
+      <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="8" r="3.4" stroke="#e2621f" stroke-width="1.6"/>
+        <path d="M5 19.5c0-3.6 3.1-6 7-6s7 2.4 7 6" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M8.7 15.2l2 2 4.3-4.3" stroke="#e2621f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg></span>
+      <span class="home-tile-label">حضور وانصراف</span>
+    </button>
 
     </div>
+  </div>
+</div>
+
+<!-- ATTENDANCE SCREEN -->
+<div id="attendanceScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnAttendance" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:560px;">
+    <h1 class="gate-title">حضور وانصراف</h1>
+    <div class="attendance-list" id="attendanceList"></div>
+    <div class="status-msg" id="attendanceGlobalStatus" style="margin-top:14px;"></div>
   </div>
 </div>
 
@@ -2002,6 +2048,7 @@ window.safeFileName = function(str){
   var homeScreen        = document.getElementById('homeScreen');
   var tafweedMenuScreen = document.getElementById('tafweedMenuScreen');
   var formsMenuScreen   = document.getElementById('formsMenuScreen');
+  var attendanceScreen  = document.getElementById('attendanceScreen');
   var appScreen         = document.getElementById('appScreen');
   var orderScreen       = document.getElementById('orderScreen');
   var quoteScreen       = document.getElementById('quoteScreen');
@@ -2017,6 +2064,7 @@ window.safeFileName = function(str){
     homeScreen.style.display        = (name === 'home')          ? '' : 'none';
     tafweedMenuScreen.style.display = (name === 'tafweed-menu')  ? '' : 'none';
     formsMenuScreen.style.display   = (name === 'forms-menu')    ? '' : 'none';
+    attendanceScreen.style.display  = (name === 'attendance')    ? '' : 'none';
     appScreen.style.display         = (name === 'app')           ? '' : 'none';
     orderScreen.style.display       = (name === 'order')         ? '' : 'none';
     quoteScreen.style.display       = (name === 'quote')         ? '' : 'none';
@@ -2074,6 +2122,151 @@ window.safeFileName = function(str){
   cloneLogoInto('formLogoSlotCustody');
   cloneImgInto('companyLogoSrc', 'paperCustodyLogoSlot');
   // homeLogoSlot already has its own fixed icon image in the markup.
+
+  // ---------------- ATTENDANCE (حضور وانصراف) ----------------
+  var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم'];
+
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_HLroW-9WbRCaaAufCHf15d8qNZs8lj8SdVlWH10DDNWDQwQ7hfR-1EYnJwltbiNp/exec';
+
+  // Once-per-day lock: كل موظف يقدر يسجل "حضور" مرة واحدة و"انصراف" مرة واحدة
+  // في نفس اليوم فقط؛ الأزرار بترجع تشتغل تلقائياً مع أول يوم جديد.
+  function attendancePad(n){ return n < 10 ? '0' + n : String(n); }
+  function attendanceTodayKey(){
+    var d = new Date();
+    return d.getFullYear() + '-' + attendancePad(d.getMonth() + 1) + '-' + attendancePad(d.getDate());
+  }
+  function attendanceStorageKey(name, type){
+    return 'chilloutAttendanceDone_v1__' + name + '__' + type + '__' + attendanceTodayKey();
+  }
+  function getAttendanceDoneTime(name, type){
+    try { return localStorage.getItem(attendanceStorageKey(name, type)); }
+    catch(e){ return null; }
+  }
+  function markAttendanceDone(name, type, timeStr){
+    try { localStorage.setItem(attendanceStorageKey(name, type), timeStr); }
+    catch(e){}
+  }
+
+  function renderAttendanceList(){
+    var list = document.getElementById('attendanceList');
+    var globalStatus = document.getElementById('attendanceGlobalStatus');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!ATTENDANCE_SCRIPT_URL) {
+      if (globalStatus) {
+        globalStatus.textContent = 'ملحوظة: لم يتم ربط شيت جوجل شيتس بعد، تواصل مع المطوّر لإكمال الإعداد.';
+        globalStatus.style.color = '#b3261e';
+      }
+    }
+
+    ATTENDANCE_EMPLOYEES.forEach(function(name){
+      var row = document.createElement('div');
+      row.className = 'attendance-row';
+
+      var nameEl = document.createElement('div');
+      nameEl.className = 'attendance-name';
+      nameEl.textContent = name;
+
+      var actions = document.createElement('div');
+      actions.className = 'attendance-actions';
+
+      var inBtn = document.createElement('button');
+      inBtn.type = 'button';
+      inBtn.className = 'btn-check btn-check-in';
+      inBtn.textContent = 'حضور';
+
+      var outBtn = document.createElement('button');
+      outBtn.type = 'button';
+      outBtn.className = 'btn-check btn-check-out';
+      outBtn.textContent = 'انصراف';
+
+      var msg = document.createElement('div');
+      msg.className = 'attendance-row-msg';
+
+      var doneInTime = getAttendanceDoneTime(name, 'حضور');
+      var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
+      if (doneInTime) inBtn.disabled = true;
+      if (doneOutTime) outBtn.disabled = true;
+      var doneMsgParts = [];
+      if (doneInTime) doneMsgParts.push('تم تسجيل الحضور الساعة ' + doneInTime);
+      if (doneOutTime) doneMsgParts.push('تم تسجيل الانصراف الساعة ' + doneOutTime);
+      if (doneMsgParts.length) {
+        msg.style.color = 'var(--ok)';
+        msg.textContent = doneMsgParts.join(' — ');
+      }
+
+      inBtn.addEventListener('click', function(){ recordAttendance(name, 'حضور', inBtn, outBtn, msg); });
+      outBtn.addEventListener('click', function(){ recordAttendance(name, 'انصراف', inBtn, outBtn, msg); });
+
+      actions.appendChild(inBtn);
+      actions.appendChild(outBtn);
+      row.appendChild(nameEl);
+      row.appendChild(actions);
+      row.appendChild(msg);
+      list.appendChild(row);
+    });
+  }
+
+  function recordAttendance(name, type, inBtn, outBtn, msg){
+    if (!ATTENDANCE_SCRIPT_URL) {
+      msg.style.color = '#b3261e';
+      msg.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
+      return;
+    }
+    if (getAttendanceDoneTime(name, type)) return; // already recorded today
+
+    var targetBtn = (type === 'حضور') ? inBtn : outBtn;
+    var otherBtn   = (type === 'حضور') ? outBtn : inBtn;
+    var otherType  = (type === 'حضور') ? 'انصراف' : 'حضور';
+
+    inBtn.disabled = true;
+    outBtn.disabled = true;
+    msg.style.color = 'var(--ink-soft)';
+    msg.textContent = 'جاري تحديد الموقع...';
+
+    function send(lat, lng){
+      var now = new Date();
+      var dateStr = now.toLocaleDateString('en-GB');
+      var timeStr = now.toLocaleTimeString('en-GB');
+      var mapLink = (lat != null && lng != null) ? ('https://maps.google.com/?q=' + lat + ',' + lng) : '';
+
+      var url = ATTENDANCE_SCRIPT_URL
+        + '?name=' + encodeURIComponent(name)
+        + '&type=' + encodeURIComponent(type)
+        + '&date=' + encodeURIComponent(dateStr)
+        + '&time=' + encodeURIComponent(timeStr)
+        + '&lat=' + encodeURIComponent(lat != null ? lat : '')
+        + '&lng=' + encodeURIComponent(lng != null ? lng : '')
+        + '&map=' + encodeURIComponent(mapLink);
+
+      msg.textContent = 'جاري الإرسال...';
+      fetch(url).then(function(r){ return r.json(); }).then(function(){
+        markAttendanceDone(name, type, timeStr);
+        msg.style.color = 'var(--ok)';
+        msg.textContent = 'تم تسجيل ' + type + ' الساعة ' + timeStr + (mapLink ? '' : ' (بدون تحديد الموقع)');
+        targetBtn.disabled = true;
+        otherBtn.disabled = !!getAttendanceDoneTime(name, otherType);
+      }).catch(function(){
+        msg.style.color = '#b3261e';
+        msg.textContent = 'حدث خطأ في الإرسال، تأكد من الإنترنت وحاول مرة أخرى.';
+        targetBtn.disabled = false;
+        otherBtn.disabled = !!getAttendanceDoneTime(name, otherType);
+      });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
+        function(){ send(null, null); },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
+    } else {
+      send(null, null);
+    }
+  }
+
+  renderAttendanceList();
 
   // Live date/time shown either side of the home screen logo.
   function updateHomeDateTime(){
@@ -2269,6 +2462,12 @@ window.safeFileName = function(str){
     showScreen('home');
   });
   document.getElementById('backHomeBtnForms').addEventListener('click', function(){
+    showScreen('home');
+  });
+  document.getElementById('openAttendanceBtn').addEventListener('click', function(){
+    showScreen('attendance');
+  });
+  document.getElementById('backHomeBtnAttendance').addEventListener('click', function(){
     showScreen('home');
   });
 
