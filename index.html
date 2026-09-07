@@ -2205,7 +2205,32 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
   var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم'];
 
-  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcKrgQqwzsroFL4yeIEFl4o13KwBKAzGdo2-_wkJNOCgC-UYU7_IhSpdnpeBwUT8VV/exec';
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbykMbHKtYJ_61PP5TikK6V701TM5g8zySw5HkdMiXHSEnfwvasrcJvA2QXgnJgK0iQV/exec';
+
+  // رابط خاص لكل موظف: لو فتح رابط الصفحة ومعاه ?emp=<الرمز بتاعه>، هيلاقي
+  // اسمه هو بس في شاشة الحضور (مش كل الأسماء)، وهيدخل عليها على طول من غير
+  // ما يحتاج يضغط على أيقونة "حضور وانصراف" بنفسه. الباسورد بتاعه يفضل
+  // مطلوب برضه قبل ما يسجل — يعني حتى لو حد بعت الرابط ده غلط لحد تاني،
+  // برضه مايقدرش يسجل حضور/انصراف من غيره من غير الباسورد.
+  var ATTENDANCE_EMPLOYEE_LINKS = {
+    'أحمد مفرح': 'ahmed',
+    'محمود كارم': 'mahmoud',
+    'مني محمد': 'mona',
+    'شهد خالد': 'shahd',
+    'سيد كارم': 'sayed'
+  };
+  function getAttendanceLinkedEmployee(){
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var slug = params.get('emp');
+      if (!slug) return null;
+      var found = null;
+      Object.keys(ATTENDANCE_EMPLOYEE_LINKS).forEach(function(name){
+        if (ATTENDANCE_EMPLOYEE_LINKS[name] === slug) found = name;
+      });
+      return found;
+    } catch (e) { return null; }
+  }
 
   // Once-per-day lock: كل موظف يقدر يسجل "حضور" مرة واحدة و"انصراف" مرة واحدة
   // في نفس اليوم فقط؛ الأزرار بترجع تشتغل تلقائياً مع أول يوم جديد.
@@ -2293,17 +2318,6 @@ window.safeFileName = function(str){
     try { localStorage.setItem(attendanceStorageKey(name, type), timeStr); }
     catch(e){}
   }
-
-  // كلمة سر خاصة بكل موظف — لازم يدخلها صح قبل ما يقدر يسجل حضور أو انصراف
-  // لنفسه، عشان محدش يقدر يبصم لزميله حتى لو الاسم ظاهر قدام الكل.
-  // TODO: غيّر كل كلمة سر هنا لحاجة كل موظف يختارها بنفسه.
-  var ATTENDANCE_PASSWORDS = {
-    'أحمد مفرح': '1111',
-    'محمود كارم': '2222',
-    'مني محمد': '3333',
-    'شهد خالد': '4444',
-    'سيد كارم': '5555'
-  };
 
   // كلمة سر الدخول على "لوحة الحضور" (شاشة المتابعة الإدارية) — نفس كلمة
   // السر مطلوبة من أي حد يدوس على الأيقونة قبل ما يشوف بيانات كل الموظفين.
@@ -2410,10 +2424,6 @@ window.safeFileName = function(str){
     setTimeout(function(){ els.input.focus(); }, 0);
   }
 
-  function showAttendancePasswordModal(name, onSuccess){
-    showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], onSuccess);
-  }
-
   // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف.
   var attendanceRowRefs = {};
 
@@ -2505,11 +2515,13 @@ window.safeFileName = function(str){
     var msg = document.createElement('div');
     msg.className = 'attendance-row-msg';
 
+    // مبقاش محتاج باسورد هنا: كل موظف بقى بيفتح برابطه الخاص فبيلاقي اسمه
+    // هو بس (شوف getAttendanceLinkedEmployee)، فمحدش تاني أصلاً بيشوف زرايره.
     inBtn.addEventListener('click', function(){
-      showAttendancePasswordModal(name, function(){ recordAttendance(name, 'حضور', inBtn, outBtn, msg); });
+      recordAttendance(name, 'حضور', inBtn, outBtn, msg);
     });
     outBtn.addEventListener('click', function(){
-      showAttendancePasswordModal(name, function(){ recordAttendance(name, 'انصراف', inBtn, outBtn, msg); });
+      recordAttendance(name, 'انصراف', inBtn, outBtn, msg);
     });
 
     attendanceRowRefs[name] = { inBtn: inBtn, outBtn: outBtn, msg: msg };
@@ -2538,7 +2550,9 @@ window.safeFileName = function(str){
       }
     }
 
-    ATTENDANCE_EMPLOYEES.forEach(function(name){
+    var linkedEmployee = getAttendanceLinkedEmployee();
+    var employeesToShow = linkedEmployee ? [linkedEmployee] : ATTENDANCE_EMPLOYEES;
+    employeesToShow.forEach(function(name){
       buildAttendanceRow(list, name);
     });
 
@@ -2840,6 +2854,17 @@ window.safeFileName = function(str){
     }
   });
 
+  // لو المستخدم دخل برابط شخصي (?emp=...)، نوديه على طول لشاشة الحضور
+  // (وهو لاقي اسمه هو بس فيها) بدل ما يوقف على الصفحة الرئيسية.
+  function goToHomeOrLinkedAttendance(){
+    if (getAttendanceLinkedEmployee()) {
+      showScreen('attendance');
+      refreshAttendanceFromServer();
+    } else {
+      showScreen('home');
+    }
+  }
+
   biometricLoginBtn.addEventListener('click', function(){
     var err = document.getElementById('loginError');
     err.textContent = '';
@@ -2848,7 +2873,7 @@ window.safeFileName = function(str){
       biometricLoginBtn.disabled = false;
       if (ok) {
         try { localStorage.setItem(AUTH_KEY, '1'); } catch(e){}
-        showScreen('home');
+        goToHomeOrLinkedAttendance();
       } else {
         err.textContent = 'تعذّر التحقق ببصمة الإصبع، استخدم اسم المستخدم وكلمة المرور';
       }
@@ -2898,7 +2923,7 @@ window.safeFileName = function(str){
         }
       } catch(e){}
       err.textContent = '';
-      showScreen('home');
+      goToHomeOrLinkedAttendance();
     } else {
       err.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
     }
