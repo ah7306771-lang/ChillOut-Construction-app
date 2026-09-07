@@ -2810,13 +2810,23 @@ window.safeFileName = function(str){
       statusEl.className = 'attendance-request-status status-pending';
       statusEl.textContent = 'جاري إرسال الطلب...';
     }
-    fetch(url).then(function(r){ return r.json(); }).then(function(){
+    // بنقرا الرد كنص الأول عشان لو السكريبت رجّع صفحة خطأ (HTML) بدل JSON
+    // (زي حالة الديبلوي القديم/الغير محدّث)، نقدر نميّز المشكلة ونوريها
+    // بدل ما الطلب يفشل بصمت من غير ما حد يلاحظ إنه معملش تسجيل في الشيت.
+    fetch(url).then(function(r){
+      return r.text().then(function(text){
+        var data = null;
+        try { data = JSON.parse(text); } catch (e) {}
+        if (!data || data.ok !== true) { throw new Error('bad-response'); }
+        return data;
+      });
+    }).then(function(){
       refreshAttendanceRequestsFromServer();
       refreshPendingRequestsBadge();
     }).catch(function(){
       if (statusEl) {
         statusEl.className = 'attendance-request-status status-rejected';
-        statusEl.textContent = 'حدث خطأ في إرسال الطلب، حاول مرة أخرى.';
+        statusEl.textContent = 'تعذر إرسال الطلب — تأكد إن كود جوجل شيت (Apps Script) محدّث ومنشور (New version) وإن فيه اتصال بالإنترنت، وحاول تاني.';
       }
     });
   }
@@ -3303,6 +3313,16 @@ window.safeFileName = function(str){
   setInterval(function(){
     if (attendanceScreen && attendanceScreen.style.display !== 'none') {
       refreshAttendanceFromServer();
+    }
+  }, 15000);
+
+  // نفس الفكرة لشاشة "اعتماد الإذن والمأموريات": طول ما هي مفتوحة، نجيب
+  // القايمة من الشيت كل 15 ثانية — عشان لو حد حذف طلب من الشيت يدوياً
+  // (زي ما طلبت)، يختفي من شاشة الاعتماد لوحده من غير ما تحتاج تدوس تحديث.
+  setInterval(function(){
+    var approvalsScr = document.getElementById('attendanceApprovalsScreen');
+    if (approvalsScr && approvalsScr.style.display !== 'none') {
+      loadAttendanceApprovals();
     }
   }, 15000);
 
