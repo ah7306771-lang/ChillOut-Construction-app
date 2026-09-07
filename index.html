@@ -2212,6 +2212,39 @@ window.safeFileName = function(str){
   function attendanceStorageKey(name, type){
     return 'chilloutAttendanceDone_v1__' + name + '__' + type + '__' + attendanceTodayKey();
   }
+
+  // بيطلع اسم/موديل الجهاز والمتصفح تلقائياً من الموبايل نفسه (من غير ما
+  // الموظف يكتب حاجة) عشان يتسجل مع كل حضور/انصراف في الشيت.
+  function attendanceDeviceLabel(){
+    try {
+      var ua = navigator.userAgent || '';
+      var model = 'جهاز غير معروف';
+      var androidMatch = ua.match(/Android [^;]+;\s*([^)]+)\)/);
+      if (androidMatch && androidMatch[1]) {
+        model = androidMatch[1].split('Build')[0].trim();
+      } else if (/iPhone/.test(ua)) {
+        model = 'iPhone';
+      } else if (/iPad/.test(ua)) {
+        model = 'iPad';
+      } else if (/Macintosh/.test(ua)) {
+        model = 'Mac';
+      } else if (/Windows/.test(ua)) {
+        model = 'كمبيوتر Windows';
+      } else if (/Linux/.test(ua)) {
+        model = 'كمبيوتر Linux';
+      }
+      var browser = 'متصفح';
+      if (/Edg\//.test(ua)) browser = 'Edge';
+      else if (/OPR\//.test(ua)) browser = 'Opera';
+      else if (/Chrome\//.test(ua)) browser = 'Chrome';
+      else if (/CriOS\//.test(ua)) browser = 'Chrome';
+      else if (/Firefox\//.test(ua)) browser = 'Firefox';
+      else if (/Safari\//.test(ua)) browser = 'Safari';
+      return model + ' - ' + browser;
+    } catch (e) {
+      return 'غير معروف';
+    }
+  }
   function getAttendanceDoneTime(name, type){
     try { return localStorage.getItem(attendanceStorageKey(name, type)); }
     catch(e){ return null; }
@@ -2483,7 +2516,8 @@ window.safeFileName = function(str){
         + '&time=' + encodeURIComponent(timeStr)
         + '&lat=' + encodeURIComponent(lat != null ? lat : '')
         + '&lng=' + encodeURIComponent(lng != null ? lng : '')
-        + '&map=' + encodeURIComponent(mapLink);
+        + '&map=' + encodeURIComponent(mapLink)
+        + '&device=' + encodeURIComponent(attendanceDeviceLabel());
 
       msg.textContent = 'جاري الإرسال...';
       fetch(url).then(function(r){ return r.json(); }).then(function(data){
