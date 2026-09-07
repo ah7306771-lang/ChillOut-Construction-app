@@ -369,6 +369,13 @@
     box-shadow:0 12px 32px rgba(0,0,0,.25);
   }
   .attendance-req-title{font-weight:800;font-size:15px;color:var(--ink);margin-bottom:12px;text-align:center;}
+  .attendance-req-times{display:flex;gap:10px;margin-bottom:12px;}
+  .attendance-req-time-field{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .attendance-req-time-field label{font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .attendance-req-time-input{
+    width:100%;padding:9px 8px;border:1px solid var(--panel-line);border-radius:8px;
+    font-family:'Cairo',sans-serif;font-size:13px;color:var(--ink);background:#fff8f2;
+  }
   .attendance-req-textarea{
     width:100%;min-height:70px;padding:10px;border:1px solid var(--panel-line);border-radius:8px;
     font-family:'Cairo',sans-serif;font-size:14px;color:var(--ink);resize:vertical;background:#fff8f2;
@@ -394,6 +401,34 @@
      card and lets the title land under the absolutely-positioned back-bar.
      A fixed top margin keeps it clear on every screen size. */
   #attendanceDashboardScreen .gate-card{margin-top:64px;}
+  #attendanceApprovalsScreen .gate-card{margin-top:64px;}
+
+  /* ---------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ---------- */
+  .approval-row{
+    background:#fff;border:1px solid var(--panel-line);border-radius:12px;
+    padding:12px 14px;display:flex;flex-direction:column;gap:8px;
+  }
+  .approval-row-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .approval-name-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .approval-name{font-weight:700;font-size:15px;color:var(--ink);}
+  .approval-type-badge{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+  .approval-type-leave{background:#fff3da;color:#8a5a00;}
+  .approval-type-mission{background:#e8eefc;color:#1c4b9c;}
+  .approval-status-badge{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+  .approval-status-pending{background:#f1eee9;color:var(--ink-soft);}
+  .approval-status-approved{background:#e5f3ea;color:var(--ok);}
+  .approval-status-rejected{background:#fbe6e4;color:#b3261e;}
+  .approval-details{font-size:13px;color:var(--ink-soft);line-height:1.6;}
+  .approval-actions{display:flex;gap:8px;}
+  .btn-approve,.btn-reject{
+    flex:1;border:none;border-radius:8px;padding:9px 12px;font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:13px;cursor:pointer;transition:transform .15s,opacity .15s;
+  }
+  .btn-approve:active,.btn-reject:active{transform:scale(0.96);}
+  .btn-approve:disabled,.btn-reject:disabled{opacity:.5;cursor:default;transform:none;}
+  .btn-approve{background:var(--ok);color:#fff;}
+  .btn-reject{background:#b3261e;color:#fff;}
+  .approvals-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:14px 0;}
 
   .back-bar{
     position:sticky;top:0;z-index:20;background:var(--panel-ink);
@@ -735,12 +770,20 @@
       <span class="home-tile-label">حضور وانصراف</span>
     </button>
     <button type="button" class="home-tile" id="openAttendanceDashboardBtn">
-      <span class="home-tile-badge" id="attendanceRequestsBadge">0</span>
       <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="4" y="4" width="16" height="16" rx="2" stroke="#e2621f" stroke-width="1.6"/>
         <path d="M8 15v-3.5M12 15V9M16 15v-6" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/>
       </svg></span>
       <span class="home-tile-label">لوحة الحضور</span>
+    </button>
+    <button type="button" class="home-tile" id="openAttendanceApprovalsBtn">
+      <span class="home-tile-badge" id="attendanceRequestsBadge">0</span>
+      <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 4.5h7l4 4V19a1.5 1.5 0 01-1.5 1.5h-9.5A1.5 1.5 0 015.5 19V6A1.5 1.5 0 017 4.5z" stroke="#e2621f" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M14 4.5V8a1 1 0 001 1h3.5" stroke="#3a3f45" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M9 14.3l2 2 4-4.3" stroke="#1f7a4c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg></span>
+      <span class="home-tile-label">اعتماد الإذن والمأموريات</span>
     </button>
 
     </div>
@@ -783,6 +826,21 @@
     </div>
     <div class="status-msg" id="dashStatus" style="margin:10px 0;"></div>
     <div class="dash-list" id="attendanceDashboardList"></div>
+  </div>
+</div>
+
+<!-- ATTENDANCE APPROVALS SCREEN (اعتماد الإذن والمأموريات) -->
+<div id="attendanceApprovalsScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnApprovals" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:560px;">
+    <h1 class="gate-title">اعتماد الإذن والمأموريات</h1>
+    <button type="button" class="btn btn-secondary" id="approvalsRefreshBtn" style="width:100%;">🔄 تحديث</button>
+    <div class="status-msg" id="approvalsStatus" style="margin:10px 0;"></div>
+    <div class="dash-list" id="attendanceApprovalsList"></div>
   </div>
 </div>
 
@@ -2167,6 +2225,7 @@ window.safeFileName = function(str){
   var formsMenuScreen   = document.getElementById('formsMenuScreen');
   var attendanceScreen  = document.getElementById('attendanceScreen');
   var attendanceDashboardScreen = document.getElementById('attendanceDashboardScreen');
+  var attendanceApprovalsScreen = document.getElementById('attendanceApprovalsScreen');
   var appScreen         = document.getElementById('appScreen');
   var orderScreen       = document.getElementById('orderScreen');
   var quoteScreen       = document.getElementById('quoteScreen');
@@ -2184,6 +2243,7 @@ window.safeFileName = function(str){
     formsMenuScreen.style.display   = (name === 'forms-menu')    ? '' : 'none';
     attendanceScreen.style.display  = (name === 'attendance')    ? '' : 'none';
     attendanceDashboardScreen.style.display = (name === 'attendance-dashboard') ? '' : 'none';
+    attendanceApprovalsScreen.style.display = (name === 'attendance-approvals') ? '' : 'none';
     appScreen.style.display         = (name === 'app')           ? '' : 'none';
     orderScreen.style.display       = (name === 'order')         ? '' : 'none';
     quoteScreen.style.display       = (name === 'quote')         ? '' : 'none';
@@ -2245,7 +2305,7 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
   var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم'];
 
-  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyOmI2Z-FqRVdfdxS-NwQbmg8tc46bOLXgZAcghW7HxoB3wllkC41KQX2MIr09namee/exec';
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcT_qZX966z6EmfQ5heznu3dCusY_opzZMkquRoGJzhWnapxrLouDHrxR1eAD5xAhO/exec';
 
   // رابط خاص لكل موظف: لو فتح رابط الصفحة ومعاه ?emp=<الرمز بتاعه>، هيلاقي
   // اسمه هو بس في شاشة الحضور (مش كل الأسماء)، وهيدخل عليها على طول من غير
@@ -2490,6 +2550,34 @@ window.safeFileName = function(str){
     var title = document.createElement('div');
     title.className = 'attendance-req-title';
 
+    // من الساعة / إلى الساعة — مطلوبة لطلب الإذن أو المأمورية عشان الإداري
+    // يقدر يقارن الفترة دي بمواعيد البصمة الفعلية بعدين.
+    var timesRow = document.createElement('div');
+    timesRow.className = 'attendance-req-times';
+
+    var fromWrap = document.createElement('div');
+    fromWrap.className = 'attendance-req-time-field';
+    var fromLabel = document.createElement('label');
+    fromLabel.textContent = 'من الساعة';
+    var fromInput = document.createElement('input');
+    fromInput.type = 'time';
+    fromInput.className = 'attendance-req-time-input';
+    fromWrap.appendChild(fromLabel);
+    fromWrap.appendChild(fromInput);
+
+    var toWrap = document.createElement('div');
+    toWrap.className = 'attendance-req-time-field';
+    var toLabel = document.createElement('label');
+    toLabel.textContent = 'إلى الساعة';
+    var toInput = document.createElement('input');
+    toInput.type = 'time';
+    toInput.className = 'attendance-req-time-input';
+    toWrap.appendChild(toLabel);
+    toWrap.appendChild(toInput);
+
+    timesRow.appendChild(fromWrap);
+    timesRow.appendChild(toWrap);
+
     var textarea = document.createElement('textarea');
     textarea.className = 'attendance-req-textarea';
     textarea.placeholder = 'اكتب السبب / الوجهة هنا (اختياري)...';
@@ -2510,6 +2598,7 @@ window.safeFileName = function(str){
     actions.appendChild(confirmBtn);
     actions.appendChild(cancelBtn);
     card.appendChild(title);
+    card.appendChild(timesRow);
     card.appendChild(textarea);
     card.appendChild(actions);
     overlay.appendChild(card);
@@ -2520,13 +2609,18 @@ window.safeFileName = function(str){
     });
     cancelBtn.addEventListener('click', hideAttendanceRequestModal);
 
-    attendanceReqEls = { overlay: overlay, title: title, textarea: textarea, onSubmit: null };
+    attendanceReqEls = {
+      overlay: overlay, title: title, textarea: textarea,
+      fromInput: fromInput, toInput: toInput, onSubmit: null
+    };
     confirmBtn.addEventListener('click', function(){
       var els = attendanceReqEls;
       var cb = els.onSubmit;
       var reason = els.textarea.value.trim();
+      var from = els.fromInput.value;
+      var to = els.toInput.value;
       hideAttendanceRequestModal();
-      if (cb) cb(reason);
+      if (cb) cb(from, to, reason);
     });
     return attendanceReqEls;
   }
@@ -2541,9 +2635,11 @@ window.safeFileName = function(str){
     var els = ensureAttendanceRequestModal();
     els.title.textContent = title;
     els.textarea.value = '';
+    els.fromInput.value = '';
+    els.toInput.value = '';
     els.onSubmit = onSubmit;
     els.overlay.style.display = 'flex';
-    setTimeout(function(){ els.textarea.focus(); }, 0);
+    setTimeout(function(){ els.fromInput.focus(); }, 0);
   }
 
   // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف.
@@ -2570,23 +2666,32 @@ window.safeFileName = function(str){
   }
 
   // آخر حالة معروفة لطلب إذن/مأمورية كل موظف "النهاردة" — بتتحدث من
-  // refreshAttendanceRequestsFromServer(). لو الطلب معتمد ("موافق")، بيقفل
-  // زراير حضور/انصراف بتاعته النهاردة، وبيبان في شاشته وفي لوحة الحضور.
+  // refreshAttendanceRequestsFromServer(). دي معلومة تعرض بس، ومبتقفلش
+  // زراير حضور/انصراف — الموظف يقدر يبصم عادي حتى لو عنده إذن/مأمورية،
+  // وإنت (الإداري) اللي بتقارن بين الاتنين من شاشة "اعتماد الإذن والمأموريات".
   var attendanceRequestsToday = {};
+
+  function attendanceRequestTimeRange(req){
+    if (req.from && req.to) return ' (' + req.from + ' — ' + req.to + ')';
+    if (req.from) return ' (من ' + req.from + ')';
+    if (req.to) return ' (إلى ' + req.to + ')';
+    return '';
+  }
 
   function renderAttendanceRequestStatus(el, name){
     var req = attendanceRequestsToday[name];
     if (!req) { el.textContent = ''; el.className = 'attendance-request-status'; return; }
+    var timeRange = attendanceRequestTimeRange(req);
     if (req.status === 'موافق') {
       el.className = 'attendance-request-status ' + (req.type === 'مأمورية' ? 'status-mission' : 'status-leave');
       var icon = (req.type === 'مأمورية') ? '🧳' : '📋';
-      el.textContent = icon + ' ' + req.type + ' معتمد اليوم' + (req.reason ? (' — ' + req.reason) : '');
+      el.textContent = icon + ' ' + req.type + ' معتمد اليوم' + timeRange + (req.reason ? (' — ' + req.reason) : '');
     } else if (req.status === 'مرفوض') {
       el.className = 'attendance-request-status status-rejected';
-      el.textContent = 'تم رفض طلب ' + req.type + ' بتاعك النهاردة.';
+      el.textContent = 'تم رفض طلب ' + req.type + ' بتاعك النهاردة' + timeRange + '.';
     } else {
       el.className = 'attendance-request-status status-pending';
-      el.textContent = 'طلب ' + req.type + ' قيد المراجعة...';
+      el.textContent = 'طلب ' + req.type + timeRange + ' قيد المراجعة...';
     }
   }
 
@@ -2596,10 +2701,10 @@ window.safeFileName = function(str){
     if (!refs) return;
     var doneInTime = getAttendanceDoneTime(name, 'حضور');
     var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
-    var req = attendanceRequestsToday[name];
-    var approvedToday = !!(req && req.status === 'موافق');
-    refs.inBtn.disabled = !!doneInTime || approvedToday;
-    refs.outBtn.disabled = !!doneOutTime || approvedToday;
+    // الإذن/المأمورية بتبان كمعلومة بس، ومش بتقفل زراير حضور/انصراف —
+    // الموظف يقدر يبصم عادي، والمقارنة بينهم بتتم من شاشة الاعتماد.
+    refs.inBtn.disabled = !!doneInTime;
+    refs.outBtn.disabled = !!doneOutTime;
     renderAttendanceRowMsg(refs.msg, name);
     if (refs.reqStatus) renderAttendanceRequestStatus(refs.reqStatus, name);
   }
@@ -2647,7 +2752,9 @@ window.safeFileName = function(str){
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       var rows = (data && data.rows) || [];
       var latest = {};
-      rows.forEach(function(r){ latest[r.name] = { type: r.type, status: r.status, reason: r.reason }; });
+      rows.forEach(function(r){
+        latest[r.name] = { id: r.id, type: r.type, status: r.status, reason: r.reason, from: r.from, to: r.to };
+      });
       attendanceRequestsToday = latest;
       Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
     }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر زي ما هو */ });
@@ -2675,15 +2782,24 @@ window.safeFileName = function(str){
     }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
   }
 
+  // معرّف فريد بسيط لكل طلب — بيتبعت مع الطلب ويترجع في requestsReport،
+  // عشان زراير "موافقة/رفض" في شاشة الاعتماد تقدر تحدد الصف الصح بالظبط.
+  function generateRequestId(){
+    return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
   // بيبعت طلب إذن/مأمورية جديد لتاب "Requests" في نفس الشيت، بحالة "قيد
-  // المراجعة" لحد ما توافق عليه إنت بنفسك يدوياً من الشيت.
-  function submitAttendanceRequest(name, type, reason, statusEl){
+  // المراجعة" لحد ما توافق عليه إنت من شاشة "اعتماد الإذن والمأموريات".
+  function submitAttendanceRequest(name, type, from, to, reason, statusEl){
     if (!ATTENDANCE_SCRIPT_URL) return;
     var url = ATTENDANCE_SCRIPT_URL
       + '?action=requestSubmit'
+      + '&id=' + encodeURIComponent(generateRequestId())
       + '&name=' + encodeURIComponent(name)
       + '&type=' + encodeURIComponent(type)
       + '&date=' + encodeURIComponent(attendanceTodayKey())
+      + '&from=' + encodeURIComponent(from || '')
+      + '&to=' + encodeURIComponent(to || '')
       + '&reason=' + encodeURIComponent(reason || '');
     if (statusEl) {
       statusEl.className = 'attendance-request-status status-pending';
@@ -2691,6 +2807,7 @@ window.safeFileName = function(str){
     }
     fetch(url).then(function(r){ return r.json(); }).then(function(){
       refreshAttendanceRequestsFromServer();
+      refreshPendingRequestsBadge();
     }).catch(function(){
       if (statusEl) {
         statusEl.className = 'attendance-request-status status-rejected';
@@ -2750,15 +2867,15 @@ window.safeFileName = function(str){
     });
     leaveBtn.addEventListener('click', function(){
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
-        showAttendanceRequestModal('طلب إذن — ' + name, function(reason){
-          submitAttendanceRequest(name, 'إذن', reason, reqStatus);
+        showAttendanceRequestModal('طلب إذن — ' + name, function(from, to, reason){
+          submitAttendanceRequest(name, 'إذن', from, to, reason, reqStatus);
         });
       });
     });
     missionBtn.addEventListener('click', function(){
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
-        showAttendanceRequestModal('طلب مأمورية — ' + name, function(reason){
-          submitAttendanceRequest(name, 'مأمورية', reason, reqStatus);
+        showAttendanceRequestModal('طلب مأمورية — ' + name, function(from, to, reason){
+          submitAttendanceRequest(name, 'مأمورية', from, to, reason, reqStatus);
         });
       });
     });
@@ -2935,15 +3052,16 @@ window.safeFileName = function(str){
     line.className = 'dash-line';
     var span = document.createElement('span');
     var icon = (requestRecord.type === 'مأمورية') ? '🧳' : '📋';
+    var timeRange = attendanceRequestTimeRange(requestRecord);
     if (requestRecord.status === 'موافق') {
       span.className = (requestRecord.type === 'مأمورية') ? 'dash-status-out' : 'dash-status-ok';
-      span.textContent = icon + ' ' + requestRecord.type + ' معتمدة';
+      span.textContent = icon + ' ' + requestRecord.type + ' معتمدة' + timeRange;
     } else if (requestRecord.status === 'مرفوض') {
       span.className = 'dash-status-out';
-      span.textContent = icon + ' ' + requestRecord.type + ' مرفوضة';
+      span.textContent = icon + ' ' + requestRecord.type + ' مرفوضة' + timeRange;
     } else {
       span.className = 'dash-status-missing';
-      span.textContent = icon + ' طلب ' + requestRecord.type + ' قيد المراجعة';
+      span.textContent = icon + ' طلب ' + requestRecord.type + timeRange + ' قيد المراجعة';
     }
     line.appendChild(span);
     if (requestRecord.reason) {
@@ -3009,6 +3127,137 @@ window.safeFileName = function(str){
       status.style.color = '#b3261e';
       status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
       renderDashboardRows([], [], employee);
+    });
+  }
+
+  // ---------------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ----------------
+  // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
+  // الحالة في تاب Requests مباشرة من التطبيق — من غير ما تفتح الشيت أصلاً.
+  function setRequestStatus(id, status, row){
+    if (!ATTENDANCE_SCRIPT_URL || !id) return;
+    var approveBtn = row.querySelector('.btn-approve');
+    var rejectBtn = row.querySelector('.btn-reject');
+    var badge = row.querySelector('.approval-status-badge');
+    if (approveBtn) approveBtn.disabled = true;
+    if (rejectBtn) rejectBtn.disabled = true;
+    if (badge) { badge.className = 'approval-status-badge approval-status-pending'; badge.textContent = 'جاري الحفظ...'; }
+
+    var url = ATTENDANCE_SCRIPT_URL
+      + '?action=requestSetStatus'
+      + '&id=' + encodeURIComponent(id)
+      + '&status=' + encodeURIComponent(status);
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      if (!data || !data.ok) throw new Error('failed');
+      loadAttendanceApprovals();
+      refreshPendingRequestsBadge();
+    }).catch(function(){
+      if (approveBtn) approveBtn.disabled = false;
+      if (rejectBtn) rejectBtn.disabled = false;
+      if (badge) { badge.className = 'approval-status-badge approval-status-rejected'; badge.textContent = 'حدث خطأ، حاول تاني'; }
+    });
+  }
+
+  function buildApprovalRow(req){
+    var row = document.createElement('div');
+    row.className = 'approval-row';
+
+    var head = document.createElement('div');
+    head.className = 'approval-row-head';
+
+    var nameWrap = document.createElement('div');
+    nameWrap.className = 'approval-name-wrap';
+
+    var nameEl = document.createElement('span');
+    nameEl.className = 'approval-name';
+    nameEl.textContent = req.name;
+
+    var typeBadge = document.createElement('span');
+    typeBadge.className = 'approval-type-badge ' + (req.type === 'مأمورية' ? 'approval-type-mission' : 'approval-type-leave');
+    typeBadge.textContent = (req.type === 'مأمورية' ? '🧳 مأمورية' : '📋 إذن');
+
+    nameWrap.appendChild(nameEl);
+    nameWrap.appendChild(typeBadge);
+
+    var statusBadge = document.createElement('span');
+    statusBadge.className = 'approval-status-badge ' +
+      (req.status === 'موافق' ? 'approval-status-approved' :
+       req.status === 'مرفوض' ? 'approval-status-rejected' : 'approval-status-pending');
+    statusBadge.textContent = req.status || 'قيد المراجعة';
+
+    head.appendChild(nameWrap);
+    head.appendChild(statusBadge);
+
+    var details = document.createElement('div');
+    details.className = 'approval-details';
+    var timeRange = attendanceRequestTimeRange(req);
+    var detailsText = 'بتاريخ ' + req.date + (timeRange ? timeRange : '');
+    if (req.reason) detailsText += ' — ' + req.reason;
+    details.textContent = detailsText;
+
+    var actions = document.createElement('div');
+    actions.className = 'approval-actions';
+
+    var approveBtn = document.createElement('button');
+    approveBtn.type = 'button';
+    approveBtn.className = 'btn-approve';
+    approveBtn.textContent = '✔ موافقة';
+
+    var rejectBtn = document.createElement('button');
+    rejectBtn.type = 'button';
+    rejectBtn.className = 'btn-reject';
+    rejectBtn.textContent = '✘ رفض';
+
+    approveBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'موافق', row); });
+    rejectBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'مرفوض', row); });
+
+    actions.appendChild(approveBtn);
+    actions.appendChild(rejectBtn);
+
+    row.appendChild(head);
+    row.appendChild(details);
+    row.appendChild(actions);
+    return row;
+  }
+
+  function renderApprovalsList(rows){
+    var container = document.getElementById('attendanceApprovalsList');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!rows.length) {
+      var empty = document.createElement('div');
+      empty.className = 'approvals-empty';
+      empty.textContent = 'لا توجد أي طلبات إذن أو مأمورية حتى الآن.';
+      container.appendChild(empty);
+      return;
+    }
+    // الأحدث في الأول عشان الطلبات الجديدة تبان فوق من غير ما تدور عليها.
+    rows.slice().reverse().forEach(function(req){
+      container.appendChild(buildApprovalRow(req));
+    });
+  }
+
+  function loadAttendanceApprovals(){
+    var status = document.getElementById('approvalsStatus');
+    if (!status) return;
+
+    if (!ATTENDANCE_SCRIPT_URL) {
+      status.style.color = '#b3261e';
+      status.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
+      renderApprovalsList([]);
+      return;
+    }
+
+    status.style.color = 'var(--ink-soft)';
+    status.textContent = 'جاري التحميل...';
+
+    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      status.textContent = '';
+      renderApprovalsList((data && data.rows) || []);
+    }).catch(function(){
+      status.style.color = '#b3261e';
+      status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+      renderApprovalsList([]);
     });
   }
 
@@ -3253,6 +3502,17 @@ window.safeFileName = function(str){
   document.getElementById('dashDateInput').addEventListener('change', loadAttendanceDashboard);
   document.getElementById('dashEmployeeSelect').addEventListener('change', loadAttendanceDashboard);
   document.getElementById('dashRefreshBtn').addEventListener('click', loadAttendanceDashboard);
+
+  document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', function(){
+    showPasswordModal('كلمة سر اعتماد الإذن والمأموريات', ATTENDANCE_DASHBOARD_PASSWORD, function(){
+      showScreen('attendance-approvals');
+      loadAttendanceApprovals();
+    });
+  });
+  document.getElementById('backHomeBtnApprovals').addEventListener('click', function(){
+    showScreen('home');
+  });
+  document.getElementById('approvalsRefreshBtn').addEventListener('click', loadAttendanceApprovals);
 
   document.getElementById('openAppBtn').addEventListener('click', function(){
     showScreen('app');
