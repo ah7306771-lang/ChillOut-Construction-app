@@ -307,6 +307,10 @@
     width:100%;padding:12px 11px;border:1px solid var(--panel-line);border-radius:8px;
     font-family:'Cairo',sans-serif;font-size:18px;letter-spacing:4px;text-align:center;
     color:var(--ink);background:#fff8f2;
+    /* بيخفي الأرقام بنقط زي حقل الباسورد العادي، من غير ما نستخدم
+       type="password" — عشان كروم مايعاملهاش كأنها باسورد حساب حقيقي
+       ويطلع تحذير "Check your saved passwords". */
+    -webkit-text-security:disc;text-security:disc;
   }
   .attendance-pw-error{min-height:18px;color:#b3261e;font-size:12.5px;margin-top:8px;}
   .attendance-pw-actions{display:flex;gap:10px;margin-top:10px;}
@@ -343,6 +347,7 @@
   .dash-name{font-weight:700;font-size:15px;color:var(--ink);}
   .dash-line{font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .dash-status-ok{color:var(--ok);font-weight:700;}
+  .dash-status-out{color:#b3261e;font-weight:700;}
   .dash-status-missing{color:var(--ink-soft);}
   .dash-map-link{color:var(--steel);text-decoration:underline;font-weight:700;}
   /* This screen's content (controls + a row per employee) can be taller than
@@ -2320,7 +2325,16 @@ window.safeFileName = function(str){
     title.className = 'attendance-pw-title';
 
     var input = document.createElement('input');
-    input.type = 'password';
+    // مش type="password" عشان دي مش باسورد حساب فعلي (مجرد رقم قصير لكل
+    // موظف)، وكروم بيراقب حقول الباسورد ويقارنها بقاعدة بيانات تسريبات
+    // عالمية، فلو الرقم بسيط زي 1111 بيطلع تحذير "Check your saved
+    // passwords" غلط. بنستخدم type="text" ونخفي الأرقام بنقط بالـ CSS بدلها.
+    input.type = 'text';
+    input.autocomplete = 'off';
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('autocorrect', 'off');
+    input.setAttribute('autocapitalize', 'off');
+    input.setAttribute('spellcheck', 'false');
     input.inputMode = 'numeric';
     input.className = 'attendance-pw-input';
     input.placeholder = 'كلمة السر';
@@ -2627,12 +2641,13 @@ window.safeFileName = function(str){
     });
   })();
 
-  function buildDashLine(label, record){
+  function buildDashLine(label, record, type){
     var line = document.createElement('div');
     line.className = 'dash-line';
     if (record && record.time) {
       var timeSpan = document.createElement('span');
-      timeSpan.className = 'dash-status-ok';
+      // حضور بالأخضر وانصراف بالأحمر، زي ألوان رسايل شاشة الحضور والانصراف نفسها.
+      timeSpan.className = (type === 'انصراف') ? 'dash-status-out' : 'dash-status-ok';
       timeSpan.textContent = label + ': ' + record.time;
       line.appendChild(timeSpan);
       if (record.map) {
@@ -2667,8 +2682,8 @@ window.safeFileName = function(str){
       nameEl.className = 'dash-name';
       nameEl.textContent = name;
       row.appendChild(nameEl);
-      row.appendChild(buildDashLine('حضور', checkIn));
-      row.appendChild(buildDashLine('انصراف', checkOut));
+      row.appendChild(buildDashLine('حضور', checkIn, 'حضور'));
+      row.appendChild(buildDashLine('انصراف', checkOut, 'انصراف'));
       container.appendChild(row);
     });
   }
