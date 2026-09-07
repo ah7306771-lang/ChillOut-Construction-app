@@ -271,10 +271,18 @@
   }
 
   .home-tile{
+    position:relative;
     width:100%;max-width:220px;margin:0 auto;background:#ffffff;border:1px solid var(--panel-line);
     border-radius:16px;padding:22px 16px;cursor:pointer;display:flex;flex-direction:column;
     align-items:center;gap:12px;font-family:'Cairo',sans-serif;color:var(--ink);
     transition:transform .1s ease, filter .15s ease;box-shadow:0 4px 14px rgba(226,98,31,.12);
+  }
+  /* عدد طلبات الإذن/المأمورية اللي لسه محتاجة اعتماد — بتبان فوق أيقونة
+     "لوحة الحضور" من بره من غير ما تحتاج تدخل الباسورد أصلاً. */
+  .home-tile-badge{
+    position:absolute;top:8px;left:8px;background:#b3261e;color:#fff;font-weight:800;
+    font-size:12px;min-width:20px;height:20px;border-radius:10px;display:none;
+    align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 6px rgba(0,0,0,.3);
   }
   .home-grid .home-tile{width:150px;max-width:150px;}
   .home-tile:active{transform:scale(0.97);}
@@ -331,11 +339,42 @@
   .btn-check-in{background:var(--ok);color:#fff;}
   .btn-check-out{background:var(--steel);color:#fff;}
   .attendance-row-msg{width:100%;font-size:12px;margin-top:2px;color:var(--ink-soft);}
+  .btn-request{
+    border-radius:8px;padding:8px 12px;font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:12px;cursor:pointer;transition:transform .15s,opacity .15s;
+  }
+  .btn-request:active{transform:scale(0.95);}
+  .btn-request:disabled{opacity:.55;cursor:default;transform:none;}
+  .btn-request-leave{background:#fff3da;color:#8a5a00;border:1px solid #e9c27a;}
+  .btn-request-mission{background:#e8eefc;color:#1c4b9c;border:1px solid #b7c9ee;}
+  .attendance-request-status{width:100%;font-size:12px;margin-top:2px;}
+  .attendance-request-status.status-pending{color:var(--ink-soft);}
+  .attendance-request-status.status-leave{color:#8a5a00;font-weight:700;}
+  .attendance-request-status.status-mission{color:#1c4b9c;font-weight:700;}
+  .attendance-request-status.status-rejected{color:#b3261e;font-weight:700;}
   @media (max-width:380px){
     .attendance-row{flex-direction:column;align-items:stretch;}
     .attendance-actions{width:100%;}
     .btn-check{flex:1;}
+    .btn-request{flex:1;}
   }
+
+  /* ---------- مودال طلب إذن / مأمورية ---------- */
+  .attendance-req-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;
+    align-items:center;justify-content:center;z-index:1000;padding:20px;
+  }
+  .attendance-req-card{
+    background:#fff;border-radius:14px;padding:22px;width:100%;max-width:340px;
+    box-shadow:0 12px 32px rgba(0,0,0,.25);
+  }
+  .attendance-req-title{font-weight:800;font-size:15px;color:var(--ink);margin-bottom:12px;text-align:center;}
+  .attendance-req-textarea{
+    width:100%;min-height:70px;padding:10px;border:1px solid var(--panel-line);border-radius:8px;
+    font-family:'Cairo',sans-serif;font-size:14px;color:var(--ink);resize:vertical;background:#fff8f2;
+  }
+  .attendance-req-actions{display:flex;gap:10px;margin-top:12px;}
+  .attendance-req-actions .btn{flex:1;width:auto;}
 
   /* ---------- ATTENDANCE DASHBOARD ---------- */
   .dash-controls{display:flex;flex-direction:column;gap:12px;margin-bottom:4px;}
@@ -696,6 +735,7 @@
       <span class="home-tile-label">حضور وانصراف</span>
     </button>
     <button type="button" class="home-tile" id="openAttendanceDashboardBtn">
+      <span class="home-tile-badge" id="attendanceRequestsBadge">0</span>
       <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="4" y="4" width="16" height="16" rx="2" stroke="#e2621f" stroke-width="1.6"/>
         <path d="M8 15v-3.5M12 15V9M16 15v-6" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/>
@@ -2319,6 +2359,17 @@ window.safeFileName = function(str){
     catch(e){}
   }
 
+  // كلمة سر خاصة بكل موظف (رقمين بس) — لازم يدخلها صح قبل ما يقدر يسجل
+  // حضور أو انصراف لنفسه، حتى وهو داخل من رابطه الشخصي.
+  // TODO: غيّر أي رقم هنا لو عايز كلمة سر تانية لموظف معين.
+  var ATTENDANCE_PASSWORDS = {
+    'أحمد مفرح': '11',
+    'محمود كارم': '12',
+    'مني محمد': '13',
+    'شهد خالد': '14',
+    'سيد كارم': '15'
+  };
+
   // كلمة سر الدخول على "لوحة الحضور" (شاشة المتابعة الإدارية) — نفس كلمة
   // السر مطلوبة من أي حد يدوس على الأيقونة قبل ما يشوف بيانات كل الموظفين.
   var ATTENDANCE_DASHBOARD_PASSWORD = '55555';
@@ -2424,6 +2475,77 @@ window.safeFileName = function(str){
     setTimeout(function(){ els.input.focus(); }, 0);
   }
 
+  // ---- مودال طلب إذن / مأمورية (بيتعمل مرة واحدة وبيتعاد استخدامه) ----
+  var attendanceReqEls = null;
+  function ensureAttendanceRequestModal(){
+    if (attendanceReqEls) return attendanceReqEls;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'attendance-req-overlay';
+    overlay.style.display = 'none';
+
+    var card = document.createElement('div');
+    card.className = 'attendance-req-card';
+
+    var title = document.createElement('div');
+    title.className = 'attendance-req-title';
+
+    var textarea = document.createElement('textarea');
+    textarea.className = 'attendance-req-textarea';
+    textarea.placeholder = 'اكتب السبب / الوجهة هنا (اختياري)...';
+
+    var actions = document.createElement('div');
+    actions.className = 'attendance-req-actions';
+
+    var confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'btn btn-primary';
+    confirmBtn.textContent = 'إرسال الطلب';
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = 'إلغاء';
+
+    actions.appendChild(confirmBtn);
+    actions.appendChild(cancelBtn);
+    card.appendChild(title);
+    card.appendChild(textarea);
+    card.appendChild(actions);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay) hideAttendanceRequestModal();
+    });
+    cancelBtn.addEventListener('click', hideAttendanceRequestModal);
+
+    attendanceReqEls = { overlay: overlay, title: title, textarea: textarea, onSubmit: null };
+    confirmBtn.addEventListener('click', function(){
+      var els = attendanceReqEls;
+      var cb = els.onSubmit;
+      var reason = els.textarea.value.trim();
+      hideAttendanceRequestModal();
+      if (cb) cb(reason);
+    });
+    return attendanceReqEls;
+  }
+
+  function hideAttendanceRequestModal(){
+    if (!attendanceReqEls) return;
+    attendanceReqEls.overlay.style.display = 'none';
+    attendanceReqEls.onSubmit = null;
+  }
+
+  function showAttendanceRequestModal(title, onSubmit){
+    var els = ensureAttendanceRequestModal();
+    els.title.textContent = title;
+    els.textarea.value = '';
+    els.onSubmit = onSubmit;
+    els.overlay.style.display = 'flex';
+    setTimeout(function(){ els.textarea.focus(); }, 0);
+  }
+
   // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف.
   var attendanceRowRefs = {};
 
@@ -2447,15 +2569,39 @@ window.safeFileName = function(str){
     }
   }
 
+  // آخر حالة معروفة لطلب إذن/مأمورية كل موظف "النهاردة" — بتتحدث من
+  // refreshAttendanceRequestsFromServer(). لو الطلب معتمد ("موافق")، بيقفل
+  // زراير حضور/انصراف بتاعته النهاردة، وبيبان في شاشته وفي لوحة الحضور.
+  var attendanceRequestsToday = {};
+
+  function renderAttendanceRequestStatus(el, name){
+    var req = attendanceRequestsToday[name];
+    if (!req) { el.textContent = ''; el.className = 'attendance-request-status'; return; }
+    if (req.status === 'موافق') {
+      el.className = 'attendance-request-status ' + (req.type === 'مأمورية' ? 'status-mission' : 'status-leave');
+      var icon = (req.type === 'مأمورية') ? '🧳' : '📋';
+      el.textContent = icon + ' ' + req.type + ' معتمد اليوم' + (req.reason ? (' — ' + req.reason) : '');
+    } else if (req.status === 'مرفوض') {
+      el.className = 'attendance-request-status status-rejected';
+      el.textContent = 'تم رفض طلب ' + req.type + ' بتاعك النهاردة.';
+    } else {
+      el.className = 'attendance-request-status status-pending';
+      el.textContent = 'طلب ' + req.type + ' قيد المراجعة...';
+    }
+  }
+
   // بيعيد رسم زراير ورسالة موظف معين حسب أحدث حالة محفوظة له على الجهاز ده.
   function refreshRowUI(name){
     var refs = attendanceRowRefs[name];
     if (!refs) return;
     var doneInTime = getAttendanceDoneTime(name, 'حضور');
     var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
-    refs.inBtn.disabled = !!doneInTime;
-    refs.outBtn.disabled = !!doneOutTime;
+    var req = attendanceRequestsToday[name];
+    var approvedToday = !!(req && req.status === 'موافق');
+    refs.inBtn.disabled = !!doneInTime || approvedToday;
+    refs.outBtn.disabled = !!doneOutTime || approvedToday;
     renderAttendanceRowMsg(refs.msg, name);
+    if (refs.reqStatus) renderAttendanceRequestStatus(refs.reqStatus, name);
   }
 
   function applyAttendanceRecord(name, type, timeStr){
@@ -2489,6 +2635,68 @@ window.safeFileName = function(str){
         });
       });
     }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر على الجهاز زي ما هو */ });
+    refreshAttendanceRequestsFromServer();
+  }
+
+  // بيجيب حالة طلبات الإذن/المأمورية "النهاردة" لكل الموظفين من نفس الشيت
+  // (تاب "Requests")، عشان لو حد وافق على طلب حد يدوياً من الشيت، الموظف
+  // يلاقي زراير حضور/انصراف بتاعته اتقفلت تلقائياً ويبان سبب الغياب.
+  function refreshAttendanceRequestsFromServer(){
+    if (!ATTENDANCE_SCRIPT_URL) return;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport&date=' + encodeURIComponent(attendanceTodayKey());
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      var rows = (data && data.rows) || [];
+      var latest = {};
+      rows.forEach(function(r){ latest[r.name] = { type: r.type, status: r.status, reason: r.reason }; });
+      attendanceRequestsToday = latest;
+      Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
+    }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر زي ما هو */ });
+  }
+
+  // عدد كل طلبات الإذن/المأمورية (من أي يوم) اللي لسه "قيد المراجعة" —
+  // بيبان كرقم أحمر فوق أيقونة "لوحة الحضور" في الصفحة الرئيسية من غير ما
+  // حد يحتاج يدخل باسورد الداش بورد أصلاً، عشان تعرف إن فيه طلبات محتاجة
+  // اعتماد من غير ما تفتح اللوحة.
+  function refreshPendingRequestsBadge(){
+    var badge = document.getElementById('attendanceRequestsBadge');
+    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      var rows = (data && data.rows) || [];
+      var pending = rows.filter(function(r){
+        return r.status !== 'موافق' && r.status !== 'مرفوض';
+      }).length;
+      if (pending > 0) {
+        badge.textContent = pending > 99 ? '99+' : String(pending);
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+  }
+
+  // بيبعت طلب إذن/مأمورية جديد لتاب "Requests" في نفس الشيت، بحالة "قيد
+  // المراجعة" لحد ما توافق عليه إنت بنفسك يدوياً من الشيت.
+  function submitAttendanceRequest(name, type, reason, statusEl){
+    if (!ATTENDANCE_SCRIPT_URL) return;
+    var url = ATTENDANCE_SCRIPT_URL
+      + '?action=requestSubmit'
+      + '&name=' + encodeURIComponent(name)
+      + '&type=' + encodeURIComponent(type)
+      + '&date=' + encodeURIComponent(attendanceTodayKey())
+      + '&reason=' + encodeURIComponent(reason || '');
+    if (statusEl) {
+      statusEl.className = 'attendance-request-status status-pending';
+      statusEl.textContent = 'جاري إرسال الطلب...';
+    }
+    fetch(url).then(function(r){ return r.json(); }).then(function(){
+      refreshAttendanceRequestsFromServer();
+    }).catch(function(){
+      if (statusEl) {
+        statusEl.className = 'attendance-request-status status-rejected';
+        statusEl.textContent = 'حدث خطأ في إرسال الطلب، حاول مرة أخرى.';
+      }
+    });
   }
 
   function buildAttendanceRow(list, name){
@@ -2512,25 +2720,62 @@ window.safeFileName = function(str){
     outBtn.className = 'btn-check btn-check-out';
     outBtn.textContent = 'انصراف';
 
+    var leaveBtn = document.createElement('button');
+    leaveBtn.type = 'button';
+    leaveBtn.className = 'btn-request btn-request-leave';
+    leaveBtn.textContent = 'طلب إذن';
+
+    var missionBtn = document.createElement('button');
+    missionBtn.type = 'button';
+    missionBtn.className = 'btn-request btn-request-mission';
+    missionBtn.textContent = 'طلب مأمورية';
+
     var msg = document.createElement('div');
     msg.className = 'attendance-row-msg';
 
-    // مبقاش محتاج باسورد هنا: كل موظف بقى بيفتح برابطه الخاص فبيلاقي اسمه
-    // هو بس (شوف getAttendanceLinkedEmployee)، فمحدش تاني أصلاً بيشوف زرايره.
+    var reqStatus = document.createElement('div');
+    reqStatus.className = 'attendance-request-status';
+
+    // برضه بيطلب كلمة السر بتاعة الموظف قبل ما يسجل، حتى وهو داخل من
+    // رابطه الشخصي (طبقة حماية إضافية فوق رابط الـ ?emp=...).
     inBtn.addEventListener('click', function(){
-      recordAttendance(name, 'حضور', inBtn, outBtn, msg);
+      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+        recordAttendance(name, 'حضور', inBtn, outBtn, msg);
+      });
     });
     outBtn.addEventListener('click', function(){
-      recordAttendance(name, 'انصراف', inBtn, outBtn, msg);
+      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+        recordAttendance(name, 'انصراف', inBtn, outBtn, msg);
+      });
+    });
+    leaveBtn.addEventListener('click', function(){
+      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+        showAttendanceRequestModal('طلب إذن — ' + name, function(reason){
+          submitAttendanceRequest(name, 'إذن', reason, reqStatus);
+        });
+      });
+    });
+    missionBtn.addEventListener('click', function(){
+      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+        showAttendanceRequestModal('طلب مأمورية — ' + name, function(reason){
+          submitAttendanceRequest(name, 'مأمورية', reason, reqStatus);
+        });
+      });
     });
 
-    attendanceRowRefs[name] = { inBtn: inBtn, outBtn: outBtn, msg: msg };
+    attendanceRowRefs[name] = {
+      inBtn: inBtn, outBtn: outBtn, msg: msg,
+      leaveBtn: leaveBtn, missionBtn: missionBtn, reqStatus: reqStatus
+    };
 
     actions.appendChild(inBtn);
     actions.appendChild(outBtn);
+    actions.appendChild(leaveBtn);
+    actions.appendChild(missionBtn);
     row.appendChild(nameEl);
     row.appendChild(actions);
     row.appendChild(msg);
+    row.appendChild(reqStatus);
     list.appendChild(row);
 
     refreshRowUI(name);
@@ -2682,7 +2927,35 @@ window.safeFileName = function(str){
     return line;
   }
 
-  function renderDashboardRows(rows, employeeFilter){
+  // بيبني سطر إذن/مأمورية في لوحة الحضور: بالبرتقالي لو معتمد، رمادي لو
+  // لسه قيد المراجعة، وأحمر لو مرفوض — عشان الإداري يشوف حالة الطلب بسرعة.
+  function buildDashRequestLine(requestRecord){
+    if (!requestRecord) return null;
+    var line = document.createElement('div');
+    line.className = 'dash-line';
+    var span = document.createElement('span');
+    var icon = (requestRecord.type === 'مأمورية') ? '🧳' : '📋';
+    if (requestRecord.status === 'موافق') {
+      span.className = (requestRecord.type === 'مأمورية') ? 'dash-status-out' : 'dash-status-ok';
+      span.textContent = icon + ' ' + requestRecord.type + ' معتمدة';
+    } else if (requestRecord.status === 'مرفوض') {
+      span.className = 'dash-status-out';
+      span.textContent = icon + ' ' + requestRecord.type + ' مرفوضة';
+    } else {
+      span.className = 'dash-status-missing';
+      span.textContent = icon + ' طلب ' + requestRecord.type + ' قيد المراجعة';
+    }
+    line.appendChild(span);
+    if (requestRecord.reason) {
+      var reasonSpan = document.createElement('span');
+      reasonSpan.className = 'dash-status-missing';
+      reasonSpan.textContent = '— ' + requestRecord.reason;
+      line.appendChild(reasonSpan);
+    }
+    return line;
+  }
+
+  function renderDashboardRows(rows, requestRows, employeeFilter){
     var container = document.getElementById('attendanceDashboardList');
     if (!container) return;
     container.innerHTML = '';
@@ -2690,6 +2963,7 @@ window.safeFileName = function(str){
     names.forEach(function(name){
       var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
       var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
+      var request = (requestRows || []).filter(function(r){ return r.name === name; }).pop();
       var row = document.createElement('div');
       row.className = 'dash-row';
       var nameEl = document.createElement('div');
@@ -2698,6 +2972,8 @@ window.safeFileName = function(str){
       row.appendChild(nameEl);
       row.appendChild(buildDashLine('حضور', checkIn, 'حضور'));
       row.appendChild(buildDashLine('انصراف', checkOut, 'انصراف'));
+      var reqLine = buildDashRequestLine(request);
+      if (reqLine) row.appendChild(reqLine);
       container.appendChild(row);
     });
   }
@@ -2714,21 +2990,25 @@ window.safeFileName = function(str){
     if (!ATTENDANCE_SCRIPT_URL) {
       status.style.color = '#b3261e';
       status.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
-      renderDashboardRows([], employee);
+      renderDashboardRows([], [], employee);
       return;
     }
 
     status.style.color = 'var(--ink-soft)';
     status.textContent = 'جاري التحميل...';
 
-    var url = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(date);
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    var attendanceUrl = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(date);
+    var requestsUrl = ATTENDANCE_SCRIPT_URL + '?action=requestsReport&date=' + encodeURIComponent(date);
+    Promise.all([
+      fetch(attendanceUrl).then(function(r){ return r.json(); }).catch(function(){ return { rows: [] }; }),
+      fetch(requestsUrl).then(function(r){ return r.json(); }).catch(function(){ return { rows: [] }; })
+    ]).then(function(results){
       status.textContent = '';
-      renderDashboardRows((data && data.rows) || [], employee);
+      renderDashboardRows((results[0] && results[0].rows) || [], (results[1] && results[1].rows) || [], employee);
     }).catch(function(){
       status.style.color = '#b3261e';
       status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
-      renderDashboardRows([], employee);
+      renderDashboardRows([], [], employee);
     });
   }
 
@@ -2756,6 +3036,12 @@ window.safeFileName = function(str){
   }
   updateHomeDateTime();
   setInterval(updateHomeDateTime, 30000);
+
+  // عدد طلبات الإذن/المأمورية المعلّقة فوق أيقونة "لوحة الحضور" — بيتحدث
+  // أول ما التطبيق يفتح، وكل نص دقيقة بعد كده، عشان يبان لحظة ما توصل
+  // طلبات جديدة أو توافق على طلب من الشيت مباشرة.
+  refreshPendingRequestsBadge();
+  setInterval(refreshPendingRequestsBadge, 30000);
 
   // مزامنة دورية مع الشيت المشترك طول ما شاشة الحضور مفتوحة — عشان لو حد
   // مسح تسجيل من الشيت يدوياً، الزرار هنا يرجع يشتغل تاني من غير ما الموظف
