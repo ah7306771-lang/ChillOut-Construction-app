@@ -311,6 +311,24 @@
     .btn-check{flex:1;}
   }
 
+  /* ---------- ATTENDANCE DASHBOARD ---------- */
+  .dash-controls{display:flex;flex-direction:column;gap:12px;margin-bottom:4px;}
+  .dash-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .dash-row{
+    background:#fff;border:1px solid var(--panel-line);border-radius:12px;
+    padding:12px 14px;display:flex;flex-direction:column;gap:6px;
+  }
+  .dash-name{font-weight:700;font-size:15px;color:var(--ink);}
+  .dash-line{font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .dash-status-ok{color:var(--ok);font-weight:700;}
+  .dash-status-missing{color:var(--ink-soft);}
+  .dash-map-link{color:var(--steel);text-decoration:underline;font-weight:700;}
+  /* This screen's content (controls + a row per employee) can be taller than
+     the viewport, which shrinks/zeroes the usual flex-centering gap above the
+     card and lets the title land under the absolutely-positioned back-bar.
+     A fixed top margin keeps it clear on every screen size. */
+  #attendanceDashboardScreen .gate-card{margin-top:64px;}
+
   .back-bar{
     position:sticky;top:0;z-index:20;background:var(--panel-ink);
     border-bottom:1px solid var(--panel-line);padding:10px 14px;
@@ -650,6 +668,13 @@
       </svg></span>
       <span class="home-tile-label">حضور وانصراف</span>
     </button>
+    <button type="button" class="home-tile" id="openAttendanceDashboardBtn">
+      <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="16" height="16" rx="2" stroke="#e2621f" stroke-width="1.6"/>
+        <path d="M8 15v-3.5M12 15V9M16 15v-6" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/>
+      </svg></span>
+      <span class="home-tile-label">لوحة الحضور</span>
+    </button>
 
     </div>
   </div>
@@ -666,6 +691,31 @@
     <h1 class="gate-title">حضور وانصراف</h1>
     <div class="attendance-list" id="attendanceList"></div>
     <div class="status-msg" id="attendanceGlobalStatus" style="margin-top:14px;"></div>
+  </div>
+</div>
+
+<!-- ATTENDANCE DASHBOARD SCREEN -->
+<div id="attendanceDashboardScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnDashboard" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:560px;">
+    <h1 class="gate-title">لوحة الحضور والانصراف</h1>
+    <div class="dash-controls">
+      <div class="field">
+        <label for="dashDateInput">التاريخ</label>
+        <input type="date" id="dashDateInput">
+      </div>
+      <div class="field">
+        <label for="dashEmployeeSelect">الموظف</label>
+        <select id="dashEmployeeSelect"></select>
+      </div>
+      <button type="button" class="btn btn-secondary" id="dashRefreshBtn" style="width:100%;">🔄 تحديث</button>
+    </div>
+    <div class="status-msg" id="dashStatus" style="margin:10px 0;"></div>
+    <div class="dash-list" id="attendanceDashboardList"></div>
   </div>
 </div>
 
@@ -2049,6 +2099,7 @@ window.safeFileName = function(str){
   var tafweedMenuScreen = document.getElementById('tafweedMenuScreen');
   var formsMenuScreen   = document.getElementById('formsMenuScreen');
   var attendanceScreen  = document.getElementById('attendanceScreen');
+  var attendanceDashboardScreen = document.getElementById('attendanceDashboardScreen');
   var appScreen         = document.getElementById('appScreen');
   var orderScreen       = document.getElementById('orderScreen');
   var quoteScreen       = document.getElementById('quoteScreen');
@@ -2065,6 +2116,7 @@ window.safeFileName = function(str){
     tafweedMenuScreen.style.display = (name === 'tafweed-menu')  ? '' : 'none';
     formsMenuScreen.style.display   = (name === 'forms-menu')    ? '' : 'none';
     attendanceScreen.style.display  = (name === 'attendance')    ? '' : 'none';
+    attendanceDashboardScreen.style.display = (name === 'attendance-dashboard') ? '' : 'none';
     appScreen.style.display         = (name === 'app')           ? '' : 'none';
     orderScreen.style.display       = (name === 'order')         ? '' : 'none';
     quoteScreen.style.display       = (name === 'quote')         ? '' : 'none';
@@ -2126,7 +2178,7 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
   var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم'];
 
-  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_HLroW-9WbRCaaAufCHf15d8qNZs8lj8SdVlWH10DDNWDQwQ7hfR-1EYnJwltbiNp/exec';
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbza37AyU5Zx0z6c3sSkGZM_vdYWPGLkSSKoDBNf8hmebrgiSBqGXtxuu2ExQyq-BUlZ/exec';
 
   // Once-per-day lock: كل موظف يقدر يسجل "حضور" مرة واحدة و"انصراف" مرة واحدة
   // في نفس اليوم فقط؛ الأزرار بترجع تشتغل تلقائياً مع أول يوم جديد.
@@ -2147,11 +2199,50 @@ window.safeFileName = function(str){
     catch(e){}
   }
 
+  // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف،
+  // حتى لو اللي سجّله جهاز تاني خالص.
+  var attendanceRowRefs = {};
+
+  function applyAttendanceRecord(name, type, timeStr){
+    markAttendanceDone(name, type, timeStr);
+    var refs = attendanceRowRefs[name];
+    if (!refs) return;
+    var btn = (type === 'حضور') ? refs.inBtn : refs.outBtn;
+    btn.disabled = true;
+
+    var doneInTime = getAttendanceDoneTime(name, 'حضور');
+    var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
+    var parts = [];
+    if (doneInTime) parts.push('تم تسجيل الحضور الساعة ' + doneInTime);
+    if (doneOutTime) parts.push('تم تسجيل الانصراف الساعة ' + doneOutTime);
+    if (parts.length) {
+      refs.msg.style.color = 'var(--ok)';
+      refs.msg.textContent = parts.join(' — ');
+    }
+  }
+
+  // بيتنادى كل ما حد يفتح شاشة الحضور، عشان يجيب آخر حالة فعلية من الشيت
+  // المشترك — مش بس اللي محفوظ على الجهاز ده. كده لو موظف سجّل حضور من
+  // موبايله، أي جهاز تاني هيشوف زراره بقى باهت من غير ما يقدر يسجله تاني.
+  function refreshAttendanceFromServer(){
+    if (!ATTENDANCE_SCRIPT_URL) return;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(attendanceTodayKey());
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      var rows = (data && data.rows) || [];
+      rows.forEach(function(rec){
+        if (rec && (rec.type === 'حضور' || rec.type === 'انصراف') && rec.time) {
+          applyAttendanceRecord(rec.name, rec.type, rec.time);
+        }
+      });
+    }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر من الجهاز نفسه زي ما هو */ });
+  }
+
   function renderAttendanceList(){
     var list = document.getElementById('attendanceList');
     var globalStatus = document.getElementById('attendanceGlobalStatus');
     if (!list) return;
     list.innerHTML = '';
+    attendanceRowRefs = {};
 
     if (!ATTENDANCE_SCRIPT_URL) {
       if (globalStatus) {
@@ -2199,6 +2290,8 @@ window.safeFileName = function(str){
       inBtn.addEventListener('click', function(){ recordAttendance(name, 'حضور', inBtn, outBtn, msg); });
       outBtn.addEventListener('click', function(){ recordAttendance(name, 'انصراف', inBtn, outBtn, msg); });
 
+      attendanceRowRefs[name] = { inBtn: inBtn, outBtn: outBtn, msg: msg };
+
       actions.appendChild(inBtn);
       actions.appendChild(outBtn);
       row.appendChild(nameEl);
@@ -2206,6 +2299,8 @@ window.safeFileName = function(str){
       row.appendChild(msg);
       list.appendChild(row);
     });
+
+    refreshAttendanceFromServer();
   }
 
   function recordAttendance(name, type, inBtn, outBtn, msg){
@@ -2227,7 +2322,7 @@ window.safeFileName = function(str){
 
     function send(lat, lng){
       var now = new Date();
-      var dateStr = now.toLocaleDateString('en-GB');
+      var dateStr = attendanceTodayKey(); // YYYY-MM-DD, matches the dashboard's date filter
       var timeStr = now.toLocaleTimeString('en-GB');
       var mapLink = (lat != null && lng != null) ? ('https://maps.google.com/?q=' + lat + ',' + lng) : '';
 
@@ -2241,10 +2336,16 @@ window.safeFileName = function(str){
         + '&map=' + encodeURIComponent(mapLink);
 
       msg.textContent = 'جاري الإرسال...';
-      fetch(url).then(function(r){ return r.json(); }).then(function(){
-        markAttendanceDone(name, type, timeStr);
+      fetch(url).then(function(r){ return r.json(); }).then(function(data){
+        // لو جهاز تاني سبق وسجّل نفس الحركة لنفس الموظف في نفس اليوم قبل ما
+        // نوصل هنا (تعارض توقيت)، السيرفر بيرجع الوقت الأصلي بدل ما يكرر الصف.
+        var alreadyRecorded = !!(data && data.alreadyRecorded);
+        var finalTime = alreadyRecorded && data.time ? data.time : timeStr;
+        markAttendanceDone(name, type, finalTime);
         msg.style.color = 'var(--ok)';
-        msg.textContent = 'تم تسجيل ' + type + ' الساعة ' + timeStr + (mapLink ? '' : ' (بدون تحديد الموقع)');
+        msg.textContent = alreadyRecorded
+          ? ('تم تسجيل ' + type + ' لهذا الموظف بالفعل الساعة ' + finalTime)
+          : ('تم تسجيل ' + type + ' الساعة ' + finalTime + (mapLink ? '' : ' (بدون تحديد الموقع)'));
         targetBtn.disabled = true;
         otherBtn.disabled = !!getAttendanceDoneTime(name, otherType);
       }).catch(function(){
@@ -2267,6 +2368,102 @@ window.safeFileName = function(str){
   }
 
   renderAttendanceList();
+
+  // ---------------- ATTENDANCE DASHBOARD (لوحة الحضور والانصراف) ----------------
+  (function initAttendanceDashboard(){
+    var dateInput = document.getElementById('dashDateInput');
+    var empSelect = document.getElementById('dashEmployeeSelect');
+    if (!dateInput || !empSelect) return;
+
+    dateInput.value = attendanceTodayKey();
+
+    var allOpt = document.createElement('option');
+    allOpt.value = '';
+    allOpt.textContent = 'كل الموظفين';
+    empSelect.appendChild(allOpt);
+    ATTENDANCE_EMPLOYEES.forEach(function(name){
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      empSelect.appendChild(opt);
+    });
+  })();
+
+  function buildDashLine(label, record){
+    var line = document.createElement('div');
+    line.className = 'dash-line';
+    if (record && record.time) {
+      var timeSpan = document.createElement('span');
+      timeSpan.className = 'dash-status-ok';
+      timeSpan.textContent = label + ': ' + record.time;
+      line.appendChild(timeSpan);
+      if (record.map) {
+        var a = document.createElement('a');
+        a.href = record.map;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'dash-map-link';
+        a.textContent = '📍 الموقع';
+        line.appendChild(a);
+      }
+    } else {
+      var missing = document.createElement('span');
+      missing.className = 'dash-status-missing';
+      missing.textContent = label + ': لم يسجل بعد';
+      line.appendChild(missing);
+    }
+    return line;
+  }
+
+  function renderDashboardRows(rows, employeeFilter){
+    var container = document.getElementById('attendanceDashboardList');
+    if (!container) return;
+    container.innerHTML = '';
+    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES;
+    names.forEach(function(name){
+      var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
+      var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
+      var row = document.createElement('div');
+      row.className = 'dash-row';
+      var nameEl = document.createElement('div');
+      nameEl.className = 'dash-name';
+      nameEl.textContent = name;
+      row.appendChild(nameEl);
+      row.appendChild(buildDashLine('حضور', checkIn));
+      row.appendChild(buildDashLine('انصراف', checkOut));
+      container.appendChild(row);
+    });
+  }
+
+  function loadAttendanceDashboard(){
+    var dateInput = document.getElementById('dashDateInput');
+    var empSelect = document.getElementById('dashEmployeeSelect');
+    var status = document.getElementById('dashStatus');
+    if (!dateInput || !empSelect || !status) return;
+
+    var date = dateInput.value || attendanceTodayKey();
+    var employee = empSelect.value;
+
+    if (!ATTENDANCE_SCRIPT_URL) {
+      status.style.color = '#b3261e';
+      status.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
+      renderDashboardRows([], employee);
+      return;
+    }
+
+    status.style.color = 'var(--ink-soft)';
+    status.textContent = 'جاري التحميل...';
+
+    var url = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(date);
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      status.textContent = '';
+      renderDashboardRows((data && data.rows) || [], employee);
+    }).catch(function(){
+      status.style.color = '#b3261e';
+      status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+      renderDashboardRows([], employee);
+    });
+  }
 
   // Live date/time shown either side of the home screen logo.
   function updateHomeDateTime(){
@@ -2466,10 +2663,21 @@ window.safeFileName = function(str){
   });
   document.getElementById('openAttendanceBtn').addEventListener('click', function(){
     showScreen('attendance');
+    refreshAttendanceFromServer();
   });
   document.getElementById('backHomeBtnAttendance').addEventListener('click', function(){
     showScreen('home');
   });
+  document.getElementById('openAttendanceDashboardBtn').addEventListener('click', function(){
+    showScreen('attendance-dashboard');
+    loadAttendanceDashboard();
+  });
+  document.getElementById('backHomeBtnDashboard').addEventListener('click', function(){
+    showScreen('home');
+  });
+  document.getElementById('dashDateInput').addEventListener('change', loadAttendanceDashboard);
+  document.getElementById('dashEmployeeSelect').addEventListener('change', loadAttendanceDashboard);
+  document.getElementById('dashRefreshBtn').addEventListener('click', loadAttendanceDashboard);
 
   document.getElementById('openAppBtn').addEventListener('click', function(){
     showScreen('app');
