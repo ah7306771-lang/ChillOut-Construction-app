@@ -409,6 +409,17 @@
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
 
   /* ---------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ---------- */
+  .approvals-filter-row{
+    display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;
+  }
+  .approvals-filter-btn{
+    flex:1 1 auto;min-width:72px;padding:8px 10px;border-radius:10px;
+    border:1px solid var(--panel-line);background:#fff;color:var(--ink-soft);
+    font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .approvals-filter-btn.is-active{
+    background:var(--steel);border-color:var(--steel);color:#fff;
+  }
   .approval-row{
     background:#fff;border:1px solid var(--panel-line);border-radius:12px;
     padding:12px 14px;display:flex;flex-direction:column;gap:8px;
@@ -843,6 +854,12 @@
   </div>
   <div class="gate-card home-card" style="max-width:560px;">
     <h1 class="gate-title">اعتماد الإذن والمأموريات</h1>
+    <div class="approvals-filter-row" id="approvalsFilterRow">
+      <button type="button" class="approvals-filter-btn is-active" data-filter="pending">قيد المراجعة</button>
+      <button type="button" class="approvals-filter-btn" data-filter="approved">موافق</button>
+      <button type="button" class="approvals-filter-btn" data-filter="rejected">مرفوض</button>
+      <button type="button" class="approvals-filter-btn" data-filter="all">الكل</button>
+    </div>
     <button type="button" class="btn btn-secondary" id="approvalsRefreshBtn" style="width:100%;">🔄 تحديث</button>
     <div class="status-msg" id="approvalsStatus" style="margin:10px 0;"></div>
     <div class="dash-list" id="attendanceApprovalsList"></div>
@@ -3234,21 +3251,47 @@ window.safeFileName = function(str){
     return row;
   }
 
+  // آخر قايمة طلبات جتلنا من الشيت، وحالة الفلتر المختار حالياً في شاشة
+  // الاعتماد. أول ما تفتح الشاشة بيبقى الفلتر على "قيد المراجعة" تلقائي،
+  // عشان اللي محتاج اعتماد يبان قدامك على طول من غير ما تدور عليه بين
+  // الطلبات القديمة اللي خلصت.
+  var approvalsAllRows = [];
+  var approvalsCurrentFilter = 'pending';
+
+  function filterApprovalRows(rows, filter){
+    if (filter === 'approved') return rows.filter(function(r){ return r.status === 'موافق'; });
+    if (filter === 'rejected') return rows.filter(function(r){ return r.status === 'مرفوض'; });
+    if (filter === 'all') return rows;
+    // الافتراضي: قيد المراجعة (أي حالة غير موافق/مرفوض).
+    return rows.filter(function(r){ return r.status !== 'موافق' && r.status !== 'مرفوض'; });
+  }
+
   function renderApprovalsList(rows){
     var container = document.getElementById('attendanceApprovalsList');
     if (!container) return;
+    var filtered = filterApprovalRows(rows, approvalsCurrentFilter);
     container.innerHTML = '';
-    if (!rows.length) {
+    if (!filtered.length) {
       var empty = document.createElement('div');
       empty.className = 'approvals-empty';
-      empty.textContent = 'لا توجد أي طلبات إذن أو مأمورية حتى الآن.';
+      empty.textContent = (approvalsCurrentFilter === 'pending')
+        ? 'مفيش أي طلبات محتاجة اعتماد دلوقتي 👍'
+        : 'لا توجد أي طلبات في هذا التصنيف.';
       container.appendChild(empty);
       return;
     }
     // الأحدث في الأول عشان الطلبات الجديدة تبان فوق من غير ما تدور عليها.
-    rows.slice().reverse().forEach(function(req){
+    filtered.slice().reverse().forEach(function(req){
       container.appendChild(buildApprovalRow(req));
     });
+  }
+
+  function setApprovalsFilter(filter){
+    approvalsCurrentFilter = filter;
+    document.querySelectorAll('.approvals-filter-btn').forEach(function(btn){
+      btn.classList.toggle('is-active', btn.getAttribute('data-filter') === filter);
+    });
+    renderApprovalsList(approvalsAllRows);
   }
 
   function loadAttendanceApprovals(){
@@ -3258,6 +3301,7 @@ window.safeFileName = function(str){
     if (!ATTENDANCE_SCRIPT_URL) {
       status.style.color = '#b3261e';
       status.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
+      approvalsAllRows = [];
       renderApprovalsList([]);
       return;
     }
@@ -3268,10 +3312,12 @@ window.safeFileName = function(str){
     var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       status.textContent = '';
-      renderApprovalsList((data && data.rows) || []);
+      approvalsAllRows = (data && data.rows) || [];
+      renderApprovalsList(approvalsAllRows);
     }).catch(function(){
       status.style.color = '#b3261e';
       status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+      approvalsAllRows = [];
       renderApprovalsList([]);
     });
   }
@@ -3531,8 +3577,14 @@ window.safeFileName = function(str){
   document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', function(){
     showPasswordModal('كلمة سر اعتماد الإذن والمأموريات', ATTENDANCE_DASHBOARD_PASSWORD, function(){
       showScreen('attendance-approvals');
+      // كل مرة تفتح الشاشة، ترجع تلقائي لفلتر "قيد المراجعة" عشان اللي
+      // محتاج اعتماد يبان قدامك على طول من غير ما تدور عليه.
+      setApprovalsFilter('pending');
       loadAttendanceApprovals();
     });
+  });
+  document.querySelectorAll('.approvals-filter-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ setApprovalsFilter(btn.getAttribute('data-filter')); });
   });
   document.getElementById('backHomeBtnApprovals').addEventListener('click', function(){
     showScreen('home');
