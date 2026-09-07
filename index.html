@@ -2265,6 +2265,10 @@ window.safeFileName = function(str){
     'سيد كارم': '5555'
   };
 
+  // كلمة سر الدخول على "لوحة الحضور" (شاشة المتابعة الإدارية) — نفس كلمة
+  // السر مطلوبة من أي حد يدوس على الأيقونة قبل ما يشوف بيانات كل الموظفين.
+  var ATTENDANCE_DASHBOARD_PASSWORD = '55555';
+
   // ---- مودال إدخال كلمة السر (بيتعمل مرة واحدة وبيتعاد استخدامه لكل موظف) ----
   var attendancePwEls = null;
   function ensureAttendancePwModal(){
@@ -2321,11 +2325,11 @@ window.safeFileName = function(str){
 
     attendancePwEls = {
       overlay: overlay, title: title, input: input,
-      error: error, confirmBtn: confirmBtn, name: null, onSuccess: null
+      error: error, confirmBtn: confirmBtn, expected: null, onSuccess: null
     };
     confirmBtn.addEventListener('click', function(){
       var els = attendancePwEls;
-      if (els.input.value === ATTENDANCE_PASSWORDS[els.name]) {
+      if (els.input.value === els.expected) {
         var cb = els.onSuccess;
         hideAttendancePwModal();
         if (cb) cb();
@@ -2344,15 +2348,21 @@ window.safeFileName = function(str){
     attendancePwEls.onSuccess = null;
   }
 
-  function showAttendancePasswordModal(name, onSuccess){
+  // مودال عام بيتقفل بأي كلمة سر متوقعة (مش لازم تكون خاصة بموظف معين) —
+  // مستخدم في زرار حضور/انصراف كل موظف، وكمان في قفل لوحة الحضور نفسها.
+  function showPasswordModal(title, expectedPassword, onSuccess){
     var els = ensureAttendancePwModal();
-    els.name = name;
+    els.expected = expectedPassword;
     els.onSuccess = onSuccess;
-    els.title.textContent = 'كلمة السر الخاصة بـ ' + name;
+    els.title.textContent = title;
     els.input.value = '';
     els.error.textContent = '';
     els.overlay.style.display = 'flex';
     setTimeout(function(){ els.input.focus(); }, 0);
+  }
+
+  function showAttendancePasswordModal(name, onSuccess){
+    showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], onSuccess);
   }
 
   // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف.
@@ -2869,8 +2879,10 @@ window.safeFileName = function(str){
     showScreen('home');
   });
   document.getElementById('openAttendanceDashboardBtn').addEventListener('click', function(){
-    showScreen('attendance-dashboard');
-    loadAttendanceDashboard();
+    showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, function(){
+      showScreen('attendance-dashboard');
+      loadAttendanceDashboard();
+    });
   });
   document.getElementById('backHomeBtnDashboard').addEventListener('click', function(){
     showScreen('home');
