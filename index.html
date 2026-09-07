@@ -2215,7 +2215,14 @@ window.safeFileName = function(str){
 
   // بيطلع اسم/موديل الجهاز والمتصفح تلقائياً من الموبايل نفسه (من غير ما
   // الموظف يكتب حاجة) عشان يتسجل مع كل حضور/انصراف في الشيت.
-  function attendanceDeviceLabel(){
+  //
+  // ملحوظة: كروم بقى (لخصوصية المستخدمين) بيبعت أحياناً حرف وهمي زي "K" بدل
+  // موديل الجهاز الحقيقي جوه navigator.userAgent (خاصية اسمها User-Agent
+  // Reduction). عشان نلف على القيمة الحقيقية، بنجرب الأول
+  // navigator.userAgentData.getHighEntropyValues(['model']) اللي بيرجع
+  // الموديل الصحيح، ولو مش متاح (متصفح تاني غير كروم/أندرويد) بنرجع للطريقة
+  // القديمة القارية للـ userAgent.
+  function attendanceDeviceLabelSync(){
     try {
       var ua = navigator.userAgent || '';
       var model = 'جهاز غير معروف';
@@ -2233,16 +2240,44 @@ window.safeFileName = function(str){
       } else if (/Linux/.test(ua)) {
         model = 'كمبيوتر Linux';
       }
-      var browser = 'متصفح';
-      if (/Edg\//.test(ua)) browser = 'Edge';
-      else if (/OPR\//.test(ua)) browser = 'Opera';
-      else if (/Chrome\//.test(ua)) browser = 'Chrome';
-      else if (/CriOS\//.test(ua)) browser = 'Chrome';
-      else if (/Firefox\//.test(ua)) browser = 'Firefox';
-      else if (/Safari\//.test(ua)) browser = 'Safari';
-      return model + ' - ' + browser;
+      return model;
     } catch (e) {
-      return 'غير معروف';
+      return 'جهاز غير معروف';
+    }
+  }
+  function attendanceBrowserName(){
+    try {
+      var ua = navigator.userAgent || '';
+      if (/Edg\//.test(ua)) return 'Edge';
+      if (/OPR\//.test(ua)) return 'Opera';
+      if (/Chrome\//.test(ua)) return 'Chrome';
+      if (/CriOS\//.test(ua)) return 'Chrome';
+      if (/Firefox\//.test(ua)) return 'Firefox';
+      if (/Safari\//.test(ua)) return 'Safari';
+      return 'متصفح';
+    } catch (e) {
+      return 'متصفح';
+    }
+  }
+  var attendanceCachedDeviceLabel = null;
+  function getAttendanceDeviceLabel(callback){
+    if (attendanceCachedDeviceLabel) { callback(attendanceCachedDeviceLabel); return; }
+    var browser = attendanceBrowserName();
+    if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+      navigator.userAgentData.getHighEntropyValues(['model']).then(function(info){
+        var model = (info && info.model) ? info.model.trim() : '';
+        // كروم بيرجع سلسلة فاضية للموديل على الكمبيوتر العادي (مش موبايل)،
+        // فلو فاضية أو رجعت نفس حرف الـ "K" الوهمي، نرجع للطريقة القديمة.
+        if (!model || model === 'K') { model = attendanceDeviceLabelSync(); }
+        attendanceCachedDeviceLabel = model + ' - ' + browser;
+        callback(attendanceCachedDeviceLabel);
+      }).catch(function(){
+        attendanceCachedDeviceLabel = attendanceDeviceLabelSync() + ' - ' + browser;
+        callback(attendanceCachedDeviceLabel);
+      });
+    } else {
+      attendanceCachedDeviceLabel = attendanceDeviceLabelSync() + ' - ' + browser;
+      callback(attendanceCachedDeviceLabel);
     }
   }
   function getAttendanceDoneTime(name, type){
@@ -2519,6 +2554,8 @@ window.safeFileName = function(str){
       var timeStr = now.toLocaleTimeString('en-GB');
       var mapLink = (lat != null && lng != null) ? ('https://maps.google.com/?q=' + lat + ',' + lng) : '';
 
+      msg.textContent = 'جاري الإرسال...';
+      getAttendanceDeviceLabel(function(deviceLabel){
       var url = ATTENDANCE_SCRIPT_URL
         + '?name=' + encodeURIComponent(name)
         + '&type=' + encodeURIComponent(type)
@@ -2527,9 +2564,8 @@ window.safeFileName = function(str){
         + '&lat=' + encodeURIComponent(lat != null ? lat : '')
         + '&lng=' + encodeURIComponent(lng != null ? lng : '')
         + '&map=' + encodeURIComponent(mapLink)
-        + '&device=' + encodeURIComponent(attendanceDeviceLabel());
+        + '&device=' + encodeURIComponent(deviceLabel);
 
-      msg.textContent = 'جاري الإرسال...';
       fetch(url).then(function(r){ return r.json(); }).then(function(data){
         // لو جهاز تاني سبق وسجّل نفس الحركة لنفس الموظف في نفس اليوم قبل ما
         // نوصل هنا (تعارض توقيت)، السيرفر بيرجع الوقت الأصلي بدل ما يكرر الصف.
@@ -2554,6 +2590,7 @@ window.safeFileName = function(str){
         msg.textContent = 'حدث خطأ في الإرسال، تأكد من الإنترنت وحاول مرة أخرى.';
         targetBtn.disabled = false;
         otherBtn.disabled = !!getAttendanceDoneTime(name, otherType);
+      });
       });
     }
 
