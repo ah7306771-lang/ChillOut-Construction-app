@@ -518,9 +518,44 @@
     flex:0 0 auto;
   }
   .qte-preview-page #paperQuote{width:794px;max-width:794px;margin:0;}
+
+  /* ---------- Floating "Contact us" WhatsApp button (login + home only) ---------- */
+  .wa-float-btn{
+    position:fixed;left:18px;bottom:18px;z-index:9999;
+    width:58px;height:58px;border-radius:50%;
+    background:linear-gradient(160deg,#25d366,#128c7e);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 24px rgba(18,140,126,.4), 0 2px 6px rgba(0,0,0,.15);
+    text-decoration:none;
+    animation:waFloatPulse 2.4s ease-in-out infinite;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .wa-float-btn:hover{transform:scale(1.07);box-shadow:0 14px 30px rgba(18,140,126,.5);}
+  .wa-float-btn:active{transform:scale(.95);}
+  .wa-float-btn svg{width:30px;height:30px;fill:#fff;}
+  @keyframes waFloatPulse{
+    0%,100%{box-shadow:0 10px 24px rgba(18,140,126,.4), 0 0 0 0 rgba(37,211,102,.45);}
+    50%{box-shadow:0 10px 24px rgba(18,140,126,.4), 0 0 0 10px rgba(37,211,102,0);}
+  }
+  .wa-float-label{
+    position:absolute;right:68px;top:50%;transform:translateY(-50%);
+    background:#0f3d38;color:#fff;font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:700;
+    padding:7px 12px;border-radius:8px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .15s ease;
+  }
+  .wa-float-btn:hover .wa-float-label{opacity:1;}
+  @media (max-width:480px){
+    .wa-float-btn{width:52px;height:52px;left:14px;bottom:14px;}
+    .wa-float-btn svg{width:27px;height:27px;}
+    .wa-float-label{display:none;}
+  }
 </style>
 </head>
 <body>
+<a id="waFloatBtn" class="wa-float-btn" href="https://wa.me/201005833218" target="_blank" rel="noopener" aria-label="تواصل معنا عبر واتساب">
+  <span class="wa-float-label">تواصل معنا</span>
+  <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.22.6 4.3 1.64 6.1L4 29l8.06-1.6a12.9 12.9 0 0 0 3.96.62h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 22c-1.85 0-3.62-.5-5.14-1.4l-.37-.22-4.78.95.98-4.66-.24-.38a9.94 9.94 0 0 1-1.53-5.3C4.94 8.95 9.9 4 16.02 4c5.55 0 10.06 4.5 10.06 10.06 0 5.55-4.5 10.06-10.06 10.06zm5.5-7.53c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.28-.47-2.44-1.5-.9-.8-1.5-1.8-1.68-2.1-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.93-2.25-.25-.6-.5-.5-.68-.5-.18 0-.38-.02-.58-.02s-.53.08-.8.38c-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.25 5.15 4.55.72.3 1.28.5 1.72.63.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35z"/></svg>
+</a>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" class="gate-screen stacked-byline-screen">
@@ -1991,6 +2026,8 @@ window.safeFileName = function(str){
     appScreenPermission.style.display = (name === 'permission')   ? '' : 'none';
     appScreenAdvance.style.display    = (name === 'advance')      ? '' : 'none';
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
+    var waBtn = document.getElementById('waFloatBtn');
+    if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
     if (name !== 'login') {
       var err = document.getElementById('loginError');
       if (err) err.textContent = '';
