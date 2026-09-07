@@ -289,6 +289,28 @@
 
   /* ---------- ATTENDANCE (حضور وانصراف) ---------- */
   .attendance-hint{font-size:13px;color:var(--ink-soft);margin:-6px 0 16px;line-height:1.6;}
+  .attendance-whoami{display:flex;flex-direction:column;}
+  .whoami-select{
+    width:100%;padding:12px 11px;border:1px solid var(--panel-line);border-radius:8px;
+    font-family:'Cairo',sans-serif;font-size:16px;color:var(--ink);background:#fff;
+  }
+  .attendance-pw-overlay{
+    position:fixed;inset:0;background:rgba(26,26,26,.55);
+    display:flex;align-items:center;justify-content:center;z-index:1000;padding:24px;
+  }
+  .attendance-pw-card{
+    background:#fff;border-radius:14px;padding:24px;width:100%;max-width:320px;
+    text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.25);
+  }
+  .attendance-pw-title{font-weight:800;font-size:15px;color:var(--ink);margin-bottom:14px;}
+  .attendance-pw-input{
+    width:100%;padding:12px 11px;border:1px solid var(--panel-line);border-radius:8px;
+    font-family:'Cairo',sans-serif;font-size:18px;letter-spacing:4px;text-align:center;
+    color:var(--ink);background:#fff8f2;
+  }
+  .attendance-pw-error{min-height:18px;color:#b3261e;font-size:12.5px;margin-top:8px;}
+  .attendance-pw-actions{display:flex;gap:10px;margin-top:10px;}
+  .attendance-pw-actions .btn{flex:1;width:auto;}
   .attendance-list{display:flex;flex-direction:column;gap:10px;}
   .attendance-row{
     display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
@@ -2199,42 +2221,215 @@ window.safeFileName = function(str){
     catch(e){}
   }
 
-  // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف،
-  // حتى لو اللي سجّله جهاز تاني خالص.
+  // كلمة سر خاصة بكل موظف — لازم يدخلها صح قبل ما يقدر يسجل حضور أو انصراف
+  // لنفسه، عشان محدش يقدر يبصم لزميله حتى لو الاسم ظاهر قدام الكل.
+  // TODO: غيّر كل كلمة سر هنا لحاجة كل موظف يختارها بنفسه.
+  var ATTENDANCE_PASSWORDS = {
+    'أحمد مفرح': '1111',
+    'محمود كارم': '2222',
+    'مني محمد': '3333',
+    'شهد خالد': '4444',
+    'سيد كارم': '5555'
+  };
+
+  // ---- مودال إدخال كلمة السر (بيتعمل مرة واحدة وبيتعاد استخدامه لكل موظف) ----
+  var attendancePwEls = null;
+  function ensureAttendancePwModal(){
+    if (attendancePwEls) return attendancePwEls;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'attendance-pw-overlay';
+    overlay.style.display = 'none';
+
+    var card = document.createElement('div');
+    card.className = 'attendance-pw-card';
+
+    var title = document.createElement('div');
+    title.className = 'attendance-pw-title';
+
+    var input = document.createElement('input');
+    input.type = 'password';
+    input.inputMode = 'numeric';
+    input.className = 'attendance-pw-input';
+    input.placeholder = 'كلمة السر';
+
+    var error = document.createElement('div');
+    error.className = 'attendance-pw-error';
+
+    var actions = document.createElement('div');
+    actions.className = 'attendance-pw-actions';
+
+    var confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'btn btn-primary';
+    confirmBtn.textContent = 'تأكيد';
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = 'إلغاء';
+
+    actions.appendChild(confirmBtn);
+    actions.appendChild(cancelBtn);
+    card.appendChild(title);
+    card.appendChild(input);
+    card.appendChild(error);
+    card.appendChild(actions);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay) hideAttendancePwModal();
+    });
+    cancelBtn.addEventListener('click', hideAttendancePwModal);
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') confirmBtn.click();
+    });
+
+    attendancePwEls = {
+      overlay: overlay, title: title, input: input,
+      error: error, confirmBtn: confirmBtn, name: null, onSuccess: null
+    };
+    confirmBtn.addEventListener('click', function(){
+      var els = attendancePwEls;
+      if (els.input.value === ATTENDANCE_PASSWORDS[els.name]) {
+        var cb = els.onSuccess;
+        hideAttendancePwModal();
+        if (cb) cb();
+      } else {
+        els.error.textContent = 'كلمة السر غير صحيحة.';
+        els.input.value = '';
+        els.input.focus();
+      }
+    });
+    return attendancePwEls;
+  }
+
+  function hideAttendancePwModal(){
+    if (!attendancePwEls) return;
+    attendancePwEls.overlay.style.display = 'none';
+    attendancePwEls.onSuccess = null;
+  }
+
+  function showAttendancePasswordModal(name, onSuccess){
+    var els = ensureAttendancePwModal();
+    els.name = name;
+    els.onSuccess = onSuccess;
+    els.title.textContent = 'كلمة السر الخاصة بـ ' + name;
+    els.input.value = '';
+    els.error.textContent = '';
+    els.overlay.style.display = 'flex';
+    setTimeout(function(){ els.input.focus(); }, 0);
+  }
+
+  // مرجع لعناصر كل صف عشان لما نتأكد من السيرفر نقدر نحدّث الزرار الصح لأي موظف.
   var attendanceRowRefs = {};
 
-  function applyAttendanceRecord(name, type, timeStr){
-    markAttendanceDone(name, type, timeStr);
-    var refs = attendanceRowRefs[name];
-    if (!refs) return;
-    var btn = (type === 'حضور') ? refs.inBtn : refs.outBtn;
-    btn.disabled = true;
-
+  // "تم تسجيل الحضور..." بالأخضر و"تم تسجيل الانصراف..." بالأحمر، كل واحدة
+  // في سطر لوحدها عشان الألوان متتخلطش في جملة واحدة.
+  function renderAttendanceRowMsg(msgEl, name){
     var doneInTime = getAttendanceDoneTime(name, 'حضور');
     var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
-    var parts = [];
-    if (doneInTime) parts.push('تم تسجيل الحضور الساعة ' + doneInTime);
-    if (doneOutTime) parts.push('تم تسجيل الانصراف الساعة ' + doneOutTime);
-    if (parts.length) {
-      refs.msg.style.color = 'var(--ok)';
-      refs.msg.textContent = parts.join(' — ');
+    msgEl.innerHTML = '';
+    if (doneInTime) {
+      var inLine = document.createElement('div');
+      inLine.style.color = 'var(--ok)';
+      inLine.textContent = 'تم تسجيل الحضور الساعة ' + doneInTime;
+      msgEl.appendChild(inLine);
+    }
+    if (doneOutTime) {
+      var outLine = document.createElement('div');
+      outLine.style.color = '#b3261e';
+      outLine.textContent = 'تم تسجيل الانصراف الساعة ' + doneOutTime;
+      msgEl.appendChild(outLine);
     }
   }
 
-  // بيتنادى كل ما حد يفتح شاشة الحضور، عشان يجيب آخر حالة فعلية من الشيت
-  // المشترك — مش بس اللي محفوظ على الجهاز ده. كده لو موظف سجّل حضور من
-  // موبايله، أي جهاز تاني هيشوف زراره بقى باهت من غير ما يقدر يسجله تاني.
+  // بيعيد رسم زراير ورسالة موظف معين حسب أحدث حالة محفوظة له على الجهاز ده.
+  function refreshRowUI(name){
+    var refs = attendanceRowRefs[name];
+    if (!refs) return;
+    var doneInTime = getAttendanceDoneTime(name, 'حضور');
+    var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
+    refs.inBtn.disabled = !!doneInTime;
+    refs.outBtn.disabled = !!doneOutTime;
+    renderAttendanceRowMsg(refs.msg, name);
+  }
+
+  function applyAttendanceRecord(name, type, timeStr){
+    markAttendanceDone(name, type, timeStr);
+    refreshRowUI(name);
+  }
+
+  // بتتنادى لما الشيت مبقاش فيه تسجيل لشخص كان متسجل قبل كده (مثلاً حد مسح
+  // بيانات النهاردة من الشيت يدوياً) — بترجع الزرار يشتغل تاني على طول.
+  function clearAttendanceRecord(name, type){
+    try { localStorage.removeItem(attendanceStorageKey(name, type)); } catch(e){}
+    refreshRowUI(name);
+  }
+
+  // بتتنادى كل ما حد يفتح شاشة الحضور (وكل شوية وهو فاتحها)، عشان الشاشة
+  // تتطابق مع الشيت المشترك بالظبط: لو حد سجّل من جهاز تاني، الزرار هنا
+  // بيبقى باهت؛ ولو حد مسح تسجيل من الشيت، الزرار هنا بيرجع يشتغل تاني.
   function refreshAttendanceFromServer(){
     if (!ATTENDANCE_SCRIPT_URL) return;
     var url = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(attendanceTodayKey());
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       var rows = (data && data.rows) || [];
-      rows.forEach(function(rec){
-        if (rec && (rec.type === 'حضور' || rec.type === 'انصراف') && rec.time) {
-          applyAttendanceRecord(rec.name, rec.type, rec.time);
-        }
+      Object.keys(attendanceRowRefs).forEach(function(name){
+        ['حضور', 'انصراف'].forEach(function(type){
+          var rec = rows.filter(function(r){ return r.name === name && r.type === type; }).pop();
+          if (rec && rec.time) {
+            applyAttendanceRecord(name, type, rec.time);
+          } else {
+            clearAttendanceRecord(name, type);
+          }
+        });
       });
-    }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر من الجهاز نفسه زي ما هو */ });
+    }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر على الجهاز زي ما هو */ });
+  }
+
+  function buildAttendanceRow(list, name){
+    var row = document.createElement('div');
+    row.className = 'attendance-row';
+
+    var nameEl = document.createElement('div');
+    nameEl.className = 'attendance-name';
+    nameEl.textContent = name;
+
+    var actions = document.createElement('div');
+    actions.className = 'attendance-actions';
+
+    var inBtn = document.createElement('button');
+    inBtn.type = 'button';
+    inBtn.className = 'btn-check btn-check-in';
+    inBtn.textContent = 'حضور';
+
+    var outBtn = document.createElement('button');
+    outBtn.type = 'button';
+    outBtn.className = 'btn-check btn-check-out';
+    outBtn.textContent = 'انصراف';
+
+    var msg = document.createElement('div');
+    msg.className = 'attendance-row-msg';
+
+    inBtn.addEventListener('click', function(){
+      showAttendancePasswordModal(name, function(){ recordAttendance(name, 'حضور', inBtn, outBtn, msg); });
+    });
+    outBtn.addEventListener('click', function(){
+      showAttendancePasswordModal(name, function(){ recordAttendance(name, 'انصراف', inBtn, outBtn, msg); });
+    });
+
+    attendanceRowRefs[name] = { inBtn: inBtn, outBtn: outBtn, msg: msg };
+
+    actions.appendChild(inBtn);
+    actions.appendChild(outBtn);
+    row.appendChild(nameEl);
+    row.appendChild(actions);
+    row.appendChild(msg);
+    list.appendChild(row);
+
+    refreshRowUI(name);
   }
 
   function renderAttendanceList(){
@@ -2252,52 +2447,7 @@ window.safeFileName = function(str){
     }
 
     ATTENDANCE_EMPLOYEES.forEach(function(name){
-      var row = document.createElement('div');
-      row.className = 'attendance-row';
-
-      var nameEl = document.createElement('div');
-      nameEl.className = 'attendance-name';
-      nameEl.textContent = name;
-
-      var actions = document.createElement('div');
-      actions.className = 'attendance-actions';
-
-      var inBtn = document.createElement('button');
-      inBtn.type = 'button';
-      inBtn.className = 'btn-check btn-check-in';
-      inBtn.textContent = 'حضور';
-
-      var outBtn = document.createElement('button');
-      outBtn.type = 'button';
-      outBtn.className = 'btn-check btn-check-out';
-      outBtn.textContent = 'انصراف';
-
-      var msg = document.createElement('div');
-      msg.className = 'attendance-row-msg';
-
-      var doneInTime = getAttendanceDoneTime(name, 'حضور');
-      var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
-      if (doneInTime) inBtn.disabled = true;
-      if (doneOutTime) outBtn.disabled = true;
-      var doneMsgParts = [];
-      if (doneInTime) doneMsgParts.push('تم تسجيل الحضور الساعة ' + doneInTime);
-      if (doneOutTime) doneMsgParts.push('تم تسجيل الانصراف الساعة ' + doneOutTime);
-      if (doneMsgParts.length) {
-        msg.style.color = 'var(--ok)';
-        msg.textContent = doneMsgParts.join(' — ');
-      }
-
-      inBtn.addEventListener('click', function(){ recordAttendance(name, 'حضور', inBtn, outBtn, msg); });
-      outBtn.addEventListener('click', function(){ recordAttendance(name, 'انصراف', inBtn, outBtn, msg); });
-
-      attendanceRowRefs[name] = { inBtn: inBtn, outBtn: outBtn, msg: msg };
-
-      actions.appendChild(inBtn);
-      actions.appendChild(outBtn);
-      row.appendChild(nameEl);
-      row.appendChild(actions);
-      row.appendChild(msg);
-      list.appendChild(row);
+      buildAttendanceRow(list, name);
     });
 
     refreshAttendanceFromServer();
@@ -2342,10 +2492,17 @@ window.safeFileName = function(str){
         var alreadyRecorded = !!(data && data.alreadyRecorded);
         var finalTime = alreadyRecorded && data.time ? data.time : timeStr;
         markAttendanceDone(name, type, finalTime);
-        msg.style.color = 'var(--ok)';
-        msg.textContent = alreadyRecorded
-          ? ('تم تسجيل ' + type + ' لهذا الموظف بالفعل الساعة ' + finalTime)
-          : ('تم تسجيل ' + type + ' الساعة ' + finalTime + (mapLink ? '' : ' (بدون تحديد الموقع)'));
+        // بيرسم "تم تسجيل الحضور..." بالأخضر و"تم تسجيل الانصراف..." بالأحمر.
+        renderAttendanceRowMsg(msg, name);
+        if (alreadyRecorded || !mapLink) {
+          var note = document.createElement('div');
+          note.style.color = 'var(--ink-soft)';
+          note.style.fontSize = '12px';
+          note.textContent = alreadyRecorded
+            ? 'ملحوظة: كان مسجّل بالفعل لهذا الموظف.'
+            : 'بدون تحديد الموقع.';
+          msg.appendChild(note);
+        }
         targetBtn.disabled = true;
         otherBtn.disabled = !!getAttendanceDoneTime(name, otherType);
       }).catch(function(){
@@ -2489,6 +2646,15 @@ window.safeFileName = function(str){
   }
   updateHomeDateTime();
   setInterval(updateHomeDateTime, 30000);
+
+  // مزامنة دورية مع الشيت المشترك طول ما شاشة الحضور مفتوحة — عشان لو حد
+  // مسح تسجيل من الشيت يدوياً، الزرار هنا يرجع يشتغل تاني من غير ما الموظف
+  // يحتاج يقفل الشاشة ويفتحها تاني.
+  setInterval(function(){
+    if (attendanceScreen && attendanceScreen.style.display !== 'none') {
+      refreshAttendanceFromServer();
+    }
+  }, 15000);
 
   // If "remember me" was checked before, prefill the fields on this device.
   var savedUser = null, savedPass = null;
