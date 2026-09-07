@@ -72,6 +72,11 @@
     transition:border-color .15s ease, box-shadow .15s ease;
   }
   .field input:focus,.field textarea:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(226,98,31,0.18);}
+  /* #loginPass مش type="password" (شوف الـ HTML) عشان كروم بيراقب حقول
+     الباسورد ويقارنها بقاعدة بيانات تسريبات عالمية، فلو كلمة السر بسيطة
+     بيطلع تحذير "Check your saved passwords" غلط. بنخفي الأحرف بنقط
+     بالـ CSS بدل type="password" عشان يفضل الشكل زي ما هو. */
+  #loginPass{-webkit-text-security:disc;text-security:disc;}
   .field select{width:100%;background:#ffffff;border:1px solid var(--panel-line);color:var(--ink);border-radius:8px;padding:12px 11px;font-family:'Cairo',sans-serif;font-size:16px;outline:none;cursor:pointer;}
   .field select:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(226,98,31,0.18);}
   .row2{display:flex;gap:10px;}
@@ -714,7 +719,7 @@
       </div>
       <div class="field">
         <label for="loginPass">كلمة المرور</label>
-        <input type="password" id="loginPass" autocomplete="current-password" required>
+        <input type="text" id="loginPass" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" required>
       </div>
       <label class="remember-row">
         <input type="checkbox" id="rememberMe" checked>
