@@ -339,7 +339,7 @@
     background:#fff;border:1px solid var(--panel-line);border-radius:12px;padding:12px 14px;
   }
   .attendance-name{font-weight:700;font-size:15px;color:var(--ink);}
-  .attendance-actions{display:flex;gap:8px;flex-shrink:0;}
+  .attendance-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;}
   .btn-check{
     border:none;border-radius:8px;padding:9px 16px;font-family:'Cairo',sans-serif;
     font-weight:700;font-size:13px;cursor:pointer;transition:transform .15s,opacity .15s;
@@ -357,10 +357,12 @@
   .btn-request:disabled{opacity:.55;cursor:default;transform:none;}
   .btn-request-leave{background:#fff3da;color:#8a5a00;border:1px solid #e9c27a;}
   .btn-request-mission{background:#e8eefc;color:#1c4b9c;border:1px solid #b7c9ee;}
+  .btn-request-vacation{background:#e3f5ee;color:#0f7a52;border:1px solid #a9dfc7;}
   .attendance-request-status{width:100%;font-size:12px;margin-top:2px;}
   .attendance-request-status.status-pending{color:var(--ink-soft);}
   .attendance-request-status.status-leave{color:#8a5a00;font-weight:700;}
   .attendance-request-status.status-mission{color:#1c4b9c;font-weight:700;}
+  .attendance-request-status.status-vacation{color:#0f7a52;font-weight:700;}
   .attendance-request-status.status-rejected{color:#b3261e;font-weight:700;}
   @media (max-width:380px){
     .attendance-row{flex-direction:column;align-items:stretch;}
@@ -435,6 +437,7 @@
   .approval-type-badge{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;}
   .approval-type-leave{background:#fff3da;color:#8a5a00;}
   .approval-type-mission{background:#e8eefc;color:#1c4b9c;}
+  .approval-type-vacation{background:#e3f5ee;color:#0f7a52;}
   .approval-status-badge{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;}
   .approval-status-pending{background:#f1eee9;color:var(--ink-soft);}
   .approval-status-approved{background:#e5f3ea;color:var(--ok);}
@@ -2740,7 +2743,8 @@ window.safeFileName = function(str){
 
     attendanceReqEls = {
       overlay: overlay, title: title, textarea: textarea,
-      fromInput: fromInput, toInput: toInput, onSubmit: null
+      fromInput: fromInput, toInput: toInput,
+      fromLabel: fromLabel, toLabel: toLabel, onSubmit: null
     };
     confirmBtn.addEventListener('click', function(){
       var els = attendanceReqEls;
@@ -2760,10 +2764,17 @@ window.safeFileName = function(str){
     attendanceReqEls.onSubmit = null;
   }
 
-  function showAttendanceRequestModal(title, onSubmit){
+  // mode: 'time' (افتراضي، لطلب الإذن/المأمورية) أو 'date' (لطلب الإجازة —
+  // بيحوّل الحقلين لتاريخ بدل ساعة ويغيّر التسميات لـ "من تاريخ"/"إلى تاريخ").
+  function showAttendanceRequestModal(title, mode, onSubmit){
     var els = ensureAttendanceRequestModal();
+    var isDate = (mode === 'date');
     els.title.textContent = title;
     els.textarea.value = '';
+    els.fromInput.type = isDate ? 'date' : 'time';
+    els.toInput.type = isDate ? 'date' : 'time';
+    els.fromLabel.textContent = isDate ? 'من تاريخ' : 'من الساعة';
+    els.toLabel.textContent = isDate ? 'إلى تاريخ' : 'إلى الساعة';
     els.fromInput.value = '';
     els.toInput.value = '';
     els.onSubmit = onSubmit;
@@ -2801,6 +2812,13 @@ window.safeFileName = function(str){
   var attendanceRequestsToday = {};
 
   function attendanceRequestTimeRange(req){
+    // طلب الإجازة بيستخدم تاريخ بداية/نهاية (leaveFrom/leaveTo) بدل ساعة من/إلى.
+    if (req.type === 'إجازة') {
+      if (req.leaveFrom && req.leaveTo) return ' (من ' + req.leaveFrom + ' إلى ' + req.leaveTo + ')';
+      if (req.leaveFrom) return ' (من ' + req.leaveFrom + ')';
+      if (req.leaveTo) return ' (إلى ' + req.leaveTo + ')';
+      return '';
+    }
     if (req.from && req.to) return ' (' + req.from + ' — ' + req.to + ')';
     if (req.from) return ' (من ' + req.from + ')';
     if (req.to) return ' (إلى ' + req.to + ')';
@@ -2812,8 +2830,9 @@ window.safeFileName = function(str){
     if (!req) { el.textContent = ''; el.className = 'attendance-request-status'; return; }
     var timeRange = attendanceRequestTimeRange(req);
     if (req.status === 'موافق') {
-      el.className = 'attendance-request-status ' + (req.type === 'مأمورية' ? 'status-mission' : 'status-leave');
-      var icon = (req.type === 'مأمورية') ? '🧳' : '📋';
+      var cls = req.type === 'مأمورية' ? 'status-mission' : (req.type === 'إجازة' ? 'status-vacation' : 'status-leave');
+      el.className = 'attendance-request-status ' + cls;
+      var icon = (req.type === 'مأمورية') ? '🧳' : (req.type === 'إجازة' ? '🏖️' : '📋');
       el.textContent = icon + ' ' + req.type + ' معتمد اليوم' + timeRange + (req.reason ? (' — ' + req.reason) : '');
     } else if (req.status === 'مرفوض') {
       el.className = 'attendance-request-status status-rejected';
@@ -2882,7 +2901,10 @@ window.safeFileName = function(str){
       var rows = (data && data.rows) || [];
       var latest = {};
       rows.forEach(function(r){
-        latest[r.name] = { id: r.id, type: r.type, status: r.status, reason: r.reason, from: r.from, to: r.to };
+        latest[r.name] = {
+          id: r.id, type: r.type, status: r.status, reason: r.reason,
+          from: r.from, to: r.to, leaveFrom: r.leaveFrom, leaveTo: r.leaveTo
+        };
       });
       attendanceRequestsToday = latest;
       Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
@@ -2919,17 +2941,24 @@ window.safeFileName = function(str){
 
   // بيبعت طلب إذن/مأمورية جديد لتاب "Requests" في نفس الشيت، بحالة "قيد
   // المراجعة" لحد ما توافق عليه إنت من شاشة "اعتماد الإذن والمأموريات".
-  function submitAttendanceRequest(name, type, from, to, reason, statusEl){
+  // opts (اختياري): { dateOverride, leaveFrom, leaveTo } — مستخدمة لطلب
+  // الإجازة بس (بتاريخ بداية/نهاية فعلي بدل تاريخ النهاردة، وبدون ساعة
+  // من/إلى). لطلب الإذن/المأمورية العاديين متبعتش، والسلوك زي ما هو بالظبط.
+  function submitAttendanceRequest(name, type, from, to, reason, statusEl, opts){
     if (!ATTENDANCE_SCRIPT_URL) return;
+    opts = opts || {};
+    var dateParam = opts.dateOverride || attendanceTodayKey();
     var url = ATTENDANCE_SCRIPT_URL
       + '?action=requestSubmit'
       + '&id=' + encodeURIComponent(generateRequestId())
       + '&name=' + encodeURIComponent(name)
       + '&type=' + encodeURIComponent(type)
-      + '&date=' + encodeURIComponent(attendanceTodayKey())
+      + '&date=' + encodeURIComponent(dateParam)
       + '&from=' + encodeURIComponent(from || '')
       + '&to=' + encodeURIComponent(to || '')
-      + '&reason=' + encodeURIComponent(reason || '');
+      + '&reason=' + encodeURIComponent(reason || '')
+      + '&leaveFrom=' + encodeURIComponent(opts.leaveFrom || '')
+      + '&leaveTo=' + encodeURIComponent(opts.leaveTo || '');
     if (statusEl) {
       statusEl.className = 'attendance-request-status status-pending';
       statusEl.textContent = 'جاري إرسال الطلب...';
@@ -2986,6 +3015,11 @@ window.safeFileName = function(str){
     missionBtn.className = 'btn-request btn-request-mission';
     missionBtn.textContent = 'طلب مأمورية';
 
+    var vacationBtn = document.createElement('button');
+    vacationBtn.type = 'button';
+    vacationBtn.className = 'btn-request btn-request-vacation';
+    vacationBtn.textContent = 'طلب إجازة';
+
     var msg = document.createElement('div');
     msg.className = 'attendance-row-msg';
 
@@ -3006,28 +3040,41 @@ window.safeFileName = function(str){
     });
     leaveBtn.addEventListener('click', function(){
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
-        showAttendanceRequestModal('طلب إذن — ' + name, function(from, to, reason){
+        showAttendanceRequestModal('طلب إذن — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'إذن', from, to, reason, reqStatus);
         });
       });
     });
     missionBtn.addEventListener('click', function(){
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
-        showAttendanceRequestModal('طلب مأمورية — ' + name, function(from, to, reason){
+        showAttendanceRequestModal('طلب مأمورية — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'مأمورية', from, to, reason, reqStatus);
+        });
+      });
+    });
+    // طلب الإجازة: بيسأل عن تاريخ بداية ونهاية بدل ساعة من/إلى، وبيتسجل
+    // بنفس دورة الاعتماد بتاعة الإذن والمأمورية بالظبط (تاب Requests نفسه).
+    vacationBtn.addEventListener('click', function(){
+      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+        showAttendanceRequestModal('طلب إجازة — ' + name, 'date', function(from, to, reason){
+          if (!from) { return; }
+          submitAttendanceRequest(name, 'إجازة', '', '', reason, reqStatus, {
+            dateOverride: from, leaveFrom: from, leaveTo: to || from
+          });
         });
       });
     });
 
     attendanceRowRefs[name] = {
       inBtn: inBtn, outBtn: outBtn, msg: msg,
-      leaveBtn: leaveBtn, missionBtn: missionBtn, reqStatus: reqStatus
+      leaveBtn: leaveBtn, missionBtn: missionBtn, vacationBtn: vacationBtn, reqStatus: reqStatus
     };
 
     actions.appendChild(inBtn);
     actions.appendChild(outBtn);
     actions.appendChild(leaveBtn);
     actions.appendChild(missionBtn);
+    actions.appendChild(vacationBtn);
     row.appendChild(nameEl);
     row.appendChild(actions);
     row.appendChild(msg);
@@ -3311,8 +3358,9 @@ window.safeFileName = function(str){
     nameEl.textContent = req.name;
 
     var typeBadge = document.createElement('span');
-    typeBadge.className = 'approval-type-badge ' + (req.type === 'مأمورية' ? 'approval-type-mission' : 'approval-type-leave');
-    typeBadge.textContent = (req.type === 'مأمورية' ? '🧳 مأمورية' : '📋 إذن');
+    var typeCls = req.type === 'مأمورية' ? 'approval-type-mission' : (req.type === 'إجازة' ? 'approval-type-vacation' : 'approval-type-leave');
+    typeBadge.className = 'approval-type-badge ' + typeCls;
+    typeBadge.textContent = req.type === 'مأمورية' ? '🧳 مأمورية' : (req.type === 'إجازة' ? '🏖️ إجازة' : '📋 إذن');
 
     nameWrap.appendChild(nameEl);
     nameWrap.appendChild(typeBadge);
@@ -3328,8 +3376,17 @@ window.safeFileName = function(str){
 
     var details = document.createElement('div');
     details.className = 'approval-details';
-    var timeRange = attendanceRequestTimeRange(req);
-    var detailsText = 'بتاريخ ' + req.date + (timeRange ? timeRange : '');
+    var detailsText;
+    if (req.type === 'إجازة') {
+      if (req.leaveFrom && req.leaveTo && req.leaveFrom !== req.leaveTo) {
+        detailsText = 'من ' + req.leaveFrom + ' إلى ' + req.leaveTo;
+      } else {
+        detailsText = 'يوم ' + (req.leaveFrom || req.leaveTo || req.date);
+      }
+    } else {
+      var timeRange = attendanceRequestTimeRange(req);
+      detailsText = 'بتاريخ ' + req.date + (timeRange ? timeRange : '');
+    }
     if (req.reason) detailsText += ' — ' + req.reason;
     details.textContent = detailsText;
 
