@@ -18,6 +18,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Firebase Cloud Messaging: إشعارات فورية على الموبايل لطلبات الإذن/المأمورية
+     الجديدة، حتى لو التطبيق مقفول. لازم تستبدل القيم PLACEHOLDER بالقيم
+     الحقيقية من مشروع Firebase بتاعك (شوف تعليمات الإعداد اللي بعتهالك). -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
@@ -854,6 +859,8 @@
   </div>
   <div class="gate-card home-card" style="max-width:560px;">
     <h1 class="gate-title">اعتماد الإذن والمأموريات</h1>
+    <button type="button" class="btn btn-secondary" id="enablePushBtn" style="width:100%;">🔔 فعّل إشعارات الجوال للطلبات الجديدة</button>
+    <div class="status-msg" id="pushStatus" style="margin:6px 0 0;font-size:13px;"></div>
     <div class="approvals-filter-row" id="approvalsFilterRow">
       <button type="button" class="approvals-filter-btn is-active" data-filter="pending">قيد المراجعة</button>
       <button type="button" class="approvals-filter-btn" data-filter="approved">موافق</button>
@@ -2327,7 +2334,71 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
   var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم'];
 
-  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbze5AitgUk7O4LXmUSEVckSAnqVOj6gOhK0wmFwqVRz7u0nKxAhvpxPmINS5MjrT168/exec';
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyd-hOSgEANQi4ye1wqk_9z469LDzMeozkFQf7OzPkREmuawUm84vPfoX54HCSwpHwFxA/exec';
+
+  // ---- إعدادات إشعارات الموبايل (Firebase Cloud Messaging) ----
+  // بدّل القيم دي بالقيم الحقيقية من مشروع Firebase بتاعك (Project settings
+  // > General > Your apps > Web app) وبـ VAPID key بتاعك (Project settings
+  // > Cloud Messaging > Web Push certificates). طول ما القيم لسه
+  // PLACEHOLDER، ميزة الإشعارات هتبقى متعطلة تلقائي من غير ما تكسر باقي
+  // التطبيق.
+  var FCM_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBelPbcjbCtHTuCDIKYqp_SHPIWIkb9w3M",
+    authDomain: "chillout-eeb6e.firebaseapp.com",
+    projectId: "chillout-eeb6e",
+    storageBucket: "chillout-eeb6e.firebasestorage.app",
+    messagingSenderId: "474818688224",
+    appId: "1:474818688224:web:967d54f5c0769001690c85"
+  };
+  var FCM_VAPID_KEY = "BLTHe_GjZm1HH9MsaKx2tcKw_hXgKBZhQzkn8mDeu0jciyOilDjXoTNpro604NpRqIjJa_v-vbJmjzt2buuOn_I";
+  var FCM_CONFIGURED = FCM_FIREBASE_CONFIG.apiKey.indexOf('PLACEHOLDER') !== 0;
+
+  function initFcmIfNeeded(){
+    if (!FCM_CONFIGURED || typeof firebase === 'undefined') return false;
+    try {
+      if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(FCM_FIREBASE_CONFIG);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // بيطلب إذن الإشعارات من المتصفح (لازم يتنادى من ضغطة زرار حقيقية من
+  // المستخدم عشان المتصفح يقبل يعرض طلب الإذن)، ولو اتوافق عليه بيسجل
+  // التوكن بتاع الجهاز ده في الشيت عشان السكريبت يقدر يبعتله إشعارات.
+  function enablePushNotifications(statusEl){
+    if (!initFcmIfNeeded() || !('serviceWorker' in navigator) || !('Notification' in window)) {
+      if (statusEl) statusEl.textContent = FCM_CONFIGURED
+        ? 'المتصفح ده مش بيدعم إشعارات الموبايل.'
+        : 'ميزة الإشعارات لسه محتاجة إعداد (كلم المطوّر).';
+      return;
+    }
+    if (statusEl) statusEl.textContent = 'جاري التفعيل...';
+    navigator.serviceWorker.register('firebase-messaging-sw.js').then(function(registration){
+      return Notification.requestPermission().then(function(permission){
+        if (permission !== 'granted') {
+          if (statusEl) statusEl.textContent = 'محتاج توافق على إذن الإشعارات من المتصفح عشان تشتغل.';
+          return;
+        }
+        var messaging = firebase.messaging();
+        return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration }).then(function(token){
+          if (!token) { if (statusEl) statusEl.textContent = 'تعذر تفعيل الإشعارات، حاول تاني.'; return; }
+          registerPushToken(token, statusEl);
+        });
+      });
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'حصل خطأ أثناء تفعيل الإشعارات، تأكد إنك فاتح التطبيق من رابط https.';
+    });
+  }
+
+  function registerPushToken(token, statusEl){
+    if (!ATTENDANCE_SCRIPT_URL) return;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=registerPush&token=' + encodeURIComponent(token);
+    fetch(url).then(function(r){ return r.json(); }).then(function(){
+      try { localStorage.setItem('fcmTokenRegistered', token); } catch (e) {}
+      if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'تعذر حفظ إعداد الإشعارات، تأكد من الإنترنت وحاول تاني.';
+    });
+  }
 
   // رابط خاص لكل موظف: لو فتح رابط الصفحة ومعاه ?emp=<الرمز بتاعه>، هيلاقي
   // اسمه هو بس في شاشة الحضور (مش كل الأسماء)، وهيدخل عليها على طول من غير
@@ -3585,6 +3656,9 @@ window.safeFileName = function(str){
   });
   document.querySelectorAll('.approvals-filter-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ setApprovalsFilter(btn.getAttribute('data-filter')); });
+  });
+  document.getElementById('enablePushBtn').addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('pushStatus'));
   });
   document.getElementById('backHomeBtnApprovals').addEventListener('click', function(){
     showScreen('home');
