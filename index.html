@@ -525,6 +525,11 @@
   #attendanceDashboardScreen .dash-req-badge{font-size:10.5px;padding:3px 9px;}
   #attendanceDashboardScreen .dash-reason{font-size:11px;}
 
+  /* زراير "تحديث" و"عرض كجدول": كانوا full-width وحجمهم أكبر بكتير من
+     الكلمة اللي جواهم — دلوقتي المربع بيتحجم على قد الكلمة نفسها. */
+  .dash-controls-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .dash-btn-compact{width:auto;padding:9px 18px;font-size:13.5px;}
+
   /* ---------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ---------- */
   .approvals-filter-row{
     display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;
@@ -1003,8 +1008,10 @@
         <label for="dashEmployeeSelect">الموظف</label>
         <select id="dashEmployeeSelect"></select>
       </div>
-      <button type="button" class="btn btn-secondary" id="dashRefreshBtn" style="width:100%;">🔄 تحديث</button>
-      <button type="button" class="btn btn-secondary" id="dashViewToggleBtn" style="width:100%;">📊 عرض كجدول</button>
+      <div class="dash-controls-buttons">
+        <button type="button" class="btn btn-secondary dash-btn-compact" id="dashRefreshBtn">🔄 تحديث</button>
+        <button type="button" class="btn btn-secondary dash-btn-compact" id="dashViewToggleBtn">📊 عرض كجدول</button>
+      </div>
     </div>
     <div class="status-msg" id="dashStatus" style="margin:10px 0;"></div>
     <div class="dash-list-date" id="dashListDate"></div>
