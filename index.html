@@ -2379,6 +2379,22 @@ window.safeFileName = function(str){
           return;
         }
         var messaging = firebase.messaging();
+        // لو صفحة التطبيق نفسها فاتحة ومركّز عليها وقت وصول الإشعار،
+        // Chrome بيوديه لصفحة الويب مباشرة بدل ما يعرضه كإشعار نظام —
+        // من غير الكود ده، الإشعار كان بيوصل بس مبيظهرش أي حاجة على
+        // الموبايل. هنا بنعرضه يدوياً بنفس الشكل.
+        if (!window.__fcmForegroundHandlerAdded) {
+          window.__fcmForegroundHandlerAdded = true;
+          messaging.onMessage(function(payload){
+            var title = (payload.notification && payload.notification.title) || 'إشعار جديد';
+            var body = (payload.notification && payload.notification.body) || '';
+            if (registration && registration.showNotification) {
+              registration.showNotification(title, { body: body, icon: 'icon-192.png' });
+            } else if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(title, { body: body, icon: 'icon-192.png' });
+            }
+          });
+        }
         return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration }).then(function(token){
           if (!token) { if (statusEl) statusEl.textContent = 'تعذر تفعيل الإشعارات، حاول تاني.'; return; }
           registerPushToken(token, statusEl);
