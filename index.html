@@ -2416,6 +2416,26 @@ window.safeFileName = function(str){
     });
   }
 
+  // بتتنادى كل ما تفتح شاشة الاعتماد، عشان لو الإشعارات كانت اتفعلت
+  // قبل كده على الجهاز ده، تبان الحالة على طول من غير ما تحتاج تدوس
+  // الزرار تاني — بدل ما الزرار يفضل بيطلب منك "فعّل" كل مرة.
+  function refreshPushButtonState(statusEl, btnEl){
+    var savedToken = null;
+    try { savedToken = localStorage.getItem('fcmTokenRegistered'); } catch (e) {}
+    var permission = ('Notification' in window) ? Notification.permission : 'default';
+
+    if (savedToken && permission === 'granted') {
+      if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
+      if (btnEl) btnEl.textContent = '🔔 إعادة تفعيل الإشعارات';
+    } else if (permission === 'denied') {
+      if (statusEl) { statusEl.textContent = 'الإشعارات ممنوعة من إعدادات المتصفح — لازم تسمح بيها من هناك الأول.'; statusEl.style.color = '#b3261e'; }
+      if (btnEl) btnEl.textContent = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+    } else {
+      if (statusEl) { statusEl.textContent = ''; }
+      if (btnEl) btnEl.textContent = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+    }
+  }
+
   // رابط خاص لكل موظف: لو فتح رابط الصفحة ومعاه ?emp=<الرمز بتاعه>، هيلاقي
   // اسمه هو بس في شاشة الحضور (مش كل الأسماء)، وهيدخل عليها على طول من غير
   // ما يحتاج يضغط على أيقونة "حضور وانصراف" بنفسه. الباسورد بتاعه يفضل
@@ -3668,6 +3688,7 @@ window.safeFileName = function(str){
       // محتاج اعتماد يبان قدامك على طول من غير ما تدور عليه.
       setApprovalsFilter('pending');
       loadAttendanceApprovals();
+      refreshPushButtonState(document.getElementById('pushStatus'), document.getElementById('enablePushBtn'));
     });
   });
   document.querySelectorAll('.approvals-filter-btn').forEach(function(btn){
