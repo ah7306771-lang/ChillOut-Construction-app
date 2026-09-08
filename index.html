@@ -470,6 +470,36 @@
   .dash-req-rejected{background:#fbe6e4;color:#b3261e;}
   .dash-req-pending{background:#f1eee9;color:var(--ink-soft);}
   .dash-reason{font-size:12px;color:var(--ink-soft);}
+
+  /* ---------- ATTENDANCE DASHBOARD: TABLE VIEW + EXPORT ---------- */
+  .dash-table-section{margin-top:14px;}
+  .dash-table-actions{display:flex;gap:8px;margin-bottom:10px;}
+  .dash-table-actions .btn{flex:1;width:auto;}
+  .dash-table-scroll{
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border:1px solid var(--panel-line);border-radius:12px;
+  }
+  .dash-table{width:100%;min-width:680px;border-collapse:collapse;background:#fff;font-size:12.5px;}
+  .dash-table th,.dash-table td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--panel-line);white-space:nowrap;}
+  .dash-table thead th{background:var(--steel);color:#fff;font-weight:800;font-size:11.5px;}
+  .dash-table tbody tr:nth-child(even){background:var(--panel-ink-2);}
+  .dash-table tbody tr:last-child td{border-bottom:none;}
+  .dash-table-name{font-weight:800;color:var(--ink);}
+  .dash-table-map{color:var(--steel);font-weight:700;text-decoration:none;font-size:11.5px;}
+  .dash-table-empty-cell{color:var(--ink-soft);}
+
+  /* ورقة تصدير كشف الحضور والانصراف — نفس فكرة أوراق التفويضات بالظبط:
+     مخفية خارج الشاشة (يورثها .preview-side الموضع والعرض) وبتتلقط
+     كصورة/PDF بس (html2canvas)، مش بتتعرض للمستخدم مباشرة. */
+  .dash-paper{
+    width:794px;max-width:none;background:var(--paper);
+    padding:26px 32px 30px;font-family:'Calibri','Segoe UI',Tahoma,'Cairo',sans-serif;
+    color:var(--ink);
+  }
+  .dash-paper-sub{font-size:13px;color:var(--ink-soft);font-weight:700;margin:-8px 0 16px;text-align:center;}
+  .dash-paper-table{min-width:0;font-size:13px;}
+  .dash-paper-table th,.dash-paper-table td{padding:10px 12px;}
+
   /* This screen's content (controls + a row per employee) can be taller than
      the viewport, which shrinks/zeroes the usual flex-centering gap above the
      card and lets the title land under the absolutely-positioned back-bar.
@@ -956,10 +986,73 @@
         <select id="dashEmployeeSelect"></select>
       </div>
       <button type="button" class="btn btn-secondary" id="dashRefreshBtn" style="width:100%;">🔄 تحديث</button>
+      <button type="button" class="btn btn-secondary" id="dashViewToggleBtn" style="width:100%;">📊 عرض كجدول</button>
     </div>
     <div class="status-msg" id="dashStatus" style="margin:10px 0;"></div>
     <div class="dash-list-date" id="dashListDate"></div>
     <div class="dash-list" id="attendanceDashboardList"></div>
+
+    <!-- عرض الجدول: كل موظف في سطر وجنبه عواميد بكل حالاته، بديل عن
+         عرض البطاقات، مع إمكانية تحميل/مشاركة الجدول زي نماذج التفويضات. -->
+    <div class="dash-table-section" id="dashTableSection" style="display:none;">
+      <div class="dash-table-actions">
+        <button type="button" class="btn btn-primary" id="dashTableDownloadBtn">⬇ تحميل الجدول</button>
+        <button type="button" class="btn btn-secondary" id="dashTableShareBtn">↗ مشاركة</button>
+      </div>
+      <div class="dash-table-scroll">
+        <table class="dash-table" id="dashTable">
+          <thead>
+            <tr>
+              <th>الموظف</th>
+              <th>الحالة</th>
+              <th>حضور</th>
+              <th>انصراف</th>
+              <th>الموقع</th>
+              <th>إذن / مأمورية / إجازة</th>
+              <th>ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody id="dashTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ورقة تصدير كشف الحضور والانصراف (مخفية) — مستخدمة فقط عند الضغط على
+     "تحميل الجدول" أو "مشاركة"، بنفس أسلوب أوراق التفويضات (html2canvas + PDF). -->
+<div class="preview-anchor">
+  <div class="preview-side">
+    <div id="paperDashTable" class="dash-paper">
+      <div class="doc-header">
+        <div class="hright">
+          <div><b>شركة شيل اوت للمقاولات العامة</b></div>
+          <div>فيلا 11 – غرب سوميد – السادس من اكتوبر</div>
+          <div>01070949521</div>
+        </div>
+        <div class="logo-wrap" id="paperDashTableLogoSlot"></div>
+        <div class="hleft">
+          <div>سجل تجاري رقم : 21014</div>
+        </div>
+      </div>
+      <div class="headbar"></div>
+      <div class="tf-line-title">كشف الحضور والانصراف</div>
+      <div class="dash-paper-sub" id="dashPaperSub">—</div>
+      <table class="dash-table dash-paper-table" id="dashPaperTable">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>الحالة</th>
+            <th>حضور</th>
+            <th>انصراف</th>
+            <th>الموقع</th>
+            <th>إذن / مأمورية / إجازة</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody id="dashPaperTableBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -2442,6 +2535,8 @@ window.safeFileName = function(str){
   cloneImgInto('companyLogoSrc', 'paperAdvanceLogoSlot');
   cloneLogoInto('formLogoSlotCustody');
   cloneImgInto('companyLogoSrc', 'paperCustodyLogoSlot');
+  // كشف الحضور والانصراف (لوحة الحضور): شعار الشركة فقط بدون ختم.
+  cloneImgInto('companyLogoSrc', 'paperDashTableLogoSlot');
   // homeLogoSlot already has its own fixed icon image in the markup.
 
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
@@ -3483,7 +3578,7 @@ window.safeFileName = function(str){
     if (!ATTENDANCE_SCRIPT_URL) {
       status.style.color = '#b3261e';
       status.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
-      renderDashboardRows([], [], employee);
+      updateDashData([], [], employee, date);
       return;
     }
 
@@ -3523,7 +3618,7 @@ window.safeFileName = function(str){
         clearTimeout(slowTimer);
         if (abortTimer) clearTimeout(abortTimer);
         status.textContent = '';
-        renderDashboardRows((data && data.rows) || [], (data && data.requestRows) || [], employee);
+        updateDashData((data && data.rows) || [], (data && data.requestRows) || [], employee, date);
       }).catch(function(err){
         if (requestId !== loadAttendanceDashboard._reqId) return;
         clearTimeout(slowTimer);
@@ -3532,10 +3627,223 @@ window.safeFileName = function(str){
         status.textContent = (err && err.name === 'AbortError')
           ? 'الاتصال بجوجل شيتس بطيء جداً دلوقتي — دوس "🔄 تحديث" وحاول تاني.'
           : 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
-        renderDashboardRows([], [], employee);
+        updateDashData([], [], employee, date);
       });
   }
   loadAttendanceDashboard._reqId = 0;
+
+  // ---------------- عرض جدول لوحة الحضور (كل موظف في سطر وجنبه عواميد
+  // بكل حالاته) + تحميل/مشاركة الجدول زي نماذج التفويضات بالظبط ----------------
+  var dashViewMode = 'cards'; // 'cards' | 'table'
+  var lastDashRows = [];
+  var lastDashRequestRows = [];
+  var lastDashEmployee = '';
+  var lastDashDate = '';
+
+  // نقطة واحدة بتحدّث آخر بيانات متاحة وتعرض أي عرض شغال دلوقتي (بطاقات
+  // أو جدول)، عشان التبديل بين العرضين يبقى فوري من غير أي طلب شبكة جديد.
+  function updateDashData(rows, requestRows, employee, date){
+    lastDashRows = rows || [];
+    lastDashRequestRows = requestRows || [];
+    lastDashEmployee = employee || '';
+    lastDashDate = date || attendanceTodayKey();
+    renderCurrentDashView();
+  }
+
+  function renderCurrentDashView(){
+    if (dashViewMode === 'table') {
+      renderDashboardTable(lastDashRows, lastDashRequestRows, lastDashEmployee, lastDashDate);
+    } else {
+      renderDashboardRows(lastDashRows, lastDashRequestRows, lastDashEmployee);
+    }
+  }
+
+  function buildDashTableRow(name, checkIn, checkOut, request){
+    var tr = document.createElement('tr');
+
+    var tdName = document.createElement('td');
+    tdName.className = 'dash-table-name';
+    tdName.textContent = name;
+    tr.appendChild(tdName);
+
+    var state = computeDashState(checkIn, checkOut);
+    var tdState = document.createElement('td');
+    var stateBadge = document.createElement('span');
+    stateBadge.className = 'dash-state-badge ' + (state === 'in' ? 'dash-state-in' : state === 'out' ? 'dash-state-out' : 'dash-state-absent');
+    stateBadge.textContent = state === 'in' ? '🟢 في الموقع' : state === 'out' ? '🔵 منصرف' : '🟠 لسه ما حضرش';
+    tdState.appendChild(stateBadge);
+    tr.appendChild(tdState);
+
+    var tdIn = document.createElement('td');
+    tdIn.textContent = (checkIn && checkIn.time) ? checkIn.time : '—';
+    if (!(checkIn && checkIn.time)) tdIn.className = 'dash-table-empty-cell';
+    tr.appendChild(tdIn);
+
+    var tdOut = document.createElement('td');
+    tdOut.textContent = (checkOut && checkOut.time) ? checkOut.time : '—';
+    if (!(checkOut && checkOut.time)) tdOut.className = 'dash-table-empty-cell';
+    tr.appendChild(tdOut);
+
+    var tdMap = document.createElement('td');
+    var mapPill = buildDashMapPill(checkIn, checkOut);
+    if (mapPill) {
+      mapPill.className = 'dash-table-map';
+      mapPill.textContent = '📍 خريطة';
+      tdMap.appendChild(mapPill);
+    } else {
+      tdMap.textContent = '—';
+      tdMap.className = 'dash-table-empty-cell';
+    }
+    tr.appendChild(tdMap);
+
+    var tdReq = document.createElement('td');
+    var reqBadge = buildDashRequestBadge(request);
+    if (reqBadge) {
+      tdReq.appendChild(reqBadge);
+    } else {
+      tdReq.textContent = '—';
+      tdReq.className = 'dash-table-empty-cell';
+    }
+    tr.appendChild(tdReq);
+
+    var tdNote = document.createElement('td');
+    var reason = request && request.reason;
+    tdNote.textContent = reason || '—';
+    if (!reason) tdNote.className = 'dash-table-empty-cell';
+    tr.appendChild(tdNote);
+
+    return tr;
+  }
+
+  // بيبني صفوف الجدول مرة واحدة، وبيحطها في الجدول الظاهر على الشاشة
+  // وفي نسخة ورقة التصدير المخفية سوا (clone)، عشان نفس المنطق ونفس
+  // الشكل بالظبط في العرض والتحميل/المشاركة.
+  function renderDashboardTable(rows, requestRows, employeeFilter, date){
+    var tbody = document.getElementById('dashTableBody');
+    var paperBody = document.getElementById('dashPaperTableBody');
+    var paperSub = document.getElementById('dashPaperSub');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (paperBody) paperBody.innerHTML = '';
+    if (paperSub) {
+      paperSub.textContent = (employeeFilter ? (employeeFilter + ' — ') : '') + 'بيانات يوم ' + (date || attendanceTodayKey());
+    }
+    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES;
+    names.forEach(function(name){
+      var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
+      var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
+      var request = (requestRows || []).filter(function(r){ return r.name === name; }).pop();
+      var tr = buildDashTableRow(name, checkIn, checkOut, request);
+      tbody.appendChild(tr);
+      if (paperBody) paperBody.appendChild(tr.cloneNode(true));
+    });
+  }
+
+  var dashViewToggleBtn = document.getElementById('dashViewToggleBtn');
+  if (dashViewToggleBtn) {
+    dashViewToggleBtn.addEventListener('click', function(){
+      var listEl = document.getElementById('attendanceDashboardList');
+      var tableSection = document.getElementById('dashTableSection');
+      if (!listEl || !tableSection) return;
+      dashViewMode = (dashViewMode === 'table') ? 'cards' : 'table';
+      if (dashViewMode === 'table') {
+        listEl.style.display = 'none';
+        tableSection.style.display = '';
+        dashViewToggleBtn.textContent = '📋 عرض كبطاقات';
+      } else {
+        listEl.style.display = '';
+        tableSection.style.display = 'none';
+        dashViewToggleBtn.textContent = '📊 عرض كجدول';
+      }
+      renderCurrentDashView();
+    });
+  }
+
+  function dashTableFileName(){
+    var d = lastDashDate || attendanceTodayKey();
+    var who = lastDashEmployee ? safeFileName(lastDashEmployee) : 'All';
+    return 'Attendance-Table-' + who + '-' + d + '.pdf';
+  }
+
+  async function buildDashTablePdfBlob(){
+    var paper = document.getElementById('paperDashTable');
+    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(e){} }
+    var canvasImg = await html2canvas(paper, {
+      scale: 3, backgroundColor: '#ffffff', useCORS: true,
+      windowWidth: 900, windowHeight: Math.max(paper.scrollHeight + 200, 1200)
+    });
+    var jsPDF = window.jspdf.jsPDF;
+    var pdf = new jsPDF('p', 'mm', 'a4');
+    var pageW = pdf.internal.pageSize.getWidth();
+    var pageH = pdf.internal.pageSize.getHeight();
+    var marginMm = 2;
+    var maxW = pageW - marginMm * 2, maxH = pageH - marginMm * 2;
+    var ratio = Math.min(maxW / canvasImg.width, maxH / canvasImg.height);
+    var drawW = canvasImg.width * ratio, drawH = canvasImg.height * ratio;
+    var x = (pageW - drawW) / 2, y = marginMm;
+    pdf.addImage(canvasImg.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, drawW, drawH);
+    return pdf.output('blob');
+  }
+
+  var dashTableDownloadBtn = document.getElementById('dashTableDownloadBtn');
+  if (dashTableDownloadBtn) {
+    dashTableDownloadBtn.addEventListener('click', async function(){
+      var btn = this; btn.disabled = true;
+      var status = document.getElementById('dashStatus');
+      status.style.color = 'var(--ink-soft)';
+      status.textContent = 'جارٍ إنشاء الملف…';
+      try {
+        var blob = await buildDashTablePdfBlob();
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = dashTableFileName();
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        status.style.color = 'var(--ok)';
+        status.textContent = 'تم تحميل الملف ✓';
+      } catch (err) {
+        status.style.color = '#b3261e';
+        status.textContent = 'تعذّر إنشاء الملف، حاول مرة أخرى';
+      }
+      btn.disabled = false;
+    });
+  }
+
+  var dashTableShareBtn = document.getElementById('dashTableShareBtn');
+  if (dashTableShareBtn) {
+    dashTableShareBtn.addEventListener('click', async function(){
+      var btn = this; btn.disabled = true;
+      var status = document.getElementById('dashStatus');
+      status.style.color = 'var(--ink-soft)';
+      status.textContent = 'جارٍ تجهيز الملف للمشاركة…';
+      try {
+        var blob = await buildDashTablePdfBlob();
+        var file = new File([blob], dashTableFileName(), { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files:[file] })) {
+          await navigator.share({ files:[file], title:'كشف الحضور والانصراف', text:'كشف الحضور والانصراف' });
+          status.style.color = 'var(--ok)';
+          status.textContent = 'تمت المشاركة ✓';
+        } else {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.download = dashTableFileName();
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          window.open('https://wa.me/?text=' + encodeURIComponent('تم تحميل كشف الحضور والانصراف على جهازي — سأرفقه هنا يدويًا.'), '_blank');
+          status.style.color = 'var(--ok)';
+          status.textContent = 'تم تحميل الملف — أرفقه يدويًا في واتساب الذي فُتح لك';
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') {
+          status.textContent = 'تم إلغاء المشاركة';
+        } else {
+          status.style.color = '#b3261e';
+          status.textContent = 'تعذّرت المشاركة المباشرة';
+        }
+      }
+      btn.disabled = false;
+    });
+  }
 
   // ---------------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ----------------
   // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
