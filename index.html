@@ -507,6 +507,24 @@
   #attendanceDashboardScreen .gate-card{margin-top:64px;}
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
 
+  /* لوحة الحضور والانصراف بس: تصغير الخط شوية عموماً، وتصغير مربعات
+     التاريخ والفلتر (الموظف) ومربعات حضور/انصراف اللي كانت حجمها زيادة
+     عن اللازم (أوفر) بالنسبة لحجم الكارت. */
+  #attendanceDashboardScreen .gate-title{font-size:17px;margin-bottom:18px;}
+  #attendanceDashboardScreen .dash-controls .field label{font-size:11.5px;margin-bottom:4px;}
+  #attendanceDashboardScreen .dash-controls .field input[type=date],
+  #attendanceDashboardScreen .dash-controls .field select{
+    padding:9px 10px;font-size:14px;
+  }
+  #attendanceDashboardScreen .dash-name{font-size:14px;}
+  #attendanceDashboardScreen .dash-state-badge{font-size:10px;padding:3px 9px;}
+  #attendanceDashboardScreen .dash-cell{padding:6px 8px;gap:2px;}
+  #attendanceDashboardScreen .dash-cell-label{font-size:10px;}
+  #attendanceDashboardScreen .dash-cell-value{font-size:12.5px;}
+  #attendanceDashboardScreen .dash-map-pill{font-size:11px;padding:4px 9px;}
+  #attendanceDashboardScreen .dash-req-badge{font-size:10.5px;padding:3px 9px;}
+  #attendanceDashboardScreen .dash-reason{font-size:11px;}
+
   /* ---------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ---------- */
   .approvals-filter-row{
     display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;
