@@ -400,12 +400,14 @@
   .btn-request-leave{background:#fff3da;color:#8a5a00;border:1px solid #e9c27a;}
   .btn-request-mission{background:#e8eefc;color:#1c4b9c;border:1px solid #b7c9ee;}
   .btn-request-vacation{background:#e3f5ee;color:#0f7a52;border:1px solid #a9dfc7;}
-  .attendance-request-status{width:100%;font-size:12px;margin-top:2px;}
-  .attendance-request-status.status-pending{color:var(--ink-soft);}
-  .attendance-request-status.status-leave{color:#8a5a00;font-weight:700;}
-  .attendance-request-status.status-mission{color:#1c4b9c;font-weight:700;}
-  .attendance-request-status.status-vacation{color:#0f7a52;font-weight:700;}
-  .attendance-request-status.status-rejected{color:#b3261e;font-weight:700;}
+  .attendance-request-status{width:100%;margin-top:5px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;}
+  .req-status-badge{font-size:11.5px;font-weight:800;padding:4px 11px;border-radius:20px;white-space:nowrap;}
+  .req-status-badge.status-pending{background:#f1eee9;color:var(--ink-soft);}
+  .req-status-badge.status-leave{background:#fff3da;color:#8a5a00;}
+  .req-status-badge.status-mission{background:#e8eefc;color:#1c4b9c;}
+  .req-status-badge.status-vacation{background:#e3f5ee;color:#0f7a52;}
+  .req-status-badge.status-rejected{background:#fbe6e4;color:#b3261e;}
+  .req-status-detail{font-size:11.5px;color:var(--ink-soft);}
   @media (max-width:380px){
     .attendance-row{flex-direction:column;align-items:stretch;}
     .attendance-actions{width:100%;}
@@ -439,17 +441,35 @@
 
   /* ---------- ATTENDANCE DASHBOARD ---------- */
   .dash-controls{display:flex;flex-direction:column;gap:12px;margin-bottom:4px;}
-  .dash-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .dash-list-date{font-size:12.5px;color:var(--ink-soft);font-weight:800;margin:14px 2px 0;}
+  .dash-list{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
   .dash-row{
-    background:#fff;border:1px solid var(--panel-line);border-radius:12px;
-    padding:12px 14px;display:flex;flex-direction:column;gap:6px;
+    background:#fff;border:1px solid var(--panel-line);border-radius:14px;
+    padding:14px 16px;display:flex;flex-direction:column;gap:10px;
+    box-shadow:0 1px 3px rgba(26,26,26,0.05);
   }
-  .dash-name{font-weight:700;font-size:15px;color:var(--ink);}
-  .dash-line{font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .dash-status-ok{color:var(--ok);font-weight:700;}
-  .dash-status-out{color:#b3261e;font-weight:700;}
-  .dash-status-missing{color:var(--ink-soft);}
-  .dash-map-link{color:var(--steel);text-decoration:underline;font-weight:700;}
+  .dash-row-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .dash-name{font-weight:800;font-size:15.5px;color:var(--ink);}
+  .dash-state-badge{font-size:11px;font-weight:800;padding:4px 11px;border-radius:20px;white-space:nowrap;}
+  .dash-state-in{background:#e5f3ea;color:var(--ok);}
+  .dash-state-out{background:#e8eefc;color:#1c4b9c;}
+  .dash-state-absent{background:#fff3da;color:#8a5a00;}
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .dash-cell{background:var(--panel-ink-2);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px;}
+  .dash-cell-label{font-size:11px;color:var(--ink-soft);font-weight:700;}
+  .dash-cell-value{font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .dash-map-pill{
+    display:inline-flex;align-items:center;gap:4px;align-self:flex-start;
+    font-size:12px;font-weight:700;color:var(--steel);background:#fff3ea;
+    border:1px solid var(--panel-line);padding:5px 11px;border-radius:20px;text-decoration:none;
+  }
+  .dash-req-badge{font-size:11.5px;font-weight:800;padding:4px 11px;border-radius:20px;white-space:nowrap;align-self:flex-start;}
+  .dash-req-leave{background:#fff3da;color:#8a5a00;}
+  .dash-req-mission{background:#e8eefc;color:#1c4b9c;}
+  .dash-req-vacation{background:#e3f5ee;color:#0f7a52;}
+  .dash-req-rejected{background:#fbe6e4;color:#b3261e;}
+  .dash-req-pending{background:#f1eee9;color:var(--ink-soft);}
+  .dash-reason{font-size:12px;color:var(--ink-soft);}
   /* This screen's content (controls + a row per employee) can be taller than
      the viewport, which shrinks/zeroes the usual flex-centering gap above the
      card and lets the title land under the absolutely-positioned back-bar.
@@ -938,6 +958,7 @@
       <button type="button" class="btn btn-secondary" id="dashRefreshBtn" style="width:100%;">🔄 تحديث</button>
     </div>
     <div class="status-msg" id="dashStatus" style="margin:10px 0;"></div>
+    <div class="dash-list-date" id="dashListDate"></div>
     <div class="dash-list" id="attendanceDashboardList"></div>
   </div>
 </div>
@@ -2918,22 +2939,47 @@ window.safeFileName = function(str){
     return '';
   }
 
+  // بادچ احترافي زي بادچات شاشة الاعتماد، بدل النص العادي اللي كان بيلف
+  // على أكتر من سطر وصعب يتقرا بسرعة من الموبايل.
   function renderAttendanceRequestStatus(el, name){
+    el.innerHTML = '';
+    el.className = 'attendance-request-status';
     var req = attendanceRequestsToday[name];
-    if (!req) { el.textContent = ''; el.className = 'attendance-request-status'; return; }
-    var timeRange = attendanceRequestTimeRange(req);
+    if (!req) return;
+
+    var timeRange = attendanceRequestTimeRange(req).trim();
+    var badge = document.createElement('span');
+    var detail = null;
+
     if (req.status === 'موافق') {
       var cls = req.type === 'مأمورية' ? 'status-mission' : (req.type === 'إجازة' ? 'status-vacation' : 'status-leave');
-      el.className = 'attendance-request-status ' + cls;
       var icon = (req.type === 'مأمورية') ? '🧳' : (req.type === 'إجازة' ? '🏖️' : '📋');
-      el.textContent = icon + ' ' + req.type + ' معتمد اليوم' + timeRange + (req.reason ? (' — ' + req.reason) : '');
+      badge.className = 'req-status-badge ' + cls;
+      badge.textContent = icon + ' ' + req.type + ' معتمد اليوم';
+      var detailText = timeRange + (req.reason ? (' — ' + req.reason) : '');
+      if (detailText) {
+        detail = document.createElement('span');
+        detail.className = 'req-status-detail';
+        detail.textContent = detailText;
+      }
     } else if (req.status === 'مرفوض') {
-      el.className = 'attendance-request-status status-rejected';
-      el.textContent = 'تم رفض طلب ' + req.type + ' بتاعك النهاردة' + timeRange + '.';
+      badge.className = 'req-status-badge status-rejected';
+      badge.textContent = '✘ تم رفض طلب ' + req.type;
+      detail = document.createElement('span');
+      detail.className = 'req-status-detail';
+      detail.textContent = 'بتاعك النهاردة' + (timeRange ? (' ' + timeRange) : '') + '.';
     } else {
-      el.className = 'attendance-request-status status-pending';
-      el.textContent = 'طلب ' + req.type + timeRange + ' قيد المراجعة...';
+      badge.className = 'req-status-badge status-pending';
+      badge.textContent = '⏳ طلب ' + req.type + ' قيد المراجعة';
+      if (timeRange) {
+        detail = document.createElement('span');
+        detail.className = 'req-status-detail';
+        detail.textContent = timeRange;
+      }
     }
+
+    el.appendChild(badge);
+    if (detail) el.appendChild(detail);
   }
 
   // بيعيد رسم زراير ورسالة موظف معين حسب أحدث حالة محفوظة له على الجهاز ده.
@@ -3053,8 +3099,12 @@ window.safeFileName = function(str){
       + '&leaveFrom=' + encodeURIComponent(opts.leaveFrom || '')
       + '&leaveTo=' + encodeURIComponent(opts.leaveTo || '');
     if (statusEl) {
-      statusEl.className = 'attendance-request-status status-pending';
-      statusEl.textContent = 'جاري إرسال الطلب...';
+      statusEl.innerHTML = '';
+      statusEl.className = 'attendance-request-status';
+      var sendingBadge = document.createElement('span');
+      sendingBadge.className = 'req-status-badge status-pending';
+      sendingBadge.textContent = '⏳ جاري إرسال الطلب...';
+      statusEl.appendChild(sendingBadge);
     }
     // بنقرا الرد كنص الأول عشان لو السكريبت رجّع صفحة خطأ (HTML) بدل JSON
     // (زي حالة الديبلوي القديم/الغير محدّث)، نقدر نميّز المشكلة ونوريها
@@ -3071,8 +3121,16 @@ window.safeFileName = function(str){
       refreshPendingRequestsBadge();
     }).catch(function(){
       if (statusEl) {
-        statusEl.className = 'attendance-request-status status-rejected';
-        statusEl.textContent = 'تعذر إرسال الطلب — تأكد إن كود جوجل شيت (Apps Script) محدّث ومنشور (New version) وإن فيه اتصال بالإنترنت، وحاول تاني.';
+        statusEl.innerHTML = '';
+        statusEl.className = 'attendance-request-status';
+        var failBadge = document.createElement('span');
+        failBadge.className = 'req-status-badge status-rejected';
+        failBadge.textContent = '✘ تعذر إرسال الطلب';
+        var failDetail = document.createElement('span');
+        failDetail.className = 'req-status-detail';
+        failDetail.textContent = 'تأكد إن كود جوجل شيت (Apps Script) محدّث ومنشور (New version) وإن فيه اتصال بالإنترنت، وحاول تاني.';
+        statusEl.appendChild(failBadge);
+        statusEl.appendChild(failDetail);
       }
     });
   }
@@ -3101,7 +3159,7 @@ window.safeFileName = function(str){
     var leaveBtn = document.createElement('button');
     leaveBtn.type = 'button';
     leaveBtn.className = 'btn-request btn-request-leave';
-    leaveBtn.textContent = 'طلب إذن';
+    leaveBtn.textContent = 'طلب مغادرة';
 
     var missionBtn = document.createElement('button');
     missionBtn.type = 'button';
@@ -3133,7 +3191,7 @@ window.safeFileName = function(str){
     });
     leaveBtn.addEventListener('click', function(){
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
-        showAttendanceRequestModal('طلب إذن — ' + name, 'time', function(from, to, reason){
+        showAttendanceRequestModal('طلب مغادرة — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'إذن', from, to, reason, reqStatus);
         });
       });
@@ -3296,60 +3354,65 @@ window.safeFileName = function(str){
     });
   })();
 
-  function buildDashLine(label, record, type){
-    var line = document.createElement('div');
-    line.className = 'dash-line';
-    if (record && record.time) {
-      var timeSpan = document.createElement('span');
-      // حضور بالأخضر وانصراف بالأحمر، زي ألوان رسايل شاشة الحضور والانصراف نفسها.
-      timeSpan.className = (type === 'انصراف') ? 'dash-status-out' : 'dash-status-ok';
-      timeSpan.textContent = label + ': ' + record.time;
-      line.appendChild(timeSpan);
-      if (record.map) {
-        var a = document.createElement('a');
-        a.href = record.map;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        a.className = 'dash-map-link';
-        a.textContent = '📍 الموقع';
-        line.appendChild(a);
-      }
-    } else {
-      var missing = document.createElement('span');
-      missing.className = 'dash-status-missing';
-      missing.textContent = label + ': لم يسجل بعد';
-      line.appendChild(missing);
-    }
-    return line;
+  // حالة الموظف الإجمالية النهاردة: "في الموقع" لو سجل حضور بس، "منصرف"
+  // لو سجل الاتنين، و"لسه ما حضرش" لو لسه معملش حاجة — عشان الإداري
+  // يشوف الوضع بنظرة واحدة من غير ما يقرأ الوقتين.
+  function computeDashState(checkIn, checkOut){
+    if (checkIn && checkOut) return 'out';
+    if (checkIn && !checkOut) return 'in';
+    return 'absent';
   }
 
-  // بيبني سطر إذن/مأمورية في لوحة الحضور: بالبرتقالي لو معتمد، رمادي لو
-  // لسه قيد المراجعة، وأحمر لو مرفوض — عشان الإداري يشوف حالة الطلب بسرعة.
-  function buildDashRequestLine(requestRecord){
+  function buildDashTimeCell(label, record){
+    var cell = document.createElement('div');
+    cell.className = 'dash-cell';
+    var lab = document.createElement('span');
+    lab.className = 'dash-cell-label';
+    lab.textContent = label;
+    var val = document.createElement('span');
+    val.className = 'dash-cell-value';
+    val.textContent = (record && record.time) ? record.time : '—';
+    cell.appendChild(lab);
+    cell.appendChild(val);
+    return cell;
+  }
+
+  // زرار "📍 الموقع" واحد بس لكل موظف، بيشاور على آخر لوكيشن معروف ليه
+  // (الانصراف لو موجود، وإلا الحضور) — بدل ما يتكرر مرتين في نفس الكارت.
+  function buildDashMapPill(checkIn, checkOut){
+    var fromOut = checkOut && checkOut.map;
+    var record = fromOut ? checkOut : (checkIn && checkIn.map ? checkIn : null);
+    if (!record) return null;
+    var a = document.createElement('a');
+    a.href = record.map;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.className = 'dash-map-pill';
+    a.textContent = '📍 ' + (fromOut ? 'موقع الانصراف' : 'موقع الحضور');
+    return a;
+  }
+
+  // بيبني بادچ إذن/مأمورية/إجازة بنفس ألوان بادچات شاشة الاعتماد
+  // (approval-type-badge) عشان الشكل يتناسق في كل شاشات التطبيق.
+  function buildDashRequestBadge(requestRecord){
     if (!requestRecord) return null;
-    var line = document.createElement('div');
-    line.className = 'dash-line';
     var span = document.createElement('span');
-    var icon = (requestRecord.type === 'مأمورية') ? '🧳' : '📋';
+    var icon = (requestRecord.type === 'مأمورية') ? '🧳' : (requestRecord.type === 'إجازة' ? '🏖️' : '📋');
     var timeRange = attendanceRequestTimeRange(requestRecord);
+    var cls, statusText;
     if (requestRecord.status === 'موافق') {
-      span.className = (requestRecord.type === 'مأمورية') ? 'dash-status-out' : 'dash-status-ok';
-      span.textContent = icon + ' ' + requestRecord.type + ' معتمدة' + timeRange;
+      cls = (requestRecord.type === 'مأمورية') ? 'dash-req-mission' : (requestRecord.type === 'إجازة' ? 'dash-req-vacation' : 'dash-req-leave');
+      statusText = 'معتمدة';
     } else if (requestRecord.status === 'مرفوض') {
-      span.className = 'dash-status-out';
-      span.textContent = icon + ' ' + requestRecord.type + ' مرفوضة' + timeRange;
+      cls = 'dash-req-rejected';
+      statusText = 'مرفوضة';
     } else {
-      span.className = 'dash-status-missing';
-      span.textContent = icon + ' طلب ' + requestRecord.type + timeRange + ' قيد المراجعة';
+      cls = 'dash-req-pending';
+      statusText = 'قيد المراجعة';
     }
-    line.appendChild(span);
-    if (requestRecord.reason) {
-      var reasonSpan = document.createElement('span');
-      reasonSpan.className = 'dash-status-missing';
-      reasonSpan.textContent = '— ' + requestRecord.reason;
-      line.appendChild(reasonSpan);
-    }
-    return line;
+    span.className = 'dash-req-badge ' + cls;
+    span.textContent = icon + ' ' + requestRecord.type + ' ' + statusText + timeRange;
+    return span;
   }
 
   function renderDashboardRows(rows, requestRows, employeeFilter){
@@ -3361,16 +3424,41 @@ window.safeFileName = function(str){
       var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
       var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
       var request = (requestRows || []).filter(function(r){ return r.name === name; }).pop();
+
       var row = document.createElement('div');
       row.className = 'dash-row';
-      var nameEl = document.createElement('div');
+
+      var head = document.createElement('div');
+      head.className = 'dash-row-head';
+      var nameEl = document.createElement('span');
       nameEl.className = 'dash-name';
       nameEl.textContent = name;
-      row.appendChild(nameEl);
-      row.appendChild(buildDashLine('حضور', checkIn, 'حضور'));
-      row.appendChild(buildDashLine('انصراف', checkOut, 'انصراف'));
-      var reqLine = buildDashRequestLine(request);
-      if (reqLine) row.appendChild(reqLine);
+      var state = computeDashState(checkIn, checkOut);
+      var stateBadge = document.createElement('span');
+      stateBadge.className = 'dash-state-badge ' + (state === 'in' ? 'dash-state-in' : state === 'out' ? 'dash-state-out' : 'dash-state-absent');
+      stateBadge.textContent = state === 'in' ? '🟢 في الموقع' : state === 'out' ? '🔵 منصرف' : '🟠 لسه ما حضرش';
+      head.appendChild(nameEl);
+      head.appendChild(stateBadge);
+      row.appendChild(head);
+
+      var grid = document.createElement('div');
+      grid.className = 'dash-grid';
+      grid.appendChild(buildDashTimeCell('حضور', checkIn));
+      grid.appendChild(buildDashTimeCell('انصراف', checkOut));
+      row.appendChild(grid);
+
+      var mapPill = buildDashMapPill(checkIn, checkOut);
+      if (mapPill) row.appendChild(mapPill);
+
+      var reqBadge = buildDashRequestBadge(request);
+      if (reqBadge) row.appendChild(reqBadge);
+      if (request && request.reason) {
+        var reasonEl = document.createElement('div');
+        reasonEl.className = 'dash-reason';
+        reasonEl.textContent = '— ' + request.reason;
+        row.appendChild(reasonEl);
+      }
+
       container.appendChild(row);
     });
   }
@@ -3394,20 +3482,52 @@ window.safeFileName = function(str){
     status.style.color = 'var(--ink-soft)';
     status.textContent = 'جاري التحميل...';
 
-    var attendanceUrl = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(date);
-    var requestsUrl = ATTENDANCE_SCRIPT_URL + '?action=requestsReport&date=' + encodeURIComponent(date);
-    Promise.all([
-      fetch(attendanceUrl).then(function(r){ return r.json(); }).catch(function(){ return { rows: [] }; }),
-      fetch(requestsUrl).then(function(r){ return r.json(); }).catch(function(){ return { rows: [] }; })
-    ]).then(function(results){
-      status.textContent = '';
-      renderDashboardRows((results[0] && results[0].rows) || [], (results[1] && results[1].rows) || [], employee);
-    }).catch(function(){
-      status.style.color = '#b3261e';
-      status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
-      renderDashboardRows([], [], employee);
-    });
+    var dashListDate = document.getElementById('dashListDate');
+    if (dashListDate) dashListDate.textContent = employee ? (employee + ' — ' + date) : ('بيانات يوم ' + date);
+
+    // لو ريكوست جاري بالفعل (مثلاً المستخدم غيّر التاريخ بسرعة)، اتجاهله
+    // ولا تستنى رده — عشان الرد القديم ميجيش بعد الجديد ويلخبط الشاشة.
+    var requestId = ++loadAttendanceDashboard._reqId;
+
+    // بعد كام ثانية لو لسه مستني، طمّن المستخدم إن ده طبيعي (Google Apps
+    // Script بياخد وقت أطول في أول طلب بعد فترة خمول) بدل ما يفتكر إن
+    // الشاشة "علّقت".
+    var slowTimer = setTimeout(function(){
+      if (requestId === loadAttendanceDashboard._reqId) {
+        status.textContent = 'لسه بيحمّل... أول اتصال بجوجل شيتس بياخد شوية وقت، استنى شوية 🙏';
+      }
+    }, 6000);
+
+    // مهلة قصوى: لو عدت من غير رد (شبكة ضعيفة أو مشكلة في السيرفر)، وقف
+    // الانتظار وورّي رسالة واضحة فيها زرار تحديث، بدل "جاري التحميل"
+    // يفضل شغال لحد الأبد.
+    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var abortTimer = controller ? setTimeout(function(){ controller.abort(); }, 30000) : null;
+
+    // نداء واحد بس بيرجع الحضور/الانصراف وطلبات الإذن/المأمورية سوا،
+    // بدل نداءين متوازيين لنفس السكريبت (اللي كان بيتصادفوا وياخدوا وقت
+    // أطول بكتير، وده اللي كان بيسبب "جاري التحميل" الطويل).
+    var url = ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date);
+    fetch(url, controller ? { signal: controller.signal } : undefined)
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (requestId !== loadAttendanceDashboard._reqId) return;
+        clearTimeout(slowTimer);
+        if (abortTimer) clearTimeout(abortTimer);
+        status.textContent = '';
+        renderDashboardRows((data && data.rows) || [], (data && data.requestRows) || [], employee);
+      }).catch(function(err){
+        if (requestId !== loadAttendanceDashboard._reqId) return;
+        clearTimeout(slowTimer);
+        if (abortTimer) clearTimeout(abortTimer);
+        status.style.color = '#b3261e';
+        status.textContent = (err && err.name === 'AbortError')
+          ? 'الاتصال بجوجل شيتس بطيء جداً دلوقتي — دوس "🔄 تحديث" وحاول تاني.'
+          : 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+        renderDashboardRows([], [], employee);
+      });
   }
+  loadAttendanceDashboard._reqId = 0;
 
   // ---------------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ----------------
   // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
