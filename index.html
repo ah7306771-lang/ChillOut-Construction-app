@@ -246,7 +246,7 @@
   .password-hint.err{color:#c0392b;}
 
   .home-grid{
-    display:flex;flex-wrap:wrap;gap:16px;justify-content:center;
+    display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;
   }
   .home-header{position:absolute;top:0;left:0;right:0;display:flex;justify-content:center;align-items:center;min-height:50px;padding:18px 24px 0;}
   .home-header-logo img{width:150px;height:auto;max-height:66px;object-fit:contain;display:block;}
@@ -264,6 +264,13 @@
   .home-footer-byline.top-byline{bottom:auto;top:84px;}
   #homeScreen .top-byline{top:8px;}
   .home-screen-shifted .home-header{top:38px;}
+  /* من غير الشرط ده، توسيط الكارت رأسياً (align-items:center) بيخلي عنوان
+     "الرئيسية" وباقي محتوى الكارت يطلعوا لفوق قد اللوجو/التاريخ/الوقت
+     العايمين فوقه (خصوصاً على الموبايل لما عدد الأيقونات بيملى الشاشة)،
+     فبيحصل تداخل بصري بينهم. بنثبّت مسافة فاضية فوق الكارت بدل التوسيط
+     عشان اللوجو يفضل له مساحته دايماً. */
+  .home-screen-shifted{align-items:flex-start;}
+  .home-screen-shifted .home-card{margin-top:128px;}
   .gate-screen.stacked-byline-screen{flex-direction:column;}
   .gate-screen.stacked-byline-screen .top-byline{position:static;top:auto;bottom:auto;margin:0 0 4px;width:auto;}
   .shifted-bar-screen .top-byline{top:6px;}
@@ -294,7 +301,10 @@
     font-size:12px;min-width:20px;height:20px;border-radius:10px;display:none;
     align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 6px rgba(0,0,0,.3);
   }
-  .home-grid .home-tile{width:150px;max-width:150px;}
+  /* الأيقونات في صفوف تلاتة (بدل ما تنزل تحت بعض واحدة تحت التانية على
+     الموبايل) — كل تايل بياخد ثلث المساحة المتاحة، فمقاسه بيتصغّر عشان
+     يتظبطوا مع بعض. */
+  .home-grid .home-tile{width:100%;max-width:none;padding:12px 6px;gap:8px;}
   .home-tile:active{transform:scale(0.97);}
   .home-tile:hover{background:#fff5ec;}
   .home-tile-icon{
@@ -302,8 +312,11 @@
     align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 14px rgba(226,98,31,.18);
     border:1px solid var(--panel-line);
   }
+  .home-grid .home-tile-icon{width:50px;height:50px;border-radius:13px;}
   .home-tile-icon img{width:60px;height:60px;object-fit:contain;}
+  .home-grid .home-tile-icon img{width:30px;height:30px;}
   .home-tile-label{font-size:13px;font-weight:700;line-height:1.4;}
+  .home-grid .home-tile-label{font-size:11px;line-height:1.3;}
 
   /* ---------- ATTENDANCE (حضور وانصراف) ---------- */
   .attendance-hint{font-size:13px;color:var(--ink-soft);margin:-6px 0 16px;line-height:1.6;}
@@ -491,6 +504,7 @@
 
   /* ---------- ORDER (أمر شراء) ADDITIONS ---------- */
   .home-tile-icon svg{width:60px;height:60px;display:block;}
+  .home-grid .home-tile-icon svg{width:28px;height:28px;}
 
   /* Letterhead (logo enlarged, tax block removed, centered layout) */
   #paper2 .doc-header-lg{text-align:center;margin-bottom:2px;}
@@ -766,9 +780,6 @@
   </div>
   <div class="gate-card home-card" style="max-width:520px;">
     <h1 class="gate-title">الرئيسية</h1>
-    <div style="text-align:left;margin:-10px 0 14px;">
-      <button type="button" id="signOutBtn" class="forgot-link" style="display:inline;margin:0;">تسجيل الخروج (Sign out)</button>
-    </div>
     <div class="home-grid">
     <button type="button" class="home-tile" id="openTafweedMenuBtn">
       <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -810,6 +821,9 @@
       <span class="home-tile-label">اعتماد الإذن والمأموريات</span>
     </button>
 
+    </div>
+    <div style="text-align:center;margin:26px 0 0;">
+      <button type="button" id="signOutBtn" class="forgot-link" style="display:inline;margin:0;">تسجيل الخروج (Sign out)</button>
     </div>
   </div>
 </div>
@@ -2335,7 +2349,7 @@ window.safeFileName = function(str){
   // homeLogoSlot already has its own fixed icon image in the markup.
 
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
-  var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم', 'محمود رجب'];
+  var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم', 'محمود رجب', 'صبري يحي'];
 
   var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyd-hOSgEANQi4ye1wqk_9z469LDzMeozkFQf7OzPkREmuawUm84vPfoX54HCSwpHwFxA/exec';
 
@@ -2450,7 +2464,8 @@ window.safeFileName = function(str){
     'مني محمد': 'mona',
     'شهد خالد': 'shahd',
     'سيد كارم': 'sayed',
-    'محمود رجب': 'mahmoud-ragab'
+    'محمود رجب': 'mahmoud-ragab',
+    'صبري يحي': 'sabry'
   };
   function getAttendanceLinkedEmployee(){
     try {
@@ -2561,7 +2576,8 @@ window.safeFileName = function(str){
     'مني محمد': '13',
     'شهد خالد': '14',
     'سيد كارم': '15',
-    'محمود رجب': '16'
+    'محمود رجب': '16',
+    'صبري يحي': '17'
   };
 
   // كلمة سر الدخول على "لوحة الحضور" (شاشة المتابعة الإدارية) — نفس كلمة
