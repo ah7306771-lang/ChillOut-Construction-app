@@ -2742,6 +2742,14 @@ window.safeFileName = function(str){
     input.addEventListener('keydown', function(e){
       if (e.key === 'Enter') confirmBtn.click();
     });
+    // دخول أوتوماتيك: أول ما الرقم المكتوب يطابق كلمة السر المطلوبة بالظبط،
+    // يتأكد على طول من غير ما يحتاج المستخدم يدوس زرار "تأكيد" هو نفسه.
+    input.addEventListener('input', function(){
+      var els = attendancePwEls;
+      if (els && els.expected && input.value === els.expected) {
+        confirmBtn.click();
+      }
+    });
 
     attendancePwEls = {
       overlay: overlay, title: title, input: input,
