@@ -2712,8 +2712,8 @@ window.safeFileName = function(str){
         if (!window.__fcmForegroundHandlerAdded) {
           window.__fcmForegroundHandlerAdded = true;
           messaging.onMessage(function(payload){
-            var title = (payload.notification && payload.notification.title) || 'إشعار جديد';
-            var body = (payload.notification && payload.notification.body) || '';
+            var title = (payload.data && payload.data.title) || (payload.notification && payload.notification.title) || 'إشعار جديد';
+            var body = (payload.data && payload.data.body) || (payload.notification && payload.notification.body) || '';
             if (registration && registration.showNotification) {
               registration.showNotification(title, { body: body, icon: 'icon-192.png' });
             } else if ('Notification' in window && Notification.permission === 'granted') {

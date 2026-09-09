@@ -639,10 +639,16 @@ function sendPushToAll_(title, body) {
     tokens.forEach(function (row) {
       var token = row[0];
       if (!token) return;
+      // بنبعت الإشعار كـ "data" مش "notification" عمداً — لما الـ payload
+      // فيه notification، بعض الأجهزة (خصوصًا أندرويد) بتعرض الإشعار
+      // مرتين: مرة تلقائي من نظام FCM نفسه ومرة تانية من الكود بتاعنا في
+      // firebase-messaging-sw.js، فتحس إنه "متكرر". بـ data-only، إحنا
+      // اللي بنتحكم في عرض الإشعار بنفسنا مرة واحدة بس (من firebase-
+      // messaging-sw.js)، فمفيش تكرار تاني.
       var payload = {
         message: {
           token: token,
-          notification: { title: title, body: body }
+          data: { title: String(title), body: String(body) }
         }
       };
       var response = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send', {

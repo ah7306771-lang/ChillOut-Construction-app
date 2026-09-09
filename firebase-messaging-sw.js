@@ -18,10 +18,13 @@ var messaging = firebase.messaging();
 
 // بيستقبل الإشعار وقت ما التطبيق مقفول أو في الخلفية، ويعرضه كإشعار نظام
 // عادي على الموبايل (زي أي إشعار تطبيق تاني).
+// ملحوظة: بنقرا العنوان والنص من payload.data (مش payload.notification)
+// عشان ده اللي شكل الباك إند بيبعته دلوقتي — ده اللي بيمنع ظهور نفس
+// الإشعار مرتين على بعض الأجهزة (أندرويد بالذات).
 messaging.onBackgroundMessage(function (payload) {
-  var title = (payload.notification && payload.notification.title) || 'إشعار جديد';
+  var title = (payload.data && payload.data.title) || (payload.notification && payload.notification.title) || 'إشعار جديد';
   var options = {
-    body: (payload.notification && payload.notification.body) || '',
+    body: (payload.data && payload.data.body) || (payload.notification && payload.notification.body) || '',
     icon: 'icon-192.png'
   };
   self.registration.showNotification(title, options);
