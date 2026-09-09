@@ -24,6 +24,12 @@ function doGet(e) {
   if (action === 'nextOrderNumber') {
     return handleNextOrderNumber(ss, e);
   }
+  if (action === 'orderSubmit') {
+    return handleOrderSubmit(ss, e);
+  }
+  if (action === 'ordersSearch') {
+    return handleOrdersSearch(ss, e);
+  }
 
   // ---- default action: save a new attendance record ----
   if (sheet.getLastRow() === 0) {
@@ -288,6 +294,111 @@ function handleNextOrderNumber(ss, e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// ---------------------------------------------------------------------
+// سجل أوامر الشراء (تاب "Orders") + البحث عنها من داخل التطبيق
+// ---------------------------------------------------------------------
+// كل أمر بيتحفظ (أو يتحدّث لو نفس الرقم) لحظة ما حد ينزّل أو يشارك ملف
+// الـ PDF بتاعه من التطبيق. الأصناف (الأقطار/الكميات) بتتخزن كنص JSON في
+// عمود واحد عشان عددها متغيّر من أمر لآخر، وبترجع زي ما هي لما حد يدور
+// على الأمر ده تاني ويحمّله في النموذج.
+var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'الأصناف', 'وقت الحفظ'];
+
+function getOrdersSheet_(ss) {
+  var sheet = ss.getSheetByName('Orders');
+  if (!sheet) {
+    sheet = ss.insertSheet('Orders');
+    sheet.appendRow(ORDERS_HEADERS_);
+    sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setFontWeight('bold');
+  }
+  return sheet;
+}
+
+function handleOrderSubmit(ss, e) {
+  var num = (e.parameter.num || '').trim();
+  if (!num) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'missing order number' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  var sheet = getOrdersSheet_(ss);
+  var tz = ss.getSpreadsheetTimeZone();
+  var row = [
+    num,
+    e.parameter.date || '',
+    e.parameter.supplier || '',
+    e.parameter.client || '',
+    e.parameter.attention || '',
+    e.parameter.address || '',
+    e.parameter.contactName || '',
+    e.parameter.contactPhone || '',
+    e.parameter.rep || '',
+    e.parameter.notes || '',
+    e.parameter.items || '[]',
+    Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss')
+  ];
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var lastRow = sheet.getLastRow();
+    var rowIndex = -1;
+    if (lastRow > 1) {
+      var ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]) === num) { rowIndex = i + 2; break; }
+      }
+    }
+    if (rowIndex === -1) {
+      sheet.appendRow(row);
+    } else {
+      sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// بيدوّر في رقم الأمر + اسم العميل + اسم المورد + التاريخ عن أي جزء يطابق
+// النص المكتوب (من غير حساسية لحالة الأحرف)، وبيرجع أحدث 30 نتيجة.
+function handleOrdersSearch(ss, e) {
+  var q = (e.parameter.q || '').trim().toLowerCase();
+  var sheet = ss.getSheetByName('Orders');
+  var rows = [];
+  if (sheet && q && sheet.getLastRow() > 1) {
+    var lastRow = sheet.getLastRow();
+    var vals = sheet.getRange(2, 1, lastRow - 1, ORDERS_HEADERS_.length).getValues();
+    for (var i = vals.length - 1; i >= 0; i--) {
+      var r = vals[i];
+      var num = String(r[0] || '');
+      var date = String(r[1] || '');
+      var supplier = String(r[2] || '');
+      var client = String(r[3] || '');
+      var haystack = (num + ' ' + date + ' ' + supplier + ' ' + client).toLowerCase();
+      if (haystack.indexOf(q) === -1) continue;
+      rows.push({
+        num: num,
+        date: date,
+        supplier: supplier,
+        client: client,
+        attention: r[4],
+        address: r[5],
+        contactName: r[6],
+        contactPhone: r[7],
+        rep: r[8],
+        notes: r[9],
+        items: r[10]
+      });
+      if (rows.length >= 30) break;
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, rows: rows }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // ---- بيغيّر عمود "الحالة" لطلب معين (بمعرّفه الفريد) لـ "موافق" أو

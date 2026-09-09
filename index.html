@@ -621,6 +621,36 @@
   .ord-num-hint{font-size:11px;color:var(--ink-soft);margin-top:5px;}
   .ord-num-hint.err{color:#b3261e;}
 
+  /* البحث عن أمر شراء سابق */
+  .ord-search-open-btn{width:100%;margin-bottom:16px;}
+  .ord-search-overlay{
+    position:fixed;inset:0;background:rgba(20,18,16,0.55);z-index:80;
+    display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto;
+  }
+  .ord-search-box{
+    background:#fff;border-radius:14px;max-width:560px;width:100%;
+    padding:18px 20px 22px;box-shadow:0 12px 40px rgba(0,0,0,0.25);
+  }
+  .ord-search-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .ord-search-head h2{font-size:1.05em;margin:0;color:var(--ink);}
+  .ord-search-close{border:none;background:none;font-size:18px;cursor:pointer;color:var(--ink-soft);line-height:1;padding:4px;}
+  .ord-search-row{display:flex;gap:8px;}
+  .ord-search-row input{
+    flex:1;min-width:0;border:1px solid var(--panel-line);border-radius:8px;
+    padding:11px 12px;font-family:'Cairo',sans-serif;font-size:14px;outline:none;
+  }
+  .ord-search-row input:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(226,98,31,0.18);}
+  .ord-search-status{font-size:12px;color:var(--ink-soft);margin-top:10px;min-height:14px;}
+  .ord-search-status.err{color:#b3261e;}
+  .ord-search-results{margin-top:6px;display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto;}
+  .ord-search-item{
+    border:1px solid var(--panel-line);border-radius:10px;padding:10px 12px;
+    cursor:pointer;text-align:right;background:#fafafa;transition:background .15s;
+  }
+  .ord-search-item:hover{background:#fff3ea;border-color:var(--steel);}
+  .ord-search-item .osi-num{font-weight:800;color:#1c3f8f;font-size:0.95em;}
+  .ord-search-item .osi-meta{font-size:12px;color:var(--ink-soft);margin-top:3px;}
+
   /* Base paper sizing — every other exported form (paper, paperGeneral,
      paperChecks, paperQuote) declares this explicitly on itself so
      html2canvas always captures it at the true 794px page width instead of
@@ -1392,6 +1422,8 @@
       <h1>أمر شراء</h1>
     </div>
 
+    <button type="button" class="btn btn-secondary ord-search-open-btn" id="ordSearchOpenBtn">🔍 البحث عن أمر سابق</button>
+
     <div class="section-tag">بيانات أمر الشراء</div>
     <div class="row2">
       <div class="field">
@@ -1533,6 +1565,22 @@
     </div>
   </div>
   </div><!-- /.preview-anchor -->
+</div>
+
+<!-- Order search overlay -->
+<div class="ord-search-overlay" id="ordSearchOverlay" style="display:none;">
+  <div class="ord-search-box">
+    <div class="ord-search-head">
+      <h2>البحث عن أمر شراء سابق</h2>
+      <button type="button" class="ord-search-close" id="ordSearchCloseBtn">✕</button>
+    </div>
+    <div class="ord-search-row">
+      <input type="text" id="ordSearchInput" placeholder="اكتب رقم الأمر، اسم العميل/المورد، أو التاريخ (yyyy-mm-dd)…">
+      <button type="button" class="btn btn-primary" id="ordSearchGoBtn">بحث</button>
+    </div>
+    <div class="ord-search-status" id="ordSearchStatus"></div>
+    <div class="ord-search-results" id="ordSearchResults"></div>
+  </div>
 </div>
 </div><!-- /#orderScreen -->
 
@@ -5083,6 +5131,31 @@ window.safeFileName = function(str){
     return '';
   }
 
+  // بيحفظ بيانات الأمر في تاب "Orders" في الشيت — بيتنادى مرة كل ما حد
+  // ينزّل أو يشارك الـ PDF (سواء أمر جديد أو أمر قديم اتحمّل من البحث)،
+  // عشان يفضل في السجل ويقدر يدوّر عليه تاني بعد كده. لو فشل الحفظ (مثلاً
+  // مفيش نت)، ده مبيوقفش تحميل/مشاركة الملف نفسه.
+  function saveOrderToServer(){
+    if(!ATTENDANCE_SCRIPT_URL) return;
+    try{
+      const params = new URLSearchParams({
+        action: 'orderSubmit',
+        num: $('ordNum').value.trim(),
+        date: $('ordDate').value,
+        supplier: $('ordSupplier').value.trim(),
+        client: $('ordClient').value.trim(),
+        attention: $('ordAttention').value.trim(),
+        address: $('ordAddress').value.trim(),
+        contactName: $('ordContactName').value.trim(),
+        contactPhone: $('ordContactPhone').value.trim(),
+        rep: $('ordRep').value.trim(),
+        notes: $('ordNotes').value.trim(),
+        items: JSON.stringify(ordItems.filter(it => it.diameter || it.qty || it.spec || it.type))
+      });
+      fetch(ATTENDANCE_SCRIPT_URL + '?' + params.toString()).catch(function(){});
+    }catch(e){}
+  }
+
   $('ordDownloadBtn').addEventListener('click', async () => {
     const err = validateOrdRequired();
     if(err){ setOrdStatus(err, true); return; }
@@ -5096,6 +5169,7 @@ window.safeFileName = function(str){
       a.href = url; a.download = ordFileName();
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      saveOrderToServer();
       setOrdStatus('تم تحميل الملف ✓');
     }catch(err){
       setOrdStatus('تعذّر إنشاء الملف، حاول مرة أخرى', true);
@@ -5112,6 +5186,7 @@ window.safeFileName = function(str){
     try{
       const blob = await buildOrdPdfBlob();
       const file = new File([blob], ordFileName(), { type: 'application/pdf' });
+      saveOrderToServer();
       if(navigator.canShare && navigator.canShare({ files:[file] })){
         await navigator.share({ files:[file], title:'أمر شراء', text:'مستند أمر شراء' });
         setOrdStatus('تمت المشاركة ✓');
@@ -5130,6 +5205,104 @@ window.safeFileName = function(str){
     }
     btn.disabled = false;
   });
+
+  // ---- البحث عن أمر شراء سابق (رقم الأمر / اسم العميل أو المورد / التاريخ) ----
+  function openOrdSearch(){
+    $('ordSearchOverlay').style.display = 'flex';
+    $('ordSearchInput').value = '';
+    $('ordSearchStatus').textContent = '';
+    $('ordSearchStatus').className = 'ord-search-status';
+    $('ordSearchResults').innerHTML = '';
+    setTimeout(() => $('ordSearchInput').focus(), 50);
+  }
+  function closeOrdSearch(){
+    $('ordSearchOverlay').style.display = 'none';
+  }
+  $('ordSearchOpenBtn').addEventListener('click', openOrdSearch);
+  $('ordSearchCloseBtn').addEventListener('click', closeOrdSearch);
+  $('ordSearchOverlay').addEventListener('click', (e) => {
+    if(e.target === $('ordSearchOverlay')) closeOrdSearch();
+  });
+
+  async function performOrdSearch(){
+    const q = $('ordSearchInput').value.trim();
+    const statusEl = $('ordSearchStatus');
+    const resultsEl = $('ordSearchResults');
+    resultsEl.innerHTML = '';
+    if(!q){
+      statusEl.textContent = 'اكتب حاجة تدور بيها الأول.';
+      statusEl.className = 'ord-search-status err';
+      return;
+    }
+    if(!ATTENDANCE_SCRIPT_URL){
+      statusEl.textContent = 'ميزة البحث لسه محتاجة إعداد.';
+      statusEl.className = 'ord-search-status err';
+      return;
+    }
+    statusEl.textContent = 'جاري البحث…';
+    statusEl.className = 'ord-search-status';
+    try{
+      const url = ATTENDANCE_SCRIPT_URL + '?action=ordersSearch&q=' + encodeURIComponent(q);
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if(!data || !data.ok) throw new Error('bad response');
+      if(!data.rows || !data.rows.length){
+        statusEl.textContent = 'مفيش أي أمر شراء مطابق.';
+        return;
+      }
+      statusEl.textContent = data.rows.length + ' نتيجة';
+      data.rows.forEach(row => {
+        const div = document.createElement('div');
+        div.className = 'ord-search-item';
+        div.innerHTML = `
+          <div class="osi-num">أمر رقم ${esc(row.num)}</div>
+          <div class="osi-meta">${esc(row.date || '—')} &nbsp;|&nbsp; ${esc(row.client || '—')} / ${esc(row.supplier || '—')}</div>
+        `;
+        div.addEventListener('click', () => {
+          loadOrderIntoForm(row);
+          closeOrdSearch();
+        });
+        resultsEl.appendChild(div);
+      });
+    }catch(err){
+      statusEl.textContent = 'تعذّر البحث، تأكد من الإنترنت وحاول تاني.';
+      statusEl.className = 'ord-search-status err';
+    }
+  }
+  $('ordSearchGoBtn').addEventListener('click', performOrdSearch);
+  $('ordSearchInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') performOrdSearch(); });
+
+  // بيحمّل بيانات أمر قديم (جاي من نتيجة البحث) في النموذج بالكامل — بما
+  // فيها الأصناف — عشان تقدر تنزّل/تشارك نفس الـ PDF تاني من غير ما تعيد
+  // كتابة أي حاجة، أو حتى تعدّل فيه وتحفظه تاني بنفس الرقم.
+  function loadOrderIntoForm(row){
+    $('ordNum').value = row.num || '';
+    $('ordNum').readOnly = true;
+    $('ordDate').value = row.date || '';
+    $('ordSupplier').value = row.supplier || '';
+    $('ordClient').value = row.client || '';
+    $('ordAttention').value = row.attention || '';
+    $('ordAddress').value = row.address || '';
+    $('ordContactName').value = row.contactName || '';
+    $('ordContactPhone').value = row.contactPhone || '';
+    $('ordRep').value = row.rep || '';
+    $('ordNotes').value = row.notes || '';
+
+    let items = [];
+    try{ items = JSON.parse(row.items || '[]'); }catch(e){ items = []; }
+    ordItems = items.length ? items.map(it => {
+      const item = newOrdItem();
+      item.diameter = it.diameter || '';
+      item.qty = it.qty || '';
+      item.spec = it.spec || 'B500DWR';
+      item.type = it.type || '';
+      return item;
+    }) : [newOrdItem()];
+
+    renderOrdForm();
+    renderOrdPreview();
+    setOrdNumHint('تم تحميل بيانات أمر رقم ' + row.num + ' — تقدر تنزّل/تشارك نفس PDF تاني، أو تعدّل وتحفظ.');
+  }
 })();
 </script>
 
