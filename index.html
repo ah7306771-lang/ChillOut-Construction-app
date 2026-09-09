@@ -3411,26 +3411,40 @@ window.safeFileName = function(str){
     // بنقرا الرد كنص الأول عشان لو السكريبت رجّع صفحة خطأ (HTML) بدل JSON
     // (زي حالة الديبلوي القديم/الغير محدّث)، نقدر نميّز المشكلة ونوريها
     // بدل ما الطلب يفشل بصمت من غير ما حد يلاحظ إنه معملش تسجيل في الشيت.
+    // ولو الباك إند رفض الطلب عمدًا (زي إجازة ليوم فيه حضور، أو تكرار
+    // إذن/مأمورية لنفس اليوم)، بيرجّع سبب الرفض بالظبط في data.error،
+    // وبنعرضه للموظف بدل رسالة "تعذر الإرسال" العامة.
     fetch(url).then(function(r){
       return r.text().then(function(text){
         var data = null;
         try { data = JSON.parse(text); } catch (e) {}
-        if (!data || data.ok !== true) { throw new Error('bad-response'); }
+        if (!data) { throw new Error('bad-response'); }
+        if (data.ok !== true) {
+          var rejectErr = new Error(data.error || 'rejected');
+          rejectErr.isRejection = !!data.error;
+          rejectErr.serverMessage = data.error || '';
+          throw rejectErr;
+        }
         return data;
       });
     }).then(function(){
       refreshAttendanceRequestsFromServer();
       refreshPendingRequestsBadge();
-    }).catch(function(){
+    }).catch(function(err){
       if (statusEl) {
         statusEl.innerHTML = '';
         statusEl.className = 'attendance-request-status';
         var failBadge = document.createElement('span');
         failBadge.className = 'req-status-badge status-rejected';
-        failBadge.textContent = '✘ تعذر إرسال الطلب';
         var failDetail = document.createElement('span');
         failDetail.className = 'req-status-detail';
-        failDetail.textContent = 'تأكد إن كود جوجل شيت (Apps Script) محدّث ومنشور (New version) وإن فيه اتصال بالإنترنت، وحاول تاني.';
+        if (err && err.isRejection) {
+          failBadge.textContent = '✘ الطلب مرفوض';
+          failDetail.textContent = err.serverMessage;
+        } else {
+          failBadge.textContent = '✘ تعذر إرسال الطلب';
+          failDetail.textContent = 'تأكد إن كود جوجل شيت (Apps Script) محدّث ومنشور (New version) وإن فيه اتصال بالإنترنت، وحاول تاني.';
+        }
         statusEl.appendChild(failBadge);
         statusEl.appendChild(failDetail);
       }

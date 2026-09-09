@@ -198,7 +198,7 @@ function handleRequestSubmit(ss, e) {
   var sheet = getRequestsSheet_(ss);
   var id     = e.parameter.id     || Utilities.getUuid();
   var name   = e.parameter.name   || '';
-  var type   = e.parameter.type   || ''; // 'إذن' أو 'مأمورية'
+  var type   = e.parameter.type   || ''; // 'إذن' أو 'مأمورية' أو 'إجازة'
   var date   = e.parameter.date   || '';
   var from   = e.parameter.from   || '';
   var to     = e.parameter.to     || '';
@@ -211,6 +211,29 @@ function handleRequestSubmit(ss, e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
+    // تحقق 1: مينفعش تطلب "إجازة" ليوم الموظف عامل فيه حضور أو انصراف
+    // (أو الاتنين) بالفعل — مش منطقي يطلب إجازة ليوم هو حاضر فيه فعلاً.
+    if (type === 'إجازة') {
+      var leaveDays = eachDateInRange_(leaveFrom || date, leaveTo || leaveFrom || date, tz);
+      for (var d1 = 0; d1 < leaveDays.length; d1++) {
+        if (attendanceDayHasRecord_(ss, name, leaveDays[d1])) {
+          return ContentService.createTextOutput(JSON.stringify({
+            ok: false, error: name + ' مسجل حضور أو انصراف يوم ' + leaveDays[d1] + ' بالفعل، مينفعش تطلب إجازة لنفس اليوم ده.'
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    // تحقق 2: مينفعش تطلب أكتر من إذن واحد أو مأمورية واحدة (لسه سارية،
+    // يعني مش مرفوضة) في نفس اليوم لنفس الموظف.
+    if ((type === 'إذن' || type === 'مأمورية') && date) {
+      if (hasActiveRequestForDay_(ss, name, type, date)) {
+        return ContentService.createTextOutput(JSON.stringify({
+          ok: false, error: 'فيه طلب ' + type + ' مسجل بالفعل لـ ' + name + ' في نفس اليوم ده.'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     sheet.appendRow([id, name, type, date, from, to, reason, 'قيد المراجعة', submittedAt, leaveFrom, leaveTo]);
   } finally {
     lock.releaseLock();
@@ -226,6 +249,67 @@ function handleRequestSubmit(ss, e) {
 
   return ContentService.createTextOutput(JSON.stringify({ ok: true, id: id }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// بيرجع كل تواريخ يوم بيوم بين تاريخي بداية/نهاية (شاملين الاتنين)،
+// كنصوص 'yyyy-MM-dd' — مستخدمة للتحقق من طلبات "إجازة" الممتدة لأكتر
+// من يوم.
+function eachDateInRange_(fromStr, toStr, tz) {
+  var days = [];
+  if (!fromStr) return days;
+  var from = new Date(fromStr + 'T00:00:00');
+  var to = new Date((toStr || fromStr) + 'T00:00:00');
+  if (isNaN(from.getTime())) return days;
+  if (isNaN(to.getTime())) to = from;
+  var cur = from;
+  var guard = 0;
+  while (cur.getTime() <= to.getTime() && guard < 366) {
+    days.push(Utilities.formatDate(cur, tz, 'yyyy-MM-dd'));
+    cur = new Date(cur.getTime() + 24 * 60 * 60 * 1000);
+    guard++;
+  }
+  return days;
+}
+
+// بيتأكد هل عند الموظف ده تسجيل "حضور" حقيقي (وقت حضور أو انصراف فعلي)
+// في يوم معيّن، من شيت الحضور نفسه — مستخدمة لمنع طلب "إجازة" ليوم هو
+// حاضر فيه بالفعل.
+function attendanceDayHasRecord_(ss, name, dateStr) {
+  var sheet = getAttendanceMainSheet_(ss);
+  var tz = ss.getSpreadsheetTimeZone();
+  var colMap = getAttendanceColMap_(sheet);
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2 || !colMap.name || !colMap.date) return false;
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  for (var i = 0; i < values.length; i++) {
+    var r = values[i];
+    if (r[colMap.name - 1] !== name) continue;
+    if (normalizeDate_(r[colMap.date - 1], tz) !== dateStr) continue;
+    var type = colMap.type ? r[colMap.type - 1] : '';
+    if (type !== 'حضور') continue;
+    var inTime = colMap.inTime ? r[colMap.inTime - 1] : '';
+    var outTime = colMap.outTime ? r[colMap.outTime - 1] : '';
+    if (inTime || outTime) return true;
+  }
+  return false;
+}
+
+// بيتأكد هل فيه طلب "إذن" أو "مأمورية" لنفس الموظف ونفس اليوم لسه سارية
+// (يعني حالته مش "مرفوض") — عشان نمنع أكتر من طلب واحد من نفس النوع في
+// نفس اليوم. طلب مرفوض قبل كده مبيمنعش طلب جديد تاني لنفس اليوم.
+function hasActiveRequestForDay_(ss, name, type, dateStr) {
+  var sheet = ss.getSheetByName('Requests');
+  if (!sheet || sheet.getLastRow() < 2) return false;
+  var tz = ss.getSpreadsheetTimeZone();
+  var vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).getValues();
+  for (var i = 0; i < vals.length; i++) {
+    var r = vals[i];
+    if (r[1] !== name || r[2] !== type) continue;
+    if (r[7] === 'مرفوض') continue;
+    if (normalizeDate_(r[3], tz) === dateStr) return true;
+  }
+  return false;
 }
 
 function handleRequestsReport(ss, e) {
