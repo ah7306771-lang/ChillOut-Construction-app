@@ -4570,10 +4570,13 @@ window.safeFileName = function(str){
       return;
     }
     // لو حد فتح الشاشة قبل كده في نفس الجلسة (سواء بكلمة سره أو بـ "##")،
-    // منسألوش تاني إلا لو رجع للرئيسية الأول (شوف زرار الرجوع تحت).
+    // منسألوش تاني إلا لو رجع للرئيسية الأول (شوف زرار الرجوع تحت) — بس
+    // برضه لازم نعيد بناء القايمة (renderAttendanceList) مش بس نحدّثها
+    // (refreshAttendanceFromServer)، لأن القايمة اتبنت مرة واحدة بس أول
+    // ما الصفحة فتحت وممكن تكون لسه شايلة كل الموظفين.
     if (attendanceSessionShowAll || attendanceSessionUnlockedEmployee) {
       showScreen('attendance');
-      refreshAttendanceFromServer();
+      renderAttendanceList();
       return;
     }
     showPasswordModalCustom(
@@ -4586,7 +4589,10 @@ window.safeFileName = function(str){
           attendanceSessionUnlockedEmployee = attendanceEntryNameFor_(value);
         }
         showScreen('attendance');
-        refreshAttendanceFromServer();
+        // بيبني قايمة الصفوف من جديد بالفلترة الصح (اسم واحد بس، أو
+        // الكل) — ده اللي كان ناقص وخلى الموظف يشوف كل زمايله برضه حتى
+        // بعد ما يدخل كلمة سره الشخصية.
+        renderAttendanceList();
       }
     );
   });
