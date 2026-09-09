@@ -106,7 +106,9 @@ function doGet(e) {
 
 // ---- read-only: return the day's attendance records for the dashboard ----
 function handleReport(ss, sheet, e) {
-  var rows = getAttendanceRows_(ss, sheet, e.parameter.date || '');
+  var date = e.parameter.date || '';
+  if (date) syncApprovedMissionsForDate_(ss, date); // يظبط أي مأمورية معتمدة لسه مش ظاهرة في الشيت
+  var rows = getAttendanceRows_(ss, sheet, date);
   return ContentService.createTextOutput(JSON.stringify({ ok: true, rows: rows }))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -272,6 +274,7 @@ function getRequestRows_(ss, dateFilter) {
 // الموبايل لو الطلبين اتصادفوا في نفس اللحظة). ----
 function handleDashboardData(ss, sheet, e) {
   var date = e.parameter.date || '';
+  if (date) syncApprovedMissionsForDate_(ss, date); // يظبط أي مأمورية معتمدة لسه مش ظاهرة في الشيت
   var rows = getAttendanceRows_(ss, sheet, date);
   var requestRows = getRequestRows_(ss, date);
   var officialOut = getOfficialOutTimes_(ss);
@@ -636,15 +639,21 @@ function applyMissionToAttendance_(ss, name, dateStr, fromTime, toTime) {
   var tz = ss.getSpreadsheetTimeZone();
   var lastRow = sheet.getLastRow();
   var targetRow = -1;
+  var currentType = '';
   if (lastRow > 1) {
     var values = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
     for (var i = 0; i < values.length; i++) {
       if (values[i][0] === name && normalizeDate_(values[i][2], tz) === dateStr) {
         targetRow = i + 2;
+        currentType = values[i][1];
         break;
       }
     }
   }
+  // لو الموظف عنده بالفعل تسجيل "حضور" حقيقي (بصمة فعلية) في نفس اليوم،
+  // متلمسش الصف — سيبها للمدير يراجعها يدوي بدل ما نمسح بيانات حقيقية.
+  if (targetRow > -1 && currentType === 'حضور') return;
+
   var checkIn = fromTime || '';
   var checkOut = toTime || '';
   if (targetRow > -1) {
@@ -654,6 +663,29 @@ function applyMissionToAttendance_(ss, name, dateStr, fromTime, toTime) {
   } else {
     sheet.appendRow([name, 'مأمورية', dateStr, checkIn, '', '', '', '', checkOut, '', '', '', '']);
   }
+}
+
+// بيدوّر على أي طلبات "مأمورية" معتمدة في يوم معيّن ويطبّقها على شيت
+// الحضور — بغض النظر إمتى اتوافق عليها. ده بيصلّح تلقائيًا أي حالة
+// مأمورية اتوافق عليها ولسه مش ظاهرة في الشيت (مثلاً لو اتوافق عليها قبل
+// ما تحديث الكود ده ينزل)، وبيشتغل كـ"تأمين إضافي" حتى لو حصل أي خطأ وقت
+// الموافقة نفسها — بننادي عليها أول ما حد يفتح لوحة الحضور أو شاشة تسجيل
+// حضور/انصراف لنفس اليوم.
+function syncApprovedMissionsForDate_(ss, dateStr) {
+  if (!dateStr) return;
+  var reqSheet = ss.getSheetByName('Requests');
+  if (!reqSheet || reqSheet.getLastRow() < 2) return;
+  var tz = ss.getSpreadsheetTimeZone();
+  var vals = reqSheet.getRange(2, 1, reqSheet.getLastRow() - 1, 11).getValues();
+  vals.forEach(function (r) {
+    var name = r[1], type = r[2], status = r[7];
+    if (!name || type !== 'مأمورية' || status !== 'موافق') return;
+    var reqDate = normalizeDate_(r[3], tz);
+    if (reqDate !== dateStr) return;
+    var reqFrom = normalizeTime_(r[4], tz);
+    var reqTo = normalizeTime_(r[5], tz);
+    applyMissionToAttendance_(ss, name, reqDate, reqFrom, reqTo);
+  });
 }
 
 // ---------------------------------------------------------------------
