@@ -2958,13 +2958,13 @@ window.safeFileName = function(str){
   //    إجازة) في نفس الجلسة، لأن هويته اتأكدت أصلاً على باب الشاشة.
   //  - "#" → تفتح القايمة بكل الموظفين زي ما هي دلوقتي بالظبط (وضع
   //    "الجهاز المشترك")، ولسه كل زرار بيطلب كلمة سر صاحبه — عشان أي حد
-  //    ممكن يعرف "#" فمن غيرها كان أي حد هيقدر يسجل حضور/انصراف لأي زميل
+  //    ممكن يعرف "##" فمن غيرها كان أي حد هيقدر يسجل حضور/انصراف لأي زميل
   //    من غير أي تحقق.
   var attendanceSessionUnlockedEmployee = null;
   var attendanceSessionShowAll = false;
 
   function attendanceEntryValidate_(value){
-    if (value === '#') return true;
+    if (value === '##') return true;
     for (var n in ATTENDANCE_PASSWORDS) { if (ATTENDANCE_PASSWORDS[n] === value) return true; }
     return false;
   }
@@ -4569,7 +4569,7 @@ window.safeFileName = function(str){
       refreshAttendanceFromServer();
       return;
     }
-    // لو حد فتح الشاشة قبل كده في نفس الجلسة (سواء بكلمة سره أو بـ "#")،
+    // لو حد فتح الشاشة قبل كده في نفس الجلسة (سواء بكلمة سره أو بـ "##")،
     // منسألوش تاني إلا لو رجع للرئيسية الأول (شوف زرار الرجوع تحت).
     if (attendanceSessionShowAll || attendanceSessionUnlockedEmployee) {
       showScreen('attendance');
@@ -4577,10 +4577,10 @@ window.safeFileName = function(str){
       return;
     }
     showPasswordModalCustom(
-      'ادخل كلمة سرك الشخصية، أو اكتب # لعرض كل الموظفين',
+      'ادخل كلمة سرك الشخصية، أو اكتب ## لعرض كل الموظفين',
       attendanceEntryValidate_,
       function(value){
-        if (value === '#') {
+        if (value === '##') {
           attendanceSessionShowAll = true;
         } else {
           attendanceSessionUnlockedEmployee = attendanceEntryNameFor_(value);
