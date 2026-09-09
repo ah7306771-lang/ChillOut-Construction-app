@@ -1077,6 +1077,69 @@ function refreshCurrentMonthReport() {
   refreshMonthlyReport_();
 }
 
+// ---------------------------------------------------------------------
+// تسجيل الغياب التلقائي
+// ---------------------------------------------------------------------
+// بتفحص يوم معيّن لكل موظف في القايمة: لو معملش تسجيل "حضور" في شيت
+// الحضور في التاريخ ده، ومفيش طلب إذن/مأمورية/إجازة "معتمد" (موافق)
+// بيغطي اليوم ده، بتضيف صف "غياب" ليه تلقائيًا (زي أي صف حضور عادي بس
+// النوع "غياب" والباقي فاضي). لو الموظف عنده صف "غياب" أو "حضور" في نفس
+// اليوم بالفعل، مبيتضافش صف تاني (منعًا للتكرار لو الدالة اتشغّلت أكتر
+// من مرة على نفس اليوم بالغلط).
+//
+// markAbsencesForYesterday() هي اللي المفروض تتربط بتريجر وقتي يومي
+// (من "⏰ Triggers" في الشريط الجانبي، بنفس الطريقة اللي اتضاف بيها
+// تريجر backupNow) يشتغل بعد نص الليل بشوية (مثلاً 12ص لـ 1ص) — وقتها
+// بتبقى "أمس" هي آخر يوم كامل انتهى، فتتفحص وتتسجل غياب مين ما حضرش.
+function markAbsencesForYesterday() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tz = ss.getSpreadsheetTimeZone();
+  var y = new Date();
+  y.setDate(y.getDate() - 1);
+  markAbsencesForDate_(ss, Utilities.formatDate(y, tz, 'yyyy-MM-dd'));
+}
+
+// دالة اختبار: شغّلها يدويًا من محرر Apps Script (اختارها من قايمة
+// الدوال فوق زرار "تشغيل") لو عايز تتأكد إن التسجيل شغال صح على تاريخ
+// معيّن دلوقتي من غير ما تستنى لحد نص الليل — غيّر التاريخ جوه القوسين.
+function testMarkAbsencesForDate() {
+  markAbsencesForDate_(SpreadsheetApp.getActiveSpreadsheet(), '2026-09-09');
+}
+
+function markAbsencesForDate_(ss, dateStr) {
+  var tz = ss.getSpreadsheetTimeZone();
+  var sheet = getAttendanceMainSheet_(ss);
+  if (!sheet) return;
+
+  var handled = {}; // عنده حضور، أو غياب اتسجل قبل كده، في نفس اليوم ده
+  if (sheet.getLastRow() > 1) {
+    var vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues(); // الاسم|النوع|التاريخ
+    vals.forEach(function (r) {
+      var name = r[0], type = r[1];
+      if (!name) return;
+      var d = normalizeDate_(r[2], tz);
+      if (d === dateStr && (type === 'حضور' || type === 'غياب')) handled[name] = true;
+    });
+  }
+
+  var reqIndex = buildRequestsIndex_(ss, tz);
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    ATTENDANCE_EMPLOYEES_SEED_.forEach(function (name) {
+      if (handled[name]) return;
+      var req = findRequestForDay_(reqIndex, name, dateStr);
+      if (req && req.status === 'موافق') return; // إذن/مأمورية/إجازة معتمدة تغطي اليوم ده
+      sheet.appendRow([name, 'غياب', dateStr, '', '', '', '', '']);
+    });
+  } finally {
+    lock.releaseLock();
+  }
+
+  refreshAttendanceExtraColumns_();
+}
+
 // بتظهر بوكس صغير تكتب فيه أي شهر عايز تقريره (بصيغة yyyy-MM، مثلاً
 // 2026-08) — مفيدة لو عايز تراجع شهر فات.
 function promptRefreshReportForMonth() {
@@ -1101,6 +1164,7 @@ function onOpen() {
     .createMenu('📊 تقرير الحضور')
     .addItem('تحديث كل شيء (التأخير + التقرير الشهري)', 'refreshCurrentMonthReport')
     .addItem('تحديث تقرير شهر محدد...', 'promptRefreshReportForMonth')
+    .addItem('تسجيل غياب الأمس يدويًا', 'markAbsencesForYesterday')
     .addToUi();
   try { refreshCurrentMonthReport(); } catch (e) { /* أول مرة قبل ما البيانات تتظبط - متعمل حاجة */ }
 }
