@@ -2950,6 +2950,34 @@ window.safeFileName = function(str){
   // السر مطلوبة من أي حد يدوس على الأيقونة قبل ما يشوف بيانات كل الموظفين.
   var ATTENDANCE_DASHBOARD_PASSWORD = '55555';
 
+  // ---- بوابة الدخول لشاشة "الحضور والانصراف" ----
+  // أول ما حد يدوس على بلاطة "الحضور والانصراف" من الرئيسية (مش رابط
+  // شخصي ?emp=...)، بنطلب منه كلمة سره الشخصية أو "#":
+  //  - كلمة سر صحيحة لموظف معين  → تتفلتر القايمة على اسمه هو بس، وبعدين
+  //    مش هيتطلب منه كلمة السر تاني لأي زرار (حضور/انصراف/إذن/مأمورية/
+  //    إجازة) في نفس الجلسة، لأن هويته اتأكدت أصلاً على باب الشاشة.
+  //  - "#" → تفتح القايمة بكل الموظفين زي ما هي دلوقتي بالظبط (وضع
+  //    "الجهاز المشترك")، ولسه كل زرار بيطلب كلمة سر صاحبه — عشان أي حد
+  //    ممكن يعرف "#" فمن غيرها كان أي حد هيقدر يسجل حضور/انصراف لأي زميل
+  //    من غير أي تحقق.
+  var attendanceSessionUnlockedEmployee = null;
+  var attendanceSessionShowAll = false;
+
+  function attendanceEntryValidate_(value){
+    if (value === '#') return true;
+    for (var n in ATTENDANCE_PASSWORDS) { if (ATTENDANCE_PASSWORDS[n] === value) return true; }
+    return false;
+  }
+  function attendanceEntryNameFor_(value){
+    for (var n in ATTENDANCE_PASSWORDS) { if (ATTENDANCE_PASSWORDS[n] === value) return n; }
+    return null;
+  }
+  // بيرجع true لو هوية "name" اتأكدت بالفعل على باب الشاشة في الجلسة
+  // الحالية — يعني نقدر نتخطى مودال كلمة السر بتاعة الزرار نفسه.
+  function attendanceIdentityProven_(name){
+    return !!attendanceSessionUnlockedEmployee && attendanceSessionUnlockedEmployee === name;
+  }
+
   // ---- مودال إدخال كلمة السر (بيتعمل مرة واحدة وبيتعاد استخدامه لكل موظف) ----
   var attendancePwEls = null;
   function ensureAttendancePwModal(){
@@ -3012,25 +3040,31 @@ window.safeFileName = function(str){
     input.addEventListener('keydown', function(e){
       if (e.key === 'Enter') confirmBtn.click();
     });
-    // دخول أوتوماتيك: أول ما الرقم المكتوب يطابق كلمة السر المطلوبة بالظبط،
-    // يتأكد على طول من غير ما يحتاج المستخدم يدوس زرار "تأكيد" هو نفسه.
+    // دخول أوتوماتيك: أول ما الرقم المكتوب يطابق كلمة السر المطلوبة (أو
+    // شرط التحقق المخصّص بيرجع true)، يتأكد على طول من غير ما يحتاج
+    // المستخدم يدوس زرار "تأكيد" هو نفسه.
     input.addEventListener('input', function(){
       var els = attendancePwEls;
-      if (els && els.expected && input.value === els.expected) {
+      if (!els || !input.value) return;
+      if (els.validate ? els.validate(input.value) : (els.expected && input.value === els.expected)) {
         confirmBtn.click();
       }
     });
 
     attendancePwEls = {
       overlay: overlay, title: title, input: input,
-      error: error, confirmBtn: confirmBtn, expected: null, onSuccess: null
+      error: error, confirmBtn: confirmBtn, expected: null, validate: null, onSuccess: null
     };
+    function checkAttendancePwValue_(els){
+      return els.validate ? els.validate(els.input.value) : (els.input.value === els.expected);
+    }
     confirmBtn.addEventListener('click', function(){
       var els = attendancePwEls;
-      if (els.input.value === els.expected) {
+      if (checkAttendancePwValue_(els)) {
         var cb = els.onSuccess;
+        var val = els.input.value;
         hideAttendancePwModal();
-        if (cb) cb();
+        if (cb) cb(val);
       } else {
         els.error.textContent = 'كلمة السر غير صحيحة.';
         els.input.value = '';
@@ -3044,6 +3078,8 @@ window.safeFileName = function(str){
     if (!attendancePwEls) return;
     attendancePwEls.overlay.style.display = 'none';
     attendancePwEls.onSuccess = null;
+    attendancePwEls.validate = null;
+    attendancePwEls.input.inputMode = 'numeric';
   }
 
   // مودال عام بيتقفل بأي كلمة سر متوقعة (مش لازم تكون خاصة بموظف معين) —
@@ -3051,9 +3087,28 @@ window.safeFileName = function(str){
   function showPasswordModal(title, expectedPassword, onSuccess){
     var els = ensureAttendancePwModal();
     els.expected = expectedPassword;
+    els.validate = null;
     els.onSuccess = onSuccess;
     els.title.textContent = title;
     els.input.value = '';
+    els.input.inputMode = 'numeric';
+    els.error.textContent = '';
+    els.overlay.style.display = 'flex';
+    setTimeout(function(){ els.input.focus(); }, 0);
+  }
+
+  // نفس المودال، لكن بشرط تحقق مخصّص (validate(value) => true/false) بدل
+  // كلمة سر واحدة ثابتة — مستخدم في بوابة الدخول لشاشة الحضور (كلمة سر
+  // شخصية لأي موظف، أو "#" لعرض الكل). inputMode='tel' عشان لوحة مفاتيح
+  // الموبايل تظهر فيها علامة "#" (مش متاحة في لوحة numeric العادية).
+  function showPasswordModalCustom(title, validateFn, onSuccess){
+    var els = ensureAttendancePwModal();
+    els.expected = null;
+    els.validate = validateFn;
+    els.onSuccess = onSuccess;
+    els.title.textContent = title;
+    els.input.value = '';
+    els.input.inputMode = 'tel';
     els.error.textContent = '';
     els.overlay.style.display = 'flex';
     setTimeout(function(){ els.input.focus(); }, 0);
@@ -3494,26 +3549,33 @@ window.safeFileName = function(str){
     reqStatus.className = 'attendance-request-status';
 
     // برضه بيطلب كلمة السر بتاعة الموظف قبل ما يسجل، حتى وهو داخل من
-    // رابطه الشخصي (طبقة حماية إضافية فوق رابط الـ ?emp=...).
+    // رابطه الشخصي (طبقة حماية إضافية فوق رابط الـ ?emp=...) — إلا لو
+    // هويته اتأكدت بالفعل على بوابة الدخول لشاشة الحضور (كلمة سره
+    // الشخصية على الباب)، ففي الحالة دي بنتخطى المودال هنا عشان مفيش
+    // داعي نسأله كلمة سره مرتين في نفس الجلسة.
+    function withAttendancePw_(action){
+      if (attendanceIdentityProven_(name)) { action(); return; }
+      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], action);
+    }
     inBtn.addEventListener('click', function(){
-      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+      withAttendancePw_(function(){
         recordAttendance(name, 'حضور', inBtn, outBtn, msg);
       });
     });
     outBtn.addEventListener('click', function(){
-      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+      withAttendancePw_(function(){
         recordAttendance(name, 'انصراف', inBtn, outBtn, msg);
       });
     });
     leaveBtn.addEventListener('click', function(){
-      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+      withAttendancePw_(function(){
         showAttendanceRequestModal('طلب إذن — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'إذن', from, to, reason, reqStatus);
         });
       });
     });
     missionBtn.addEventListener('click', function(){
-      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+      withAttendancePw_(function(){
         showAttendanceRequestModal('طلب مأمورية — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'مأمورية', from, to, reason, reqStatus);
         });
@@ -3522,7 +3584,7 @@ window.safeFileName = function(str){
     // طلب الإجازة: بيسأل عن تاريخ بداية ونهاية بدل ساعة من/إلى، وبيتسجل
     // بنفس دورة الاعتماد بتاعة الإذن والمأمورية بالظبط (تاب Requests نفسه).
     vacationBtn.addEventListener('click', function(){
-      showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], function(){
+      withAttendancePw_(function(){
         showAttendanceRequestModal('طلب إجازة — ' + name, 'date', function(from, to, reason){
           if (!from) { return; }
           submitAttendanceRequest(name, 'إجازة', '', '', reason, reqStatus, {
@@ -3565,7 +3627,10 @@ window.safeFileName = function(str){
       }
     }
 
-    var linkedEmployee = getAttendanceLinkedEmployee();
+    // بيتفلتر على موظف واحد لو داخل برابطه الشخصي (?emp=...) أو لو دخل
+    // كلمة سره الشخصية على بوابة الشاشة؛ غير كده (أو لو دوس "#") بيشوف
+    // كل الموظفين زي المعتاد.
+    var linkedEmployee = getAttendanceLinkedEmployee() || attendanceSessionUnlockedEmployee;
     var employeesToShow = linkedEmployee ? [linkedEmployee] : ATTENDANCE_EMPLOYEES;
     employeesToShow.forEach(function(name){
       buildAttendanceRow(list, name);
@@ -3638,15 +3703,27 @@ window.safeFileName = function(str){
     }
 
     if (navigator.geolocation) {
+      // enableHighAccuracy:true كان بيجبر الموبايل يستنى تثبيت GPS كامل
+      // (ثواني كتير، خصوصًا جوه مبنى أو موقع مقاولات مغطى) قبل ما يرجع
+      // أي نتيجة، وده أكبر سبب في إحساس الموظف إن الشاشة "بطيئة". دقة
+      // الموقع هنا مجرد رابط "شوف على الخريطة" للإداري، مش حاجة حرجة،
+      // فبنرضى بدقة أوطى (شبكة/واي فاي) عشان يرجع الموقع فورًا تقريبًا،
+      // وبنقلل مهلة الانتظار من 8 ثواني لـ 5.
       navigator.geolocation.getCurrentPosition(
         function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
         function(){ send(null, null); },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
       );
     } else {
       send(null, null);
     }
   }
+
+  // بنجهّز اسم الجهاز (موديل/متصفح) من دلوقتي بدل ما ننتظر أول ضغطة
+  // حضور/انصراف — getAttendanceDeviceLabel بيكاش النتيجة أول مرة بس،
+  // فلو جهزناها من هنا، أول ضغطة فعلية للموظف هتلاقيها جاهزة على طول
+  // بدل ما تستنى استعلام المتصفح (ممكن ياخد جزء من الثانية لوحده).
+  getAttendanceDeviceLabel(function(){});
 
   renderAttendanceList();
 
@@ -4485,10 +4562,39 @@ window.safeFileName = function(str){
     showScreen('home');
   });
   document.getElementById('openAttendanceBtn').addEventListener('click', function(){
-    showScreen('attendance');
-    refreshAttendanceFromServer();
+    // رابط شخصي (?emp=...) فاتح أصلاً على اسم واحد بس — مش محتاج بوابة
+    // كلمة سر تانية هنا (زي ما هو دلوقتي بالظبط).
+    if (getAttendanceLinkedEmployee()) {
+      showScreen('attendance');
+      refreshAttendanceFromServer();
+      return;
+    }
+    // لو حد فتح الشاشة قبل كده في نفس الجلسة (سواء بكلمة سره أو بـ "#")،
+    // منسألوش تاني إلا لو رجع للرئيسية الأول (شوف زرار الرجوع تحت).
+    if (attendanceSessionShowAll || attendanceSessionUnlockedEmployee) {
+      showScreen('attendance');
+      refreshAttendanceFromServer();
+      return;
+    }
+    showPasswordModalCustom(
+      'ادخل كلمة سرك الشخصية، أو اكتب # لعرض كل الموظفين',
+      attendanceEntryValidate_,
+      function(value){
+        if (value === '#') {
+          attendanceSessionShowAll = true;
+        } else {
+          attendanceSessionUnlockedEmployee = attendanceEntryNameFor_(value);
+        }
+        showScreen('attendance');
+        refreshAttendanceFromServer();
+      }
+    );
   });
   document.getElementById('backHomeBtnAttendance').addEventListener('click', function(){
+    // بنصفّر بوابة الدخول لما يرجع للرئيسية — عشان لو جهاز مشترك واستخدمه
+    // موظف تاني بعد كده، يتسأل كلمة سره هو (مش يفضل واقف على اسم اللي قبله).
+    attendanceSessionUnlockedEmployee = null;
+    attendanceSessionShowAll = false;
     showScreen('home');
   });
   // بتفتح لوحة الحضور بعد كلمة السر — مستخدمة من زرار الصفحة الرئيسية
@@ -5944,6 +6050,22 @@ window.safeFileName = function(str){
     return true;
   }
 
+  // نفس رابط سكريبت الحضور بالظبط — الشاشة دي في IIFE منفصل، فمحتاجين
+  // نسخة من الرابط هنا كمان. إشعار فوري بس (كأشعار، من غير أي طلب اعتماد
+  // أو حفظ في أي شيت) لما حد يعمل تفويض عام جديد — بنبعته "من غير انتظار"
+  // (fire-and-forget) عشان ميأخرش تحميل/مشاركة الملف نفسه، وبنتفادى تكرار
+  // الإشعار لنفس رقم التفويض لو ضغط تحميل وبعدين مشاركة بعد كده.
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyx1csVo37UKOdvZzQD_KGrGjtvWMOM8g3cPte1FQ92lhK7dR5KlvxMaWCLZBbak1k/exec';
+  var notifiedGeneralNums_ = {};
+  function notifyGeneralCreated_(){
+    var num = $('docNumGeneral').value.trim();
+    if (!num || notifiedGeneralNums_[num]) return;
+    notifiedGeneralNums_[num] = true;
+    var supplier = $('supplierNameGeneral') ? $('supplierNameGeneral').value.trim() : '';
+    var body = 'تفويض عام رقم ' + num + (supplier ? (' — المورد: ' + supplier) : '');
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=notifyEvent&title=' + encodeURIComponent('تفويض عام جديد') + '&body=' + encodeURIComponent(body)).catch(function(){});
+  }
+
   $('downloadBtnGeneral').addEventListener('click', async () => {
     if(!requireDocNumGeneral()) return;
     const btn = $('downloadBtnGeneral');
@@ -5957,6 +6079,7 @@ window.safeFileName = function(str){
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       setStatusGeneral('تم تحميل الملف ✓');
+      notifyGeneralCreated_();
     }catch(err){
       setStatusGeneral('تعذّر إنشاء الملف، حاول مرة أخرى', true);
     }
@@ -5983,6 +6106,7 @@ window.safeFileName = function(str){
         window.open('https://wa.me/?text=' + encodeURIComponent('تم تحميل ملف التفويض على جهازي — سأرفقه هنا يدويًا.'), '_blank');
         setStatusGeneral('تم تحميل الملف — أرفقه يدويًا في واتساب الذي فُتح لك');
       }
+      notifyGeneralCreated_();
     }catch(err){
       if(err && err.name === 'AbortError'){ setStatusGeneral('تم إلغاء المشاركة'); }
       else { setStatusGeneral('تعذّرت المشاركة المباشرة، تم تحميل الملف بدلًا من ذلك', true); }
@@ -6073,6 +6197,19 @@ window.safeFileName = function(str){
     return `Tafweed-Sheekat-${num}.pdf`;
   }
 
+  // نفس فكرة الإشعار الفوري بس (من غير طلب اعتماد أو حفظ) المستخدمة في
+  // شاشة "تفويض عام" — راجع التعليق هناك.
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyx1csVo37UKOdvZzQD_KGrGjtvWMOM8g3cPte1FQ92lhK7dR5KlvxMaWCLZBbak1k/exec';
+  var notifiedChecksNums_ = {};
+  function notifyChecksCreated_(){
+    var num = $('docNumChecks').value.trim();
+    if (!num || notifiedChecksNums_[num]) return;
+    notifiedChecksNums_[num] = true;
+    var person = $('personNameChecks') ? $('personNameChecks').value.trim() : '';
+    var body = 'تفويض شيكات رقم ' + num + (person ? (' — المفوَّض: ' + person) : '');
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=notifyEvent&title=' + encodeURIComponent('تفويض شيكات (مصاريف) جديد') + '&body=' + encodeURIComponent(body)).catch(function(){});
+  }
+
   function requireFieldsChecks(){
     if(!$('docNumChecks').value.trim()){
       setStatusChecks('رقم التفويض إجباري، برجاء إدخاله', true);
@@ -6105,6 +6242,7 @@ window.safeFileName = function(str){
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
       setStatusChecks('تم تحميل الملف ✓');
+      notifyChecksCreated_();
     }catch(err){
       setStatusChecks('تعذّر إنشاء الملف، حاول مرة أخرى', true);
     }
@@ -6131,6 +6269,7 @@ window.safeFileName = function(str){
         window.open('https://wa.me/?text=' + encodeURIComponent('تم تحميل ملف تفويض الشيكات على جهازي — سأرفقه هنا يدويًا.'), '_blank');
         setStatusChecks('تم تحميل الملف — أرفقه يدويًا في واتساب الذي فُتح لك');
       }
+      notifyChecksCreated_();
     }catch(err){
       if(err && err.name === 'AbortError'){ setStatusChecks('تم إلغاء المشاركة'); }
       else { setStatusChecks('تعذّرت المشاركة المباشرة، تم تحميل الملف بدلًا من ذلك', true); }

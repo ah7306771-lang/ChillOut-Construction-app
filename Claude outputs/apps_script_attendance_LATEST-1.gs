@@ -30,6 +30,9 @@ function doGet(e) {
   if (action === 'ordersSearch') {
     return handleOrdersSearch(ss, e);
   }
+  if (action === 'notifyEvent') {
+    return handleNotifyEvent(ss, e);
+  }
 
   // ---- default action: save a new attendance record ----
   // من دلوقتي حضور وانصراف نفس الموظف في نفس اليوم بيتسجلوا في نفس الصف
@@ -87,20 +90,23 @@ function doGet(e) {
         : buildAttendanceRow_(colMap, lastCol, name, 'حضور', date, '', '', '', '', '', time, lat, lng, map, device);
       sheet.appendRow(newRow);
     }
-
-    // بعت إشعار فوري لموبايل الإداري بتسجيل الحضور/الانصراف، بنفس فكرة
-    // إشعارات طلبات الإذن/المأمورية/الإجازة بالظبط — لو حصل أي خطأ في
-    // الإرسال، ده مبيأثرش على تسجيل الحضور نفسه (اتسجل فعلاً فوق).
-    sendPushToAll_(
-      name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف'),
-      name + ' سجّل ' + type + ' الساعة ' + time + (device ? (' — ' + device) : '')
-    );
-
-    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
-      .setMimeType(ContentService.MimeType.JSON);
   } finally {
+    // بنسيب القفل هنا (قبل إرسال الإشعار) عشان أي موظف تاني بيسجل حضور
+    // في نفس اللحظة ميستناش لحد ما إشعار الأول يخلص إرساله — التسجيل
+    // نفسه (الجزء اللي محتاج القفل فعلاً) خلص فوق.
     lock.releaseLock();
   }
+
+  // بعت إشعار فوري لموبايل الإداري بتسجيل الحضور/الانصراف، بنفس فكرة
+  // إشعارات طلبات الإذن/المأمورية/الإجازة بالظبط — لو حصل أي خطأ في
+  // الإرسال، ده مبيأثرش على تسجيل الحضور نفسه (اتسجل فعلاً فوق).
+  sendPushToAll_(
+    name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف'),
+    name + ' سجّل ' + type + ' الساعة ' + time + (device ? (' — ' + device) : '')
+  );
+
+  return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // ---- read-only: return the day's attendance records for the dashboard ----
@@ -623,14 +629,35 @@ function handleOrderSubmit(ss, e) {
     var startRow = sheet.getLastRow() + 1;
     sheet.getRange(startRow, ORD_COL_NUM_, newRows.length, 1).setNumberFormat('@');
     sheet.getRange(startRow, 1, newRows.length, ORDERS_HEADERS_.length).setValues(newRows);
-    return ContentService.createTextOutput(JSON.stringify({ ok: true }))
-      .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
+    lock.releaseLock();
     return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
-  } finally {
-    lock.releaseLock();
   }
+  lock.releaseLock();
+
+  // إشعار فوري بس (من غير أي طلب اعتماد) لموبايل الإداري بإنشاء أمر
+  // شراء جديد — بعد الإفراج عن القفل عشان ما نأخرش أوامر تانية بتتسجل
+  // في نفس اللحظة.
+  sendPushToAll_(
+    'أمر شراء جديد',
+    'أمر شراء رقم ' + num + (e.parameter.supplier ? (' — المورد: ' + e.parameter.supplier) : '') + (e.parameter.client ? (' — العميل: ' + e.parameter.client) : '')
+  );
+
+  return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ---- إشعار فوري بس (من غير أي حفظ أو طلب اعتماد) لأحداث زي إنشاء
+// "تفويض عام" أو "تفويض شيكات" — الشاشتين دول بيولّدوا PDF على جهاز
+// المستخدم مباشرة من غير ما يحفظوا حاجة في أي شيت، فالفكرة هنا مجرد
+// نبّه الإداري إن حد عمل تفويض، من غير أي تتبّع أو اعتماد.
+function handleNotifyEvent(ss, e) {
+  var title = e.parameter.title || 'إشعار جديد';
+  var body  = e.parameter.body  || '';
+  sendPushToAll_(title, body);
+  return ContentService.createTextOutput(JSON.stringify({ ok: true }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // بيدوّر في رقم الأمر + اسم العميل + اسم المورد + التاريخ عن أي جزء يطابق
@@ -905,9 +932,15 @@ function sendPushToAll_(title, body) {
     var tokens = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
     logPush_('sendPushToAll_: عدد الأجهزة المسجلة = ' + tokens.length);
 
-    tokens.forEach(function (row) {
+    // بنجهّز كل الطلبات الأول وبعدين نبعتهم كلهم مرة واحدة بـ fetchAll
+    // (بدل ما نبعت طلب، ننتظر رده، وبعدين نبعت اللي بعده) — لو فيه أكتر
+    // من جهاز مسجّل، ده بيقلل وقت الانتظار الإجمالي بدل ما يتضاعف مع كل
+    // جهاز جديد.
+    var validTokens = [];
+    var requests = tokens.map(function (row) {
       var token = row[0];
-      if (!token) return;
+      if (!token) return null;
+      validTokens.push(token);
       // بنبعت الإشعار كـ "data" مش "notification" عمداً — لما الـ payload
       // فيه notification، بعض الأجهزة (خصوصًا أندرويد) بتعرض الإشعار
       // مرتين: مرة تلقائي من نظام FCM نفسه ومرة تانية من الكود بتاعنا في
@@ -928,13 +961,19 @@ function sendPushToAll_(title, body) {
           webpush: { headers: { Urgency: 'high' } }
         }
       };
-      var response = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send', {
+      return {
+        url: 'https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send',
         method: 'post',
         contentType: 'application/json',
         headers: { Authorization: 'Bearer ' + accessToken },
         payload: JSON.stringify(payload),
         muteHttpExceptions: true
-      });
+      };
+    }).filter(function (r) { return !!r; });
+
+    var responses = requests.length ? UrlFetchApp.fetchAll(requests) : [];
+    responses.forEach(function (response, idx) {
+      var token = validTokens[idx];
       var code = response.getResponseCode();
       if (code !== 200) {
         logPush_('sendPushToAll_: فشل الإرسال (كود ' + code + ') لتوكن ينتهي بـ ...' + String(token).slice(-8) + ' - ' + response.getContentText());
