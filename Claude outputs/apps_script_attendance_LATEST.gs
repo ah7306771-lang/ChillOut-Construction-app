@@ -466,10 +466,14 @@ function handleOrderSubmit(ss, e) {
   try {
     var lastRow = sheet.getLastRow();
     var rowIndex = -1;
+    var numInt = extractOrderNumberInt_(num);
     if (lastRow > 1) {
       var ids = sheet.getRange(2, ORD_COL_NUM_, lastRow - 1, 1).getValues();
       for (var i = 0; i < ids.length; i++) {
-        if (String(ids[i][0]) === num) { rowIndex = i + 2; break; }
+        // بالمقارنة بالرقم الصحيح (مش بالنص الحرفي) عشان لو رقم الأمر
+        // اتخزن قبل كده كرقم بدل نص (فقد الصفر على الشمال) يفضل يتطابق
+        // صح برضو، ومحصلش صف جديد مكرر لنفس الرقم.
+        if (numInt && extractOrderNumberInt_(ids[i][0]) === numInt) { rowIndex = i + 2; break; }
       }
     }
     if (rowIndex === -1) {
