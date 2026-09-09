@@ -47,18 +47,21 @@ function doGet(e) {
   lock.waitLock(15000);
   try {
     var tz = ss.getSpreadsheetTimeZone();
+    var colMap = getAttendanceColMap_(sheet);
+    var lastCol = Math.max(sheet.getLastColumn(), 1);
     var lastRow = sheet.getLastRow();
     var targetRow = -1;    // رقم صف الشيت (١-based) لو الموظف له صف بالفعل في نفس اليوم
     var matchedType = '';
     var existingTime = '';
-    if (lastRow > 1) {
-      var values = sheet.getRange(2, 1, lastRow - 1, 13).getValues();
+    if (lastRow > 1 && colMap.name && colMap.date) {
+      var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
       for (var i = 0; i < values.length; i++) {
         var r = values[i];
-        if (r[0] === name && normalizeDate_(r[2], tz) === date) {
+        if (r[colMap.name - 1] === name && normalizeDate_(r[colMap.date - 1], tz) === date) {
           targetRow = i + 2;
-          matchedType = r[1];
-          existingTime = (type === 'حضور') ? normalizeTime_(r[3], tz) : normalizeTime_(r[8], tz);
+          matchedType = colMap.type ? r[colMap.type - 1] : '';
+          var existingTimeCol = (type === 'حضور') ? colMap.inTime : colMap.outTime;
+          existingTime = existingTimeCol ? normalizeTime_(r[existingTimeCol - 1], tz) : '';
           break;
         }
       }
@@ -76,16 +79,12 @@ function doGet(e) {
     if (targetRow > -1) {
       // للموظف صف بالفعل النهاردة (غياب اتحول حضور، أو حضور وناقصه
       // الانصراف) — نكمّل نفس الصف بدل ما نعمل صف جديد.
-      if (matchedType === 'غياب') sheet.getRange(targetRow, 2, 1, 1).setValue('حضور');
-      if (type === 'حضور') {
-        sheet.getRange(targetRow, 4, 1, 5).setValues([[time, lat, lng, map, device]]);
-      } else {
-        sheet.getRange(targetRow, 9, 1, 5).setValues([[time, lat, lng, map, device]]);
-      }
+      if (matchedType === 'غياب' && colMap.type) sheet.getRange(targetRow, colMap.type).setValue('حضور');
+      setAttendanceSlot_(sheet, targetRow, colMap, (type === 'حضور') ? 'in' : 'out', time, lat, lng, map, device);
     } else {
       var newRow = (type === 'حضور')
-        ? [name, 'حضور', date, time, lat, lng, map, device, '', '', '', '', '']
-        : [name, 'حضور', date, '', '', '', '', '', time, lat, lng, map, device];
+        ? buildAttendanceRow_(colMap, lastCol, name, 'حضور', date, time, lat, lng, map, device, '', '', '', '', '')
+        : buildAttendanceRow_(colMap, lastCol, name, 'حضور', date, '', '', '', '', '', time, lat, lng, map, device);
       sheet.appendRow(newRow);
     }
 
@@ -125,25 +124,36 @@ function getAttendanceRows_(ss, sheet, dateFilter) {
   var rows = [];
 
   if (lastRow > 1) {
-    var values = sheet.getRange(2, 1, lastRow - 1, 13).getValues();
+    var colMap = getAttendanceColMap_(sheet);
+    var lastCol = Math.max(sheet.getLastColumn(), 1);
+    var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
     for (var i = 0; i < values.length; i++) {
       var r = values[i];
-      var rowDate = normalizeDate_(r[2], tz);
+      var name = colMap.name ? r[colMap.name - 1] : '';
+      var type = colMap.type ? r[colMap.type - 1] : '';
+      var rowDate = colMap.date ? normalizeDate_(r[colMap.date - 1], tz) : '';
       if (dateFilter && rowDate !== dateFilter) continue;
-      var name = r[0], type = r[1];
 
       if (type === 'غياب') {
         rows.push({ name: name, type: 'غياب', date: rowDate, time: '', lat: '', lng: '', map: '', device: '' });
         continue;
       }
 
-      var checkInTime = normalizeTime_(r[3], tz);
+      var checkInTime = colMap.inTime ? normalizeTime_(r[colMap.inTime - 1], tz) : '';
       if (checkInTime) {
-        rows.push({ name: name, type: 'حضور', date: rowDate, time: checkInTime, lat: r[4], lng: r[5], map: r[6], device: r[7] });
+        rows.push({
+          name: name, type: 'حضور', date: rowDate, time: checkInTime,
+          lat: colMap.inLat ? r[colMap.inLat - 1] : '', lng: colMap.inLng ? r[colMap.inLng - 1] : '',
+          map: colMap.inMap ? r[colMap.inMap - 1] : '', device: colMap.inDevice ? r[colMap.inDevice - 1] : ''
+        });
       }
-      var checkOutTime = normalizeTime_(r[8], tz);
+      var checkOutTime = colMap.outTime ? normalizeTime_(r[colMap.outTime - 1], tz) : '';
       if (checkOutTime) {
-        rows.push({ name: name, type: 'انصراف', date: rowDate, time: checkOutTime, lat: r[9], lng: r[10], map: r[11], device: r[12] });
+        rows.push({
+          name: name, type: 'انصراف', date: rowDate, time: checkOutTime,
+          lat: colMap.outLat ? r[colMap.outLat - 1] : '', lng: colMap.outLng ? r[colMap.outLng - 1] : '',
+          map: colMap.outMap ? r[colMap.outMap - 1] : '', device: colMap.outDevice ? r[colMap.outDevice - 1] : ''
+        });
       }
     }
   }
@@ -637,15 +647,18 @@ function handleRequestSetStatus(ss, e) {
 function applyMissionToAttendance_(ss, name, dateStr, fromTime, toTime) {
   var sheet = getAttendanceMainSheet_(ss);
   var tz = ss.getSpreadsheetTimeZone();
+  var colMap = getAttendanceColMap_(sheet);
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
   var lastRow = sheet.getLastRow();
   var targetRow = -1;
   var currentType = '';
-  if (lastRow > 1) {
-    var values = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
+  if (lastRow > 1 && colMap.name && colMap.date) {
+    var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
     for (var i = 0; i < values.length; i++) {
-      if (values[i][0] === name && normalizeDate_(values[i][2], tz) === dateStr) {
+      var r = values[i];
+      if (r[colMap.name - 1] === name && normalizeDate_(r[colMap.date - 1], tz) === dateStr) {
         targetRow = i + 2;
-        currentType = values[i][1];
+        currentType = colMap.type ? r[colMap.type - 1] : '';
         break;
       }
     }
@@ -657,11 +670,11 @@ function applyMissionToAttendance_(ss, name, dateStr, fromTime, toTime) {
   var checkIn = fromTime || '';
   var checkOut = toTime || '';
   if (targetRow > -1) {
-    sheet.getRange(targetRow, 2, 1, 1).setValue('مأمورية');
-    sheet.getRange(targetRow, 4, 1, 5).setValues([[checkIn, '', '', '', '']]);
-    sheet.getRange(targetRow, 9, 1, 5).setValues([[checkOut, '', '', '', '']]);
+    if (colMap.type) sheet.getRange(targetRow, colMap.type).setValue('مأمورية');
+    setAttendanceSlot_(sheet, targetRow, colMap, 'in', checkIn, '', '', '', '');
+    setAttendanceSlot_(sheet, targetRow, colMap, 'out', checkOut, '', '', '', '');
   } else {
-    sheet.appendRow([name, 'مأمورية', dateStr, checkIn, '', '', '', '', checkOut, '', '', '', '']);
+    sheet.appendRow(buildAttendanceRow_(colMap, lastCol, name, 'مأمورية', dateStr, checkIn, '', '', '', '', checkOut, '', '', '', ''));
   }
 }
 
@@ -1000,14 +1013,17 @@ function refreshMonthlyReport_(monthStr) {
   var earlyCount = {}, earlyMinutes = {};
   var attSheet = getAttendanceMainSheet_(ss);
   if (attSheet && attSheet.getLastRow() > 1) {
-    var attVals = attSheet.getRange(2, 1, attSheet.getLastRow() - 1, 13).getValues();
+    var attColMap = getAttendanceColMap_(attSheet);
+    var attLastCol = Math.max(attSheet.getLastColumn(), 1);
+    var attVals = attSheet.getRange(2, 1, attSheet.getLastRow() - 1, attLastCol).getValues();
     attVals.forEach(function (r) {
-      var name = r[0], type = r[1];
+      var name = attColMap.name ? r[attColMap.name - 1] : '';
+      var type = attColMap.type ? r[attColMap.type - 1] : '';
       if (!name || type !== 'حضور') return;
-      var dateStr = normalizeDate_(r[2], tz);
+      var dateStr = attColMap.date ? normalizeDate_(r[attColMap.date - 1], tz) : '';
       if (dateStr.slice(0, 7) !== monthStr) return;
 
-      var checkInTime = normalizeTime_(r[3], tz);
+      var checkInTime = attColMap.inTime ? normalizeTime_(r[attColMap.inTime - 1], tz) : '';
       if (checkInTime) {
         var official = officialIn[name];
         if (official) {
@@ -1019,7 +1035,7 @@ function refreshMonthlyReport_(monthStr) {
         }
       }
 
-      var checkOutTime = normalizeTime_(r[8], tz);
+      var checkOutTime = attColMap.outTime ? normalizeTime_(r[attColMap.outTime - 1], tz) : '';
       if (checkOutTime) {
         var officialO = officialOut[name];
         if (officialO) {
@@ -1118,10 +1134,58 @@ var ATTENDANCE_MAIN_HEADERS_ = [
   'وقت الانصراف', 'خط عرض الانصراف', 'خط طول الانصراف', 'رابط موقع الانصراف', 'جهاز الانصراف'
 ];
 
-// بيتأكد إن شيت الحضور بالتصميم الجديد (عمود "وقت الحضور" في العمود
-// الرابع)، ولو لسه بالتصميم القديم (صف منفصل لكل "حضور" وصف منفصل لكل
-// "انصراف")، بيرقّيه تلقائيًا: بيدمج كل صفي حضور/انصراف لنفس الموظف ونفس
-// اليوم في صف واحد، وبيسيب صفوف "غياب" زي ما هي.
+// بيربط كل اسم منطقي (name/type/date/inTime...) برقم العمود الفعلي بتاعه
+// في الشيت — بالاسم مش بالترتيب. عشان لو حد (زيك انت) رتّب/سحب الأعمدة في
+// جوجل شيتس يدويًا لسهولة القراءة (زي ما حصل)، الكود يفضل شغال صح مهما
+// كان ترتيب الأعمدة، بدل ما يفترض إن العمود الرابع مثلاً هو وقت الحضور
+// دايمًا.
+var ATTENDANCE_COL_KEYS_ = {
+  name: 'الاسم', type: 'النوع', date: 'التاريخ',
+  inTime: 'وقت الحضور', inLat: 'خط عرض الحضور', inLng: 'خط طول الحضور', inMap: 'رابط موقع الحضور', inDevice: 'جهاز الحضور',
+  outTime: 'وقت الانصراف', outLat: 'خط عرض الانصراف', outLng: 'خط طول الانصراف', outMap: 'رابط موقع الانصراف', outDevice: 'جهاز الانصراف'
+};
+
+function getAttendanceColMap_(sheet) {
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var map = {};
+  Object.keys(ATTENDANCE_COL_KEYS_).forEach(function (key) {
+    var idx = headers.indexOf(ATTENDANCE_COL_KEYS_[key]);
+    map[key] = idx > -1 ? (idx + 1) : 0; // رقم عمود ١-based، أو صفر لو العمود مش موجود
+  });
+  return map;
+}
+
+// بتكتب خمس خانات (وقت/خط عرض/خط طول/رابط موقع/جهاز) لجزء "حضور" أو
+// "انصراف" في صف معيّن، كل خانة في مكانها الفعلي حسب colMap — مش في
+// أعمدة متجاورة بافتراض ترتيب ثابت.
+function setAttendanceSlot_(sheet, row, colMap, prefix, time, lat, lng, map, device) {
+  var timeCol = colMap[prefix + 'Time'], latCol = colMap[prefix + 'Lat'], lngCol = colMap[prefix + 'Lng'],
+      mapCol = colMap[prefix + 'Map'], deviceCol = colMap[prefix + 'Device'];
+  if (timeCol) sheet.getRange(row, timeCol).setValue(time || '');
+  if (latCol) sheet.getRange(row, latCol).setValue(lat || '');
+  if (lngCol) sheet.getRange(row, lngCol).setValue(lng || '');
+  if (mapCol) sheet.getRange(row, mapCol).setValue(map || '');
+  if (deviceCol) sheet.getRange(row, deviceCol).setValue(device || '');
+}
+
+// بتبني صف جديد كامل (بعرض lastCol) وتحط كل قيمة في عمودها الصح حسب
+// colMap، بدل مصفوفة بترتيب ثابت.
+function buildAttendanceRow_(colMap, lastCol, name, type, dateStr, inTime, inLat, inLng, inMap, inDevice, outTime, outLat, outLng, outMap, outDevice) {
+  var row = [];
+  for (var i = 0; i < lastCol; i++) row.push('');
+  var put = function (key, val) { if (colMap[key]) row[colMap[key] - 1] = val || ''; };
+  put('name', name); put('type', type); put('date', dateStr);
+  put('inTime', inTime); put('inLat', inLat); put('inLng', inLng); put('inMap', inMap); put('inDevice', inDevice);
+  put('outTime', outTime); put('outLat', outLat); put('outLng', outLng); put('outMap', outMap); put('outDevice', outDevice);
+  return row;
+}
+
+// بيتأكد إن شيت الحضور بالتصميم الجديد (فيه عمود اسمه "وقت الحضور"
+// موجود — في أي مكان، بغض النظر عن ترتيب الأعمدة)، ولو لسه بالتصميم
+// القديم قبل كده (صف منفصل لكل "حضور" وصف منفصل لكل "انصراف")، بيرقّيه
+// تلقائيًا: بيدمج كل صفي حضور/انصراف لنفس الموظف ونفس اليوم في صف واحد،
+// وبيسيب صفوف "غياب" زي ما هي.
 function ensureAttendanceMainHeaders_(sheet) {
   if (!sheet) return;
   if (sheet.getLastRow() === 0) {
@@ -1129,8 +1193,9 @@ function ensureAttendanceMainHeaders_(sheet) {
     sheet.getRange(1, 1, 1, ATTENDANCE_MAIN_HEADERS_.length).setFontWeight('bold');
     return;
   }
-  var currentCol4 = sheet.getRange(1, 4).getValue();
-  if (currentCol4 === ATTENDANCE_MAIN_HEADERS_[3]) return; // متظبط بالفعل
+  var lastColCheck = Math.max(sheet.getLastColumn(), 1);
+  var headerRow = sheet.getRange(1, 1, 1, lastColCheck).getValues()[0];
+  if (headerRow.indexOf(ATTENDANCE_MAIN_HEADERS_[3]) > -1) return; // "وقت الحضور" موجود بالفعل — متظبط، مهما كان ترتيب الأعمدة
 
   var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
   var lastRow = sheet.getLastRow();
@@ -1196,18 +1261,26 @@ function ensureAttendanceMainHeaders_(sheet) {
 }
 
 var ATTENDANCE_EXTRA_HEADERS_ = ['التأخير', 'نوع طلب اليوم', 'حالة الطلب'];
-var ATTENDANCE_EXTRA_START_COL_ = 14; // بعد الأعمدة الـ13 الأصلية (الاسم..جهاز الانصراف)
 
-function ensureAttendanceExtraHeaders_(sheet) {
-  var current = sheet.getRange(1, ATTENDANCE_EXTRA_START_COL_, 1, ATTENDANCE_EXTRA_HEADERS_.length).getValues()[0];
-  var mismatch = false;
-  for (var i = 0; i < ATTENDANCE_EXTRA_HEADERS_.length; i++) {
-    if (current[i] !== ATTENDANCE_EXTRA_HEADERS_[i]) { mismatch = true; break; }
+// بيدوّر على الأعمدة الإضافية التلاتة دي بالاسم (مش بترتيب/موضع ثابت) —
+// لو موجودين بالفعل جنب بعض بنفس الترتيب في أي مكان في الشيت (حتى لو حد
+// سحبهم لمكان تاني)، بيرجّع رقم أول عمود فيهم. لو مش موجودين خالص، بيضيفهم
+// آخر عمود في الشيت.
+function findOrAppendExtraCols_(sheet) {
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var idx = headers.indexOf(ATTENDANCE_EXTRA_HEADERS_[0]);
+  if (idx > -1) {
+    var matches = true;
+    for (var i = 0; i < ATTENDANCE_EXTRA_HEADERS_.length; i++) {
+      if (headers[idx + i] !== ATTENDANCE_EXTRA_HEADERS_[i]) { matches = false; break; }
+    }
+    if (matches) return idx + 1;
   }
-  if (mismatch) {
-    sheet.getRange(1, ATTENDANCE_EXTRA_START_COL_, 1, ATTENDANCE_EXTRA_HEADERS_.length)
-      .setValues([ATTENDANCE_EXTRA_HEADERS_]).setFontWeight('bold');
-  }
+  var startCol = lastCol + 1;
+  sheet.getRange(1, startCol, 1, ATTENDANCE_EXTRA_HEADERS_.length)
+    .setValues([ATTENDANCE_EXTRA_HEADERS_]).setFontWeight('bold');
+  return startCol;
 }
 
 // قايمة مبسطة من تاب "Requests" (اسم، من يوم، إلى يوم، نوع، حالة) — بنبنيها
@@ -1249,7 +1322,7 @@ function refreshAttendanceExtraColumns_() {
 
   // الترويسة لازم تتظبط حتى لو الشيت لسه فاضي من البيانات (أول مرة قبل ما
   // أي حد يسجل حضور خالص).
-  if (sheet.getLastRow() >= 1) ensureAttendanceExtraHeaders_(sheet);
+  if (sheet.getLastRow() >= 1) findOrAppendExtraCols_(sheet);
   if (sheet.getLastRow() < 2) return; // مفيش صفوف بيانات لسه نحسبلها حاجة
 
   var timesSheet = getOfficialTimesSheet_(ss);
@@ -1265,13 +1338,15 @@ function refreshAttendanceExtraColumns_() {
   }
 
   var reqIndex = buildRequestsIndex_(ss, tz);
-
+  var colMap = getAttendanceColMap_(sheet);
   var lastRow = sheet.getLastRow();
-  var vals = sheet.getRange(2, 1, lastRow - 1, 4).getValues(); // الاسم|النوع|التاريخ|الوقت
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var vals = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
   var out = vals.map(function (r) {
-    var name = r[0], type = r[1];
-    var dateStr = normalizeDate_(r[2], tz);
-    var timeStr = normalizeTime_(r[3], tz);
+    var name = colMap.name ? r[colMap.name - 1] : '';
+    var type = colMap.type ? r[colMap.type - 1] : '';
+    var dateStr = colMap.date ? normalizeDate_(r[colMap.date - 1], tz) : '';
+    var timeStr = colMap.inTime ? normalizeTime_(r[colMap.inTime - 1], tz) : '';
 
     var lateText = '';
     if (type === 'حضور') {
@@ -1285,7 +1360,8 @@ function refreshAttendanceExtraColumns_() {
     return [lateText, req ? req.type : '', req ? req.status : ''];
   });
 
-  sheet.getRange(2, ATTENDANCE_EXTRA_START_COL_, out.length, 3).setValues(out);
+  var startCol = findOrAppendExtraCols_(sheet);
+  sheet.getRange(2, startCol, out.length, 3).setValues(out);
 }
 
 // شغّلها يدوياً (أو من قايمة "📊 تقرير الحضور" فوق) لتحديث تقرير الشهر
@@ -1328,14 +1404,17 @@ function markAbsencesForDate_(ss, dateStr) {
   var tz = ss.getSpreadsheetTimeZone();
   var sheet = getAttendanceMainSheet_(ss);
   if (!sheet) return;
+  var colMap = getAttendanceColMap_(sheet);
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
 
-  var handled = {}; // عنده حضور، أو غياب اتسجل قبل كده، في نفس اليوم ده
-  if (sheet.getLastRow() > 1) {
-    var vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues(); // الاسم|النوع|التاريخ
+  var handled = {}; // عنده حضور، أو غياب، أو مأمورية اتسجلوا قبل كده في نفس اليوم ده
+  if (sheet.getLastRow() > 1 && colMap.name && colMap.date) {
+    var vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, lastCol).getValues();
     vals.forEach(function (r) {
-      var name = r[0], type = r[1];
+      var name = r[colMap.name - 1];
+      var type = colMap.type ? r[colMap.type - 1] : '';
       if (!name) return;
-      var d = normalizeDate_(r[2], tz);
+      var d = normalizeDate_(r[colMap.date - 1], tz);
       if (d === dateStr && (type === 'حضور' || type === 'غياب' || type === 'مأمورية')) handled[name] = true;
     });
   }
@@ -1349,7 +1428,7 @@ function markAbsencesForDate_(ss, dateStr) {
       if (handled[name]) return;
       var req = findRequestForDay_(reqIndex, name, dateStr);
       if (req && req.status === 'موافق') return; // إذن/مأمورية/إجازة معتمدة تغطي اليوم ده
-      sheet.appendRow([name, 'غياب', dateStr, '', '', '', '', '', '', '', '', '', '']);
+      sheet.appendRow(buildAttendanceRow_(colMap, lastCol, name, 'غياب', dateStr, '', '', '', '', '', '', '', '', '', ''));
     });
   } finally {
     lock.releaseLock();
