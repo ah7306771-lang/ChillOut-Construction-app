@@ -694,12 +694,21 @@
   #paper2 table.dtable tbody tr:nth-child(even){background:#faf7f4;}
   #paper2 table.dtable tfoot td{background:#fff0e0;font-weight:800;border-top:2px solid #3a3f45;}
 
-  /* Extra headroom under the stamp block specifically for this paper, as a
-     safety margin on top of the width fix above — guarantees the stamp
-     image can never visually reach the المندوب row even at full export
-     resolution. */
-  #paper2 .sign-row{height:108px;}
-  #paper2 .order-rep-row{margin-top:60px;display:flex;justify-content:flex-start;}
+  /* The shared .sign-row/.sign-block system (used elsewhere for two
+     side-by-side blocks) positions its blocks with position:absolute
+     inside a fixed-height container — the container's declared height
+     doesn't actually reserve enough room for the label + stamp image, so
+     the block can spill out past it. That's invisible in the on-screen
+     preview (nothing below it overlaps mid-render), but shows clearly
+     once html2canvas captures it and the امر الشراء paper's rep row right
+     underneath. paper2 only ever has ONE block in this row (the stamp —
+     no signature on the right), so instead of trying to pad a fixed
+     height correctly, switch it to plain flow: the row's own height and
+     the gap before المندوب are then whatever the actual stamp image needs,
+     guaranteed never to overlap. */
+  #paper2 .sign-row{position:static;height:auto;overflow:visible;margin-top:6px;text-align:left;}
+  #paper2 .sign-block{position:static;width:auto;max-width:60%;display:inline-block;padding-left:0;}
+  #paper2 .order-rep-row{margin-top:34px;display:flex;justify-content:flex-start;}
   #paper2 .order-rep-block{text-align:center;min-width:190px;}
   #paper2 .order-rep-block .lbl{font-size:0.8em;font-weight:700;color:#555;margin-bottom:4px;}
   #paper2 .order-rep-block .val{
