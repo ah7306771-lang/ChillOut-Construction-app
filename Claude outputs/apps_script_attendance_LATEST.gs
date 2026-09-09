@@ -248,44 +248,135 @@ function handleDashboardData(ss, sheet, e) {
 }
 
 // ---------------------------------------------------------------------
-// رقم أمر الشراء التلقائي (عداد مركزي واحد في الشيت)
+// سجل أوامر الشراء (تاب "Orders") + رقم الأمر التلقائي + البحث من التطبيق
 // ---------------------------------------------------------------------
-// بيرجع رقم تسلسلي جديد في كل مرة، بمنتهى الأمان حتى لو أكتر من شخص من
-// أكتر من منطقة طلبوا رقم في نفس اللحظة بالظبط — بنستخدم LockService اللي
-// بيقفل تنفيذ السكريبت كله لحظيًا، فمفيش احتمال إطلاقًا إن اتنين ياخدوا
-// نفس الرقم. الرقم بيتخزن في تاب "Counters" (مفتاح | آخر رقم) عشان يفضل
-// متسلسل حتى لو حصل إعادة نشر أو تغيير في السكريبت.
-function getCountersSheet_(ss) {
-  var sheet = ss.getSheetByName('Counters');
+// آخر رقم بيتاخد من تاب "Orders" نفسه (أكبر رقم موجود + 1) عشان منحتاجش
+// تاب إضافي منفصل بس عشان عداد. عشان نضمن عدم تكرار الرقم حتى لو كذا
+// شخص من كذا منطقة فتحوا النموذج في نفس اللحظة، أول ما حد ياخد رقم
+// جديد بنحجزه فورًا بصف مؤقت في نفس الشيت (جوه LockService)، فأي طلب
+// تاني للرقم التالي هيلاقي الرقم ده محجوز ويطلع اللي بعده مباشرة. وبعدين
+// لما الأمر يتحفظ فعليًا (عند التحميل/المشاركة) الصف المحجوز ده بيتملي
+// ببيانات الأمر الحقيقية بدل ما يتضاف صف جديد.
+//
+// الأصناف (الأقطار/الكميات) بتتخزن بشكلين في نفس الصف: عمود مقروء
+// "تفاصيل الأصناف" (كل صنف في سطر، بشكل واضح للعين في الشيت مباشرة) +
+// عمود "إجمالي الكمية (طن)"، وبرضو عمود JSON خام (مخفي الاستخدام) عشان
+// التطبيق يقدر يرجّع نفس الأصناف بالظبط لو حد فتح الأمر ده تاني للتعديل
+// أو لإعادة تنزيل نفس الـ PDF.
+var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'تفاصيل الأصناف', 'إجمالي الكمية (طن)', 'الأصناف (بيانات النظام)', 'وقت الحفظ'];
+var ORD_COL_NUM_ = 1;
+var ORD_COL_ITEMS_SUMMARY_ = 11;
+var ORD_COL_ITEMS_TOTAL_ = 12;
+var ORD_COL_ITEMS_JSON_ = 13;
+
+function getOrdersSheet_(ss) {
+  var sheet = ss.getSheetByName('Orders');
   if (!sheet) {
-    sheet = ss.insertSheet('Counters');
-    sheet.appendRow(['المفتاح', 'آخر رقم']);
+    sheet = ss.insertSheet('Orders');
+    sheet.appendRow(ORDERS_HEADERS_);
+    sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setFontWeight('bold');
+    return sheet;
+  }
+  // ترقية تلقائية لشيت "Orders" قديم (كان بعمود JSON خام واحد بس مكان
+  // "تفاصيل الأصناف") — بنضيف عمودين جدد قبله من غير ما نلمس أي بيانات
+  // محفوظة، وبنعيد كتابة صف العناوين بالتصميم الجديد.
+  var headerVals = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+  if (headerVals[ORD_COL_ITEMS_SUMMARY_ - 1] !== 'تفاصيل الأصناف') {
+    sheet.insertColumns(ORD_COL_ITEMS_SUMMARY_, 2);
+    sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setValues([ORDERS_HEADERS_]).setFontWeight('bold');
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      // نصلّح شكل رقم الأمر القديم (كان بيترخزن كرقم فيفقد الأصفار على
+      // الشمال) ونملى عمودي التفاصيل/الإجمالي الجدد من الـ JSON القديم.
+      var numRange = sheet.getRange(2, ORD_COL_NUM_, lastRow - 1, 1);
+      numRange.setNumberFormat('@');
+      var numVals = numRange.getValues();
+      for (var i = 0; i < numVals.length; i++) {
+        var n = extractOrderNumberInt_(numVals[i][0]);
+        numVals[i][0] = n ? ('0000' + n).slice(-4) : numVals[i][0];
+      }
+      numRange.setValues(numVals);
+
+      var jsonVals = sheet.getRange(2, ORD_COL_ITEMS_JSON_, lastRow - 1, 1).getValues();
+      var summaryOut = [];
+      var totalOut = [];
+      for (var j = 0; j < jsonVals.length; j++) {
+        var f = formatOrderItemsForSheet_(jsonVals[j][0]);
+        summaryOut.push([f.summary]);
+        totalOut.push([f.total]);
+      }
+      sheet.getRange(2, ORD_COL_ITEMS_SUMMARY_, summaryOut.length, 1).setValues(summaryOut);
+      sheet.getRange(2, ORD_COL_ITEMS_TOTAL_, totalOut.length, 1).setValues(totalOut);
+    }
   }
   return sheet;
 }
 
+// بيقرا أي رقم أمر (نص أو رقم، بأصفار على الشمال أو من غيرها) ويطلّع منه
+// الرقم الصحيح بس — بيرجع 0 لو مفيش أرقام خالص (صف فاضي مثلاً).
+function extractOrderNumberInt_(v) {
+  var m = String(v || '').match(/\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+}
+
+// بيحوّل مصفوفة الأصناف (JSON) لنص مقروء، كل صنف في سطر، + إجمالي الكمية.
+function formatOrderItemsForSheet_(itemsJsonStr) {
+  var items = [];
+  try { items = JSON.parse(itemsJsonStr || '[]'); } catch (err) { items = []; }
+  var lines = [];
+  var total = 0;
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i] || {};
+    var diameter = String(it.diameter || '').trim();
+    var qty = String(it.qty || '').trim();
+    var spec = String(it.spec || '').trim();
+    var type = String(it.type || '').trim();
+    var qtyNum = parseFloat(qty);
+    if (!isNaN(qtyNum)) total += qtyNum;
+    var parts = [];
+    if (diameter) parts.push('قطر ' + diameter + ' مم');
+    if (qty) parts.push(qty + ' طن');
+    var line = parts.join(' × ');
+    var extra = [spec, type].filter(function (x) { return x; }).join(' - ');
+    if (extra) line += (line ? ' ' : '') + '(' + extra + ')';
+    if (line) lines.push(line);
+  }
+  return {
+    summary: lines.join('\n'),
+    total: total ? String(total) : ''
+  };
+}
+
+// بيرجع رقم تسلسلي جديد كل مرة، بمنتهى الأمان حتى لو أكتر من شخص من
+// أكتر من منطقة طلبوا رقم في نفس اللحظة بالظبط — LockService بيقفل
+// تنفيذ السكريبت لحظيًا، وبنحجز الرقم فورًا بصف مؤقت في شيت "Orders"
+// نفسه (مفيش تاب تاني) عشان محدش تاني ياخد نفس الرقم قبل ما الأمر يتحفظ.
 function handleNextOrderNumber(ss, e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    var sheet = getCountersSheet_(ss);
-    var key = 'أمر شراء';
+    var sheet = getOrdersSheet_(ss);
     var lastRow = sheet.getLastRow();
-    var rowIndex = -1;
-    var current = 0;
+    var max = 0;
     if (lastRow > 1) {
-      var vals = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
-      for (var i = 0; i < vals.length; i++) {
-        if (vals[i][0] === key) { rowIndex = i + 2; current = Number(vals[i][1]) || 0; break; }
+      var nums = sheet.getRange(2, ORD_COL_NUM_, lastRow - 1, 1).getValues();
+      for (var i = 0; i < nums.length; i++) {
+        var n = extractOrderNumberInt_(nums[i][0]);
+        if (n > max) max = n;
       }
     }
-    var next = current + 1;
-    if (rowIndex === -1) {
-      sheet.appendRow([key, next]);
-    } else {
-      sheet.getRange(rowIndex, 2).setValue(next);
-    }
+    var next = max + 1;
     var formatted = ('0000' + next).slice(-4);
+
+    var newRowIndex = lastRow + 1;
+    var placeholder = new Array(ORDERS_HEADERS_.length).fill('');
+    placeholder[ORD_COL_NUM_ - 1] = formatted;
+    placeholder[9] = 'محجوز تلقائيًا لحد ما يتحفظ الأمر فعليًا';
+    placeholder[ORD_COL_ITEMS_JSON_ - 1] = '[]';
+    placeholder[ORDERS_HEADERS_.length - 1] = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+    sheet.getRange(newRowIndex, ORD_COL_NUM_).setNumberFormat('@');
+    sheet.getRange(newRowIndex, 1, 1, placeholder.length).setValues([placeholder]);
+
     return ContentService.createTextOutput(JSON.stringify({ ok: true, number: formatted }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
@@ -296,25 +387,8 @@ function handleNextOrderNumber(ss, e) {
   }
 }
 
-// ---------------------------------------------------------------------
-// سجل أوامر الشراء (تاب "Orders") + البحث عنها من داخل التطبيق
-// ---------------------------------------------------------------------
-// كل أمر بيتحفظ (أو يتحدّث لو نفس الرقم) لحظة ما حد ينزّل أو يشارك ملف
-// الـ PDF بتاعه من التطبيق. الأصناف (الأقطار/الكميات) بتتخزن كنص JSON في
-// عمود واحد عشان عددها متغيّر من أمر لآخر، وبترجع زي ما هي لما حد يدور
-// على الأمر ده تاني ويحمّله في النموذج.
-var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'الأصناف', 'وقت الحفظ'];
-
-function getOrdersSheet_(ss) {
-  var sheet = ss.getSheetByName('Orders');
-  if (!sheet) {
-    sheet = ss.insertSheet('Orders');
-    sheet.appendRow(ORDERS_HEADERS_);
-    sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setFontWeight('bold');
-  }
-  return sheet;
-}
-
+// كل أمر بيتحفظ (أو يتحدّث لو نفس الرقم — عادة بيلاقي الصف المحجوز من
+// nextOrderNumber ويملاه) لحظة ما حد ينزّل أو يشارك ملف الـ PDF بتاعه.
 function handleOrderSubmit(ss, e) {
   var num = (e.parameter.num || '').trim();
   if (!num) {
@@ -323,6 +397,8 @@ function handleOrderSubmit(ss, e) {
   }
   var sheet = getOrdersSheet_(ss);
   var tz = ss.getSpreadsheetTimeZone();
+  var itemsJson = e.parameter.items || '[]';
+  var itemsFmt = formatOrderItemsForSheet_(itemsJson);
   var row = [
     num,
     e.parameter.date || '',
@@ -334,7 +410,9 @@ function handleOrderSubmit(ss, e) {
     e.parameter.contactPhone || '',
     e.parameter.rep || '',
     e.parameter.notes || '',
-    e.parameter.items || '[]',
+    itemsFmt.summary,
+    itemsFmt.total,
+    itemsJson,
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss')
   ];
 
@@ -344,16 +422,16 @@ function handleOrderSubmit(ss, e) {
     var lastRow = sheet.getLastRow();
     var rowIndex = -1;
     if (lastRow > 1) {
-      var ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      var ids = sheet.getRange(2, ORD_COL_NUM_, lastRow - 1, 1).getValues();
       for (var i = 0; i < ids.length; i++) {
         if (String(ids[i][0]) === num) { rowIndex = i + 2; break; }
       }
     }
     if (rowIndex === -1) {
-      sheet.appendRow(row);
-    } else {
-      sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
+      rowIndex = lastRow + 1;
     }
+    sheet.getRange(rowIndex, ORD_COL_NUM_).setNumberFormat('@');
+    sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
@@ -365,7 +443,8 @@ function handleOrderSubmit(ss, e) {
 }
 
 // بيدوّر في رقم الأمر + اسم العميل + اسم المورد + التاريخ عن أي جزء يطابق
-// النص المكتوب (من غير حساسية لحالة الأحرف)، وبيرجع أحدث 30 نتيجة.
+// النص المكتوب (من غير حساسية لحالة الأحرف)، وبيرجع أحدث 30 نتيجة —
+// وبيتجاهل أي صف لسه محجوز بس ماتحفظش فيه أمر فعلي لحد دلوقتي.
 function handleOrdersSearch(ss, e) {
   var q = (e.parameter.q || '').trim().toLowerCase();
   var sheet = ss.getSheetByName('Orders');
@@ -379,6 +458,7 @@ function handleOrdersSearch(ss, e) {
       var date = String(r[1] || '');
       var supplier = String(r[2] || '');
       var client = String(r[3] || '');
+      if (!date && !supplier && !client) continue; // صف محجوز لسه من غير أمر فعلي
       var haystack = (num + ' ' + date + ' ' + supplier + ' ' + client).toLowerCase();
       if (haystack.indexOf(q) === -1) continue;
       rows.push({
@@ -392,7 +472,8 @@ function handleOrdersSearch(ss, e) {
         contactPhone: r[7],
         rep: r[8],
         notes: r[9],
-        items: r[10]
+        itemsSummary: r[10],
+        items: r[12]
       });
       if (rows.length >= 30) break;
     }

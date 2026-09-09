@@ -5266,6 +5266,7 @@ window.safeFileName = function(str){
         div.innerHTML = `
           <div class="osi-num">أمر رقم ${esc(row.num)}</div>
           <div class="osi-meta">${esc(row.date || '—')} &nbsp;|&nbsp; ${esc(row.client || '—')} / ${esc(row.supplier || '—')}</div>
+          ${row.itemsSummary ? `<div class="osi-meta">${esc(row.itemsSummary).replace(/\n/g,' • ')}</div>` : ''}
         `;
         div.addEventListener('click', () => {
           loadOrderIntoForm(row);
