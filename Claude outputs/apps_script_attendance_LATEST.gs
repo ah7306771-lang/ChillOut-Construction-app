@@ -258,16 +258,20 @@ function handleDashboardData(ss, sheet, e) {
 // لما الأمر يتحفظ فعليًا (عند التحميل/المشاركة) الصف المحجوز ده بيتملي
 // ببيانات الأمر الحقيقية بدل ما يتضاف صف جديد.
 //
-// الأصناف (الأقطار/الكميات) بتتخزن بشكلين في نفس الصف: عمود مقروء
-// "تفاصيل الأصناف" (كل صنف في سطر، بشكل واضح للعين في الشيت مباشرة) +
-// عمود "إجمالي الكمية (طن)"، وبرضو عمود JSON خام (مخفي الاستخدام) عشان
-// التطبيق يقدر يرجّع نفس الأصناف بالظبط لو حد فتح الأمر ده تاني للتعديل
-// أو لإعادة تنزيل نفس الـ PDF.
-var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'تفاصيل الأصناف', 'إجمالي الكمية (طن)', 'الأصناف (بيانات النظام)', 'وقت الحفظ'];
+// الأصناف (الأقطار/الكميات/المواصفات/الأنواع) بتتخزن كل وحدة في عمود
+// منفصل ليها بس (لو الأمر فيه أكتر من صنف، القيم بتتجمع في نفس العمود
+// مفصولة بفاصلة "، " بنفس ترتيب الأصناف في كل الأعمدة). وبرضو فيه عمود
+// JSON خام (آخر عمود قبل وقت الحفظ، للاستخدام الداخلي بس) عشان التطبيق
+// يقدر يرجّع نفس الأصناف بالظبط لو حد فتح الأمر ده تاني للتعديل أو
+// لإعادة تنزيل نفس الـ PDF.
+var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'الأقطار (مم)', 'الكميات (طن)', 'المواصفات', 'الأنواع', 'إجمالي الكمية (طن)', 'الأصناف (بيانات النظام)', 'وقت الحفظ'];
 var ORD_COL_NUM_ = 1;
-var ORD_COL_ITEMS_SUMMARY_ = 11;
-var ORD_COL_ITEMS_TOTAL_ = 12;
-var ORD_COL_ITEMS_JSON_ = 13;
+var ORD_COL_DIAMETERS_ = 11;
+var ORD_COL_QTYS_ = 12;
+var ORD_COL_SPECS_ = 13;
+var ORD_COL_TYPES_ = 14;
+var ORD_COL_TOTAL_ = 15;
+var ORD_COL_ITEMS_JSON_ = 16;
 
 function getOrdersSheet_(ss) {
   var sheet = ss.getSheetByName('Orders');
@@ -277,37 +281,53 @@ function getOrdersSheet_(ss) {
     sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setFontWeight('bold');
     return sheet;
   }
-  // ترقية تلقائية لشيت "Orders" قديم (كان بعمود JSON خام واحد بس مكان
-  // "تفاصيل الأصناف") — بنضيف عمودين جدد قبله من غير ما نلمس أي بيانات
-  // محفوظة، وبنعيد كتابة صف العناوين بالتصميم الجديد.
-  var headerVals = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
-  if (headerVals[ORD_COL_ITEMS_SUMMARY_ - 1] !== 'تفاصيل الأصناف') {
-    sheet.insertColumns(ORD_COL_ITEMS_SUMMARY_, 2);
-    sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setValues([ORDERS_HEADERS_]).setFontWeight('bold');
-    var lastRow = sheet.getLastRow();
-    if (lastRow > 1) {
-      // نصلّح شكل رقم الأمر القديم (كان بيترخزن كرقم فيفقد الأصفار على
-      // الشمال) ونملى عمودي التفاصيل/الإجمالي الجدد من الـ JSON القديم.
-      var numRange = sheet.getRange(2, ORD_COL_NUM_, lastRow - 1, 1);
-      numRange.setNumberFormat('@');
-      var numVals = numRange.getValues();
-      for (var i = 0; i < numVals.length; i++) {
-        var n = extractOrderNumberInt_(numVals[i][0]);
-        numVals[i][0] = n ? ('0000' + n).slice(-4) : numVals[i][0];
-      }
-      numRange.setValues(numVals);
-
-      var jsonVals = sheet.getRange(2, ORD_COL_ITEMS_JSON_, lastRow - 1, 1).getValues();
-      var summaryOut = [];
-      var totalOut = [];
-      for (var j = 0; j < jsonVals.length; j++) {
-        var f = formatOrderItemsForSheet_(jsonVals[j][0]);
-        summaryOut.push([f.summary]);
-        totalOut.push([f.total]);
-      }
-      sheet.getRange(2, ORD_COL_ITEMS_SUMMARY_, summaryOut.length, 1).setValues(summaryOut);
-      sheet.getRange(2, ORD_COL_ITEMS_TOTAL_, totalOut.length, 1).setValues(totalOut);
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var headerVals = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (headerVals[ORD_COL_DIAMETERS_ - 1] === ORDERS_HEADERS_[ORD_COL_DIAMETERS_ - 1]) {
+    return sheet; // التصميم بالفعل محدّث
+  }
+  // ترقية تلقائية من أي نسخة قديمة من شيت "Orders" (سواء بعمود JSON خام
+  // واحد، أو بعمود "تفاصيل الأصناف" مقروء) للتصميم الجديد. بنلاقي
+  // الأعمدة الثابتة بالاسم (زي "رقم الأمر"، "وقت الحفظ"...)، وعمود
+  // بيانات الأصناف (JSON) عن طريق شكل محتواه (بيبدأ بـ "[") مش بالاسم،
+  // عشان الترقية تشتغل مهما كان اسم/مكان العمود ده في أي نسخة سابقة.
+  var lastRow = sheet.getLastRow();
+  var oldVals = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, lastCol).getValues() : [];
+  var idxOf = function (name) {
+    for (var c = 0; c < headerVals.length; c++) { if (headerVals[c] === name) return c; }
+    return -1;
+  };
+  var coreIdx = {
+    num: idxOf('رقم الأمر'), date: idxOf('التاريخ'), supplier: idxOf('اسم المورد'),
+    client: idxOf('اسم العميل'), attention: idxOf('عناية'), address: idxOf('عنوان التوصيل'),
+    contactName: idxOf('مسئول التواصل'), contactPhone: idxOf('رقم التواصل'),
+    rep: idxOf('اسم المندوب'), notes: idxOf('ملاحظات'), savedAt: idxOf('وقت الحفظ')
+  };
+  var g = function (row, idx) { return idx > -1 ? row[idx] : ''; };
+  var newRows = [];
+  for (var r = 0; r < oldVals.length; r++) {
+    var row = oldVals[r];
+    var jsonIdx = -1;
+    for (var c = 0; c < row.length; c++) {
+      if (String(row[c] || '').trim().charAt(0) === '[') { jsonIdx = c; break; }
     }
+    var itemsJson = jsonIdx > -1 ? String(row[jsonIdx] || '[]') : '[]';
+    var f = splitOrderItemsForSheet_(itemsJson);
+    var numRaw = g(row, coreIdx.num);
+    var numInt = extractOrderNumberInt_(numRaw);
+    var numFixed = numInt ? ('0000' + numInt).slice(-4) : numRaw;
+    newRows.push([
+      numFixed, g(row, coreIdx.date), g(row, coreIdx.supplier), g(row, coreIdx.client), g(row, coreIdx.attention),
+      g(row, coreIdx.address), g(row, coreIdx.contactName), g(row, coreIdx.contactPhone), g(row, coreIdx.rep), g(row, coreIdx.notes),
+      f.diameters, f.quantities, f.specs, f.types, f.total, itemsJson, g(row, coreIdx.savedAt)
+    ]);
+  }
+  sheet.clear();
+  sheet.getRange(1, ORD_COL_NUM_, Math.max(sheet.getMaxRows(), newRows.length + 1), 1).setNumberFormat('@');
+  sheet.appendRow(ORDERS_HEADERS_);
+  sheet.getRange(1, 1, 1, ORDERS_HEADERS_.length).setFontWeight('bold');
+  if (newRows.length) {
+    sheet.getRange(2, 1, newRows.length, ORDERS_HEADERS_.length).setValues(newRows);
   }
   return sheet;
 }
@@ -319,11 +339,13 @@ function extractOrderNumberInt_(v) {
   return m ? parseInt(m[0], 10) : 0;
 }
 
-// بيحوّل مصفوفة الأصناف (JSON) لنص مقروء، كل صنف في سطر، + إجمالي الكمية.
-function formatOrderItemsForSheet_(itemsJsonStr) {
+// بيحوّل مصفوفة الأصناف (JSON) لأربع قوائم منفصلة (أقطار/كميات/مواصفات/
+// أنواع) + إجمالي الكمية — كل قايمة قيمها بنفس ترتيب الأصناف، مفصولة
+// بفاصلة "، "، عشان تتحط كل وحدة في عمود لوحدها في شيت Orders.
+function splitOrderItemsForSheet_(itemsJsonStr) {
   var items = [];
   try { items = JSON.parse(itemsJsonStr || '[]'); } catch (err) { items = []; }
-  var lines = [];
+  var diameters = [], quantities = [], specs = [], types = [];
   var total = 0;
   for (var i = 0; i < items.length; i++) {
     var it = items[i] || {};
@@ -331,20 +353,40 @@ function formatOrderItemsForSheet_(itemsJsonStr) {
     var qty = String(it.qty || '').trim();
     var spec = String(it.spec || '').trim();
     var type = String(it.type || '').trim();
+    if (!diameter && !qty && !spec && !type) continue;
+    diameters.push(diameter || '—');
+    quantities.push(qty || '—');
+    specs.push(spec || '—');
+    types.push(type || '—');
     var qtyNum = parseFloat(qty);
     if (!isNaN(qtyNum)) total += qtyNum;
+  }
+  return {
+    diameters: diameters.join('، '),
+    quantities: quantities.join('، '),
+    specs: specs.join('، '),
+    types: types.join('، '),
+    total: total ? String(total) : ''
+  };
+}
+
+// نص مختصر (سطر واحد) بيجمع القطر مع الكمية لكل صنف — يُستخدم بس في
+// عرض نتائج البحث داخل التطبيق (مش في الشيت نفسه).
+function summarizeOrderItemsForSearch_(itemsJsonStr) {
+  var items = [];
+  try { items = JSON.parse(itemsJsonStr || '[]'); } catch (err) { items = []; }
+  var lines = [];
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i] || {};
+    var diameter = String(it.diameter || '').trim();
+    var qty = String(it.qty || '').trim();
+    if (!diameter && !qty) continue;
     var parts = [];
     if (diameter) parts.push('قطر ' + diameter + ' مم');
     if (qty) parts.push(qty + ' طن');
-    var line = parts.join(' × ');
-    var extra = [spec, type].filter(function (x) { return x; }).join(' - ');
-    if (extra) line += (line ? ' ' : '') + '(' + extra + ')';
-    if (line) lines.push(line);
+    lines.push(parts.join(' × '));
   }
-  return {
-    summary: lines.join('\n'),
-    total: total ? String(total) : ''
-  };
+  return lines.join('، ');
 }
 
 // بيرجع رقم تسلسلي جديد كل مرة، بمنتهى الأمان حتى لو أكتر من شخص من
@@ -398,7 +440,7 @@ function handleOrderSubmit(ss, e) {
   var sheet = getOrdersSheet_(ss);
   var tz = ss.getSpreadsheetTimeZone();
   var itemsJson = e.parameter.items || '[]';
-  var itemsFmt = formatOrderItemsForSheet_(itemsJson);
+  var itemsFmt = splitOrderItemsForSheet_(itemsJson);
   var row = [
     num,
     e.parameter.date || '',
@@ -410,7 +452,10 @@ function handleOrderSubmit(ss, e) {
     e.parameter.contactPhone || '',
     e.parameter.rep || '',
     e.parameter.notes || '',
-    itemsFmt.summary,
+    itemsFmt.diameters,
+    itemsFmt.quantities,
+    itemsFmt.specs,
+    itemsFmt.types,
     itemsFmt.total,
     itemsJson,
     Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss')
@@ -461,6 +506,7 @@ function handleOrdersSearch(ss, e) {
       if (!date && !supplier && !client) continue; // صف محجوز لسه من غير أمر فعلي
       var haystack = (num + ' ' + date + ' ' + supplier + ' ' + client).toLowerCase();
       if (haystack.indexOf(q) === -1) continue;
+      var itemsJsonVal = String(r[ORD_COL_ITEMS_JSON_ - 1] || '[]');
       rows.push({
         num: num,
         date: date,
@@ -472,8 +518,8 @@ function handleOrdersSearch(ss, e) {
         contactPhone: r[7],
         rep: r[8],
         notes: r[9],
-        itemsSummary: r[10],
-        items: r[12]
+        itemsSummary: summarizeOrderItemsForSearch_(itemsJsonVal),
+        items: itemsJsonVal
       });
       if (rows.length >= 30) break;
     }

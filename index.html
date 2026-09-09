@@ -658,18 +658,25 @@
      positioned) .preview-side wrapper. paper2 was missing this, which is
      exactly what let the header/stamp shift only in the exported PDF while
      looking fine in the live "عرض النموذج" preview. */
+  /* #paper2 بقى بارتفاع صفحة A4 حقيقي (794×1123) وبـ flex-column، عشان
+     الختم وتوقيع المندوب يلزقوا في آخر الصفحة دايمًا بثبات (زي ورقة رسمية
+     حقيقية) مهما كان عدد الأصناف — بدل ما يتحركوا لفوق ولتحت حسب طول
+     الجدول، وده اللي كان بيبان كـ"فراغ كبير" غريب في الملف المُصدَّر. */
   #paper2{
-    width:794px;max-width:none;background:var(--paper);
-    box-shadow:none;padding:22px 34px 16px;position:relative;overflow:hidden;
+    width:794px;max-width:none;min-height:1123px;background:var(--paper);
+    box-shadow:none;padding:14px 34px 20px;position:relative;overflow:visible;
     font-family:'Calibri','Segoe UI',Tahoma,'Cairo',sans-serif;color:var(--ink);
     font-size:18px;
+    display:flex;flex-direction:column;
   }
 
-  /* Letterhead (logo enlarged, tax block removed, centered layout) */
-  #paper2 .doc-header-lg{text-align:center;margin-bottom:2px;}
-  #paper2 .company-logo-lg{width:220px;height:auto;display:block;margin:0 auto 8px;}
-  #paper2 .company-name-lg{font-size:1.15em;font-weight:800;color:#111;}
-  #paper2 .company-sub-lg{font-size:0.78em;color:#555;margin-top:3px;letter-spacing:.2px;}
+  /* Letterhead — مضغوط لأقصى درجة أعلى الصفحة (اللوجو واسم الشركة
+     والعنوان) بدل ما ياخدوا مساحة فاضية زيادة فوق. */
+  #paper2 .doc-header-lg{text-align:center;margin-bottom:0;}
+  #paper2 .company-logo-lg{width:190px;height:auto;display:block;margin:0 auto 4px;}
+  #paper2 .company-name-lg{font-size:1.1em;font-weight:800;color:#111;}
+  #paper2 .company-sub-lg{font-size:0.76em;color:#555;margin-top:2px;letter-spacing:.2px;}
+  #paper2 .headbar{margin:6px 0 10px;}
 
   #paper2 .order-info-grid{
     display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin:10px 0 12px;
@@ -694,19 +701,14 @@
   #paper2 table.dtable tbody tr:nth-child(even){background:#faf7f4;}
   #paper2 table.dtable tfoot td{background:#fff0e0;font-weight:800;border-top:2px solid #3a3f45;}
 
-  /* The shared .sign-row/.sign-block system (used elsewhere for two
-     side-by-side blocks) positions its blocks with position:absolute
-     inside a fixed-height container — the container's declared height
-     doesn't actually reserve enough room for the label + stamp image, so
-     the block can spill out past it. That's invisible in the on-screen
-     preview (nothing below it overlaps mid-render), but shows clearly
-     once html2canvas captures it and the امر الشراء paper's rep row right
-     underneath. paper2 only ever has ONE block in this row (the stamp —
-     no signature on the right), so instead of trying to pad a fixed
-     height correctly, switch it to plain flow: the row's own height and
-     the gap before المندوب are then whatever the actual stamp image needs,
-     guaranteed never to overlap. */
-  #paper2 .sign-row{position:static;height:auto;overflow:visible;margin-top:6px;text-align:left;}
+  /* الختم + توقيع المندوب: مع #paper2 بقى flex-column بارتفاع A4 حقيقي،
+     margin-top:auto هنا بتلزّق المجموعة دي (الختم ثم المندوب اللي بعدها
+     في الترتيب الطبيعي) في آخر الصفحة دايمًا — سواء صنف واحد أو خمسة،
+     من غير ما تتحرك لفوق/لتحت أو تتراكب مع أي حاجة. لو الأصناف كتير قوي
+     وملت الصفحة كلها، margin:auto هنا مبيبقاش ليه أي تأثير (مفيش مساحة
+     فاضية أصلاً) فترجع تتصرف زي أي عنصر عادي جاي فورًا بعد الجدول —
+     تحسّن تلقائي، مش قطع أو تراكب. */
+  #paper2 .sign-row{position:static;height:auto;overflow:visible;margin-top:auto;padding-top:20px;text-align:left;}
   #paper2 .sign-block{position:static;width:auto;max-width:60%;display:inline-block;padding-left:0;}
   #paper2 .order-rep-row{margin-top:34px;display:flex;justify-content:flex-start;}
   #paper2 .order-rep-block{text-align:center;min-width:190px;}
