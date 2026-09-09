@@ -830,10 +830,18 @@ function sendPushToAll_(title, body) {
       // firebase-messaging-sw.js، فتحس إنه "متكرر". بـ data-only، إحنا
       // اللي بنتحكم في عرض الإشعار بنفسنا مرة واحدة بس (من firebase-
       // messaging-sw.js)، فمفيش تكرار تاني.
+      // بنحدد أولوية عالية (high/urgent) صراحة — من غير كده، رسائل الـ
+      // "data" بتتبعت بأولوية عادية افتراضيًا، وموبايلات أندرويد بتأخر
+      // أو تتجاهل تسليمها لو الموبايل فاضل ساكن شوية (وضع توفير البطارية
+      // Doze)، فالإشعار يوصل متأخر جدًا أو مايوصلش خالص من غير ما يبان
+      // أي خطأ في السيرفر (زي ما حصل مع انصراف صبري).
       var payload = {
         message: {
           token: token,
-          data: { title: String(title), body: String(body) }
+          data: { title: String(title), body: String(body) },
+          android: { priority: 'high' },
+          apns: { headers: { 'apns-priority': '10' } },
+          webpush: { headers: { Urgency: 'high' } }
         }
       };
       var response = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send', {
