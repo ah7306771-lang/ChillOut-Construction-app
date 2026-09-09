@@ -454,6 +454,18 @@
   .dash-state-in{background:#e5f3ea;color:var(--ok);}
   .dash-state-out{background:#e8eefc;color:#1c4b9c;}
   .dash-state-absent{background:#fff3da;color:#8a5a00;}
+
+  /* بانر عدد الطلبات المطلوب اعتمادها فوق لوحة الحضور — بيبان بس لو فيه
+     طلب واحد على الأقل قيد المراجعة، والدوس عليه بيوديك على طول لشاشة
+     الاعتماد بنفس فلتر "قيد المراجعة". */
+  .dash-pending-banner{
+    display:none;width:100%;align-items:center;justify-content:space-between;gap:10px;
+    margin:0 0 14px;padding:11px 16px;border-radius:10px;border:1px solid #f0d5a0;
+    background:#fff3da;color:#8a5a00;font-size:13.5px;font-weight:700;cursor:pointer;
+    text-align:right;font-family:inherit;
+  }
+  .dash-pending-banner:hover{background:#ffe9bd;}
+  .dash-pending-banner .dpb-arrow{font-weight:800;white-space:nowrap;}
   .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .dash-cell{background:var(--panel-ink-2);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px;}
   .dash-cell-label{font-size:11px;color:var(--ink-soft);font-weight:700;}
@@ -1072,6 +1084,10 @@
   </div>
   <div class="gate-card home-card" style="max-width:560px;">
     <h1 class="gate-title">لوحة الحضور والانصراف</h1>
+    <button type="button" class="dash-pending-banner" id="dashPendingBanner" style="display:none;">
+      <span class="dpb-text">🔔 يوجد <b id="dashPendingCount">0</b> طلب بانتظار الاعتماد</span>
+      <span class="dpb-arrow">اعتماد الآن ←</span>
+    </button>
     <div class="dash-controls">
       <div class="field">
         <label for="dashDateInput">التاريخ</label>
@@ -3276,18 +3292,32 @@ window.safeFileName = function(str){
   // اعتماد من غير ما تفتح اللوحة.
   function refreshPendingRequestsBadge(){
     var badge = document.getElementById('attendanceRequestsBadge');
-    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
+    var banner = document.getElementById('dashPendingBanner');
+    var bannerCount = document.getElementById('dashPendingCount');
+    if ((!badge && !banner) || !ATTENDANCE_SCRIPT_URL) return;
     var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       var rows = (data && data.rows) || [];
       var pending = rows.filter(function(r){
         return r.status !== 'موافق' && r.status !== 'مرفوض';
       }).length;
-      if (pending > 0) {
-        badge.textContent = pending > 99 ? '99+' : String(pending);
-        badge.style.display = 'flex';
-      } else {
-        badge.style.display = 'none';
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending > 99 ? '99+' : String(pending);
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+      // نفس العدد بيبان كمان كبانر فوق لوحة الحضور نفسها، مش بس كرقم فوق
+      // أيقونة الصفحة الرئيسية — عشان يبان لحظة ما تفتح اللوحة.
+      if (banner && bannerCount) {
+        if (pending > 0) {
+          bannerCount.textContent = pending > 99 ? '99+' : String(pending);
+          banner.style.display = 'flex';
+        } else {
+          banner.style.display = 'none';
+        }
       }
     }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
   }
@@ -4375,6 +4405,7 @@ window.safeFileName = function(str){
     showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, function(){
       showScreen('attendance-dashboard');
       loadAttendanceDashboard();
+      refreshPendingRequestsBadge(); // يحدّث بانر الطلبات المعلّقة فور فتح اللوحة
     });
   });
   document.getElementById('backHomeBtnDashboard').addEventListener('click', function(){
@@ -4384,7 +4415,10 @@ window.safeFileName = function(str){
   document.getElementById('dashEmployeeSelect').addEventListener('change', loadAttendanceDashboard);
   document.getElementById('dashRefreshBtn').addEventListener('click', loadAttendanceDashboard);
 
-  document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', function(){
+  // بتفتح شاشة "اعتماد الإذن والمأموريات" مباشرة على فلتر "قيد المراجعة"
+  // — مستخدمة من زرار الصفحة الرئيسية وكمان من بانر "طلبات بانتظار
+  // الاعتماد" فوق لوحة الحضور، عشان نفس السلوك في المكانين.
+  function openAttendanceApprovalsFlow_(){
     showPasswordModal('كلمة سر اعتماد الإذن والمأموريات', ATTENDANCE_DASHBOARD_PASSWORD, function(){
       showScreen('attendance-approvals');
       // كل مرة تفتح الشاشة، ترجع تلقائي لفلتر "قيد المراجعة" عشان اللي
@@ -4393,7 +4427,9 @@ window.safeFileName = function(str){
       loadAttendanceApprovals();
       refreshPushButtonState(document.getElementById('pushStatus'), document.getElementById('enablePushBtn'));
     });
-  });
+  }
+  document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', openAttendanceApprovalsFlow_);
+  document.getElementById('dashPendingBanner').addEventListener('click', openAttendanceApprovalsFlow_);
   document.querySelectorAll('.approvals-filter-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ setApprovalsFilter(btn.getAttribute('data-filter')); });
   });
