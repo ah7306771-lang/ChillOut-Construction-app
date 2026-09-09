@@ -255,21 +255,21 @@ function handleDashboardData(ss, sheet, e) {
 // شخص من كذا منطقة فتحوا النموذج في نفس اللحظة، أول ما حد ياخد رقم
 // جديد بنحجزه فورًا بصف مؤقت في نفس الشيت (جوه LockService)، فأي طلب
 // تاني للرقم التالي هيلاقي الرقم ده محجوز ويطلع اللي بعده مباشرة. وبعدين
-// لما الأمر يتحفظ فعليًا (عند التحميل/المشاركة) الصف المحجوز ده بيتملي
-// ببيانات الأمر الحقيقية بدل ما يتضاف صف جديد.
+// لما الأمر يتحفظ فعليًا (عند التحميل/المشاركة) الصف/الصفوف المحجوزة
+// بتتمسح ويتحط بدالها الصفوف الحقيقية.
 //
-// الأصناف (الأقطار/الكميات/المواصفات/الأنواع) بتتخزن كل وحدة في عمود
-// منفصل ليها بس (لو الأمر فيه أكتر من صنف، القيم بتتجمع في نفس العمود
-// مفصولة بفاصلة "، " بنفس ترتيب الأصناف في كل الأعمدة). وبرضو فيه عمود
-// JSON خام (آخر عمود قبل وقت الحفظ، للاستخدام الداخلي بس) عشان التطبيق
-// يقدر يرجّع نفس الأصناف بالظبط لو حد فتح الأمر ده تاني للتعديل أو
-// لإعادة تنزيل نفس الـ PDF.
-var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'الأقطار (مم)', 'الكميات (طن)', 'المواصفات', 'الأنواع', 'إجمالي الكمية (طن)', 'الأصناف (بيانات النظام)', 'وقت الحفظ'];
+// كل صنف (قطر) في الأمر بياخد سطر لوحده في الشيت، وكل سطوره بتحمل نفس
+// رقم الأمر وبيانات العميل/المورد (مكررة على كل سطر) — يعني أمر فيه
+// قطرين بيطلع سطرين، مش سطر واحد فيه كل حاجة مجمّعة. عمود JSON خام
+// (آخر عمود قبل وقت الحفظ) بيحمل كل أصناف الأمر مع بعض في كل سطوره،
+// للاستخدام الداخلي بس (عشان التطبيق يقدر يرجّع الأمر بكل أصنافه لو حد
+// فتحه تاني للتعديل أو لإعادة تنزيل نفس الـ PDF).
+var ORDERS_HEADERS_ = ['رقم الأمر', 'التاريخ', 'اسم المورد', 'اسم العميل', 'عناية', 'عنوان التوصيل', 'مسئول التواصل', 'رقم التواصل', 'اسم المندوب', 'ملاحظات', 'القطر (مم)', 'الكمية (طن)', 'المواصفة', 'النوع', 'إجمالي الكمية (طن)', 'الأصناف (بيانات النظام)', 'وقت الحفظ'];
 var ORD_COL_NUM_ = 1;
-var ORD_COL_DIAMETERS_ = 11;
-var ORD_COL_QTYS_ = 12;
-var ORD_COL_SPECS_ = 13;
-var ORD_COL_TYPES_ = 14;
+var ORD_COL_DIAMETER_ = 11;
+var ORD_COL_QTY_ = 12;
+var ORD_COL_SPEC_ = 13;
+var ORD_COL_TYPE_ = 14;
 var ORD_COL_TOTAL_ = 15;
 var ORD_COL_ITEMS_JSON_ = 16;
 
@@ -283,14 +283,16 @@ function getOrdersSheet_(ss) {
   }
   var lastCol = Math.max(sheet.getLastColumn(), 1);
   var headerVals = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-  if (headerVals[ORD_COL_DIAMETERS_ - 1] === ORDERS_HEADERS_[ORD_COL_DIAMETERS_ - 1]) {
-    return sheet; // التصميم بالفعل محدّث
+  if (headerVals[ORD_COL_DIAMETER_ - 1] === ORDERS_HEADERS_[ORD_COL_DIAMETER_ - 1]) {
+    return sheet; // التصميم بالفعل محدّث (سطر لكل صنف)
   }
   // ترقية تلقائية من أي نسخة قديمة من شيت "Orders" (سواء بعمود JSON خام
-  // واحد، أو بعمود "تفاصيل الأصناف" مقروء) للتصميم الجديد. بنلاقي
-  // الأعمدة الثابتة بالاسم (زي "رقم الأمر"، "وقت الحفظ"...)، وعمود
-  // بيانات الأصناف (JSON) عن طريق شكل محتواه (بيبدأ بـ "[") مش بالاسم،
-  // عشان الترقية تشتغل مهما كان اسم/مكان العمود ده في أي نسخة سابقة.
+  // واحد، أو بأعمدة أقطار/كميات مجمّعة في نفس السطر) لتصميم "سطر لكل
+  // صنف". بنلاقي الأعمدة الثابتة بالاسم (زي "رقم الأمر"، "وقت الحفظ"...)
+  // في السطر القديم، وعمود بيانات الأصناف (JSON) عن طريق شكل محتواه
+  // (بيبدأ بـ "[") مش بالاسم، عشان الترقية تشتغل مهما كان اسم/مكان
+  // العمود ده في أي نسخة سابقة — وبعدين بنفكّ كل أصناف السطر القديم
+  // لسطر مستقل لكل صنف.
   var lastRow = sheet.getLastRow();
   var oldVals = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, lastCol).getValues() : [];
   var idxOf = function (name) {
@@ -312,15 +314,23 @@ function getOrdersSheet_(ss) {
       if (String(row[c] || '').trim().charAt(0) === '[') { jsonIdx = c; break; }
     }
     var itemsJson = jsonIdx > -1 ? String(row[jsonIdx] || '[]') : '[]';
-    var f = splitOrderItemsForSheet_(itemsJson);
     var numRaw = g(row, coreIdx.num);
     var numInt = extractOrderNumberInt_(numRaw);
     var numFixed = numInt ? ('0000' + numInt).slice(-4) : numRaw;
-    newRows.push([
+    var core = [
       numFixed, g(row, coreIdx.date), g(row, coreIdx.supplier), g(row, coreIdx.client), g(row, coreIdx.attention),
-      g(row, coreIdx.address), g(row, coreIdx.contactName), g(row, coreIdx.contactPhone), g(row, coreIdx.rep), g(row, coreIdx.notes),
-      f.diameters, f.quantities, f.specs, f.types, f.total, itemsJson, g(row, coreIdx.savedAt)
-    ]);
+      g(row, coreIdx.address), g(row, coreIdx.contactName), g(row, coreIdx.contactPhone), g(row, coreIdx.rep), g(row, coreIdx.notes)
+    ];
+    var exploded = explodeOrderItems_(itemsJson);
+    var savedAt = g(row, coreIdx.savedAt);
+    if (exploded.items.length === 0) {
+      newRows.push(core.concat(['', '', '', '', exploded.total, itemsJson, savedAt]));
+    } else {
+      for (var v = 0; v < exploded.items.length; v++) {
+        var it = exploded.items[v];
+        newRows.push(core.concat([it.diameter, it.qty, it.spec, it.type, exploded.total, itemsJson, savedAt]));
+      }
+    }
   }
   sheet.clear();
   sheet.getRange(1, ORD_COL_NUM_, Math.max(sheet.getMaxRows(), newRows.length + 1), 1).setNumberFormat('@');
@@ -339,53 +349,37 @@ function extractOrderNumberInt_(v) {
   return m ? parseInt(m[0], 10) : 0;
 }
 
-// بيحوّل مصفوفة الأصناف (JSON) لأربع قوائم منفصلة (أقطار/كميات/مواصفات/
-// أنواع) + إجمالي الكمية — كل قايمة قيمها بنفس ترتيب الأصناف، مفصولة
-// بفاصلة "، "، عشان تتحط كل وحدة في عمود لوحدها في شيت Orders.
-function splitOrderItemsForSheet_(itemsJsonStr) {
+// بيحوّل مصفوفة الأصناف (JSON) لقائمة أصناف صالحة (كل واحد بقيمه
+// الأربعة) + إجمالي الكمية — عشان كل صنف يتحط في سطر مستقل بعد كده.
+function explodeOrderItems_(itemsJsonStr) {
+  var raw = [];
+  try { raw = JSON.parse(itemsJsonStr || '[]'); } catch (err) { raw = []; }
   var items = [];
-  try { items = JSON.parse(itemsJsonStr || '[]'); } catch (err) { items = []; }
-  var diameters = [], quantities = [], specs = [], types = [];
   var total = 0;
-  for (var i = 0; i < items.length; i++) {
-    var it = items[i] || {};
+  for (var i = 0; i < raw.length; i++) {
+    var it = raw[i] || {};
     var diameter = String(it.diameter || '').trim();
     var qty = String(it.qty || '').trim();
     var spec = String(it.spec || '').trim();
     var type = String(it.type || '').trim();
     if (!diameter && !qty && !spec && !type) continue;
-    diameters.push(diameter || '—');
-    quantities.push(qty || '—');
-    specs.push(spec || '—');
-    types.push(type || '—');
+    items.push({ diameter: diameter, qty: qty, spec: spec, type: type });
     var qtyNum = parseFloat(qty);
     if (!isNaN(qtyNum)) total += qtyNum;
   }
-  return {
-    diameters: diameters.join('، '),
-    quantities: quantities.join('، '),
-    specs: specs.join('، '),
-    types: types.join('، '),
-    total: total ? String(total) : ''
-  };
+  return { items: items, total: total ? String(total) : '' };
 }
 
 // نص مختصر (سطر واحد) بيجمع القطر مع الكمية لكل صنف — يُستخدم بس في
 // عرض نتائج البحث داخل التطبيق (مش في الشيت نفسه).
 function summarizeOrderItemsForSearch_(itemsJsonStr) {
-  var items = [];
-  try { items = JSON.parse(itemsJsonStr || '[]'); } catch (err) { items = []; }
-  var lines = [];
-  for (var i = 0; i < items.length; i++) {
-    var it = items[i] || {};
-    var diameter = String(it.diameter || '').trim();
-    var qty = String(it.qty || '').trim();
-    if (!diameter && !qty) continue;
+  var exploded = explodeOrderItems_(itemsJsonStr);
+  var lines = exploded.items.map(function (it) {
     var parts = [];
-    if (diameter) parts.push('قطر ' + diameter + ' مم');
-    if (qty) parts.push(qty + ' طن');
-    lines.push(parts.join(' × '));
-  }
+    if (it.diameter) parts.push('قطر ' + it.diameter + ' مم');
+    if (it.qty) parts.push(it.qty + ' طن');
+    return parts.join(' × ');
+  });
   return lines.join('، ');
 }
 
@@ -429,8 +423,10 @@ function handleNextOrderNumber(ss, e) {
   }
 }
 
-// كل أمر بيتحفظ (أو يتحدّث لو نفس الرقم — عادة بيلاقي الصف المحجوز من
-// nextOrderNumber ويملاه) لحظة ما حد ينزّل أو يشارك ملف الـ PDF بتاعه.
+// كل أمر بيتحفظ لحظة ما حد ينزّل أو يشارك ملف الـ PDF بتاعه — بيمسح أي
+// سطور قديمة لنفس رقم الأمر (زي الصف المحجوز من nextOrderNumber، أو
+// سطور أمر سابق بعدد أصناف مختلف لو الأمر ده اتعدّل)، وبعدين بيحط سطر
+// مستقل لكل صنف من أصناف الأمر الحالي.
 function handleOrderSubmit(ss, e) {
   var num = (e.parameter.num || '').trim();
   if (!num) {
@@ -440,8 +436,9 @@ function handleOrderSubmit(ss, e) {
   var sheet = getOrdersSheet_(ss);
   var tz = ss.getSpreadsheetTimeZone();
   var itemsJson = e.parameter.items || '[]';
-  var itemsFmt = splitOrderItemsForSheet_(itemsJson);
-  var row = [
+  var exploded = explodeOrderItems_(itemsJson);
+  var savedAt = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss');
+  var core = [
     num,
     e.parameter.date || '',
     e.parameter.supplier || '',
@@ -451,36 +448,33 @@ function handleOrderSubmit(ss, e) {
     e.parameter.contactName || '',
     e.parameter.contactPhone || '',
     e.parameter.rep || '',
-    e.parameter.notes || '',
-    itemsFmt.diameters,
-    itemsFmt.quantities,
-    itemsFmt.specs,
-    itemsFmt.types,
-    itemsFmt.total,
-    itemsJson,
-    Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss')
+    e.parameter.notes || ''
   ];
+  var newRows = exploded.items.length
+    ? exploded.items.map(function (it) {
+        return core.concat([it.diameter, it.qty, it.spec, it.type, exploded.total, itemsJson, savedAt]);
+      })
+    : [core.concat(['', '', '', '', exploded.total, itemsJson, savedAt])];
 
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
-    var lastRow = sheet.getLastRow();
-    var rowIndex = -1;
     var numInt = extractOrderNumberInt_(num);
-    if (lastRow > 1) {
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1 && numInt) {
       var ids = sheet.getRange(2, ORD_COL_NUM_, lastRow - 1, 1).getValues();
-      for (var i = 0; i < ids.length; i++) {
-        // بالمقارنة بالرقم الصحيح (مش بالنص الحرفي) عشان لو رقم الأمر
-        // اتخزن قبل كده كرقم بدل نص (فقد الصفر على الشمال) يفضل يتطابق
-        // صح برضو، ومحصلش صف جديد مكرر لنفس الرقم.
-        if (numInt && extractOrderNumberInt_(ids[i][0]) === numInt) { rowIndex = i + 2; break; }
+      // بنمسح كل السطور القديمة لنفس رقم الأمر من تحت لفوق (عشان مسح
+      // سطر ميغيّرش ترقيم السطور اللي لسه هنمسحها بعده)، وبعدين بنضيف
+      // سطر مستقل لكل صنف من الأصناف الحالية.
+      for (var r = ids.length - 1; r >= 0; r--) {
+        if (extractOrderNumberInt_(ids[r][0]) === numInt) {
+          sheet.deleteRow(r + 2);
+        }
       }
     }
-    if (rowIndex === -1) {
-      rowIndex = lastRow + 1;
-    }
-    sheet.getRange(rowIndex, ORD_COL_NUM_).setNumberFormat('@');
-    sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
+    var startRow = sheet.getLastRow() + 1;
+    sheet.getRange(startRow, ORD_COL_NUM_, newRows.length, 1).setNumberFormat('@');
+    sheet.getRange(startRow, 1, newRows.length, ORDERS_HEADERS_.length).setValues(newRows);
     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
@@ -493,11 +487,13 @@ function handleOrderSubmit(ss, e) {
 
 // بيدوّر في رقم الأمر + اسم العميل + اسم المورد + التاريخ عن أي جزء يطابق
 // النص المكتوب (من غير حساسية لحالة الأحرف)، وبيرجع أحدث 30 نتيجة —
-// وبيتجاهل أي صف لسه محجوز بس ماتحفظش فيه أمر فعلي لحد دلوقتي.
+// نتيجة واحدة لكل رقم أمر (حتى لو ليه أكتر من سطر/صنف في الشيت)، وبيتجاهل
+// أي صف لسه محجوز بس ماتحفظش فيه أمر فعلي لحد دلوقتي.
 function handleOrdersSearch(ss, e) {
   var q = (e.parameter.q || '').trim().toLowerCase();
   var sheet = ss.getSheetByName('Orders');
   var rows = [];
+  var seen = {};
   if (sheet && q && sheet.getLastRow() > 1) {
     var lastRow = sheet.getLastRow();
     var vals = sheet.getRange(2, 1, lastRow - 1, ORDERS_HEADERS_.length).getValues();
@@ -508,8 +504,10 @@ function handleOrdersSearch(ss, e) {
       var supplier = String(r[2] || '');
       var client = String(r[3] || '');
       if (!date && !supplier && !client) continue; // صف محجوز لسه من غير أمر فعلي
+      if (seen[num]) continue; // نفس الأمر ظهر قبل كده (سطر صنف تاني بس)
       var haystack = (num + ' ' + date + ' ' + supplier + ' ' + client).toLowerCase();
       if (haystack.indexOf(q) === -1) continue;
+      seen[num] = true;
       var itemsJsonVal = String(r[ORD_COL_ITEMS_JSON_ - 1] || '[]');
       rows.push({
         num: num,
