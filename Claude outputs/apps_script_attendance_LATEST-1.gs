@@ -597,12 +597,25 @@ function handleRequestSetStatus(ss, e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
+    var tz = ss.getSpreadsheetTimeZone();
     var lastRow = sheet.getLastRow();
     if (lastRow > 1) {
-      var ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-      for (var i = 0; i < ids.length; i++) {
-        if (String(ids[i][0]) === String(id)) {
+      var vals = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+      for (var i = 0; i < vals.length; i++) {
+        var r = vals[i];
+        if (String(r[0]) === String(id)) {
           sheet.getRange(i + 2, 8).setValue(status); // العمود التامن = الحالة
+
+          // لو الطلب "مأمورية" واتوافق عليه، سجّلها على طول في شيت الحضور
+          // نفسه بنفس مواعيدها (من/إلى) ونوع "مأمورية" — بدل ما تفضل بس
+          // بادچ في لوحة الحضور من غير ما تتسجل فعليًا في الشيت.
+          if (status === 'موافق' && r[2] === 'مأمورية') {
+            var reqDate = normalizeDate_(r[3], tz);
+            var reqFrom = normalizeTime_(r[4], tz);
+            var reqTo = normalizeTime_(r[5], tz);
+            if (reqDate) applyMissionToAttendance_(ss, r[1], reqDate, reqFrom, reqTo);
+          }
+
           return ContentService.createTextOutput(JSON.stringify({ ok: true }))
             .setMimeType(ContentService.MimeType.JSON);
         }
@@ -612,6 +625,34 @@ function handleRequestSetStatus(ss, e) {
       .setMimeType(ContentService.MimeType.JSON);
   } finally {
     lock.releaseLock();
+  }
+}
+
+// بيسجّل مأمورية معتمدة في شيت الحضور نفسه: بيدوّر على صف الموظف في نفس
+// اليوم (لو موجود يعدّله، ولو مش موجود يعمل صف جديد)، ويحط نوعه "مأمورية"
+// ووقتي الحضور والانصراف بنفس مواعيد المأمورية (من الساعة/إلى الساعة).
+function applyMissionToAttendance_(ss, name, dateStr, fromTime, toTime) {
+  var sheet = getAttendanceMainSheet_(ss);
+  var tz = ss.getSpreadsheetTimeZone();
+  var lastRow = sheet.getLastRow();
+  var targetRow = -1;
+  if (lastRow > 1) {
+    var values = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
+    for (var i = 0; i < values.length; i++) {
+      if (values[i][0] === name && normalizeDate_(values[i][2], tz) === dateStr) {
+        targetRow = i + 2;
+        break;
+      }
+    }
+  }
+  var checkIn = fromTime || '';
+  var checkOut = toTime || '';
+  if (targetRow > -1) {
+    sheet.getRange(targetRow, 2, 1, 1).setValue('مأمورية');
+    sheet.getRange(targetRow, 4, 1, 5).setValues([[checkIn, '', '', '', '']]);
+    sheet.getRange(targetRow, 9, 1, 5).setValues([[checkOut, '', '', '', '']]);
+  } else {
+    sheet.appendRow([name, 'مأمورية', dateStr, checkIn, '', '', '', '', checkOut, '', '', '', '']);
   }
 }
 
@@ -1263,7 +1304,7 @@ function markAbsencesForDate_(ss, dateStr) {
       var name = r[0], type = r[1];
       if (!name) return;
       var d = normalizeDate_(r[2], tz);
-      if (d === dateStr && (type === 'حضور' || type === 'غياب')) handled[name] = true;
+      if (d === dateStr && (type === 'حضور' || type === 'غياب' || type === 'مأمورية')) handled[name] = true;
     });
   }
 
