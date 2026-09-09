@@ -21,6 +21,9 @@ function doGet(e) {
   if (action === 'dashboardData') {
     return handleDashboardData(ss, sheet, e);
   }
+  if (action === 'nextOrderNumber') {
+    return handleNextOrderNumber(ss, e);
+  }
 
   // ---- default action: save a new attendance record ----
   if (sheet.getLastRow() === 0) {
@@ -236,6 +239,55 @@ function handleDashboardData(ss, sheet, e) {
   var requestRows = getRequestRows_(ss, date);
   return ContentService.createTextOutput(JSON.stringify({ ok: true, rows: rows, requestRows: requestRows }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ---------------------------------------------------------------------
+// رقم أمر الشراء التلقائي (عداد مركزي واحد في الشيت)
+// ---------------------------------------------------------------------
+// بيرجع رقم تسلسلي جديد في كل مرة، بمنتهى الأمان حتى لو أكتر من شخص من
+// أكتر من منطقة طلبوا رقم في نفس اللحظة بالظبط — بنستخدم LockService اللي
+// بيقفل تنفيذ السكريبت كله لحظيًا، فمفيش احتمال إطلاقًا إن اتنين ياخدوا
+// نفس الرقم. الرقم بيتخزن في تاب "Counters" (مفتاح | آخر رقم) عشان يفضل
+// متسلسل حتى لو حصل إعادة نشر أو تغيير في السكريبت.
+function getCountersSheet_(ss) {
+  var sheet = ss.getSheetByName('Counters');
+  if (!sheet) {
+    sheet = ss.insertSheet('Counters');
+    sheet.appendRow(['المفتاح', 'آخر رقم']);
+  }
+  return sheet;
+}
+
+function handleNextOrderNumber(ss, e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sheet = getCountersSheet_(ss);
+    var key = 'أمر شراء';
+    var lastRow = sheet.getLastRow();
+    var rowIndex = -1;
+    var current = 0;
+    if (lastRow > 1) {
+      var vals = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+      for (var i = 0; i < vals.length; i++) {
+        if (vals[i][0] === key) { rowIndex = i + 2; current = Number(vals[i][1]) || 0; break; }
+      }
+    }
+    var next = current + 1;
+    if (rowIndex === -1) {
+      sheet.appendRow([key, next]);
+    } else {
+      sheet.getRange(rowIndex, 2).setValue(next);
+    }
+    var formatted = ('0000' + next).slice(-4);
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, number: formatted }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ---- بيغيّر عمود "الحالة" لطلب معين (بمعرّفه الفريد) لـ "موافق" أو

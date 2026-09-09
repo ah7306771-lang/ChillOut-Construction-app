@@ -608,6 +608,33 @@
   .home-tile-icon svg{width:60px;height:60px;display:block;}
   .home-grid .home-tile-icon svg{width:28px;height:28px;}
 
+  /* رقم الأمر التلقائي: خانة للقراءة فقط (بترجع من السيرفر) + زرار تحديث
+     صغير جنبها لو عايز رقم جديد. */
+  .ord-num-row{display:flex;gap:8px;align-items:stretch;}
+  .ord-num-row input{flex:1;min-width:0;}
+  .ord-num-row input[readonly]{background:#f4f1ee;color:var(--ink-soft);cursor:not-allowed;}
+  .ord-num-refresh-btn{
+    flex:0 0 auto;width:44px;border:1px solid var(--panel-line);border-radius:8px;
+    background:#fff;font-size:16px;cursor:pointer;
+  }
+  .ord-num-refresh-btn:active{transform:scale(0.94);}
+  .ord-num-hint{font-size:11px;color:var(--ink-soft);margin-top:5px;}
+  .ord-num-hint.err{color:#b3261e;}
+
+  /* Base paper sizing — every other exported form (paper, paperGeneral,
+     paperChecks, paperQuote) declares this explicitly on itself so
+     html2canvas always captures it at the true 794px page width instead of
+     inheriting an ambiguous width from its (off-screen, absolutely
+     positioned) .preview-side wrapper. paper2 was missing this, which is
+     exactly what let the header/stamp shift only in the exported PDF while
+     looking fine in the live "عرض النموذج" preview. */
+  #paper2{
+    width:794px;max-width:none;background:var(--paper);
+    box-shadow:none;padding:22px 34px 16px;position:relative;overflow:hidden;
+    font-family:'Calibri','Segoe UI',Tahoma,'Cairo',sans-serif;color:var(--ink);
+    font-size:18px;
+  }
+
   /* Letterhead (logo enlarged, tax block removed, centered layout) */
   #paper2 .doc-header-lg{text-align:center;margin-bottom:2px;}
   #paper2 .company-logo-lg{width:220px;height:auto;display:block;margin:0 auto 8px;}
@@ -637,6 +664,11 @@
   #paper2 table.dtable tbody tr:nth-child(even){background:#faf7f4;}
   #paper2 table.dtable tfoot td{background:#fff0e0;font-weight:800;border-top:2px solid #3a3f45;}
 
+  /* Extra headroom under the stamp block specifically for this paper, as a
+     safety margin on top of the width fix above — guarantees the stamp
+     image can never visually reach the المندوب row even at full export
+     resolution. */
+  #paper2 .sign-row{height:108px;}
   #paper2 .order-rep-row{margin-top:60px;display:flex;justify-content:flex-start;}
   #paper2 .order-rep-block{text-align:center;min-width:190px;}
   #paper2 .order-rep-block .lbl{font-size:0.8em;font-weight:700;color:#555;margin-bottom:4px;}
@@ -1364,7 +1396,11 @@
     <div class="row2">
       <div class="field">
         <label for="ordNum">رقم الأمر</label>
-        <input type="text" id="ordNum" placeholder="مثال: 0035" required>
+        <div class="ord-num-row">
+          <input type="text" id="ordNum" placeholder="جاري تحميل الرقم…" required readonly>
+          <button type="button" id="ordNumRefreshBtn" class="ord-num-refresh-btn" title="طلب رقم جديد">🔄</button>
+        </div>
+        <div class="ord-num-hint" id="ordNumHint"></div>
       </div>
       <div class="field">
         <label for="ordDate">التاريخ</label>
@@ -4758,6 +4794,10 @@ window.safeFileName = function(str){
 (function(){
   const $ = id => document.getElementById(id);
 
+  // نفس رابط سكريبت الحضور بالظبط — الشاشة دي في IIFE منفصل عن شاشة
+  // الحضور، فمحتاجة نسخة محلية من الرابط عشان تقدر تطلب رقم الأمر التلقائي.
+  var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyx1csVo37UKOdvZzQD_KGrGjtvWMOM8g3cPte1FQ92lhK7dR5KlvxMaWCLZBbak1k/exec';
+
   const today = new Date();
   const toIso = d => d.toISOString().slice(0,10);
 
@@ -4919,6 +4959,55 @@ window.safeFileName = function(str){
   // Seed with one item row to start
   addOrdItem();
   renderOrdPreview();
+
+  // ---- رقم الأمر الأوتوماتيك ----
+  // الرقم بييجي من السيرفر (مش بيتحسب في الموبايل) عشان لو أكتر من شخص من
+  // أكتر من منطقة فتحوا شاشة "أمر شراء" في نفس اللحظة، كل واحد ياخد رقم
+  // مختلف من غير أي تكرار — السيرفر بيقفل العملية (Lock) لحظة ما بيدي الرقم.
+  function setOrdNumHint(msg, isErr){
+    const el = $('ordNumHint');
+    if(!el) return;
+    el.textContent = msg || '';
+    el.className = 'ord-num-hint' + (isErr ? ' err' : '');
+  }
+
+  async function fetchNextOrderNumber(){
+    const input = $('ordNum');
+    const btn = $('ordNumRefreshBtn');
+    if(!ATTENDANCE_SCRIPT_URL){
+      input.readOnly = false;
+      setOrdNumHint('ميزة الترقيم التلقائي لسه محتاجة إعداد — اكتب الرقم يدويًا.', true);
+      return;
+    }
+    input.readOnly = true;
+    input.value = '';
+    input.placeholder = 'جاري تحميل الرقم…';
+    if(btn) btn.disabled = true;
+    setOrdNumHint('جاري تحميل رقم الأمر…');
+    try{
+      const url = ATTENDANCE_SCRIPT_URL + '?action=nextOrderNumber';
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if(data && data.ok && data.number){
+        input.value = data.number;
+        setOrdNumHint('رقم تلقائي من السيرفر ✅');
+      } else {
+        throw new Error('bad response');
+      }
+    }catch(err){
+      input.readOnly = false;
+      input.placeholder = 'مثال: 0035';
+      setOrdNumHint('تعذّر تحميل الرقم تلقائيًا — اكتب الرقم يدويًا أو دوس 🔄 للمحاولة تاني.', true);
+    }
+    if(btn) btn.disabled = false;
+    renderOrdPreview();
+  }
+
+  document.getElementById('openOrderBtn').addEventListener('click', function(){
+    fetchNextOrderNumber();
+  });
+  const ordNumRefreshBtnEl = $('ordNumRefreshBtn');
+  if(ordNumRefreshBtnEl) ordNumRefreshBtnEl.addEventListener('click', fetchNextOrderNumber);
 
   // ---- PDF generation ----
   function setOrdStatus(msg, isErr){
