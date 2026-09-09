@@ -919,18 +919,23 @@
     .wa-float-label{display:none;}
   }
 
-  /* ---------- Floating "pending approvals" bell (login screen only) ---------- */
-  .login-bell-btn{
+  /* ---------- Floating shortcut icons (login screen only): لوحة الحضور +
+     طلبات بانتظار الاعتماد — جنب بعض فوق يمين صفحة الدخول. ---------- */
+  .login-fabs{
     position:fixed;right:18px;top:18px;z-index:9999;
+    display:none;align-items:center;gap:10px;
+  }
+  .login-fab-btn{
+    position:relative;
     width:50px;height:50px;border-radius:50%;
     background:#fff;border:1px solid var(--panel-line);
-    display:none;align-items:center;justify-content:center;
+    display:flex;align-items:center;justify-content:center;
     font-size:22px;cursor:pointer;padding:0;
     box-shadow:0 8px 20px rgba(26,26,26,0.12);
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  .login-bell-btn:hover{transform:scale(1.06);}
-  .login-bell-btn:active{transform:scale(.95);}
+  .login-fab-btn:hover{transform:scale(1.06);}
+  .login-fab-btn:active{transform:scale(.95);}
   .login-bell-badge{
     position:absolute;top:-3px;left:-3px;
     background:#e0433a;color:#fff;font-size:11px;font-weight:800;
@@ -939,7 +944,8 @@
     box-shadow:0 0 0 2px #fff;
   }
   @media (max-width:480px){
-    .login-bell-btn{width:44px;height:44px;right:14px;top:14px;font-size:19px;}
+    .login-fabs{right:14px;top:14px;gap:8px;}
+    .login-fab-btn{width:44px;height:44px;font-size:19px;}
   }
 </style>
 </head>
@@ -949,12 +955,15 @@
   <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.22.6 4.3 1.64 6.1L4 29l8.06-1.6a12.9 12.9 0 0 0 3.96.62h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 22c-1.85 0-3.62-.5-5.14-1.4l-.37-.22-4.78.95.98-4.66-.24-.38a9.94 9.94 0 0 1-1.53-5.3C4.94 8.95 9.9 4 16.02 4c5.55 0 10.06 4.5 10.06 10.06 0 5.55-4.5 10.06-10.06 10.06zm5.5-7.53c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.28-.47-2.44-1.5-.9-.8-1.5-1.8-1.68-2.1-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.93-2.25-.25-.6-.5-.5-.68-.5-.18 0-.38-.02-.58-.02s-.53.08-.8.38c-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.25 5.15 4.55.72.3 1.28.5 1.72.63.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35z"/></svg>
 </a>
 
-<!-- جرس "طلبات بانتظار الاعتماد" — بيبان بس في صفحة الدخول، وبيديك على
-     طول لشاشة اعتماد الأذون (بعد كلمة السر زي أي فتح تاني للشاشة دي). -->
-<button type="button" id="loginBellBtn" class="login-bell-btn" aria-label="طلبات بانتظار الاعتماد">
-  🔔
-  <span class="login-bell-badge" id="loginBellBadge">0</span>
-</button>
+<!-- أيقونتين بيبانوا بس في صفحة الدخول: لوحة الحضور + جرس طلبات بانتظار
+     الاعتماد — الاتنين بيطلبوا الرقم السري زي أي دخول تاني للشاشتين دول. -->
+<div class="login-fabs" id="loginFabs">
+  <button type="button" id="loginDashboardBtn" class="login-fab-btn" aria-label="لوحة الحضور والانصراف">📊</button>
+  <button type="button" id="loginBellBtn" class="login-fab-btn" aria-label="طلبات بانتظار الاعتماد">
+    🔔
+    <span class="login-bell-badge" id="loginBellBadge">0</span>
+  </button>
+</div>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" class="gate-screen stacked-byline-screen">
@@ -2654,8 +2663,8 @@ window.safeFileName = function(str){
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
     var waBtn = document.getElementById('waFloatBtn');
     if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
-    var loginBellBtn = document.getElementById('loginBellBtn');
-    if (loginBellBtn) loginBellBtn.style.display = (name === 'login') ? 'flex' : 'none';
+    var loginFabs = document.getElementById('loginFabs');
+    if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
     if (name !== 'login') {
       var err = document.getElementById('loginError');
       if (err) err.textContent = '';
@@ -4468,13 +4477,17 @@ window.safeFileName = function(str){
   document.getElementById('backHomeBtnAttendance').addEventListener('click', function(){
     showScreen('home');
   });
-  document.getElementById('openAttendanceDashboardBtn').addEventListener('click', function(){
+  // بتفتح لوحة الحضور بعد كلمة السر — مستخدمة من زرار الصفحة الرئيسية
+  // وكمان من أيقونة "📊" في صفحة الدخول، عشان نفس السلوك في المكانين.
+  function openAttendanceDashboardFlow_(){
     showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, function(){
       showScreen('attendance-dashboard');
       loadAttendanceDashboard();
       refreshPendingRequestsBadge(); // يحدّث بانر الطلبات المعلّقة فور فتح اللوحة
     });
-  });
+  }
+  document.getElementById('openAttendanceDashboardBtn').addEventListener('click', openAttendanceDashboardFlow_);
+  document.getElementById('loginDashboardBtn').addEventListener('click', openAttendanceDashboardFlow_);
   document.getElementById('backHomeBtnDashboard').addEventListener('click', function(){
     showScreen('home');
   });

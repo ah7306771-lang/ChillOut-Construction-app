@@ -1,6 +1,6 @@
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('Attendance') || ss.getSheets()[0];
+  var sheet = getAttendanceMainSheet_(ss); // بيرقّي الشيت تلقائيًا للتصميم الجديد لو لسه قديم
   var action = e.parameter.action || 'save';
 
   if (action === 'report') {
@@ -32,10 +32,8 @@ function doGet(e) {
   }
 
   // ---- default action: save a new attendance record ----
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['الاسم', 'النوع', 'التاريخ', 'الوقت', 'خط العرض', 'خط الطول', 'رابط الموقع', 'الجهاز']);
-  }
-
+  // من دلوقتي حضور وانصراف نفس الموظف في نفس اليوم بيتسجلوا في نفس الصف
+  // (عمود لوقت الحضور وعمود لوقت الانصراف جنب بعض)، مش صفين منفصلين.
   var name   = e.parameter.name   || '';
   var type   = e.parameter.type   || '';
   var date   = e.parameter.date   || '';
@@ -48,24 +46,48 @@ function doGet(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
-    // امنع التكرار: لو نفس الموظف ونفس النوع (حضور/انصراف) اتسجل بالفعل في
-    // نفس اليوم ده (حتى لو من جهاز تاني في نفس اللحظة تقريباً)، ما تضيفش صف
-    // جديد، وارجع بيانات الصف الأصلي بدل منه.
     var tz = ss.getSpreadsheetTimeZone();
     var lastRow = sheet.getLastRow();
+    var targetRow = -1;    // رقم صف الشيت (١-based) لو الموظف له صف بالفعل في نفس اليوم
+    var matchedType = '';
+    var existingTime = '';
     if (lastRow > 1) {
-      var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
+      var values = sheet.getRange(2, 1, lastRow - 1, 13).getValues();
       for (var i = 0; i < values.length; i++) {
         var r = values[i];
-        if (r[0] === name && r[1] === type && normalizeDate_(r[2], tz) === date) {
-          return ContentService.createTextOutput(JSON.stringify({
-            ok: true, alreadyRecorded: true, time: normalizeTime_(r[3], tz)
-          })).setMimeType(ContentService.MimeType.JSON);
+        if (r[0] === name && normalizeDate_(r[2], tz) === date) {
+          targetRow = i + 2;
+          matchedType = r[1];
+          existingTime = (type === 'حضور') ? normalizeTime_(r[3], tz) : normalizeTime_(r[8], tz);
+          break;
         }
       }
     }
 
-    sheet.appendRow([name, type, date, time, lat, lng, map, device]);
+    // امنع التكرار: لو نفس الموظف سجل نفس النوع (حضور/انصراف) بالفعل في
+    // نفس اليوم ده (حتى لو من جهاز تاني في نفس اللحظة تقريباً)، ما تعدلش
+    // الوقت المسجل، وارجع بياناته الأصلية بدل منه.
+    if (targetRow > -1 && matchedType !== 'غياب' && existingTime) {
+      return ContentService.createTextOutput(JSON.stringify({
+        ok: true, alreadyRecorded: true, time: existingTime
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (targetRow > -1) {
+      // للموظف صف بالفعل النهاردة (غياب اتحول حضور، أو حضور وناقصه
+      // الانصراف) — نكمّل نفس الصف بدل ما نعمل صف جديد.
+      if (matchedType === 'غياب') sheet.getRange(targetRow, 2, 1, 1).setValue('حضور');
+      if (type === 'حضور') {
+        sheet.getRange(targetRow, 4, 1, 5).setValues([[time, lat, lng, map, device]]);
+      } else {
+        sheet.getRange(targetRow, 9, 1, 5).setValues([[time, lat, lng, map, device]]);
+      }
+    } else {
+      var newRow = (type === 'حضور')
+        ? [name, 'حضور', date, time, lat, lng, map, device, '', '', '', '', '']
+        : [name, 'حضور', date, '', '', '', '', '', time, lat, lng, map, device];
+      sheet.appendRow(newRow);
+    }
 
     // بعت إشعار فوري لموبايل الإداري بتسجيل الحضور/الانصراف، بنفس فكرة
     // إشعارات طلبات الإذن/المأمورية/الإجازة بالظبط — لو حصل أي خطأ في
@@ -91,27 +113,36 @@ function handleReport(ss, sheet, e) {
 
 // بيبني قايمة صفوف الحضور/الانصراف (مستخدمة من handleReport وكمان من
 // handleDashboardData عشان نتجنب تكرار نفس الكود).
+// ملحوظة: الشيت نفسه بقى صف واحد للموظف في اليوم (حضور + انصراف جنب
+// بعض)، لكن الدالة دي لسه بترجع نفس الشكل القديم (سطر مستقل لكل "حضور"
+// وسطر مستقل لكل "انصراف") عشان كل كود الواجهة (لوحة الحضور، الجدول،
+// إلخ) يفضل شغال زي ما هو من غير أي تعديل.
 function getAttendanceRows_(ss, sheet, dateFilter) {
   var tz = ss.getSpreadsheetTimeZone();
   var lastRow = sheet.getLastRow();
   var rows = [];
 
   if (lastRow > 1) {
-    var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
+    var values = sheet.getRange(2, 1, lastRow - 1, 13).getValues();
     for (var i = 0; i < values.length; i++) {
       var r = values[i];
       var rowDate = normalizeDate_(r[2], tz);
       if (dateFilter && rowDate !== dateFilter) continue;
-      rows.push({
-        name: r[0],
-        type: r[1],
-        date: rowDate,
-        time: normalizeTime_(r[3], tz),
-        lat:  r[4],
-        lng:  r[5],
-        map:  r[6],
-        device: r[7]
-      });
+      var name = r[0], type = r[1];
+
+      if (type === 'غياب') {
+        rows.push({ name: name, type: 'غياب', date: rowDate, time: '', lat: '', lng: '', map: '', device: '' });
+        continue;
+      }
+
+      var checkInTime = normalizeTime_(r[3], tz);
+      if (checkInTime) {
+        rows.push({ name: name, type: 'حضور', date: rowDate, time: checkInTime, lat: r[4], lng: r[5], map: r[6], device: r[7] });
+      }
+      var checkOutTime = normalizeTime_(r[8], tz);
+      if (checkOutTime) {
+        rows.push({ name: name, type: 'انصراف', date: rowDate, time: checkOutTime, lat: r[9], lng: r[10], map: r[11], device: r[12] });
+      }
     }
   }
   return rows;
@@ -890,33 +921,40 @@ function refreshMonthlyReport_(monthStr) {
   }
 
   // 2) التأخير (حضور بعد الميعاد) والانصراف المبكر (انصراف قبل الميعاد)
-  // من تاب "Attendance"
+  // من تاب "Attendance" — وقت الحضور ووقت الانصراف بقوا في نفس الصف، في
+  // عمودين منفصلين (مش صف لكل واحد فيهم).
   var lateCount = {}, lateMinutes = {};
   var earlyCount = {}, earlyMinutes = {};
-  var attSheet = ss.getSheetByName('Attendance') || ss.getSheets()[0];
+  var attSheet = getAttendanceMainSheet_(ss);
   if (attSheet && attSheet.getLastRow() > 1) {
-    var attVals = attSheet.getRange(2, 1, attSheet.getLastRow() - 1, 8).getValues();
+    var attVals = attSheet.getRange(2, 1, attSheet.getLastRow() - 1, 13).getValues();
     attVals.forEach(function (r) {
       var name = r[0], type = r[1];
-      if (!name) return;
+      if (!name || type !== 'حضور') return;
       var dateStr = normalizeDate_(r[2], tz);
       if (dateStr.slice(0, 7) !== monthStr) return;
-      var timeStr = normalizeTime_(r[3], tz);
-      if (type === 'حضور') {
+
+      var checkInTime = normalizeTime_(r[3], tz);
+      if (checkInTime) {
         var official = officialIn[name];
-        if (!official) return; // مفيش ميعاد حضور رسمي متظبط لموظف ده لسه
-        var diff = timeDiffMinutes_(official, timeStr);
-        if (diff > 0) {
-          lateCount[name] = (lateCount[name] || 0) + 1;
-          lateMinutes[name] = (lateMinutes[name] || 0) + diff;
+        if (official) {
+          var diff = timeDiffMinutes_(official, checkInTime);
+          if (diff > 0) {
+            lateCount[name] = (lateCount[name] || 0) + 1;
+            lateMinutes[name] = (lateMinutes[name] || 0) + diff;
+          }
         }
-      } else if (type === 'انصراف') {
+      }
+
+      var checkOutTime = normalizeTime_(r[8], tz);
+      if (checkOutTime) {
         var officialO = officialOut[name];
-        if (!officialO) return; // مفيش ميعاد انصراف رسمي متظبط لموظف ده لسه
-        var diffOut = timeDiffMinutes_(officialO, timeStr);
-        if (diffOut < 0) {
-          earlyCount[name] = (earlyCount[name] || 0) + 1;
-          earlyMinutes[name] = (earlyMinutes[name] || 0) + (-diffOut);
+        if (officialO) {
+          var diffOut = timeDiffMinutes_(officialO, checkOutTime);
+          if (diffOut < 0) {
+            earlyCount[name] = (earlyCount[name] || 0) + 1;
+            earlyMinutes[name] = (earlyMinutes[name] || 0) + (-diffOut);
+          }
         }
       }
     });
@@ -994,11 +1032,98 @@ function refreshMonthlyReport_(monthStr) {
 // ---------------------------------------------------------------------
 
 function getAttendanceMainSheet_(ss) {
-  return ss.getSheetByName('Attendance') || ss.getSheets()[0];
+  var sheet = ss.getSheetByName('Attendance') || ss.getSheets()[0];
+  ensureAttendanceMainHeaders_(sheet);
+  return sheet;
+}
+
+// تصميم شيت الحضور الحالي: صف واحد للموظف في اليوم، فيه وقت الحضور
+// ووقت الانصراف جنب بعض (بدل صف منفصل لكل واحد فيهم زي الأول).
+var ATTENDANCE_MAIN_HEADERS_ = [
+  'الاسم', 'النوع', 'التاريخ',
+  'وقت الحضور', 'خط عرض الحضور', 'خط طول الحضور', 'رابط موقع الحضور', 'جهاز الحضور',
+  'وقت الانصراف', 'خط عرض الانصراف', 'خط طول الانصراف', 'رابط موقع الانصراف', 'جهاز الانصراف'
+];
+
+// بيتأكد إن شيت الحضور بالتصميم الجديد (عمود "وقت الحضور" في العمود
+// الرابع)، ولو لسه بالتصميم القديم (صف منفصل لكل "حضور" وصف منفصل لكل
+// "انصراف")، بيرقّيه تلقائيًا: بيدمج كل صفي حضور/انصراف لنفس الموظف ونفس
+// اليوم في صف واحد، وبيسيب صفوف "غياب" زي ما هي.
+function ensureAttendanceMainHeaders_(sheet) {
+  if (!sheet) return;
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(ATTENDANCE_MAIN_HEADERS_);
+    sheet.getRange(1, 1, 1, ATTENDANCE_MAIN_HEADERS_.length).setFontWeight('bold');
+    return;
+  }
+  var currentCol4 = sheet.getRange(1, 4).getValue();
+  if (currentCol4 === ATTENDANCE_MAIN_HEADERS_[3]) return; // متظبط بالفعل
+
+  var tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  var lastRow = sheet.getLastRow();
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var oldVals = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, lastCol).getValues() : [];
+
+  var order = [];
+  var merged = {}; // key: "الاسم|التاريخ" -> {name, type, date, checkIn, checkOut}
+
+  oldVals.forEach(function (r) {
+    var name = r[0];
+    if (!name) return;
+    var type = r[1];
+    var dateStr = normalizeDate_(r[2], tz);
+
+    if (type === 'غياب') {
+      var absKey = 'غياب|' + order.length;
+      order.push(absKey);
+      merged[absKey] = { name: name, type: 'غياب', date: dateStr };
+      return;
+    }
+
+    var key = name + '|' + dateStr;
+    if (!merged[key]) {
+      order.push(key);
+      merged[key] = { name: name, type: 'حضور', date: dateStr, checkIn: null, checkOut: null };
+    }
+    var rec = merged[key];
+    var slot = {
+      time: normalizeTime_(r[3], tz),
+      lat: r[4] || '', lng: r[5] || '', map: r[6] || '', device: r[7] || ''
+    };
+    if (type === 'انصراف') {
+      rec.checkOut = slot;
+    } else {
+      rec.checkIn = slot;
+    }
+  });
+
+  var newRows = order.map(function (key) {
+    var rec = merged[key];
+    if (rec.type === 'غياب') {
+      return [rec.name, 'غياب', rec.date, '', '', '', '', '', '', '', '', '', ''];
+    }
+    var ci = rec.checkIn || {};
+    var co = rec.checkOut || {};
+    return [
+      rec.name, 'حضور', rec.date,
+      ci.time || '', ci.lat || '', ci.lng || '', ci.map || '', ci.device || '',
+      co.time || '', co.lat || '', co.lng || '', co.map || '', co.device || ''
+    ];
+  });
+
+  sheet.clear();
+  sheet.appendRow(ATTENDANCE_MAIN_HEADERS_);
+  sheet.getRange(1, 1, 1, ATTENDANCE_MAIN_HEADERS_.length).setFontWeight('bold');
+  if (newRows.length) {
+    sheet.getRange(2, 1, newRows.length, ATTENDANCE_MAIN_HEADERS_.length).setValues(newRows);
+  }
+  // نعيد حساب أعمدة "التأخير/نوع طلب اليوم/حالة الطلب" على طول عشان
+  // تفضل متزامنة مع الشكل الجديد بدل ما تفضل فاضية لحد أول تحديث تاني.
+  refreshAttendanceExtraColumns_();
 }
 
 var ATTENDANCE_EXTRA_HEADERS_ = ['التأخير', 'نوع طلب اليوم', 'حالة الطلب'];
-var ATTENDANCE_EXTRA_START_COL_ = 9; // بعد الأعمدة التمنية الأصلية (الاسم..الجهاز)
+var ATTENDANCE_EXTRA_START_COL_ = 14; // بعد الأعمدة الـ13 الأصلية (الاسم..جهاز الانصراف)
 
 function ensureAttendanceExtraHeaders_(sheet) {
   var current = sheet.getRange(1, ATTENDANCE_EXTRA_START_COL_, 1, ATTENDANCE_EXTRA_HEADERS_.length).getValues()[0];
@@ -1151,7 +1276,7 @@ function markAbsencesForDate_(ss, dateStr) {
       if (handled[name]) return;
       var req = findRequestForDay_(reqIndex, name, dateStr);
       if (req && req.status === 'موافق') return; // إذن/مأمورية/إجازة معتمدة تغطي اليوم ده
-      sheet.appendRow([name, 'غياب', dateStr, '', '', '', '', '']);
+      sheet.appendRow([name, 'غياب', dateStr, '', '', '', '', '', '', '', '', '', '']);
     });
   } finally {
     lock.releaseLock();
