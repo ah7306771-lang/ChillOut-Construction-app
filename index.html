@@ -291,7 +291,7 @@
     display:inline-block;width:100%;
   }
   .home-footer-byline.top-byline{bottom:auto;top:84px;}
-  #homeScreen .top-byline{top:8px;}
+  #homeScreen .top-byline{top:90px;}
   .home-screen-shifted .home-header{top:38px;}
   /* من غير الشرط ده، توسيط الكارت رأسياً (align-items:center) بيخلي عنوان
      "الرئيسية" وباقي محتوى الكارت يطلعوا لفوق قد اللوجو/التاريخ/الوقت
@@ -452,7 +452,14 @@
   /* قايمة الموظفين في شاشة "إدارة الموظفين": صف واحد بس (اسم الموظف + زرار
      حذف) على نفس السطر، عكس صفوف لوحة الحضور اللي بتبقى عمود لأنها بتحتوي
      على تفاصيل زيادة. */
-  #employeeManageList .dash-row{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:nowrap;padding:10px 14px;}
+  #employeeManageList.dash-list{gap:0;border:1px solid var(--panel-line);border-radius:12px;overflow:hidden;}
+  #employeeManageList .dash-row{
+    flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:nowrap;padding:10px 14px;
+    border:none;border-radius:0;box-shadow:none;background:#fff;
+    border-bottom:1px solid var(--panel-line);
+  }
+  #employeeManageList .dash-row:last-child{border-bottom:none;}
+  #employeeManageList .dash-row:nth-child(even){background:#faf7f4;}
   #employeeManageList .dash-name{flex:1 1 auto;white-space:normal;}
   #employeeManageList .btn{flex-shrink:0;width:auto;padding:8px 14px;font-size:13px;}
   .dash-name{font-weight:800;font-size:15.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
@@ -840,7 +847,7 @@
     display:inline-flex;direction:ltr;border:1.4px solid #000;border-radius:3px;overflow:hidden;font-size:0.82em;
   }
   #paperQuote .qte-ref-box div{padding:5px 14px;}
-  #paperQuote .qte-ref-label{background:#F1AD83;font-weight:800;border-left:1.4px solid #000;white-space:nowrap;}
+  #paperQuote .qte-ref-label{background:#F1AD83;font-weight:800;border-right:1.4px solid #000;white-space:nowrap;}
   #paperQuote .qte-ref-value{background:#fff;font-weight:700;min-width:50px;text-align:center;}
 
   #paperQuote .qte-date-top{
@@ -972,9 +979,9 @@
     position:fixed;right:18px;top:18px;z-index:9999;
     display:none;align-items:center;gap:10px;
   }
-  /* أيقونة الإعدادات ⚙️ في الرئيسية بس (مش في شاشة الدخول): بنزلها تحت
-     التاريخ/اليوم اللي فوق يمين الشاشة عشان متتلخبطش معاه. */
-  #homeFabs{top:84px;}
+  /* أيقونة الإعدادات ⚙️ في الرئيسية بس (مش في شاشة الدخول): فوق الوقت
+     اللي شمال الشاشة، و"BY/ Ahmed Hamdy" بقى تحتها بدل ما كانت فوق. */
+  #homeFabs{top:2px;left:18px;right:auto;}
   .login-fab-btn{
     position:relative;
     width:50px;height:50px;border-radius:50%;
@@ -995,7 +1002,7 @@
   }
   @media (max-width:480px){
     .login-fabs{right:14px;top:14px;gap:8px;}
-    #homeFabs{top:76px;}
+    #homeFabs{top:2px;left:14px;right:auto;}
     .login-fab-btn{width:44px;height:44px;font-size:19px;}
   }
 
@@ -2001,8 +2008,8 @@
 
       <div class="qte-ref-row">
         <div class="qte-ref-box">
-          <div class="qte-ref-value" id="pvQteNum" dir="ltr">—</div>
           <div class="qte-ref-label">Reference #</div>
+          <div class="qte-ref-value" id="pvQteNum" dir="ltr">—</div>
         </div>
       </div>
 
