@@ -805,13 +805,23 @@
   #paperQuoteLogoSlot img{width:170px;height:auto;display:block;margin:0 auto 4px;object-fit:contain;}
   #paperQuote .company-name-lg{font-size:1.15em;font-weight:800;color:#111;}
 
-  table.dtable col.c-qdesc{width:16%;}
-  table.dtable col.c-qtype{width:20%;}
-  table.dtable col.c-qprice{width:18%;}
-  table.dtable col.c-qqty{width:16%;}
-  table.dtable col.c-qnotes{width:30%;}
+  table.dtable col.c-qdesc{width:13%;}
+  table.dtable col.c-qtype{width:15%;}
+  table.dtable col.c-qprice{width:11%;}
+  table.dtable col.c-qqty{width:10%;}
+  table.dtable col.c-qnotes{width:51%;}
   #paperQuote table.dtable thead th{background:#F1AD83;color:#111;font-weight:800;}
   #paperQuote table.dtable tbody tr:nth-child(even){background:#faf7f4;}
+  /* خط الجدول كله بولد زي ما طلب أحمد */
+  #pvQteTable td{font-weight:700;}
+  /* عمود الملاحظات في عرض السعر بيبقى فيه غالبًا نص عربي متداخل مع أرقام
+     ونسب مئوية (زي "40% كاش - 30% اجل شهر")، وكسر السطر العام (break-all)
+     بيقطع وسط الأرقام/النسبة فيدي شكل متراكب ومتداخل عند التحميل أو
+     المشاركة (html2canvas). عمود الملاحظات وحده بيتكسر على الكلمات فقط. */
+  #pvQteTable td:nth-child(5){
+    word-break:normal;overflow-wrap:break-word;white-space:normal;
+    unicode-bidi:plaintext;
+  }
 
   #paperQuote .qte-title-row{
     text-align:center;font-weight:800;font-size:1.08em;
@@ -821,7 +831,7 @@
     display:flex;justify-content:center;align-items:center;margin-bottom:10px;
   }
   #paperQuote .qte-ref-box{
-    display:inline-flex;border:1.4px solid #000;border-radius:3px;overflow:hidden;font-size:0.82em;
+    display:inline-flex;direction:ltr;border:1.4px solid #000;border-radius:3px;overflow:hidden;font-size:0.82em;
   }
   #paperQuote .qte-ref-box div{padding:5px 14px;}
   #paperQuote .qte-ref-label{background:#F1AD83;font-weight:800;border-left:1.4px solid #000;white-space:nowrap;}
@@ -851,11 +861,19 @@
   .qte-item-row .mini select,.qte-item-row .mini input{
     width:100%;padding:9px 8px;font-size:14px;border:1px solid var(--panel-line);
     border-radius:8px;font-family:'Cairo',sans-serif;background:#fff;color:var(--ink);
+    box-sizing:border-box;
   }
+  /* خانة "سعر الطن" أصغر (نص المساحة)، وخانة "ملاحظات" أكبر بنفس القد اللي
+     اتشال من السعر — الصف فيه flex-wrap فبيلف على سطر جديد لو المساحة
+     ضاقت، فمفيش حاجة بتخرج بره إطار الصف. */
+  .qte-item-row .mini:nth-child(3){flex:0.5;min-width:70px;}
+  .qte-item-row .mini:nth-child(4){flex:2;min-width:160px;}
   .qte-item-row .rm{background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;}
   @media (max-width:760px){
     .qte-item-row{flex-wrap:wrap;}
     .qte-item-row .mini{flex:1 1 130px;}
+    .qte-item-row .mini:nth-child(3){flex:1 1 90px;min-width:90px;}
+    .qte-item-row .mini:nth-child(4){flex:1 1 100%;min-width:100%;}
     .qte-item-row .rm{flex:0 0 auto;padding:0 8px;font-size:20px;}
   }
 
@@ -887,6 +905,29 @@
     flex:0 0 auto;
   }
   .qte-preview-page #paperQuote{width:794px;max-width:794px;margin:0;}
+
+  /* ---------- ملخص سريع للغياب/التأخير (مودال خفيف من صفحة الدخول) ---------- */
+  .quick-status-overlay{
+    position:fixed;inset:0;background:rgba(20,15,10,0.6);z-index:9999;
+    overflow:auto;padding:20px 12px;display:flex;align-items:flex-start;justify-content:center;
+  }
+  .quick-status-modal{
+    background:#fff;border-radius:12px;max-width:480px;width:100%;padding:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .quick-status-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .quick-status-header #quickStatusTitle{font-weight:800;font-size:1.15em;color:var(--ink);}
+  .quick-status-close{
+    background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1;
+    padding:2px 8px;border-radius:6px;
+  }
+  .quick-status-close:hover{background:#f1f1f1;color:#333;}
+  .quick-status-paper{background:#fff;}
+  .quick-status-subtitle{text-align:center;color:var(--ink-soft);margin:4px 0 14px;font-size:0.92em;}
+  .quick-status-paper .empty-note{text-align:center;color:var(--ink-soft);padding:18px 8px;}
+  .quick-status-paper table.dtable{table-layout:auto;}
+  .quick-status-actions{display:flex;gap:8px;margin-top:16px;}
+  .quick-status-actions .btn{flex:1;}
 
   /* ---------- Floating "Contact us" WhatsApp button (login + home only) ---------- */
   .wa-float-btn{
@@ -947,6 +988,52 @@
     .login-fabs{right:14px;top:14px;gap:8px;}
     .login-fab-btn{width:44px;height:44px;font-size:19px;}
   }
+
+  /* ---------- رسالة ترحيب عند نجاح الدخول ---------- */
+  .welcome-toast{
+    position:fixed;left:50%;top:24px;transform:translate(-50%,-16px);
+    z-index:10001;background:#fff;color:var(--ink);
+    border:1px solid var(--panel-line);border-radius:14px;
+    padding:12px 22px;font-family:'Cairo',sans-serif;font-weight:800;font-size:14.5px;
+    box-shadow:0 10px 26px rgba(26,26,26,.18);
+    opacity:0;pointer-events:none;white-space:nowrap;
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .welcome-toast.welcome-toast-show{opacity:1;transform:translate(-50%,0);}
+  @media (max-width:480px){
+    .welcome-toast{white-space:normal;text-align:center;max-width:88vw;font-size:13px;padding:11px 16px;}
+  }
+  .settings-divider{height:1px;background:var(--panel-line);margin:26px 0 4px;}
+
+  /* ---------- احتفال عيد الميلاد ---------- */
+  .birthday-overlay{
+    position:fixed;inset:0;z-index:10050;display:none;
+    align-items:center;justify-content:center;
+    background:rgba(26,26,26,.55);overflow:hidden;padding:20px;
+  }
+  .birthday-overlay.show{display:flex;}
+  .birthday-card{
+    position:relative;z-index:2;background:#fff;border-radius:24px;
+    padding:34px 28px;max-width:320px;width:100%;text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+    animation:birthdayPop .5s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes birthdayPop{
+    0%{transform:scale(.4);opacity:0;}
+    100%{transform:scale(1);opacity:1;}
+  }
+  .birthday-card .bday-emoji{font-size:44px;margin-bottom:6px;display:block;}
+  .birthday-card h2{margin:0 0 8px;font-size:19px;color:var(--ink);font-weight:800;}
+  .birthday-card p{margin:0 0 18px;font-size:13.5px;color:var(--ink-soft);}
+  .birthday-card .btn{width:auto;padding:10px 26px;}
+  .confetti-piece{
+    position:absolute;top:-20px;z-index:1;border-radius:2px;pointer-events:none;
+    animation-name:confettiFall;animation-timing-function:linear;animation-fill-mode:forwards;
+  }
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(115vh) rotate(540deg);opacity:.9;}
+  }
 </style>
 </head>
 <body>
@@ -955,19 +1042,74 @@
   <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.22.6 4.3 1.64 6.1L4 29l8.06-1.6a12.9 12.9 0 0 0 3.96.62h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 22c-1.85 0-3.62-.5-5.14-1.4l-.37-.22-4.78.95.98-4.66-.24-.38a9.94 9.94 0 0 1-1.53-5.3C4.94 8.95 9.9 4 16.02 4c5.55 0 10.06 4.5 10.06 10.06 0 5.55-4.5 10.06-10.06 10.06zm5.5-7.53c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.28-.47-2.44-1.5-.9-.8-1.5-1.8-1.68-2.1-.18-.3-.02-.46.13-.6.13-.13.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.93-2.25-.25-.6-.5-.5-.68-.5-.18 0-.38-.02-.58-.02s-.53.08-.8.38c-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.25 5.15 4.55.72.3 1.28.5 1.72.63.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35z"/></svg>
 </a>
 
-<!-- أيقونتين بيبانوا بس في صفحة الدخول: لوحة الحضور + جرس طلبات بانتظار
-     الاعتماد — الاتنين بيطلبوا الرقم السري زي أي دخول تاني للشاشتين دول. -->
+<!-- أيقونات بتبان بس في صفحة الدخول: لوحة الحضور + جرس طلبات بانتظار
+     الاعتماد + ملخص سريع للغياب والتأخير النهارده — كلها بتطلب كلمة سر
+     لوحة الحضور زي أي دخول تاني للشاشات دي. -->
 <div class="login-fabs" id="loginFabs">
   <button type="button" id="loginDashboardBtn" class="login-fab-btn" aria-label="لوحة الحضور والانصراف">📊</button>
   <button type="button" id="loginBellBtn" class="login-fab-btn" aria-label="طلبات بانتظار الاعتماد">
     🔔
     <span class="login-bell-badge" id="loginBellBadge">0</span>
   </button>
+  <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫</button>
+  <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰</button>
+</div>
+
+<!-- مودال سريع بيعرض قايمة الغياب أو التأخير النهارده (حسب اللي دوس
+     عليه)، مع تحميل/مشاركة صورة PDF منها — مستقل عن أي شاشة تانية عشان
+     يفتح فورًا من غير أي تنقل. -->
+<div id="quickStatusOverlay" class="quick-status-overlay" style="display:none;">
+  <div class="quick-status-modal">
+    <div class="quick-status-header">
+      <div id="quickStatusTitle">الغياب النهارده</div>
+      <button type="button" id="quickStatusCloseBtn" class="quick-status-close" aria-label="إغلاق">×</button>
+    </div>
+    <div id="quickStatusPaper" class="quick-status-paper">
+      <div class="doc-header-lg">
+        <div id="quickStatusLogoSlot"></div>
+        <div class="company-name-lg">شركة شيل اوت للمقاولات العامه</div>
+      </div>
+      <div class="headbar"></div>
+      <div id="quickStatusSubtitle" class="quick-status-subtitle"></div>
+      <div id="quickStatusListWrap"></div>
+    </div>
+    <div class="quick-status-actions">
+      <button type="button" class="btn btn-primary" id="quickStatusDownloadBtn">⬇ تحميل PDF</button>
+      <button type="button" class="btn btn-secondary" id="quickStatusShareBtn">↗ مشاركة واتساب</button>
+    </div>
+  </div>
+</div>
+
+<!-- أيقونة الإعدادات ⚙️ بتبان بس في الصفحة الرئيسية (بعد تسجيل الدخول)،
+     مش في صفحة الدخول — فيها إدارة الموظفين وإدارة إظهار/إخفاء أيقونات
+     الرئيسية، وكلها وراء نفس باسورد إدارة الموظفين. -->
+<div class="login-fabs" id="homeFabs" style="display:none;">
+  <button type="button" id="homeSettingsBtn" class="login-fab-btn" aria-label="الإعدادات">⚙️</button>
+</div>
+
+<!-- رسالة ترحيب سريعة بتظهر أول ما تسجيل الدخول ينجح (أي طريقة دخول:
+     يوزر/باسورد، رقم موظف، أو بصمة) وتختفي لوحدها بعد كام ثانية. -->
+<div id="welcomeToast" class="welcome-toast" style="display:none;"></div>
+
+<!-- رسالة صغيرة "تم الحفظ" بتظهر أول ما أي زرار حفظ في شاشة إدارة الموظفين
+     يخلص شغله بنجاح. -->
+<div id="savedToast" class="welcome-toast" style="display:none;"></div>
+
+<!-- احتفال عيد الميلاد: بيظهر بمجرد ما موظف يسجل دخوله لو النهاردة تاريخ
+     ميلاده (من عمود "تاريخ الميلاد" في تاب الموظفين)، بدل رسالة الترحيب
+     العادية. مستقل عن الشاشات فبيبان فوق أي شاشة. -->
+<div id="birthdayOverlay" class="birthday-overlay">
+  <div class="birthday-card">
+    <span class="bday-emoji">🎉🎂</span>
+    <h2 id="birthdayTitle">كل سنة وانت طيب!</h2>
+    <p id="birthdayMsg"></p>
+    <button type="button" id="birthdayCloseBtn" class="btn btn-primary">تمام 🌸</button>
+  </div>
 </div>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" class="gate-screen stacked-byline-screen">
-  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="home-footer-byline">BY/ Ahmed Hamdy</div>
   <div class="gate-card">
     <div class="gate-logo" id="loginLogoSlot"></div>
     <svg class="construction-anim" viewBox="0 0 230 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مقاولات">
@@ -1034,7 +1176,6 @@
       <button type="submit" class="btn btn-primary" style="width:100%;">دخول</button>
       <div class="status-msg err" id="loginError"></div>
       <button type="button" id="forgotBtn" class="forgot-link">ذكرني بكلمة المرور</button>
-      <button type="button" id="enableBiometricBtn" class="forgot-link" style="display:none;">تفعيل الدخول ببصمة الإصبع على هذا الجهاز</button>
       <div id="passwordHint" class="password-hint" style="display:none;"></div>
     </form>
   </div>
@@ -1092,6 +1233,10 @@
         <path d="M9 14.3l2 2 4-4.3" stroke="#1f7a4c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       </svg></span>
       <span class="home-tile-label">اعتماد الأذون</span>
+    </button>
+    <button type="button" class="home-tile" id="openMySalaryTileBtn" style="display:none;">
+      <span class="home-tile-icon" style="font-size:26px;">💰</span>
+      <span class="home-tile-label">راتبي</span>
     </button>
 
     </div>
@@ -1230,6 +1375,141 @@
     <button type="button" class="btn btn-secondary" id="approvalsRefreshBtn" style="width:100%;">🔄 تحديث</button>
     <div class="status-msg" id="approvalsStatus" style="margin:10px 0;"></div>
     <div class="dash-list" id="attendanceApprovalsList"></div>
+  </div>
+</div>
+
+<!-- شاشة "الإعدادات": مجرد قايمة بتودّي لشاشتي إدارة الموظفين وإدارة
+     الشاشات — بتتفتح بنفس باسورد إدارة الموظفين من أيقونة ⚙️ في الرئيسية،
+     فمفيش داعي تطلب الباسورد تاني لما تدخل أي واحدة من التابين دول. -->
+<div id="settingsMenuScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnSettingsMenu" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">الإعدادات</h1>
+    <div class="home-grid">
+      <button type="button" class="home-tile" id="openEmployeeManageTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">👥</span>
+        <span class="home-tile-label">إدارة الموظفين</span>
+      </button>
+      <button type="button" class="home-tile" id="openIconManageTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🖥️</span>
+        <span class="home-tile-label">إدارة الشاشات</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- شاشة "إدارة الشاشات": تحديد أي أيقونات الرئيسية/التفويضات/النماذج
+     تظهر ولا تختفي — القايمة نفسها بتترسم بالجافاسكريبت. -->
+<div id="iconManageScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backSettingsBtnIcons" class="back-btn">→ رجوع للإعدادات</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:560px;">
+    <h1 class="gate-title">إدارة الشاشات</h1>
+    <div class="status-msg" id="iconManageStatus" style="margin:0 0 10px;"></div>
+    <div class="field">
+      <label for="iconManageEmpSelect">اختر الموظف</label>
+      <select id="iconManageEmpSelect"></select>
+    </div>
+    <div id="iconManageList"></div>
+    <button type="button" class="btn btn-primary" id="saveIconVisibilityBtn" style="width:100%;margin-top:16px;">💾 حفظ</button>
+  </div>
+</div>
+
+<!-- شاشة إدارة الموظفين: إضافة موظف جديد، تغيير رقمه السري، أو حذفه —
+     محمية بكلمة سر منفصلة عن كل الباسوردات التانية لأنها بتتحكم في نفس
+     أرقام الدخول (PINs) اللي بتتحقق منها شاشة الحضور. -->
+<div id="employeeManageScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnEmployees" class="back-btn">→ رجوع للإعدادات</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:560px;">
+    <h1 class="gate-title">إدارة الموظفين</h1>
+    <div class="status-msg" id="employeeManageStatus" style="margin:0 0 10px;"></div>
+
+    <div class="section-tag" style="margin:0 0 8px;">قائمة الموظفين</div>
+    <div class="dash-list" id="employeeManageList"></div>
+
+    <div class="section-tag" style="margin:20px 0 8px;">إضافة موظف جديد</div>
+    <div class="row2">
+      <div class="field">
+        <label for="newEmpName">اسم الموظف</label>
+        <input type="text" id="newEmpName" placeholder="مثال: محمد علي">
+      </div>
+      <div class="field">
+        <label for="newEmpPass">الرقم السري</label>
+        <input type="text" id="newEmpPass" inputmode="numeric" autocomplete="off" placeholder="مثال: 18">
+      </div>
+    </div>
+    <div class="field">
+      <label for="newEmpBirthday">تاريخ الميلاد (اختياري)</label>
+      <input type="date" id="newEmpBirthday">
+    </div>
+    <button type="button" class="btn btn-primary" id="addEmpBtn" style="width:100%;">+ إضافة موظف</button>
+
+    <div class="section-tag" style="margin:24px 0 8px;">بيانات الموظف (الرقم السري وتاريخ الميلاد)</div>
+    <div class="field">
+      <label for="empPassSelect">اختر الموظف</label>
+      <select id="empPassSelect"></select>
+    </div>
+    <div class="field">
+      <label for="empPassValue">الرقم السري</label>
+      <input type="text" id="empPassValue" inputmode="numeric" autocomplete="off" placeholder="—">
+    </div>
+    <div class="field">
+      <label for="empBirthdayValue">تاريخ الميلاد</label>
+      <input type="date" id="empBirthdayValue">
+    </div>
+    <button type="button" class="btn btn-secondary" id="saveEmpPassBtn" style="width:100%;">💾 حفظ</button>
+
+    <div class="settings-divider"></div>
+    <div class="section-tag" style="margin:24px 0 8px;">كلمات سر الشاشات</div>
+    <div class="field">
+      <label for="screenPassSelect">اختر الشاشة</label>
+      <select id="screenPassSelect"></select>
+    </div>
+    <div class="field">
+      <label for="screenPassValue">القيمة</label>
+      <input type="text" id="screenPassValue" autocomplete="off" placeholder="فارغ (بدون باسورد)">
+    </div>
+    <button type="button" class="btn btn-secondary" id="saveScreenPassBtn" style="width:100%;">💾 حفظ</button>
+
+    <div class="settings-divider"></div>
+    <div class="section-tag" style="margin:24px 0 8px;">إشعار الراتب</div>
+    <div class="status-msg" id="salarySendStatus" style="margin:0 0 8px;font-size:13px;"></div>
+    <div class="field">
+      <label for="salarySendSelect">اختر الموظف</label>
+      <select id="salarySendSelect"></select>
+    </div>
+    <button type="button" class="btn btn-secondary" id="salarySendBtn" style="width:100%;">📢 إرسال إشعار الراتب</button>
+  </div>
+</div>
+
+<!-- شاشة "راتبي": الموظف بيشوف فيها راتبه الحالي (من تاب "الرواتب")
+     ويقدر يفعّل إشعاراته الشخصية (نزول الراتب / اعتماد طلباته هو بس) —
+     منفصل تمامًا عن زرار "فعّل إشعارات الجوال" اللي في شاشة اعتماد الأذون. -->
+<div id="mySalaryScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnMySalary" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">راتبي</h1>
+    <div id="mySalaryContent"><div class="empty-note">جاري التحميل...</div></div>
+
+    <div class="settings-divider"></div>
+    <div class="section-tag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
+    <button type="button" class="btn btn-secondary" id="enableMyPushBtn" style="width:100%;">🔔 فعّل إشعاراتي الشخصية</button>
+    <div class="status-msg" id="myPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
   </div>
 </div>
 
@@ -1711,8 +1991,8 @@
 
       <div class="qte-ref-row">
         <div class="qte-ref-box">
-          <div class="qte-ref-label">Reference #</div>
           <div class="qte-ref-value" id="pvQteNum" dir="ltr">—</div>
+          <div class="qte-ref-label">Reference #</div>
         </div>
       </div>
 
@@ -2624,6 +2904,20 @@ window.safeFileName = function(str){
   var AUTH_KEY = 'tafweedAuthed_v1';
   var CREDS_USER_KEY = 'tafweedUser_v1';
   var CREDS_PASS_KEY = 'tafweedPass_v1';
+  var ROLE_KEY = 'tafweedRole_v1';
+  var ROLE_EMP_NAME_KEY = 'tafweedRoleEmpName_v1';
+  // دخول الموظف على الشاشة الرئيسية بقى برقمه السري الحالي نفسه (نفس رقم
+  // الحضور)، مكتوب في خانتي اسم المستخدم وكلمة المرور مع بعض. بنعرف مين
+  // هو بالظبط عن طريق مطابقة الرقم مع ATTENDANCE_PASSWORDS (findEmployeeByPin_)،
+  // وبعدين بنطبّق عليه قايمة الأيقونات المخفية الخاصة بيه هو بس (لا أكتر
+  // ولا أقل)، من EMPLOYEE_HIDDEN_ICONS_. دخول المسؤول (APP_USER/APP_PASS)
+  // بيشوف كل الأيقونات دايمًا.
+  var isEmployeeSession = false;
+  var currentSessionEmployeeName = null;
+  try {
+    isEmployeeSession = (localStorage.getItem(ROLE_KEY) === 'employee');
+    currentSessionEmployeeName = localStorage.getItem(ROLE_EMP_NAME_KEY) || null;
+  } catch(e){}
   var BIO_ENABLED_KEY = 'tafweedBioEnabled_v1';
   var BIO_CRED_ID_KEY = 'tafweedBioCredId_v1';
 
@@ -2634,6 +2928,10 @@ window.safeFileName = function(str){
   var attendanceScreen  = document.getElementById('attendanceScreen');
   var attendanceDashboardScreen = document.getElementById('attendanceDashboardScreen');
   var attendanceApprovalsScreen = document.getElementById('attendanceApprovalsScreen');
+  var settingsMenuScreen = document.getElementById('settingsMenuScreen');
+  var iconManageScreen = document.getElementById('iconManageScreen');
+  var employeeManageScreen = document.getElementById('employeeManageScreen');
+  var mySalaryScreen = document.getElementById('mySalaryScreen');
   var appScreen         = document.getElementById('appScreen');
   var orderScreen       = document.getElementById('orderScreen');
   var quoteScreen       = document.getElementById('quoteScreen');
@@ -2652,6 +2950,10 @@ window.safeFileName = function(str){
     attendanceScreen.style.display  = (name === 'attendance')    ? '' : 'none';
     attendanceDashboardScreen.style.display = (name === 'attendance-dashboard') ? '' : 'none';
     attendanceApprovalsScreen.style.display = (name === 'attendance-approvals') ? '' : 'none';
+    settingsMenuScreen.style.display = (name === 'settings-menu') ? '' : 'none';
+    iconManageScreen.style.display = (name === 'icon-manage') ? '' : 'none';
+    employeeManageScreen.style.display = (name === 'employee-manage') ? '' : 'none';
+    if (mySalaryScreen) mySalaryScreen.style.display = (name === 'my-salary') ? '' : 'none';
     appScreen.style.display         = (name === 'app')           ? '' : 'none';
     orderScreen.style.display       = (name === 'order')         ? '' : 'none';
     quoteScreen.style.display       = (name === 'quote')         ? '' : 'none';
@@ -2665,6 +2967,8 @@ window.safeFileName = function(str){
     if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
     var loginFabs = document.getElementById('loginFabs');
     if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
+    var homeFabs = document.getElementById('homeFabs');
+    if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
     if (name !== 'login') {
       var err = document.getElementById('loginError');
       if (err) err.textContent = '';
@@ -2712,6 +3016,7 @@ window.safeFileName = function(str){
   cloneImgInto('companyLogoSrc', 'paperCustodyLogoSlot');
   // كشف الحضور والانصراف (لوحة الحضور): شعار الشركة فقط بدون ختم.
   cloneImgInto('companyLogoSrc', 'paperDashTableLogoSlot');
+  cloneImgInto('companyLogoSrc', 'quickStatusLogoSlot');
   // homeLogoSlot already has its own fixed icon image in the markup.
 
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
@@ -2747,7 +3052,11 @@ window.safeFileName = function(str){
   // بيطلب إذن الإشعارات من المتصفح (لازم يتنادى من ضغطة زرار حقيقية من
   // المستخدم عشان المتصفح يقبل يعرض طلب الإذن)، ولو اتوافق عليه بيسجل
   // التوكن بتاع الجهاز ده في الشيت عشان السكريبت يقدر يبعتله إشعارات.
-  function enablePushNotifications(statusEl){
+  // "employeeName" اختياري — لو جاي، معناه ده تفعيل شخصي لموظف بعينه (زرار
+  // "فعّل إشعاراتي الشخصية" في شاشة "راتبي")، منفصل تمامًا عن زرار الإدمن
+  // العام "فعّل إشعارات الجوال للطلبات الجديدة". التوكن بتاع الجهاز واحد
+  // في الحالتين، بس بيتسجل مربوط باسم الموظف عشان نقدر نبعتله إشعار خاص.
+  function enablePushNotifications(statusEl, employeeName){
     if (!initFcmIfNeeded() || !('serviceWorker' in navigator) || !('Notification' in window)) {
       if (statusEl) statusEl.textContent = FCM_CONFIGURED
         ? 'المتصفح ده مش بيدعم إشعارات الموبايل.'
@@ -2780,7 +3089,7 @@ window.safeFileName = function(str){
         }
         return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration }).then(function(token){
           if (!token) { if (statusEl) statusEl.textContent = 'تعذر تفعيل الإشعارات، حاول تاني.'; return; }
-          registerPushToken(token, statusEl);
+          registerPushToken(token, statusEl, employeeName);
         });
       });
     }).catch(function(){
@@ -2788,34 +3097,43 @@ window.safeFileName = function(str){
     });
   }
 
-  function registerPushToken(token, statusEl){
+  function registerPushToken(token, statusEl, employeeName){
     if (!ATTENDANCE_SCRIPT_URL) return;
     var url = ATTENDANCE_SCRIPT_URL + '?action=registerPush&token=' + encodeURIComponent(token);
+    if (employeeName) url += '&employee=' + encodeURIComponent(employeeName);
     fetch(url).then(function(r){ return r.json(); }).then(function(){
-      try { localStorage.setItem('fcmTokenRegistered', token); } catch (e) {}
+      try {
+        localStorage.setItem('fcmTokenRegistered', token);
+        if (employeeName) localStorage.setItem('fcmEmployeeTokenRegistered', token);
+      } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
     }).catch(function(){
       if (statusEl) statusEl.textContent = 'تعذر حفظ إعداد الإشعارات، تأكد من الإنترنت وحاول تاني.';
     });
   }
 
-  // بتتنادى كل ما تفتح شاشة الاعتماد، عشان لو الإشعارات كانت اتفعلت
-  // قبل كده على الجهاز ده، تبان الحالة على طول من غير ما تحتاج تدوس
-  // الزرار تاني — بدل ما الزرار يفضل بيطلب منك "فعّل" كل مرة.
-  function refreshPushButtonState(statusEl, btnEl){
+  // بتتنادى كل ما تفتح شاشة الاعتماد (أو شاشة "راتبي" للموظف)، عشان لو
+  // الإشعارات كانت اتفعلت قبل كده على الجهاز ده، تبان الحالة على طول من
+  // غير ما تحتاج تدوس الزرار تاني — بدل ما الزرار يفضل بيطلب منك "فعّل"
+  // كل مرة. "employeeMode" بيفصل حالة تفعيل الموظف الشخصية عن حالة تفعيل
+  // الإدمن العامة (نفس الجهاز ممكن يكون فيه الاتنين مسجلين لوحدهم).
+  function refreshPushButtonState(statusEl, btnEl, employeeMode){
+    var storageKey = employeeMode ? 'fcmEmployeeTokenRegistered' : 'fcmTokenRegistered';
+    var defaultLabel = employeeMode ? '🔔 فعّل إشعاراتي الشخصية' : '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+    var reenableLabel = employeeMode ? '🔔 إعادة تفعيل إشعاراتي' : '🔔 إعادة تفعيل الإشعارات';
     var savedToken = null;
-    try { savedToken = localStorage.getItem('fcmTokenRegistered'); } catch (e) {}
+    try { savedToken = localStorage.getItem(storageKey); } catch (e) {}
     var permission = ('Notification' in window) ? Notification.permission : 'default';
 
     if (savedToken && permission === 'granted') {
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
-      if (btnEl) btnEl.textContent = '🔔 إعادة تفعيل الإشعارات';
+      if (btnEl) btnEl.textContent = reenableLabel;
     } else if (permission === 'denied') {
       if (statusEl) { statusEl.textContent = 'الإشعارات ممنوعة من إعدادات المتصفح — لازم تسمح بيها من هناك الأول.'; statusEl.style.color = '#b3261e'; }
-      if (btnEl) btnEl.textContent = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+      if (btnEl) btnEl.textContent = defaultLabel;
     } else {
       if (statusEl) { statusEl.textContent = ''; }
-      if (btnEl) btnEl.textContent = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+      if (btnEl) btnEl.textContent = defaultLabel;
     }
   }
 
@@ -2949,6 +3267,12 @@ window.safeFileName = function(str){
   // كلمة سر الدخول على "لوحة الحضور" (شاشة المتابعة الإدارية) — نفس كلمة
   // السر مطلوبة من أي حد يدوس على الأيقونة قبل ما يشوف بيانات كل الموظفين.
   var ATTENDANCE_DASHBOARD_PASSWORD = '55555';
+
+  // كلمة سر منفصلة لشاشة "إدارة الموظفين" (إضافة/حذف موظف، تغيير رقمه
+  // السري) — مختلفة عن كل الباسوردات التانية عمدًا، لأنها بتتحكم في نفس
+  // الأرقام السرية اللي شاشة الحضور بتتحقق منها، فحساسيتها أعلى. اتفحصها
+  // كمان على السيرفر (Apps Script) — لازم تتظبط في المكانين لو غيّرتها.
+  var EMPLOYEE_MANAGE_PASSWORD = '77007';
 
   // ---- بوابة الدخول لشاشة "الحضور والانصراف" ----
   // أول ما حد يدوس على بلاطة "الحضور والانصراف" من الرئيسية (مش رابط
@@ -3554,6 +3878,8 @@ window.safeFileName = function(str){
     // الشخصية على الباب)، ففي الحالة دي بنتخطى المودال هنا عشان مفيش
     // داعي نسأله كلمة سره مرتين في نفس الجلسة.
     function withAttendancePw_(action){
+      // المسؤول (chill) موثوق بالكامل، مفيش باسورد لأي زرار في شاشة الحضور.
+      if (!isEmployeeSession) { action(); return; }
       if (attendanceIdentityProven_(name)) { action(); return; }
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], action);
     }
@@ -3728,13 +4054,14 @@ window.safeFileName = function(str){
   renderAttendanceList();
 
   // ---------------- ATTENDANCE DASHBOARD (لوحة الحضور والانصراف) ----------------
-  (function initAttendanceDashboard(){
-    var dateInput = document.getElementById('dashDateInput');
+  // اتحولت من IIFE بتتنفذ مرة واحدة بس لدالة قابلة لإعادة الاستدعاء —
+  // محتاجينها تتكرر كل ما قايمة الموظفين تتغيّر (بعد التحميل من السيرفر،
+  // أو بعد إضافة/حذف موظف من شاشة الإدارة) عشان الليستة تفضل مطابقة.
+  function rebuildAttendanceDashboardEmployeeSelect_(){
     var empSelect = document.getElementById('dashEmployeeSelect');
-    if (!dateInput || !empSelect) return;
-
-    dateInput.value = attendanceTodayKey();
-
+    if (!empSelect) return;
+    var currentVal = empSelect.value;
+    empSelect.innerHTML = '';
     var allOpt = document.createElement('option');
     allOpt.value = '';
     allOpt.textContent = 'كل الموظفين';
@@ -3745,7 +4072,92 @@ window.safeFileName = function(str){
       opt.textContent = name;
       empSelect.appendChild(opt);
     });
+    if (ATTENDANCE_EMPLOYEES.indexOf(currentVal) > -1) empSelect.value = currentVal;
+  }
+  (function initAttendanceDashboard(){
+    var dateInput = document.getElementById('dashDateInput');
+    if (!dateInput) return;
+    dateInput.value = attendanceTodayKey();
+    rebuildAttendanceDashboardEmployeeSelect_();
   })();
+
+  // ---------------- قايمة الموظفين من السيرفر (تاب "Employees") ----------------
+  // ATTENDANCE_EMPLOYEES و ATTENDANCE_PASSWORDS فوق دول قيم افتراضية
+  // (احتياطي لو مفيش إنترنت أو أول تحميل)؛ هنا بنجيب القايمة الحقيقية من
+  // شيت "Employees" ونستبدلهم بيها، عشان أي موظف يتضاف أو يتشال من شاشة
+  // "إدارة الموظفين" يبان في كل شاشات التطبيق من غير ما حد يلمس الكود.
+  // قايمة الأيقونات المخفية الخاصة بكل موظف لوحده (اسم -> Array من الـ IDs
+  // المخفية له تحديدًا)، جايه من عمود "الشاشات المخفية" في تاب Employees.
+  var EMPLOYEE_HIDDEN_ICONS_ = {};
+
+  // تاريخ ميلاد كل موظف (اسم -> "YYYY-MM-DD")، جاي من عمود "تاريخ الميلاد"
+  // في تاب Employees — فاضي لو مش متسجل. مستخدمة لاحتفال عيد الميلاد.
+  var EMPLOYEE_BIRTHDAYS_ = {};
+
+  // بيدور على اسم الموظف اللي رقمه السري (PIN) بتاعه هو ده بالظبط —
+  // مستخدمة في تسجيل دخول الموظف على الشاشة الرئيسية.
+  function findEmployeeByPin_(pin){
+    for (var name in ATTENDANCE_PASSWORDS) {
+      if (ATTENDANCE_PASSWORDS[name] === pin) return name;
+    }
+    return null;
+  }
+
+  function reloadEmployeesFromServer_(onDone){
+    if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(data){
+      if (data && data.ok && data.employees && data.employees.length) {
+        var names = [];
+        var pw = {};
+        var hidden = {};
+        var birthdays = {};
+        data.employees.forEach(function(emp){
+          if (!emp || !emp.name || !emp.pass) return;
+          names.push(emp.name);
+          pw[emp.name] = emp.pass;
+          hidden[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
+          birthdays[emp.name] = emp.birthday || '';
+        });
+        if (names.length) {
+          ATTENDANCE_EMPLOYEES = names;
+          ATTENDANCE_PASSWORDS = pw;
+          EMPLOYEE_HIDDEN_ICONS_ = hidden;
+          EMPLOYEE_BIRTHDAYS_ = birthdays;
+          applyIconVisibility_();
+        }
+      }
+    }).catch(function(){ /* أوفلاين: نفضل شغالين بالقايمة الافتراضية فوق */ }).then(function(){
+      if (onDone) onDone();
+    });
+  }
+  reloadEmployeesFromServer_(function(){
+    // بعد أول تحميل من السيرفر، نعيد رسم القايمة واللستة عشان لو حد ضاف
+    // أو شال موظف من شاشة الإدارة قبل كده، الشاشة تظهره فورًا من غير
+    // ما نستنى دخول تاني للشاشة.
+    renderAttendanceList();
+    rebuildAttendanceDashboardEmployeeSelect_();
+  });
+
+  // ---------------- كلمات سر الشاشات من السيرفر (تاب "Settings") ----------------
+  // APP_USER/APP_PASS/ATTENDANCE_DASHBOARD_PASSWORD/EMPLOYEE_MANAGE_PASSWORD
+  // فوق دول قيم افتراضية بس (احتياطي أوفلاين/أول تحميل)؛ لو حد غيّرهم من
+  // شاشة "إدارة الموظفين" (قسم كلمات السر)، بنستبدلهم بالقيمة المحفوظة في
+  // شيت "Settings" فور ما الصفحة تفتح.
+  function reloadSettingsFromServer_(onDone){
+    if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=settingsList').then(function(r){ return r.json(); }).then(function(data){
+      var s = (data && data.ok && data.settings) ? data.settings : null;
+      if (s) {
+        if (s.appLoginUser) APP_USER = s.appLoginUser;
+        if (s.appLoginPass) APP_PASS = s.appLoginPass;
+        if (s.dashboardPassword) ATTENDANCE_DASHBOARD_PASSWORD = s.dashboardPassword;
+        if (s.employeeManagePassword) EMPLOYEE_MANAGE_PASSWORD = s.employeeManagePassword;
+      }
+    }).catch(function(){ /* أوفلاين: نفضل شغالين بالقيم الافتراضية فوق */ }).then(function(){
+      if (onDone) onDone();
+    });
+  }
+  reloadSettingsFromServer_();
 
   // حالة الموظف الإجمالية النهاردة: "في الموقع" لو سجل حضور بس، "منصرف"
   // لو سجل الاتنين، و"لسه ما حضرش" لو لسه معملش حاجة — عشان الإداري
@@ -4412,29 +4824,6 @@ window.safeFileName = function(str){
     }
     return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function(){ return false; });
   }
-  function registerBiometric(){
-    var challenge = new Uint8Array(32);
-    crypto.getRandomValues(challenge);
-    var userId = new Uint8Array(16);
-    crypto.getRandomValues(userId);
-    return navigator.credentials.create({
-      publicKey: {
-        challenge: challenge,
-        rp: { name: 'تفويضات شيل اوت' },
-        user: { id: userId, name: APP_USER, displayName: APP_USER },
-        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
-        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
-        timeout: 60000
-      }
-    }).then(function(cred){
-      if (!cred || !cred.rawId) return false;
-      try {
-        localStorage.setItem(BIO_CRED_ID_KEY, bufToBase64(cred.rawId));
-        localStorage.setItem(BIO_ENABLED_KEY, '1');
-      } catch(e){ return false; }
-      return true;
-    }).catch(function(){ return false; });
-  }
   function loginWithBiometric(){
     var credIdB64;
     try { credIdB64 = localStorage.getItem(BIO_CRED_ID_KEY); } catch(e){}
@@ -4452,7 +4841,6 @@ window.safeFileName = function(str){
   }
 
   var biometricLoginBtn = document.getElementById('biometricLoginBtn');
-  var enableBiometricBtn = document.getElementById('enableBiometricBtn');
   var bioEnabled = false;
   try { bioEnabled = localStorage.getItem(BIO_ENABLED_KEY) === '1' && !!localStorage.getItem(BIO_CRED_ID_KEY); } catch(e){}
 
@@ -4460,10 +4848,6 @@ window.safeFileName = function(str){
     if (!available) return;
     if (bioEnabled) {
       biometricLoginBtn.style.display = '';
-    } else if (savedUser && savedPass) {
-      // A remembered login already exists on this device, so offer to
-      // upgrade it to a fingerprint/Face ID quick-unlock.
-      enableBiometricBtn.style.display = '';
     }
   });
 
@@ -4478,6 +4862,101 @@ window.safeFileName = function(str){
     }
   }
 
+  // مساعد عام لأي رسالة صغيرة عايمة فوق الشاشة بتظهر وتختفي لوحدها —
+  // مستقل عن الشاشات فبيفضل ظاهر حتى لو الشاشة اتغيرت تحته.
+  function showToast_(el, text, duration){
+    if (!el) return;
+    el.textContent = text;
+    el.style.display = '';
+    clearTimeout(el._hideTimer);
+    clearTimeout(el._showTimer);
+    el.classList.remove('welcome-toast-show');
+    el._showTimer = setTimeout(function(){
+      el.classList.add('welcome-toast-show');
+    }, 20);
+    el._hideTimer = setTimeout(function(){
+      el.classList.remove('welcome-toast-show');
+      setTimeout(function(){ el.style.display = 'none'; }, 320);
+    }, duration || 2000);
+  }
+
+  // رسالة "Welcome back" بتظهر أول ما تسجيل الدخول ينجح (أي وسيلة دخول).
+  function showWelcomeToast_(name){
+    showToast_(document.getElementById('welcomeToast'), 'Welcome back ' + (name || '') + ' 🌷🤩', 2800);
+  }
+
+  // رسالة "تم الحفظ" بتظهر أول ما أي زرار حفظ في شاشة إدارة الموظفين ينجح.
+  function showSavedToast_(){
+    showToast_(document.getElementById('savedToast'), '✓ تم الحفظ', 1800);
+  }
+
+  // بيقارن يوم وشهر تاريخ الميلاد المسجل (من غير السنة) بالنهاردة —
+  // dateStr بصيغة "YYYY-MM-DD".
+  function isTodayBirthday_(dateStr){
+    if (!dateStr) return false;
+    var parts = String(dateStr).split('-');
+    if (parts.length < 3) return false;
+    var m = parseInt(parts[1], 10);
+    var d = parseInt(parts[2], 10);
+    if (!m || !d) return false;
+    var now = new Date();
+    return (now.getMonth() + 1) === m && now.getDate() === d;
+  }
+
+  // كونفيتي بسيط بـ CSS/JS من غير أي مكتبة خارجية: قطع ملونة صغيرة بتتولد
+  // جوه العنصر المعطى وتقع من فوق لتحت وتختفي وتتشال لوحدها.
+  function spawnConfetti_(container, count){
+    var colors = ['#e2621f', '#ffb35c', '#ffd48a', '#3a3f45', '#1f7a4c', '#1c3f8f'];
+    for (var i = 0; i < count; i++) {
+      var piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      var size = 6 + Math.random() * 6;
+      var duration = 2.6 + Math.random() * 1.8;
+      var delay = Math.random() * 0.6;
+      piece.style.width = size + 'px';
+      piece.style.height = (size * 1.4) + 'px';
+      piece.style.left = (Math.random() * 100) + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDuration = duration + 's';
+      piece.style.animationDelay = delay + 's';
+      container.appendChild(piece);
+      (function(el, totalMs){
+        setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, totalMs);
+      })(piece, (duration + delay) * 1000 + 200);
+    }
+  }
+
+  // احتفال عيد الميلاد الكامل: بيظهر بدل رسالة "Welcome back" العادية.
+  function showBirthdayCelebration_(name){
+    var overlay = document.getElementById('birthdayOverlay');
+    var msg = document.getElementById('birthdayMsg');
+    var closeBtn = document.getElementById('birthdayCloseBtn');
+    if (!overlay || !msg || !closeBtn) return;
+    msg.textContent = 'عيد ميلاد سعيد يا ' + (name || '') + '! 🌷🤩';
+    overlay.classList.add('show');
+    spawnConfetti_(overlay, 50);
+    function close(){
+      overlay.classList.remove('show');
+      var pieces = overlay.querySelectorAll('.confetti-piece');
+      for (var i = 0; i < pieces.length; i++) pieces[i].parentNode.removeChild(pieces[i]);
+      clearTimeout(overlay._autoCloseTimer);
+      closeBtn.removeEventListener('click', close);
+    }
+    closeBtn.addEventListener('click', close);
+    clearTimeout(overlay._autoCloseTimer);
+    overlay._autoCloseTimer = setTimeout(close, 6000);
+  }
+
+  // لو النهاردة عيد ميلاد الاسم المعطى، بيطلع الاحتفال الكامل وبيرجع true
+  // (يبقى معناها متعرضش رسالة الترحيب العادية جنبه)، غير كده بيرجع false.
+  function maybeCelebrateBirthday_(name){
+    if (name && EMPLOYEE_BIRTHDAYS_[name] && isTodayBirthday_(EMPLOYEE_BIRTHDAYS_[name])) {
+      showBirthdayCelebration_(name);
+      return true;
+    }
+    return false;
+  }
+
   biometricLoginBtn.addEventListener('click', function(){
     var err = document.getElementById('loginError');
     err.textContent = '';
@@ -4486,28 +4965,16 @@ window.safeFileName = function(str){
       biometricLoginBtn.disabled = false;
       if (ok) {
         try { localStorage.setItem(AUTH_KEY, '1'); } catch(e){}
+        // بصمة الإصبع بتأكد نفس الشخص اللي سجل دخوله قبل كده على الجهاز ده،
+        // فبناخد نفس الدور (مسؤول/موظف) اللي كان متسجل وقت آخر دخول عادي.
+        applyIconVisibility_();
+        (function(){
+          var n = isEmployeeSession && currentSessionEmployeeName ? currentSessionEmployeeName : APP_USER;
+          if (!maybeCelebrateBirthday_(n)) showWelcomeToast_(n);
+        })();
         goToHomeOrLinkedAttendance();
       } else {
         err.textContent = 'تعذّر التحقق ببصمة الإصبع، استخدم اسم المستخدم وكلمة المرور';
-      }
-    });
-  });
-
-  enableBiometricBtn.addEventListener('click', function(){
-    var hint = document.getElementById('passwordHint');
-    enableBiometricBtn.disabled = true;
-    registerBiometric().then(function(ok){
-      enableBiometricBtn.disabled = false;
-      if (ok) {
-        enableBiometricBtn.style.display = 'none';
-        biometricLoginBtn.style.display = '';
-        hint.className = 'password-hint';
-        hint.textContent = 'تم تفعيل الدخول ببصمة الإصبع على هذا الجهاز';
-        hint.style.display = '';
-      } else {
-        hint.className = 'password-hint err';
-        hint.textContent = 'تعذّر تفعيل بصمة الإصبع على هذا الجهاز';
-        hint.style.display = '';
       }
     });
   });
@@ -4524,18 +4991,48 @@ window.safeFileName = function(str){
     var remember = document.getElementById('rememberMe').checked;
     var err = document.getElementById('loginError');
     if (user === APP_USER && pass === APP_PASS) {
+      isEmployeeSession = false;
       try {
         if (remember) {
           localStorage.setItem(AUTH_KEY, '1');
           localStorage.setItem(CREDS_USER_KEY, user);
           localStorage.setItem(CREDS_PASS_KEY, pass);
+          localStorage.setItem(ROLE_KEY, 'admin');
         } else {
           localStorage.removeItem(AUTH_KEY);
           localStorage.removeItem(CREDS_USER_KEY);
           localStorage.removeItem(CREDS_PASS_KEY);
+          localStorage.removeItem(ROLE_KEY);
         }
       } catch(e){}
       err.textContent = '';
+      applyIconVisibility_();
+      if (!maybeCelebrateBirthday_(user)) showWelcomeToast_(user);
+      goToHomeOrLinkedAttendance();
+    } else if (user && pass && user === pass && findEmployeeByPin_(pass)) {
+      // دخول موظف: بيكتب رقمه السري (نفس رقم الحضور بتاعه) في خانتي اسم
+      // المستخدم وكلمة المرور مع بعض. بنعرف مين هو من رقمه، وبيشوف الرئيسية
+      // بس بالأيقونات اللي المسؤول سايبها ظاهرة له هو تحديدًا.
+      isEmployeeSession = true;
+      currentSessionEmployeeName = findEmployeeByPin_(pass);
+      try {
+        if (remember) {
+          localStorage.setItem(AUTH_KEY, '1');
+          localStorage.setItem(CREDS_USER_KEY, user);
+          localStorage.setItem(CREDS_PASS_KEY, pass);
+          localStorage.setItem(ROLE_KEY, 'employee');
+          localStorage.setItem(ROLE_EMP_NAME_KEY, currentSessionEmployeeName);
+        } else {
+          localStorage.removeItem(AUTH_KEY);
+          localStorage.removeItem(CREDS_USER_KEY);
+          localStorage.removeItem(CREDS_PASS_KEY);
+          localStorage.removeItem(ROLE_KEY);
+          localStorage.removeItem(ROLE_EMP_NAME_KEY);
+        }
+      } catch(e){}
+      err.textContent = '';
+      applyIconVisibility_();
+      if (!maybeCelebrateBirthday_(currentSessionEmployeeName)) showWelcomeToast_(currentSessionEmployeeName);
       goToHomeOrLinkedAttendance();
     } else {
       err.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
@@ -4569,11 +5066,22 @@ window.safeFileName = function(str){
       refreshAttendanceFromServer();
       return;
     }
-    // لو حد فتح الشاشة قبل كده في نفس الجلسة (سواء بكلمة سره أو بـ "##")،
-    // منسألوش تاني إلا لو رجع للرئيسية الأول (شوف زرار الرجوع تحت) — بس
-    // برضه لازم نعيد بناء القايمة (renderAttendanceList) مش بس نحدّثها
-    // (refreshAttendanceFromServer)، لأن القايمة اتبنت مرة واحدة بس أول
-    // ما الصفحة فتحت وممكن تكون لسه شايلة كل الموظفين.
+    // موظف داخل بحسابه الشخصي (رقمه السري بتاع تسجيل الدخول) بيشوف نفسه
+    // بس على طول — هويته اتأكدت أصلاً وقت الدخول، مفيش داعي نسأله تاني.
+    if (isEmployeeSession && currentSessionEmployeeName) {
+      attendanceSessionUnlockedEmployee = currentSessionEmployeeName;
+      showScreen('attendance');
+      renderAttendanceList();
+      return;
+    }
+    // المسؤول (chill) بيشوف كل الموظفين على طول من غير أي كلمة سر.
+    if (!isEmployeeSession) {
+      attendanceSessionShowAll = true;
+      showScreen('attendance');
+      renderAttendanceList();
+      return;
+    }
+    // احتياطي (حالة نادرة ممكن يكون فيها الدور مش واضح): نفس السلوك القديم.
     if (attendanceSessionShowAll || attendanceSessionUnlockedEmployee) {
       showScreen('attendance');
       renderAttendanceList();
@@ -4589,9 +5097,6 @@ window.safeFileName = function(str){
           attendanceSessionUnlockedEmployee = attendanceEntryNameFor_(value);
         }
         showScreen('attendance');
-        // بيبني قايمة الصفوف من جديد بالفلترة الصح (اسم واحد بس، أو
-        // الكل) — ده اللي كان ناقص وخلى الموظف يشوف كل زمايله برضه حتى
-        // بعد ما يدخل كلمة سره الشخصية.
         renderAttendanceList();
       }
     );
@@ -4603,17 +5108,25 @@ window.safeFileName = function(str){
     attendanceSessionShowAll = false;
     showScreen('home');
   });
-  // بتفتح لوحة الحضور بعد كلمة السر — مستخدمة من زرار الصفحة الرئيسية
-  // وكمان من أيقونة "📊" في صفحة الدخول، عشان نفس السلوك في المكانين.
+  function openAttendanceDashboardInner_(){
+    showScreen('attendance-dashboard');
+    loadAttendanceDashboard();
+    refreshPendingRequestsBadge(); // يحدّث بانر الطلبات المعلّقة فور فتح اللوحة
+  }
+  // من الصفحة الرئيسية بعد تسجيل الدخول: مفيش باسورد تاني هنا — الوصول
+  // بقى متحكم فيه بإظهار/إخفاء الأيقونة نفسها من "إدارة الشاشات" (المسؤول
+  // بيشوفها دايمًا، والموظف بس لو المسؤول سايبها ظاهرة له).
   function openAttendanceDashboardFlow_(){
-    showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, function(){
-      showScreen('attendance-dashboard');
-      loadAttendanceDashboard();
-      refreshPendingRequestsBadge(); // يحدّث بانر الطلبات المعلّقة فور فتح اللوحة
-    });
+    openAttendanceDashboardInner_();
+  }
+  // من أيقونة "📊" في صفحة الدخول نفسها (قبل ما يسجل أي حد دخوله أصلاً) —
+  // ده باب منفصل تمامًا عن تسجيل الدخول العادي، فلسه محتاج كلمة سر لوحة
+  // الحضور زي ما هي (من الباسوردات اللي في صفحة الدخول).
+  function openAttendanceDashboardFromLoginFlow_(){
+    showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, openAttendanceDashboardInner_);
   }
   document.getElementById('openAttendanceDashboardBtn').addEventListener('click', openAttendanceDashboardFlow_);
-  document.getElementById('loginDashboardBtn').addEventListener('click', openAttendanceDashboardFlow_);
+  document.getElementById('loginDashboardBtn').addEventListener('click', openAttendanceDashboardFromLoginFlow_);
   document.getElementById('backHomeBtnDashboard').addEventListener('click', function(){
     showScreen('home');
   });
@@ -4621,22 +5134,208 @@ window.safeFileName = function(str){
   document.getElementById('dashEmployeeSelect').addEventListener('change', loadAttendanceDashboard);
   document.getElementById('dashRefreshBtn').addEventListener('click', loadAttendanceDashboard);
 
-  // بتفتح شاشة "اعتماد الإذن والمأموريات" مباشرة على فلتر "قيد المراجعة"
-  // — مستخدمة من زرار الصفحة الرئيسية وكمان من بانر "طلبات بانتظار
-  // الاعتماد" فوق لوحة الحضور، عشان نفس السلوك في المكانين.
+  function openAttendanceApprovalsInner_(){
+    showScreen('attendance-approvals');
+    // كل مرة تفتح الشاشة، ترجع تلقائي لفلتر "قيد المراجعة" عشان اللي
+    // محتاج اعتماد يبان قدامك على طول من غير ما تدور عليه.
+    setApprovalsFilter('pending');
+    loadAttendanceApprovals();
+    refreshPushButtonState(document.getElementById('pushStatus'), document.getElementById('enablePushBtn'));
+  }
+  // من الصفحة الرئيسية أو بانر الطلبات المعلّقة (بعد تسجيل الدخول أصلاً):
+  // مفيش باسورد تاني، نفس منطق "إدارة الشاشات".
   function openAttendanceApprovalsFlow_(){
-    showPasswordModal('كلمة سر اعتماد الأذون', ATTENDANCE_DASHBOARD_PASSWORD, function(){
-      showScreen('attendance-approvals');
-      // كل مرة تفتح الشاشة، ترجع تلقائي لفلتر "قيد المراجعة" عشان اللي
-      // محتاج اعتماد يبان قدامك على طول من غير ما تدور عليه.
-      setApprovalsFilter('pending');
-      loadAttendanceApprovals();
-      refreshPushButtonState(document.getElementById('pushStatus'), document.getElementById('enablePushBtn'));
-    });
+    openAttendanceApprovalsInner_();
+  }
+  // من أيقونة "🔔" في صفحة الدخول نفسها — باب منفصل قبل تسجيل الدخول،
+  // فلسه محتاج كلمة سر اعتماد الأذون زي ما هي.
+  function openAttendanceApprovalsFromLoginFlow_(){
+    showPasswordModal('كلمة سر اعتماد الأذون', ATTENDANCE_DASHBOARD_PASSWORD, openAttendanceApprovalsInner_);
   }
   document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', openAttendanceApprovalsFlow_);
   document.getElementById('dashPendingBanner').addEventListener('click', openAttendanceApprovalsFlow_);
-  document.getElementById('loginBellBtn').addEventListener('click', openAttendanceApprovalsFlow_);
+  document.getElementById('loginBellBtn').addEventListener('click', openAttendanceApprovalsFromLoginFlow_);
+
+  // ---------------- شاشة "راتبي" (خاصة بالموظف اللي داخل دلوقتي بس) ----------------
+  function escSalary_(s){
+    var d = document.createElement('div');
+    d.textContent = (s === null || s === undefined) ? '' : String(s);
+    return d.innerHTML;
+  }
+  function renderMySalary_(salary){
+    var wrap = document.getElementById('mySalaryContent');
+    if (!wrap) return;
+    if (!salary) {
+      wrap.innerHTML = '<div class="empty-note">لسه مفيش راتب مسجل ليك.</div>';
+      return;
+    }
+    var rows = [
+      ['الشهر', salary.month],
+      ['الراتب الأساسي', salary.basic],
+      ['البدلات', salary.allowances],
+      ['الخصومات', salary.deductions],
+      ['الصافي', salary.net]
+    ];
+    var rowStyle = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--panel-line);';
+    var html = '<div class="dash-list">';
+    rows.forEach(function(r){
+      html += '<div style="' + rowStyle + '"><span class="dash-name">' + escSalary_(r[0]) + '</span><strong>' + escSalary_(r[1]) + '</strong></div>';
+    });
+    if (salary.notes) {
+      html += '<div style="' + rowStyle + '"><span class="dash-name">ملاحظات</span><strong>' + escSalary_(salary.notes) + '</strong></div>';
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+  function loadMySalary_(){
+    var wrap = document.getElementById('mySalaryContent');
+    if (wrap) wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    if (!ATTENDANCE_SCRIPT_URL || !currentSessionEmployeeName) { renderMySalary_(null); return; }
+    var url = ATTENDANCE_SCRIPT_URL + '?action=salaryGet&name=' + encodeURIComponent(currentSessionEmployeeName);
+    fetch(url).then(function(r){ return r.json(); }).then(function(res){
+      renderMySalary_(res && res.ok ? res.salary : null);
+    }).catch(function(){
+      if (wrap) wrap.innerHTML = '<div class="empty-note">تعذر تحميل الراتب، تأكد من الإنترنت وحاول تاني.</div>';
+    });
+  }
+  function openMySalaryFlow_(){
+    showScreen('my-salary');
+    loadMySalary_();
+    refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
+  }
+  var openMySalaryTileBtn = document.getElementById('openMySalaryTileBtn');
+  if (openMySalaryTileBtn) openMySalaryTileBtn.addEventListener('click', openMySalaryFlow_);
+  var backHomeBtnMySalary = document.getElementById('backHomeBtnMySalary');
+  if (backHomeBtnMySalary) backHomeBtnMySalary.addEventListener('click', function(){ showScreen('home'); });
+  var enableMyPushBtn = document.getElementById('enableMyPushBtn');
+  if (enableMyPushBtn) enableMyPushBtn.addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('myPushStatus'), currentSessionEmployeeName);
+  });
+
+  // ---------------- ملخص سريع: الغياب / التأخير النهارده (من صفحة الدخول) ----------------
+  // زرارين "🚫" و"⏰" في صفحة الدخول، كل واحد بيفتح مودال خفيف فيه قايمة
+  // (غياب: مالوش حضور مسجل النهاردة، تأخير: حضر بعد ميعاده الرسمي المسجل
+  // في تاب "مواعيد الحضور")، مع تحميل/مشاركة PDF منها. باب منفصل قبل
+  // تسجيل الدخول، فمحتاج كلمة سر لوحة الحضور زي "📊"/"🔔" بالظبط.
+  function escQuick_(s){
+    var d = document.createElement('div');
+    d.textContent = (s === null || s === undefined) ? '' : String(s);
+    return d.innerHTML;
+  }
+  function loadQuickStatus_(kind){
+    var titleEl = document.getElementById('quickStatusTitle');
+    var subtitleEl = document.getElementById('quickStatusSubtitle');
+    var listWrap = document.getElementById('quickStatusListWrap');
+    titleEl.textContent = (kind === 'absent') ? '🚫 الغياب النهارده' : '⏰ التأخير النهارده';
+    var date = attendanceTodayKey();
+    subtitleEl.textContent = date;
+    listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    document.getElementById('quickStatusOverlay').style.display = 'flex';
+    if (!ATTENDANCE_SCRIPT_URL) {
+      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
+      return;
+    }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + encodeURIComponent(date))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
+        if (kind === 'absent') {
+          var absent = data.absent || [];
+          if (!absent.length) {
+            listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
+            return;
+          }
+          var rowsHtml = absent.map(function(name, i){
+            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(name) + '</td></tr>';
+          }).join('');
+          listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+        } else {
+          var late = data.late || [];
+          if (!late.length) {
+            listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
+            return;
+          }
+          var rowsHtml2 = late.map(function(it, i){
+            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td dir="ltr">' + escQuick_(it.time) + '</td><td>' + escQuick_(it.minutes) + ' د</td></tr>';
+          }).join('');
+          listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
+        }
+      })
+      .catch(function(){
+        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
+      });
+  }
+  function openQuickStatusFromLoginFlow_(kind){
+    showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, function(){
+      loadQuickStatus_(kind);
+    });
+  }
+  document.getElementById('loginAbsentBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('absent'); });
+  document.getElementById('loginLateBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('late'); });
+  document.getElementById('quickStatusCloseBtn').addEventListener('click', function(){
+    document.getElementById('quickStatusOverlay').style.display = 'none';
+  });
+  async function buildQuickStatusPdfBlob_(){
+    var paper = document.getElementById('quickStatusPaper');
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch(e){}
+    }
+    var canvasImg = await html2canvas(paper, {
+      scale: 3, backgroundColor: '#ffffff', useCORS: true,
+      windowWidth: 700, windowHeight: Math.max(paper.scrollHeight + 100, 900)
+    });
+    var jsPDF = window.jspdf.jsPDF;
+    var pdf = new jsPDF('p', 'mm', 'a4');
+    var pageW = pdf.internal.pageSize.getWidth();
+    var pageH = pdf.internal.pageSize.getHeight();
+    var marginMm = 10;
+    var maxW = pageW - marginMm * 2;
+    var maxH = pageH - marginMm * 2;
+    var ratio = Math.min(maxW / canvasImg.width, maxH / canvasImg.height);
+    var drawW = canvasImg.width * ratio;
+    var drawH = canvasImg.height * ratio;
+    var x = (pageW - drawW) / 2;
+    var imgData = canvasImg.toDataURL('image/jpeg', 0.95);
+    pdf.addImage(imgData, 'JPEG', x, marginMm, drawW, drawH);
+    return pdf.output('blob');
+  }
+  function quickStatusFileName_(){
+    var titleEl = document.getElementById('quickStatusTitle');
+    var isAbsent = titleEl.textContent.indexOf('الغياب') > -1;
+    return (isAbsent ? 'Absent-' : 'Late-') + attendanceTodayKey() + '.pdf';
+  }
+  document.getElementById('quickStatusDownloadBtn').addEventListener('click', async function(){
+    var btn = this;
+    btn.disabled = true;
+    try {
+      var blob = await buildQuickStatusPdfBlob_();
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = quickStatusFileName_();
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) { /* تجاهل، الزرار مش هيتعطل */ }
+    btn.disabled = false;
+  });
+  document.getElementById('quickStatusShareBtn').addEventListener('click', async function(){
+    var btn = this;
+    btn.disabled = true;
+    try {
+      var blob = await buildQuickStatusPdfBlob_();
+      var file = new File([blob], quickStatusFileName_(), { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'ملخص الحضور' });
+      } else {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = quickStatusFileName_();
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        window.open('https://wa.me/?text=' + encodeURIComponent('تم تحميل ملف الملخص على جهازي — سأرفقه هنا يدويًا.'), '_blank');
+      }
+    } catch (err) { /* تجاهل */ }
+    btn.disabled = false;
+  });
   document.querySelectorAll('.approvals-filter-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ setApprovalsFilter(btn.getAttribute('data-filter')); });
   });
@@ -4647,6 +5346,502 @@ window.safeFileName = function(str){
     showScreen('home');
   });
   document.getElementById('approvalsRefreshBtn').addEventListener('click', loadAttendanceApprovals);
+
+  // ---------------- إدارة الموظفين (إضافة/تعديل رقم سري/حذف) ----------------
+  function setEmployeeManageStatus_(msg, isErr){
+    var el = document.getElementById('employeeManageStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'status-msg' + (isErr ? ' err' : '');
+  }
+
+  // بعد أي إضافة/تعديل/حذف ناجح، بنعيد تحميل القايمة من السيرفر ونحدّث
+  // كل الشاشات اللي بتعتمد على ATTENDANCE_EMPLOYEES/ATTENDANCE_PASSWORDS
+  // (شاشة الحضور ولستة لوحة المتابعة) فورًا من غير ما يحتاج حد يعمل
+  // Reload للصفحة.
+  function refreshEverythingAfterEmployeeChange_(){
+    reloadEmployeesFromServer_(function(){
+      renderAttendanceList();
+      rebuildAttendanceDashboardEmployeeSelect_();
+      loadEmployeeManageList_();
+      populateEmpPassSelect_();
+      populateSalarySendSelect_();
+    });
+  }
+
+  // قايمة منسدلة بسيطة باسماء الموظفين — لاختيار مين يتبعتله إشعار الراتب
+  // (زرار "📢 إرسال إشعار الراتب") بعد ما الإدمن يكون حط بياناته يدويًا في
+  // تاب "الرواتب" بالشيت.
+  function populateSalarySendSelect_(){
+    var sel = document.getElementById('salarySendSelect');
+    if (!sel) return;
+    var prevSelected = sel.value;
+    sel.innerHTML = '';
+    ATTENDANCE_EMPLOYEES.forEach(function(name){
+      var opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    if (sel.options.length && ATTENDANCE_EMPLOYEES.indexOf(prevSelected) > -1) sel.value = prevSelected;
+  }
+
+  function loadEmployeeManageList_(){
+    var list = document.getElementById('employeeManageList');
+    if (!list) return;
+    list.innerHTML = '<div class="dash-table-empty-cell" style="display:block;padding:10px 0;">جارِ التحميل...</div>';
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(data){
+      list.innerHTML = '';
+      var employees = (data && data.ok && data.employees) ? data.employees : [];
+      if (!employees.length) {
+        list.innerHTML = '<div class="dash-table-empty-cell" style="display:block;padding:10px 0;">مفيش موظفين مسجلين لسه.</div>';
+        return;
+      }
+      employees.forEach(function(emp){
+        var row = document.createElement('div');
+        row.className = 'dash-row';
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '8px';
+        row.style.flexWrap = 'wrap';
+
+        var nameEl = document.createElement('span');
+        nameEl.className = 'dash-name';
+        nameEl.textContent = emp.name;
+        nameEl.style.flex = '1 1 120px';
+
+        var delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'btn btn-secondary';
+        delBtn.textContent = '🗑 حذف';
+        delBtn.addEventListener('click', function(){
+          if (!confirm('متأكد إنك عايز تحذف "' + emp.name + '"؟ مش هيقدر يسجل حضور أو انصراف بعد كده.')) return;
+          delBtn.disabled = true;
+          var url = ATTENDANCE_SCRIPT_URL + '?action=employeeDelete'
+            + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+            + '&name=' + encodeURIComponent(emp.name);
+          fetch(url).then(function(r){ return r.json(); }).then(function(data){
+            if (data && data.ok) {
+              setEmployeeManageStatus_('تم حذف ' + emp.name + ' ✓');
+              refreshEverythingAfterEmployeeChange_();
+            } else {
+              delBtn.disabled = false;
+              setEmployeeManageStatus_((data && data.error) || 'تعذّر الحذف.', true);
+            }
+          }).catch(function(){
+            delBtn.disabled = false;
+            setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+          });
+        });
+
+        row.appendChild(nameEl);
+        row.appendChild(delBtn);
+        list.appendChild(row);
+      });
+    }).catch(function(){
+      list.innerHTML = '';
+      setEmployeeManageStatus_('تعذّر تحميل قايمة الموظفين.', true);
+    });
+  }
+
+  // قايمة منسدلة: اختر موظف فيجيب رقمه السري الحالي جاهز للتعديل، من غير
+  // ما تكتب اسمه يدويًا. بتتحدّث تلقائيًا بعد أي إضافة/تعديل/حذف.
+  function populateEmpPassSelect_(){
+    var sel = document.getElementById('empPassSelect');
+    var val = document.getElementById('empPassValue');
+    var bday = document.getElementById('empBirthdayValue');
+    if (!sel || !val) return;
+    var prevSelected = sel.value;
+    sel.innerHTML = '';
+    ATTENDANCE_EMPLOYEES.forEach(function(name){
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    function fillValue(){
+      val.value = ATTENDANCE_PASSWORDS[sel.value] || '';
+      if (bday) bday.value = EMPLOYEE_BIRTHDAYS_[sel.value] || '';
+    }
+    sel.onchange = fillValue;
+    if (sel.options.length) {
+      if (prevSelected && ATTENDANCE_PASSWORDS.hasOwnProperty(prevSelected)) sel.value = prevSelected;
+      else sel.selectedIndex = 0;
+      fillValue();
+    } else {
+      val.value = '';
+      if (bday) bday.value = '';
+    }
+  }
+
+  // قايمة منسدلة تانية لباسوردات الشاشات (بدل 4 خانات منفصلة): اختر
+  // الشاشة فتجيب قيمتها الحالية (أو فاضية لو مفيش باسورد متسجل لها).
+  var SCREEN_PASSWORD_FIELDS_ = [
+    { key: 'appLoginUser', label: 'اسم المستخدم لتسجيل الدخول للتطبيق', required: true },
+    { key: 'appLoginPass', label: 'كلمة مرور تسجيل الدخول للتطبيق', required: true },
+    { key: 'dashboardPassword', label: 'باسورد لوحة الحضور واعتماد الأذون', required: false },
+    { key: 'employeeManagePassword', label: 'باسورد شاشة إدارة الموظفين (نفس الشاشة دي)', required: false }
+  ];
+  var CURRENT_SETTINGS_ = {};
+
+  function populateScreenPassSelect_(){
+    var sel = document.getElementById('screenPassSelect');
+    var val = document.getElementById('screenPassValue');
+    if (!sel || !val) return;
+    var prevSelected = sel.value;
+    sel.innerHTML = '';
+    SCREEN_PASSWORD_FIELDS_.forEach(function(f){
+      var opt = document.createElement('option');
+      opt.value = f.key;
+      opt.textContent = f.label;
+      sel.appendChild(opt);
+    });
+    function fillValue(){
+      val.value = CURRENT_SETTINGS_[sel.value] || '';
+    }
+    sel.onchange = fillValue;
+    if (prevSelected) sel.value = prevSelected;
+    fillValue();
+  }
+
+  // بيملى القايمة المنسدلة الخاصة بكلمات سر الشاشات بالقيم الحالية (من
+  // السيرفر لو متاح، وإلا بالقيم اللي شغالة بيها الشاشة دلوقتي).
+  function loadSettingsFormFields_(){
+    reloadSettingsFromServer_(function(){
+      CURRENT_SETTINGS_ = {
+        appLoginUser: APP_USER,
+        appLoginPass: APP_PASS,
+        dashboardPassword: ATTENDANCE_DASHBOARD_PASSWORD,
+        employeeManagePassword: EMPLOYEE_MANAGE_PASSWORD
+      };
+      populateScreenPassSelect_();
+    });
+  }
+
+  // مفيش باسورد هنا خالص — الوصول لأيقونة "⚙️" نفسها بقى متحكم فيه بإظهار/
+  // إخفاء الأيقونة من "إدارة الشاشات" (المسؤول بيشوفها دايمًا، والموظف بس
+  // لو المسؤول سايبها ظاهرة له تحديدًا).
+  function openSettingsMenuFlow_(){
+    showScreen('settings-menu');
+  }
+  document.getElementById('homeSettingsBtn').addEventListener('click', openSettingsMenuFlow_);
+  document.getElementById('backHomeBtnSettingsMenu').addEventListener('click', function(){
+    showScreen('home');
+  });
+
+  function openEmployeeManageFlow_(){
+    showScreen('employee-manage');
+    setEmployeeManageStatus_('');
+    loadEmployeeManageList_();
+    loadSettingsFormFields_();
+    reloadEmployeesFromServer_(function(){ populateEmpPassSelect_(); populateSalarySendSelect_(); });
+    var salaryStatus = document.getElementById('salarySendStatus');
+    if (salaryStatus) salaryStatus.textContent = '';
+  }
+  document.getElementById('openEmployeeManageTileBtn').addEventListener('click', openEmployeeManageFlow_);
+  document.getElementById('backHomeBtnEmployees').addEventListener('click', function(){
+    showScreen('settings-menu');
+  });
+
+  // ---------------- إدارة الشاشات (إظهار/إخفاء أيقونات الرئيسية) ----------------
+  // كل أيقونة قابلة للإخفاء في الرئيسية والتفويضات والنماذج، مجمّعة حسب
+  // الشاشة اللي هي ظاهرة فيها عشان القايمة تكون مفهومة.
+  var TOGGLE_TILES_ = [
+    { group: 'الرئيسية', id: 'openTafweedMenuBtn', label: 'تفويضات' },
+    { group: 'الرئيسية', id: 'openFormsMenuBtn', label: 'نماذج' },
+    { group: 'الرئيسية', id: 'openAttendanceBtn', label: 'حضور وانصراف' },
+    { group: 'الرئيسية', id: 'openAttendanceDashboardBtn', label: 'لوحة الحضور' },
+    { group: 'الرئيسية', id: 'openAttendanceApprovalsBtn', label: 'اعتماد الأذون' },
+    { group: 'تفويضات', id: 'openAppBtn', label: 'تفويض المصريين' },
+    { group: 'تفويضات', id: 'openGeneralBtn', label: 'تفويض عام' },
+    { group: 'تفويضات', id: 'openChecksBtn', label: 'تفويض شيكات' },
+    { group: 'نماذج', id: 'openOrderBtn', label: 'أمر شراء' },
+    { group: 'نماذج', id: 'openQuoteBtn', label: 'عرض سعر' },
+    { group: 'نماذج', id: 'openLeaveBtn', label: 'طلب إجازة' },
+    { group: 'نماذج', id: 'openPermissionBtn', label: 'إذن / مأمورية' },
+    { group: 'نماذج', id: 'openAdvanceBtn', label: 'طلب سلفة' },
+    { group: 'نماذج', id: 'openCustodyBtn', label: 'طلب عهدة نقدية' },
+    // أيقونات الإعدادات نفسها بقت قابلة للإخفاء زي أي أيقونة تانية — بشكل
+    // افتراضي متخفية عن أي موظف جديد (شوف EMPLOYEES_DEFAULT_HIDDEN_ في
+    // الباك إند)، وما تظهرلوش إلا لو المسؤول فتحها له بنفسه من هنا.
+    { group: 'الإعدادات', id: 'homeSettingsBtn', label: 'زر الإعدادات ⚙️' },
+    { group: 'الإعدادات', id: 'openEmployeeManageTileBtn', label: 'إدارة الموظفين' },
+    { group: 'الإعدادات', id: 'openIconManageTileBtn', label: 'إدارة الشاشات' }
+  ];
+
+  function applyIconVisibility_(){
+    // الإخفاء بقى خاص بكل موظف لوحده؛ دخول المسؤول (APP_USER/APP_PASS)
+    // بيشوف كل الأيقونات دايمًا (وفيها أيقونة الإعدادات) مهما كانت قايمة
+    // إخفاء أي موظف.
+    var effectiveHidden = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName])
+      ? EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] : [];
+    TOGGLE_TILES_.forEach(function(t){
+      var el = document.getElementById(t.id);
+      if (el) el.style.display = (effectiveHidden.indexOf(t.id) > -1) ? 'none' : '';
+    });
+    // "راتبي" مخصوصة للموظفين بس — دخول المسؤول مالوش راتب شخصي يشوفه هنا،
+    // فمنفصلة عن قايمة TOGGLE_TILES_ (اللي بتتحكم فيها شاشة "إدارة الشاشات").
+    var salaryTile = document.getElementById('openMySalaryTileBtn');
+    if (salaryTile) salaryTile.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
+  }
+
+  function setIconManageStatus_(msg, isErr){
+    var el = document.getElementById('iconManageStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'status-msg' + (isErr ? ' err' : '');
+  }
+
+  // بيرسم قايمة الأيقونات (متعلّم = ظاهرة) خاصة بالموظف المختار حاليًا
+  // في #iconManageEmpSelect — كل موظف له قايمة إخفاء منفصلة عن التاني.
+  function loadIconManageList_(){
+    var list = document.getElementById('iconManageList');
+    if (!list) return;
+    list.innerHTML = '';
+    var sel = document.getElementById('iconManageEmpSelect');
+    var empName = sel ? sel.value : '';
+    var hiddenForEmp = EMPLOYEE_HIDDEN_ICONS_[empName] || [];
+    var groups = {};
+    var order = [];
+    TOGGLE_TILES_.forEach(function(t){
+      if (!groups[t.group]) { groups[t.group] = []; order.push(t.group); }
+      groups[t.group].push(t);
+    });
+    order.forEach(function(groupName){
+      var tag = document.createElement('div');
+      tag.className = 'section-tag';
+      tag.style.margin = '14px 0 6px';
+      tag.textContent = groupName;
+      list.appendChild(tag);
+      groups[groupName].forEach(function(t){
+        var row = document.createElement('label');
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '8px';
+        row.style.padding = '6px 2px';
+        row.style.cursor = 'pointer';
+
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = hiddenForEmp.indexOf(t.id) === -1; // متعلّم = ظاهرة
+        checkbox.dataset.tileId = t.id;
+
+        var span = document.createElement('span');
+        span.textContent = t.label;
+
+        row.appendChild(checkbox);
+        row.appendChild(span);
+        list.appendChild(row);
+      });
+    });
+  }
+
+  // بيملى قايمة الموظفين المنسدلة في شاشة "إدارة الشاشات"، محافظًا على
+  // الموظف المختار حاليًا لو لسه موجود.
+  function rebuildIconManageEmpSelect_(){
+    var sel = document.getElementById('iconManageEmpSelect');
+    if (!sel) return;
+    var prev = sel.value;
+    sel.innerHTML = '';
+    ATTENDANCE_EMPLOYEES.forEach(function(name){
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    if (prev && ATTENDANCE_EMPLOYEES.indexOf(prev) > -1) sel.value = prev;
+  }
+
+  function openIconManageFlow_(){
+    showScreen('icon-manage');
+    setIconManageStatus_('');
+    reloadEmployeesFromServer_(function(){
+      rebuildIconManageEmpSelect_();
+      loadIconManageList_();
+    });
+  }
+  document.getElementById('openIconManageTileBtn').addEventListener('click', openIconManageFlow_);
+  document.getElementById('backSettingsBtnIcons').addEventListener('click', function(){
+    showScreen('settings-menu');
+  });
+  document.getElementById('iconManageEmpSelect').addEventListener('change', function(){
+    setIconManageStatus_('');
+    loadIconManageList_();
+  });
+  document.getElementById('saveIconVisibilityBtn').addEventListener('click', function(){
+    var sel = document.getElementById('iconManageEmpSelect');
+    var empName = sel ? sel.value : '';
+    if (!empName) { setIconManageStatus_('اختار موظف الأول.', true); return; }
+    var checkboxes = document.querySelectorAll('#iconManageList input[type="checkbox"]');
+    var hiddenIds = [];
+    checkboxes.forEach(function(cb){
+      if (!cb.checked) hiddenIds.push(cb.dataset.tileId);
+    });
+    var btn = document.getElementById('saveIconVisibilityBtn');
+    btn.disabled = true;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeIconsSave'
+      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+      + '&name=' + encodeURIComponent(empName)
+      + '&hidden=' + encodeURIComponent(hiddenIds.join(','));
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      btn.disabled = false;
+      if (data && data.ok) {
+        EMPLOYEE_HIDDEN_ICONS_[empName] = hiddenIds;
+        applyIconVisibility_();
+        setIconManageStatus_('تم الحفظ ✓');
+      } else {
+        setIconManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      setIconManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+    });
+  });
+  document.getElementById('addEmpBtn').addEventListener('click', function(){
+    var nameInput = document.getElementById('newEmpName');
+    var passInput = document.getElementById('newEmpPass');
+    var birthdayInput = document.getElementById('newEmpBirthday');
+    var name = nameInput.value.trim();
+    var pass = passInput.value.trim();
+    var birthday = birthdayInput ? birthdayInput.value.trim() : '';
+    if (!name) { setEmployeeManageStatus_('اسم الموظف مطلوب.', true); nameInput.focus(); return; }
+    if (!pass) { setEmployeeManageStatus_('الرقم السري مطلوب.', true); passInput.focus(); return; }
+    var btn = document.getElementById('addEmpBtn');
+    btn.disabled = true;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
+      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+      + '&name=' + encodeURIComponent(name)
+      + '&pass=' + encodeURIComponent(pass)
+      + '&birthday=' + encodeURIComponent(birthday);
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      btn.disabled = false;
+      if (data && data.ok) {
+        nameInput.value = '';
+        passInput.value = '';
+        if (birthdayInput) birthdayInput.value = '';
+        setEmployeeManageStatus_('تمت إضافة ' + name + ' ✓');
+        showSavedToast_();
+        refreshEverythingAfterEmployeeChange_();
+      } else {
+        setEmployeeManageStatus_((data && data.error) || 'تعذّرت الإضافة.', true);
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+    });
+  });
+
+  // تغيير الرقم السري و/أو تاريخ ميلاد موظف موجود عن طريق القايمة
+  // المنسدلة (بدل كتابة اسمه يدويًا): اختاره، القيم الحالية بتتحط جاهزة،
+  // غيّر اللي عايزه واحفظ.
+  document.getElementById('saveEmpPassBtn').addEventListener('click', function(){
+    var sel = document.getElementById('empPassSelect');
+    var val = document.getElementById('empPassValue');
+    var bday = document.getElementById('empBirthdayValue');
+    var name = sel.value;
+    var newPass = val.value.trim();
+    var newBirthday = bday ? bday.value.trim() : '';
+    if (!name) { setEmployeeManageStatus_('اختر الموظف الأول.', true); return; }
+    if (!newPass) { setEmployeeManageStatus_('الرقم السري مطلوب.', true); return; }
+    var btn = document.getElementById('saveEmpPassBtn');
+    btn.disabled = true;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
+      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+      + '&name=' + encodeURIComponent(name)
+      + '&pass=' + encodeURIComponent(newPass)
+      + '&birthday=' + encodeURIComponent(newBirthday);
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      btn.disabled = false;
+      if (data && data.ok) {
+        setEmployeeManageStatus_('تم تحديث بيانات ' + name + ' ✓');
+        showSavedToast_();
+        refreshEverythingAfterEmployeeChange_();
+      } else {
+        setEmployeeManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+    });
+  });
+
+  // حفظ كلمة سر شاشة واحدة (المختارة من القايمة المنسدلة) — بيبعت باقي
+  // القيم الحالية زي ما هي، فمش محتاج تعرف كل الباسوردات عشان تغيّر واحد
+  // بس منهم. اسم/كلمة مرور الدخول للتطبيق لازم تفضل ليهم قيمة دايمًا؛
+  // باسورد لوحة الحضور وباسورد إدارة الموظفين ينفع يتسيبوا فاضيين لو
+  // عايز الشاشة دي من غير باسورد خالص.
+  document.getElementById('saveScreenPassBtn').addEventListener('click', function(){
+    var sel = document.getElementById('screenPassSelect');
+    var val = document.getElementById('screenPassValue');
+    var key = sel.value;
+    var field = SCREEN_PASSWORD_FIELDS_.filter(function(f){ return f.key === key; })[0];
+    var newVal = val.value.trim();
+    if (field && field.required && !newVal) {
+      setEmployeeManageStatus_('"' + field.label + '" لازم يكون له قيمة، ماينفعش يفضل فاضي.', true);
+      return;
+    }
+    var prevVal = CURRENT_SETTINGS_[key];
+    CURRENT_SETTINGS_[key] = newVal;
+    var btn = document.getElementById('saveScreenPassBtn');
+    btn.disabled = true;
+    // بنبعت الباسورد الحالي (اللي الشاشة داخلة بيه دلوقتي) كـ adminPass،
+    // مش القيمة الجديدة المكتوبة في الخانة — السيرفر بيتحقق بالقيمة
+    // القديمة قبل ما يستبدلها بالجديدة.
+    var url = ATTENDANCE_SCRIPT_URL + '?action=settingsSaveAll'
+      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+      + '&appLoginUser=' + encodeURIComponent(CURRENT_SETTINGS_.appLoginUser || '')
+      + '&appLoginPass=' + encodeURIComponent(CURRENT_SETTINGS_.appLoginPass || '')
+      + '&dashboardPassword=' + encodeURIComponent(CURRENT_SETTINGS_.dashboardPassword || '')
+      + '&employeeManagePassword=' + encodeURIComponent(CURRENT_SETTINGS_.employeeManagePassword || '');
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      btn.disabled = false;
+      if (data && data.ok) {
+        // نحدّث القيم شغالة بيها الصفحة فورًا (من غير ما نستنى Reload)
+        // عشان لو غيّر باسورد إدارة الموظفين نفسه، يفضل شغال بيه على طول.
+        APP_USER = CURRENT_SETTINGS_.appLoginUser;
+        APP_PASS = CURRENT_SETTINGS_.appLoginPass;
+        ATTENDANCE_DASHBOARD_PASSWORD = CURRENT_SETTINGS_.dashboardPassword;
+        EMPLOYEE_MANAGE_PASSWORD = CURRENT_SETTINGS_.employeeManagePassword;
+        setEmployeeManageStatus_('تم حفظ "' + (field ? field.label : key) + '" ✓');
+        showSavedToast_();
+      } else {
+        CURRENT_SETTINGS_[key] = prevVal;
+        setEmployeeManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      CURRENT_SETTINGS_[key] = prevVal;
+      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+    });
+  });
+
+  // إرسال إشعار الراتب لموظف واحد بعد ما الإدمن يكون حط بياناته يدويًا في
+  // تاب "الرواتب" بالشيت — منفصل تمامًا عن إشعار "طلب معتمد/مرفوض"
+  // (بيتبعت تلقائي من handleRequestSetStatus في الباك إند) وعن زرار
+  // الإدمن العام "فعّل إشعارات الجوال للطلبات الجديدة".
+  var salarySendBtn = document.getElementById('salarySendBtn');
+  if (salarySendBtn) salarySendBtn.addEventListener('click', function(){
+    var sel = document.getElementById('salarySendSelect');
+    var name = sel ? sel.value : '';
+    var statusEl = document.getElementById('salarySendStatus');
+    if (!name) { if (statusEl) { statusEl.textContent = 'مفيش موظفين مسجلين لسه.'; statusEl.className = 'status-msg err'; } return; }
+    salarySendBtn.disabled = true;
+    if (statusEl) { statusEl.textContent = 'جاري الإرسال...'; statusEl.className = 'status-msg'; }
+    var url = ATTENDANCE_SCRIPT_URL + '?action=salarySend'
+      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+      + '&name=' + encodeURIComponent(name);
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      salarySendBtn.disabled = false;
+      if (data && data.ok) {
+        if (statusEl) { statusEl.textContent = 'تم إرسال إشعار الراتب لـ ' + name + ' ✓'; statusEl.className = 'status-msg'; }
+        showSavedToast_();
+      } else {
+        if (statusEl) { statusEl.textContent = (data && data.error) || 'تعذّر الإرسال.'; statusEl.className = 'status-msg err'; }
+      }
+    }).catch(function(){
+      salarySendBtn.disabled = false;
+      if (statusEl) { statusEl.textContent = 'تعذّر الاتصال بالسيرفر.'; statusEl.className = 'status-msg err'; }
+    });
+  });
 
   document.getElementById('openAppBtn').addEventListener('click', function(){
     showScreen('app');
