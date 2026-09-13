@@ -1448,6 +1448,11 @@
     </div>
     <div id="iconManageList"></div>
     <button type="button" class="btn btn-primary" id="saveIconVisibilityBtn" style="width:100%;margin-top:16px;">💾 حفظ</button>
+
+    <div class="settings-divider"></div>
+    <div class="section-tag" style="margin:20px 0 8px;">إشعارات الشيكات</div>
+    <button type="button" class="btn btn-secondary" id="enableChecksPushBtn" style="width:100%;">🔔 فعّل إشعارات الشيكات على الجهاز ده</button>
+    <div class="status-msg" id="checksPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
   </div>
 </div>
 
@@ -3084,7 +3089,7 @@ window.safeFileName = function(str){
   // "فعّل إشعاراتي الشخصية" في شاشة "راتبي")، منفصل تمامًا عن زرار الإدمن
   // العام "فعّل إشعارات الجوال للطلبات الجديدة". التوكن بتاع الجهاز واحد
   // في الحالتين، بس بيتسجل مربوط باسم الموظف عشان نقدر نبعتله إشعار خاص.
-  function enablePushNotifications(statusEl, employeeName){
+  function enablePushNotifications(statusEl, employeeName, topic){
     if (!initFcmIfNeeded() || !('serviceWorker' in navigator) || !('Notification' in window)) {
       if (statusEl) statusEl.textContent = FCM_CONFIGURED
         ? 'المتصفح ده مش بيدعم إشعارات الموبايل.'
@@ -3117,7 +3122,7 @@ window.safeFileName = function(str){
         }
         return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration }).then(function(token){
           if (!token) { if (statusEl) statusEl.textContent = 'تعذر تفعيل الإشعارات، حاول تاني.'; return; }
-          registerPushToken(token, statusEl, employeeName);
+          registerPushToken(token, statusEl, employeeName, topic);
         });
       });
     }).catch(function(){
@@ -3125,14 +3130,16 @@ window.safeFileName = function(str){
     });
   }
 
-  function registerPushToken(token, statusEl, employeeName){
+  function registerPushToken(token, statusEl, employeeName, topic){
     if (!ATTENDANCE_SCRIPT_URL) return;
     var url = ATTENDANCE_SCRIPT_URL + '?action=registerPush&token=' + encodeURIComponent(token);
     if (employeeName) url += '&employee=' + encodeURIComponent(employeeName);
+    if (topic) url += '&topic=' + encodeURIComponent(topic);
     fetch(url).then(function(r){ return r.json(); }).then(function(){
       try {
         localStorage.setItem('fcmTokenRegistered', token);
         if (employeeName) localStorage.setItem('fcmEmployeeTokenRegistered', token);
+        if (topic === 'checks') localStorage.setItem('fcmChecksTokenRegistered', token);
       } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
     }).catch(function(){
@@ -3146,9 +3153,9 @@ window.safeFileName = function(str){
   // كل مرة. "employeeMode" بيفصل حالة تفعيل الموظف الشخصية عن حالة تفعيل
   // الإدمن العامة (نفس الجهاز ممكن يكون فيه الاتنين مسجلين لوحدهم).
   function refreshPushButtonState(statusEl, btnEl, employeeMode){
-    var storageKey = employeeMode ? 'fcmEmployeeTokenRegistered' : 'fcmTokenRegistered';
-    var defaultLabel = employeeMode ? '🔔 فعّل إشعاراتي الشخصية' : '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
-    var reenableLabel = employeeMode ? '🔔 إعادة تفعيل إشعاراتي' : '🔔 إعادة تفعيل الإشعارات';
+    var storageKey = employeeMode === 'checks' ? 'fcmChecksTokenRegistered' : (employeeMode ? 'fcmEmployeeTokenRegistered' : 'fcmTokenRegistered');
+    var defaultLabel = employeeMode === 'checks' ? '🔔 فعّل إشعارات الشيكات على الجهاز ده' : (employeeMode ? '🔔 فعّل إشعاراتي الشخصية' : '🔔 فعّل إشعارات الجوال للطلبات الجديدة');
+    var reenableLabel = employeeMode === 'checks' ? '🔔 إعادة تفعيل إشعارات الشيكات' : (employeeMode ? '🔔 إعادة تفعيل إشعاراتي' : '🔔 إعادة تفعيل الإشعارات');
     var savedToken = null;
     try { savedToken = localStorage.getItem(storageKey); } catch (e) {}
     var permission = ('Notification' in window) ? Notification.permission : 'default';
@@ -5854,8 +5861,13 @@ window.safeFileName = function(str){
       rebuildIconManageEmpSelect_();
       loadIconManageList_();
     });
+    refreshPushButtonState(document.getElementById('checksPushStatus'), document.getElementById('enableChecksPushBtn'), 'checks');
   }
   document.getElementById('openIconManageTileBtn').addEventListener('click', openIconManageFlow_);
+  var enableChecksPushBtn = document.getElementById('enableChecksPushBtn');
+  if (enableChecksPushBtn) enableChecksPushBtn.addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('checksPushStatus'), '', 'checks');
+  });
   document.getElementById('backSettingsBtnIcons').addEventListener('click', function(){
     showScreen('settings-menu');
   });
