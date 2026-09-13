@@ -5342,9 +5342,9 @@ window.safeFileName = function(str){
           var trClass = (it.daysRemaining < 0) ? ' class="row-overdue"' : '';
           return '<tr' + trClass + '><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
-            + '</td><td>' + escQuick_(when) + '</td></tr>';
+            + '</td><td>' + escQuick_(it.type) + '</td><td>' + escQuick_(when) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
       })
       .catch(function(){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
