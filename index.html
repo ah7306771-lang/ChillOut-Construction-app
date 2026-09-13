@@ -946,6 +946,9 @@
   .quick-status-modal.qsm-wide{max-width:96vw;width:820px;}
   .qs-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .qs-table-scroll table.dtable{white-space:nowrap;}
+  /* شيك متأخر (فات معاد استحقاقه) — صف وردي فاتح يلفت النظر له في الجدول. */
+  table.dtable tr.row-overdue td{background:#ffdce6;}
+  .qs-net-row td{font-weight:700;background:var(--panel-2,#f4f4f4);}
 
   /* ---------- Floating "Contact us" WhatsApp button (login + home only) ---------- */
   .wa-float-btn{
@@ -5238,11 +5241,17 @@ window.safeFileName = function(str){
       wrap.innerHTML = '<div class="empty-note">لسه مفيش راتب مسجل ليك.</div>';
       return;
     }
+    var monthTxt = salary.month ? (salary.month + (salary.year ? ' ' + salary.year : '')) : (salary.year || '');
     var rows = [
-      ['الشهر', salary.month],
-      ['الراتب الأساسي', salary.basic],
-      ['البدلات', salary.allowances],
-      ['الخصومات', salary.deductions],
+      ['الشهر', monthTxt],
+      ['الأساسي', salary.basic],
+      ['بدل انتقال', salary.transport],
+      ['بدل بنزين', salary.fuel],
+      ['مستحق آخر', salary.otherDue],
+      ['إجمالي الاستحقاق', salary.totalDue],
+      ['الاستقطاعات', salary.deductions],
+      ['السلف', salary.advances],
+      ['إجمالي الاستقطاع', salary.totalDeduct],
       ['الصافي', salary.net]
     ];
     var rowStyle = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px;border-bottom:1px solid var(--panel-line);';
@@ -5323,7 +5332,8 @@ window.safeFileName = function(str){
           var when = it.daysRemaining < 0 ? ('متأخر ' + Math.abs(it.daysRemaining) + ' يوم')
             : (it.daysRemaining === 0 ? 'مستحق النهاردة' : ('باقي ' + it.daysRemaining + ' يوم'));
           var valTxt = (typeof it.value === 'number') ? it.value.toLocaleString('ar-EG') : escQuick_(it.value);
-          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
+          var trClass = (it.daysRemaining < 0) ? ' class="row-overdue"' : '';
+          return '<tr' + trClass + '><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
             + '</td><td>' + escQuick_(when) + '</td></tr>';
         }).join('');
@@ -5368,13 +5378,25 @@ window.safeFileName = function(str){
           listWrap.innerHTML = '<div class="empty-note">مفيش عملاء أو موردين مسجلين في الشيت لسه</div>';
           return;
         }
-        var rowsHtml = rows.map(function(it, i){
-          var valTxt = (typeof it.amount === 'number') ? it.amount.toLocaleString('ar-EG') : escQuick_(it.amount);
-          var typeTxt = (it.type === 'client') ? 'عميل (له علينا)' : 'مورد (علينا له)';
-          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td>' + typeTxt
-            + '</td><td>' + valTxt + '</td></tr>';
-        }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>النوع</th><th>الرصيد</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+        function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('ar-EG') : escQuick_(n); }
+        function buildPartiesTable_(title, list){
+          if (!list.length) {
+            return '<div class="section-tag" style="margin:10px 0 4px;">' + escQuick_(title) + '</div><div class="empty-note">لا يوجد بيانات</div>';
+          }
+          var total = 0;
+          var rowsHtml = list.map(function(it, i){
+            total += (typeof it.amount === 'number') ? it.amount : 0;
+            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td>' + fmtAmt_(it.amount) + '</td></tr>';
+          }).join('');
+          return '<div class="section-tag" style="margin:10px 0 4px;">' + escQuick_(title) + '</div>'
+            + '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>الرصيد</th></tr></thead><tbody>'
+            + rowsHtml
+            + '</tbody><tfoot><tr class="qs-net-row"><td colspan="2">الصافي</td><td>' + fmtAmt_(total) + '</td></tr></tfoot></table></div>';
+        }
+        var clients = rows.filter(function(it){ return it.type === 'client'; });
+        var suppliers = rows.filter(function(it){ return it.type === 'supplier'; });
+        listWrap.innerHTML = buildPartiesTable_('🧑‍💼 العملاء (لهم علينا)', clients)
+          + buildPartiesTable_('🏭 الموردين (علينا لهم)', suppliers);
       })
       .catch(function(){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
