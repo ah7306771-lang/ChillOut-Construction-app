@@ -1064,8 +1064,9 @@
 </a>
 
 <!-- أيقونات بتبان بس في صفحة الدخول: لوحة الحضور + جرس طلبات بانتظار
-     الاعتماد + ملخص سريع للغياب والتأخير النهارده — كلها بتطلب كلمة سر
-     لوحة الحضور زي أي دخول تاني للشاشات دي. -->
+     الاعتماد + ملخص سريع للغياب والتأخير النهارده — كلها بقت من غير
+     باسورد، وبتتحكم فيها إظهار/إخفاء من صلاحيات المستخدمين زي أي أيقونة
+     تانية. -->
 <div class="login-fabs" id="loginFabs">
   <button type="button" id="loginDashboardBtn" class="login-fab-btn" aria-label="لوحة الحضور والانصراف">📊</button>
   <button type="button" id="loginBellBtn" class="login-fab-btn" aria-label="طلبات بانتظار الاعتماد">
@@ -1204,7 +1205,7 @@
 
 <!-- HOME SCREEN -->
 <div id="homeScreen" class="gate-screen home-screen-shifted" style="display:none;">
-  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="home-footer-byline">BY/ Ahmed Hamdy</div>
   <div class="home-header">
     <div class="home-header-date" id="homeHeaderDate">
       <span class="day-name" id="homeHeaderDay"></span>
@@ -5141,10 +5142,11 @@ window.safeFileName = function(str){
     openAttendanceDashboardInner_();
   }
   // من أيقونة "📊" في صفحة الدخول نفسها (قبل ما يسجل أي حد دخوله أصلاً) —
-  // ده باب منفصل تمامًا عن تسجيل الدخول العادي، فلسه محتاج كلمة سر لوحة
-  // الحضور زي ما هي (من الباسوردات اللي في صفحة الدخول).
+  // مفيش باسورد هنا خالص دلوقتي؛ الوصول بقى متحكم فيه بإظهار/إخفاء
+  // الأيقونة نفسها من "إدارة الشاشات" (صلاحيات المستخدمين) زي أي أيقونة
+  // تانية في TOGGLE_TILES_.
   function openAttendanceDashboardFromLoginFlow_(){
-    showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, openAttendanceDashboardInner_);
+    openAttendanceDashboardInner_();
   }
   document.getElementById('openAttendanceDashboardBtn').addEventListener('click', openAttendanceDashboardFlow_);
   document.getElementById('loginDashboardBtn').addEventListener('click', openAttendanceDashboardFromLoginFlow_);
@@ -5168,10 +5170,11 @@ window.safeFileName = function(str){
   function openAttendanceApprovalsFlow_(){
     openAttendanceApprovalsInner_();
   }
-  // من أيقونة "🔔" في صفحة الدخول نفسها — باب منفصل قبل تسجيل الدخول،
-  // فلسه محتاج كلمة سر اعتماد الأذون زي ما هي.
+  // من أيقونة "🔔" في صفحة الدخول نفسها — مفيش باسورد هنا خالص دلوقتي؛
+  // الوصول بقى متحكم فيه بإظهار/إخفاء الأيقونة نفسها من "إدارة الشاشات"
+  // (صلاحيات المستخدمين) زي أي أيقونة تانية.
   function openAttendanceApprovalsFromLoginFlow_(){
-    showPasswordModal('كلمة سر اعتماد الأذون', ATTENDANCE_DASHBOARD_PASSWORD, openAttendanceApprovalsInner_);
+    openAttendanceApprovalsInner_();
   }
   document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', openAttendanceApprovalsFlow_);
   document.getElementById('dashPendingBanner').addEventListener('click', openAttendanceApprovalsFlow_);
@@ -5236,8 +5239,9 @@ window.safeFileName = function(str){
   // ---------------- ملخص سريع: الغياب / التأخير النهارده (من صفحة الدخول) ----------------
   // زرارين "🚫" و"⏰" في صفحة الدخول، كل واحد بيفتح مودال خفيف فيه قايمة
   // (غياب: مالوش حضور مسجل النهاردة، تأخير: حضر بعد ميعاده الرسمي المسجل
-  // في تاب "مواعيد الحضور")، مع تحميل/مشاركة PDF منها. باب منفصل قبل
-  // تسجيل الدخول، فمحتاج كلمة سر لوحة الحضور زي "📊"/"🔔" بالظبط.
+  // في تاب "مواعيد الحضور")، مع تحميل/مشاركة PDF منها. مفيش باسورد هنا
+  // خالص دلوقتي، زي "📊"/"🔔" بالظبط — الوصول بقى متحكم فيه بإظهار/إخفاء
+  // الأيقونة من "إدارة الشاشات" (صلاحيات المستخدمين).
   function escQuick_(s){
     var d = document.createElement('div');
     d.textContent = (s === null || s === undefined) ? '' : String(s);
@@ -5287,9 +5291,7 @@ window.safeFileName = function(str){
       });
   }
   function openQuickStatusFromLoginFlow_(kind){
-    showPasswordModal('كلمة سر لوحة الحضور', ATTENDANCE_DASHBOARD_PASSWORD, function(){
-      loadQuickStatus_(kind);
-    });
+    loadQuickStatus_(kind);
   }
   document.getElementById('loginAbsentBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('absent'); });
   document.getElementById('loginLateBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('late'); });
@@ -5571,6 +5573,7 @@ window.safeFileName = function(str){
     // التطبيق على الجهاز ده. إخفاؤها عن موظف معين معناه إنها متتفعش ليه
     // حتى قبل كتابة الرقم السري بتاعه — بيتطبق طالما آخر دخول متسجل على
     // الجهاز (بعد اختيار "تذكرني") كان بنفس رقم الموظف ده.
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginDashboardBtn', label: 'لوحة الحضور 📊' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginBellBtn', label: 'جرس طلبات الاعتماد 🔔' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginAbsentBtn', label: 'الغياب النهارده 🚫' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLateBtn', label: 'التأخير النهارده ⏰' },
