@@ -1075,6 +1075,10 @@
   </button>
   <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫</button>
   <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰</button>
+  <button type="button" id="loginChecksBtn" class="login-fab-btn" aria-label="الشيكات المستحقة">
+    🧾
+    <span class="login-bell-badge" id="loginChecksBadge">0</span>
+  </button>
 </div>
 
 <!-- مودال سريع بيعرض قايمة الغياب أو التأخير النهارده (حسب اللي دوس
@@ -4794,6 +4798,27 @@ window.safeFileName = function(str){
   refreshPendingRequestsBadge();
   setInterval(refreshPendingRequestsBadge, 30000);
 
+  // بادچ أحمر فوق أيقونة "🧾" في صفحة الدخول: عدد الشيكات اللي باقي على
+  // استحقاقها يومين أو أقل (أو فات استحقاقها بالفعل) — طالما صفها لسه
+  // موجود في شيت الشيكات. بيتحدث أول ما التطبيق يفتح وكل دقيقة بعد كده.
+  function refreshChecksDueBadge_(){
+    var badge = document.getElementById('loginChecksBadge');
+    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=checksDueReport')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var count = (data && data.ok) ? (data.count || 0) : 0;
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : String(count);
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+  }
+  refreshChecksDueBadge_();
+  setInterval(refreshChecksDueBadge_, 60000);
+
   // مزامنة دورية مع الشيت المشترك طول ما شاشة الحضور مفتوحة — عشان لو حد
   // مسح تسجيل من الشيت يدوياً، الزرار هنا يرجع يشتغل تاني من غير ما الموظف
   // يحتاج يقفل الشاشة ويفتحها تاني.
@@ -5247,6 +5272,47 @@ window.safeFileName = function(str){
     d.textContent = (s === null || s === undefined) ? '' : String(s);
     return d.innerHTML;
   }
+  // ---------- تقرير الشيكات المستحقة (زرار "🧾" في صفحة الدخول) ----------
+  // بيستخدم نفس مودال الغياب/التأخير (quickStatusOverlay) بالظبط، وبيجيب
+  // من الباك إند أي شيك باقي على استحقاقه يومين أو أقل (أو فات استحقاقه) —
+  // وبيفضل يبان هنا وفي البادچ الأحمر يوميًا لحد ما يتمسح صفه من شيت
+  // الشيكات (مفيش عمود "حالة" بيوقفه، المسح بس هو اللي بيوقفه).
+  function loadChecksDueStatus_(){
+    var titleEl = document.getElementById('quickStatusTitle');
+    var subtitleEl = document.getElementById('quickStatusSubtitle');
+    var listWrap = document.getElementById('quickStatusListWrap');
+    titleEl.textContent = '🧾 الشيكات المستحقة';
+    subtitleEl.textContent = attendanceTodayKey();
+    listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    document.getElementById('quickStatusOverlay').style.display = 'flex';
+    if (!ATTENDANCE_SCRIPT_URL) {
+      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
+      return;
+    }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=checksDueReport')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
+        var rows = data.rows || [];
+        if (!rows.length) {
+          listWrap.innerHTML = '<div class="empty-note">مفيش شيكات مستحقة قريبة دلوقتي ✓</div>';
+          return;
+        }
+        var rowsHtml = rows.map(function(it, i){
+          var when = it.daysRemaining < 0 ? ('متأخر ' + Math.abs(it.daysRemaining) + ' يوم')
+            : (it.daysRemaining === 0 ? 'مستحق النهاردة' : ('باقي ' + it.daysRemaining + ' يوم'));
+          var valTxt = (typeof it.value === 'number') ? it.value.toLocaleString('ar-EG') : escQuick_(it.value);
+          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
+            + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
+            + '</td><td>' + escQuick_(when) + '</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+      })
+      .catch(function(){
+        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
+      });
+  }
+
   function loadQuickStatus_(kind){
     var titleEl = document.getElementById('quickStatusTitle');
     var subtitleEl = document.getElementById('quickStatusSubtitle');
@@ -5295,6 +5361,7 @@ window.safeFileName = function(str){
   }
   document.getElementById('loginAbsentBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('absent'); });
   document.getElementById('loginLateBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('late'); });
+  document.getElementById('loginChecksBtn').addEventListener('click', loadChecksDueStatus_);
   document.getElementById('quickStatusCloseBtn').addEventListener('click', function(){
     document.getElementById('quickStatusOverlay').style.display = 'none';
   });
@@ -5324,8 +5391,9 @@ window.safeFileName = function(str){
   }
   function quickStatusFileName_(){
     var titleEl = document.getElementById('quickStatusTitle');
-    var isAbsent = titleEl.textContent.indexOf('الغياب') > -1;
-    return (isAbsent ? 'Absent-' : 'Late-') + attendanceTodayKey() + '.pdf';
+    var t = titleEl.textContent;
+    var prefix = (t.indexOf('الغياب') > -1) ? 'Absent-' : (t.indexOf('الشيكات') > -1) ? 'Checks-' : 'Late-';
+    return prefix + attendanceTodayKey() + '.pdf';
   }
   document.getElementById('quickStatusDownloadBtn').addEventListener('click', async function(){
     var btn = this;
@@ -5577,6 +5645,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginBellBtn', label: 'جرس طلبات الاعتماد 🔔' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginAbsentBtn', label: 'الغياب النهارده 🚫' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLateBtn', label: 'التأخير النهارده ⏰' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksBtn', label: 'الشيكات المستحقة 🧾' },
     { group: 'الرئيسية', id: 'openTafweedMenuBtn', label: 'تفويضات' },
     { group: 'الرئيسية', id: 'openFormsMenuBtn', label: 'نماذج' },
     { group: 'الرئيسية', id: 'openAttendanceBtn', label: 'حضور وانصراف' },
