@@ -945,6 +945,11 @@
   .quick-status-paper table.dtable{table-layout:auto;}
   .quick-status-actions{display:flex;gap:8px;margin-top:16px;}
   .quick-status-actions .btn{flex:1;}
+  /* وضع "مبسّط" لمودال الشيكات: من غير لوجو/اسم شركة، وعرض أوسع + سكرول
+     أفقي عشان جدول الشيكات (6 أعمدة) يبان كامل من غير ما يتقص. */
+  .quick-status-modal.qsm-wide{max-width:96vw;width:820px;}
+  .qs-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .qs-table-scroll table.dtable{white-space:nowrap;}
 
   /* ---------- Floating "Contact us" WhatsApp button (login + home only) ---------- */
   .wa-float-btn{
@@ -5306,21 +5311,22 @@ window.safeFileName = function(str){
     var titleEl = document.getElementById('quickStatusTitle');
     var subtitleEl = document.getElementById('quickStatusSubtitle');
     var listWrap = document.getElementById('quickStatusListWrap');
-    titleEl.textContent = '🧾 الشيكات المستحقة';
+    titleEl.textContent = '🧾 كل الشيكات';
     subtitleEl.textContent = attendanceTodayKey();
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
+    setQuickStatusPaperMode_(true);
     if (!ATTENDANCE_SCRIPT_URL) {
       listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
       return;
     }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=checksDueReport')
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=checksAllReport')
       .then(function(r){ return r.json(); })
       .then(function(data){
         if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
         var rows = data.rows || [];
         if (!rows.length) {
-          listWrap.innerHTML = '<div class="empty-note">مفيش شيكات مستحقة قريبة دلوقتي ✓</div>';
+          listWrap.innerHTML = '<div class="empty-note">مفيش شيكات مسجلة في الشيت لسه</div>';
           return;
         }
         var rowsHtml = rows.map(function(it, i){
@@ -5331,11 +5337,21 @@ window.safeFileName = function(str){
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
             + '</td><td>' + escQuick_(when) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
       })
       .catch(function(){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
       });
+  }
+  // بيتحكم في شكل ورقة المودال (quickStatusPaper): وضع "مبسّط" (compact)
+  // للشيكات بس — من غير لوجو/اسم شركة وبعرض أوسع يسمح بعرض كل أعمدة
+  // الجدول من غير ما تتقص؛ وبيرجّعها للوضع العادي (لوجو + اسم الشركة +
+  // عرض المودال الافتراضي) لباقي التقارير (الغياب/التأخير/الأرصدة).
+  function setQuickStatusPaperMode_(compact){
+    var header = document.querySelector('#quickStatusPaper .doc-header-lg');
+    var modal = document.querySelector('.quick-status-modal');
+    if (header) header.style.display = compact ? 'none' : '';
+    if (modal) modal.classList.toggle('qsm-wide', !!compact);
   }
 
   // ---------- تقرير أرصدة العملاء والموردين (زرار "🤝" في صفحة الدخول) ----------
@@ -5350,6 +5366,7 @@ window.safeFileName = function(str){
     subtitleEl.textContent = attendanceTodayKey();
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
+    setQuickStatusPaperMode_(false);
     if (!ATTENDANCE_SCRIPT_URL) {
       listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
       return;
@@ -5385,6 +5402,7 @@ window.safeFileName = function(str){
     subtitleEl.textContent = date;
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
+    setQuickStatusPaperMode_(false);
     if (!ATTENDANCE_SCRIPT_URL) {
       listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
       return;
