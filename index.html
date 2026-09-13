@@ -816,10 +816,6 @@
   #paperQuote .headbar{margin:6px 0 12px;}
   #paperQuoteLogoSlot{display:flex;justify-content:center;}
   #paperQuoteLogoSlot img{width:170px;height:auto;display:block;margin:0 auto 4px;object-fit:contain;}
-  /* لوجو مودال الغياب/التأخير السريع (من صفحة الدخول): كان من غير حجم
-     محدد فبيظهر بحجمه الأصلي الضخم؛ نفس معالجة لوجو عروض الأسعار. */
-  #quickStatusLogoSlot{display:flex;justify-content:center;}
-  #quickStatusLogoSlot img{width:130px;height:auto;display:block;margin:0 auto 4px;object-fit:contain;}
   #paperQuote .company-name-lg{font-size:1.15em;font-weight:800;color:#111;}
 
   table.dtable col.c-qdesc{width:13%;}
@@ -1100,11 +1096,6 @@
       <button type="button" id="quickStatusCloseBtn" class="quick-status-close" aria-label="إغلاق">×</button>
     </div>
     <div id="quickStatusPaper" class="quick-status-paper">
-      <div class="doc-header-lg">
-        <div id="quickStatusLogoSlot"></div>
-        <div class="company-name-lg">شركة شيل اوت للمقاولات العامه</div>
-      </div>
-      <div class="headbar"></div>
       <div id="quickStatusSubtitle" class="quick-status-subtitle"></div>
       <div id="quickStatusListWrap"></div>
     </div>
@@ -3051,7 +3042,6 @@ window.safeFileName = function(str){
   cloneImgInto('companyLogoSrc', 'paperCustodyLogoSlot');
   // كشف الحضور والانصراف (لوحة الحضور): شعار الشركة فقط بدون ختم.
   cloneImgInto('companyLogoSrc', 'paperDashTableLogoSlot');
-  cloneImgInto('companyLogoSrc', 'quickStatusLogoSlot');
   // homeLogoSlot already has its own fixed icon image in the markup.
 
   // ---------------- ATTENDANCE (حضور وانصراف) ----------------
@@ -5343,15 +5333,13 @@ window.safeFileName = function(str){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
       });
   }
-  // بيتحكم في شكل ورقة المودال (quickStatusPaper): وضع "مبسّط" (compact)
-  // للشيكات بس — من غير لوجو/اسم شركة وبعرض أوسع يسمح بعرض كل أعمدة
-  // الجدول من غير ما تتقص؛ وبيرجّعها للوضع العادي (لوجو + اسم الشركة +
-  // عرض المودال الافتراضي) لباقي التقارير (الغياب/التأخير/الأرصدة).
-  function setQuickStatusPaperMode_(compact){
-    var header = document.querySelector('#quickStatusPaper .doc-header-lg');
+  // مودال التقارير السريعة (الغياب/التأخير/الشيكات/الأرصدة) بقى من غير
+  // لوجو/اسم شركة خالص في كل الحالات (شيلناه من الـ HTML نفسه). الدالة دي
+  // بس بتتحكم في عرض المودال: "wide" للتقارير اللي أعمدتها كتير (الشيكات)
+  // عشان الجدول كله يبان من غير ما يتقص، وعرض عادي لباقي التقارير.
+  function setQuickStatusPaperMode_(wide){
     var modal = document.querySelector('.quick-status-modal');
-    if (header) header.style.display = compact ? 'none' : '';
-    if (modal) modal.classList.toggle('qsm-wide', !!compact);
+    if (modal) modal.classList.toggle('qsm-wide', !!wide);
   }
 
   // ---------- تقرير أرصدة العملاء والموردين (زرار "🤝" في صفحة الدخول) ----------
@@ -5371,13 +5359,13 @@ window.safeFileName = function(str){
       listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
       return;
     }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=partiesDueReport')
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=partiesAllReport')
       .then(function(r){ return r.json(); })
       .then(function(data){
         if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
         var rows = data.rows || [];
         if (!rows.length) {
-          listWrap.innerHTML = '<div class="empty-note">مفيش أرصدة مفتوحة لافتة للنظر دلوقتي ✓</div>';
+          listWrap.innerHTML = '<div class="empty-note">مفيش عملاء أو موردين مسجلين في الشيت لسه</div>';
           return;
         }
         var rowsHtml = rows.map(function(it, i){
@@ -5386,7 +5374,7 @@ window.safeFileName = function(str){
           return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td>' + typeTxt
             + '</td><td>' + valTxt + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>النوع</th><th>الرصيد</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>النوع</th><th>الرصيد</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
       })
       .catch(function(){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
