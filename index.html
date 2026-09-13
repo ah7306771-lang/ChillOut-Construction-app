@@ -8358,5 +8358,21 @@ window.safeFileName = function(str){
   });
 })();
 </script>
+<script>
+// لو المستخدم داس على إشعار الشيكات، يفتح تقرير الشيكات المستحقة تلقائي (زي زرار 🧾)
+(function(){
+  try {
+    var qp = new URLSearchParams(location.search);
+    if (qp.get('openChecksReport') === '1') {
+      var runIt = function(){
+        if (typeof loadChecksDueStatus_ === 'function') { loadChecksDueStatus_(); }
+        else { setTimeout(runIt, 300); }
+      };
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', runIt); }
+      else { runIt(); }
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
