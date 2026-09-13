@@ -5344,7 +5344,12 @@ window.safeFileName = function(str){
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
             + '</td><td>' + escQuick_(it.type) + '</td><td>' + escQuick_(when) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+          var totalValue = rows.reduce(function(sum, it){
+            var v = (typeof it.value === 'number') ? it.value : (parseFloat(String(it.value).replace(/,/g, '')) || 0);
+            return sum + v;
+          }, 0);
+          var totalTxt = totalValue.toLocaleString('ar-EG');
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody><tfoot><tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="2">الإجمالي</td><td>' + totalTxt + '</td><td colspan="4"></td></tr></tfoot></table></div>';
       })
       .catch(function(){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
