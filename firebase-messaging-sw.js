@@ -14,7 +14,7 @@ firebase.initializeApp({
   appId: "1:474818688224:web:967d54f5c0769001690c85"
 });
 
-var messaging = firebase.messaging();
+var messaging = firebase.messaging(); /* عشان أي تحديث جديد للملف ده (زي إضافة خاصية فتح تقرير الشيكات) يشتغل فورًا على جهاز المستخدم من غير ما يحتاج يقفل التطبيق تمامًا ويفتحه تاني */ self.addEventListener('install', function (event) { self.skipWaiting(); }); self.addEventListener('activate', function (event) { event.waitUntil(self.clients.claim()); });
 
 // بيستقبل الإشعار وقت ما التطبيق مقفول أو في الخلفية، ويعرضه كإشعار نظام
 // عادي على الموبايل (زي أي إشعار تطبيق تاني).
