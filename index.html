@@ -946,6 +946,11 @@
   .quick-status-modal.qsm-wide{max-width:96vw;width:820px;}
   .qs-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .qs-table-scroll table.dtable{white-space:nowrap;}
+  .qs-grand-total{
+    margin-top:10px;padding:10px 14px;border-radius:10px;
+    background:#f5f7fb;border:1px solid var(--panel-line);
+    font-family:'Cairo',sans-serif;font-size:14px;color:var(--ink);
+  }
   /* شيك متأخر (فات معاد استحقاقه) — صف وردي فاتح يلفت النظر له في الجدول. */
   table.dtable tr.row-overdue td{background:#ffdce6;}
   .qs-net-row td{font-weight:700;background:var(--panel-2,#f4f4f4);}
@@ -986,6 +991,7 @@
   .login-fabs{
     position:fixed;right:18px;top:18px;z-index:9999;
     display:none;align-items:center;gap:10px;
+    flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 36px);
   }
   /* أيقونة الإعدادات ⚙️ في الرئيسية بس (مش في شاشة الدخول): فوق الوقت
      اللي شمال الشاشة، و"BY/ Ahmed Hamdy" بقى تحتها بدل ما كانت فوق. */
@@ -1087,11 +1093,11 @@
     🤝
     <span class="login-bell-badge" id="loginPartiesBadge">0</span>
   </button>
-</div>
   <button type="button" id="loginOverdueBtn" class="login-fab-btn" aria-label="اجمالي المتأخرات">
     📉
     <span class="login-bell-badge" id="loginOverdueBadge">0</span>
   </button>
+</div>
 
 <!-- مودال سريع بيعرض قايمة الغياب أو التأخير النهارده (حسب اللي دوس
      عليه)، مع تحميل/مشاركة صورة PDF منها — مستقل عن أي شاشة تانية عشان
@@ -4877,9 +4883,11 @@ window.safeFileName = function(str){
         }
         function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('ar-EG') : escQuick_(n); }
         var rowsHtml = rows.map(function(it, i){
-          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.totalOverdue) + '</td><td>' + it.count + '</td></tr>';
+          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.totalOverdue) + '</td><td>' + it.count + '</td><td>' + fmtAmt_(it.avgDelay) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اجمالي المتأخر</th><th>عدد المستحقات</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+        var gt = data.grandTotal || {};
+        var gtHtml = '<div class="qs-grand-total"><b>الإجمالي العام:</b> ' + fmtAmt_(gt.count) + ' مستحقات — ' + fmtAmt_(gt.amount) + ' جنيه — متوسط تأخير ' + fmtAmt_(gt.avgDelay) + ' يوم</div>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اجمالي المتأخر</th><th>عدد المستحقات</th><th>متوسط التأخير (يوم)</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' + gtHtml;
       })
       .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
   }

@@ -1,0 +1,15 @@
+{
+  "rows": [
+    {
+      "client": "ويكادي",
+      "count": 3,
+      "amount": 4273191,
+      "avgDelay": 7
+    }
+  ],
+  "grandTotal": {
+    "count": 3,
+    "amount": 4273191,
+    "avgDelay": 7
+  }
+}
