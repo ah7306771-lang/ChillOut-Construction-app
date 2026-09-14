@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-بيحول ملف APP.xlsx (الشيكات / العملاء والموردين / الرواتب) لـ 3 ملفات JSON
-(checks.json / parties.json / salaries.json) بنفس الشكل اللي كود Apps Script
-بيتوقعه بالظبط.
+بيحول ملف APP.xlsx (الشيكات / العملاء والموردين / الرواتب / اجمالي متأخرات)
+لـ 4 ملفات JSON (checks.json / parties.json / salaries.json / overdue.json)
+بنفس الشكل اللي كود Apps Script بيتوقعه بالظبط.
 
 الاستخدام:
     python3 xlsx_to_json.py [مسار APP.xlsx] [مجلد الإخراج]
@@ -18,6 +18,8 @@ import openpyxl
 from openpyxl.utils.datetime import from_excel
 
 SKIP_LABELS = {'الاجمالي', 'الإجمالي', 'الصافي', 'الإجمالى'}
+OVERDUE_GRAND_TOTAL_LABEL = 'الإجمالي العام'
+OVERDUE_EMPTY_LABEL = 'لا يوجد مستحقات'
 
 
 def is_valid_name(v):
@@ -175,6 +177,52 @@ def convert_salaries(ws):
     return out
 
 
+def convert_overdue(ws):
+    """بيقرأ شيت 'اجمالي متأخرات' (نسخة طبق الأصل من 'إجمالي التأخيرات'):
+    صف عنوان, صف 'الإجمالي العام' (عدد/مبلض/متوسط تأخير)، صف هيدر
+    ('العميل'/'عدد المستحقات'/'إجمالي المبلظ المستحق'/'متوسط التأخير (يوم)')،
+    وبعدها صفوف البيانات (أو صف 'لا يوجد مستحقات' لو فاضى)."""
+    rows = list(ws.iter_rows(values_only=True))
+    header_i, cols = find_header_row(
+        rows, ['العميل', 'عدد المستحقات', 'إجمالي المبلظ المستحق']
+    )
+
+    grand_total = {'count': 0, 'amount': 0, 'avgDelay': 0}
+    scan_upto = header_i if header_i > -1 else len(rows)
+    for row in rows[:scan_upto]:
+        if row and row[0] is not None and str(row[0]).strip() == OVERDUE_GRAND_TOTAL_LABEL:
+            grand_total = {
+                'count': to_number(row[1]) if len(row) > 1 else 0,
+                'amount': to_number(row[2]) if len(row) > 2 else 0,
+                'avgDelay': to_number(row[3]) if len(row) > 3 else 0,
+            }
+            break
+
+    if header_i == -1:
+        return {'rows': [], 'grandTotal': grand_total}
+
+    c_client = cols.get('العميل', 0)
+    c_count = cols.get('عدد المستحقات', 1)
+    c_amount = cols.get('إجمالي المبلظ المستحق', 2)
+    c_avg = cols.get('متوسط التأخير (يوم)', 3)
+
+    out = []
+    for row in rows[header_i + 1:]:
+        name = row[c_client] if c_client < len(row) else None
+        if name is None:
+            continue
+        s = str(name).strip()
+        if not s or s in SKIP_LABELS or s == OVERDUE_EMPTY_LABEL:
+            continue
+        out.append({
+            'client': s,
+            'count': to_number(row[c_count]) if c_count < len(row) else 0,
+            'amount': to_number(row[c_amount]) if c_amount < len(row) else 0,
+            'avgDelay': to_number(row[c_avg]) if c_avg < len(row) else 0,
+        })
+    return {'rows': out, 'grandTotal': grand_total}
+
+
 def main():
     xlsx_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), 'APP.xlsx')
     out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(xlsx_path))
@@ -184,6 +232,7 @@ def main():
     checks = convert_checks(wb['الشيكات'])
     parties = convert_parties(wb['العملاء والموردين'])
     salaries = convert_salaries(wb['الرواتب'])
+    overdue = convert_overdue(wb['اجمالي متأخرات']) if 'اجمالي متأخرات' in wb.sheetnames else {'rows': [], 'grandTotal': {'count': 0, 'amount': 0, 'avgDelay': 0}}
 
     with open(os.path.join(out_dir, 'checks.json'), 'w', encoding='utf-8') as f:
         json.dump(checks, f, ensure_ascii=False, indent=2)
@@ -191,8 +240,10 @@ def main():
         json.dump(parties, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'salaries.json'), 'w', encoding='utf-8') as f:
         json.dump(salaries, f, ensure_ascii=False, indent=2)
+    with open(os.path.join(out_dir, 'overdue.json'), 'w', encoding='utf-8') as f:
+        json.dump(overdue, f, ensure_ascii=False, indent=2)
 
-    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries))
+    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']))
 
 
 if __name__ == '__main__':
