@@ -946,6 +946,13 @@
   .quick-status-modal.qsm-wide{max-width:96vw;width:820px;}
   .qs-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .qs-table-scroll table.dtable{white-space:nowrap;}
+  /* شيت "اخر سعر شراء وبيع": اسم العميل وطريقة السداد في سطر واحد،
+     وخط أوضح للقيم (أرقام إنجليزية عادية بدل الأرقام العربية الهندية
+     اللي بتظهر مبعثرة). */
+  .lp-table td,.lp-table th{white-space:nowrap;font-size:0.8em;padding:6px 8px;}
+  .lp-table td:nth-child(3),.lp-table td:nth-child(4),.lp-table td:nth-child(6){
+    direction:ltr;font-weight:600;
+  }
   .qs-grand-total{
     margin-top:10px;padding:10px 14px;border-radius:10px;
     background:#f5f7fb;border:1px solid var(--panel-line);
@@ -996,6 +1003,17 @@
   /* أيقونة الإعدادات ⚙️ في الرئيسية بس (مش في شاشة الدخول): فوق الوقت
      اللي شمال الشاشة، و"BY/ Ahmed Hamdy" بقى تحتها بدل ما كانت فوق. */
   #homeFabs{top:2px;left:18px;right:auto;}
+  /* تقسيم أيقونات صفحة الدخول: أول 4 أيقونات (من اليمين) عمودي تحت بعض
+     يمين الشاشة، وباقي الأيقونات عمودي تحت بعض أقصى شمال الشاشة، والنص
+     فاضي. #loginFabs نفسه بقى مجرد حاوية غير متمركزة، والتمركز بقى على
+     المجموعتين الفرعيتين. */
+  #loginFabs{position:static;max-width:none;}
+  .login-fabs-col{
+    position:fixed;top:18px;z-index:9999;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .login-fabs-col-right{right:18px;}
+  .login-fabs-col-left{left:18px;}
   .login-fab-btn{
     position:relative;
     width:50px;height:50px;border-radius:50%;
@@ -1016,6 +1034,9 @@
   }
   @media (max-width:480px){
     .login-fabs{right:14px;top:14px;gap:8px;}
+    .login-fabs-col{top:14px;gap:8px;}
+    .login-fabs-col-right{right:14px;}
+    .login-fabs-col-left{left:14px;}
     #homeFabs{top:2px;left:14px;right:auto;}
     .login-fab-btn{width:44px;height:44px;font-size:19px;}
   }
@@ -1078,6 +1099,7 @@
      باسورد، وبتتحكم فيها إظهار/إخفاء من صلاحيات المستخدمين زي أي أيقونة
      تانية. -->
 <div class="login-fabs" id="loginFabs">
+  <div class="login-fabs-col login-fabs-col-right">
   <button type="button" id="loginDashboardBtn" class="login-fab-btn" aria-label="لوحة الحضور والانصراف">📊</button>
   <button type="button" id="loginBellBtn" class="login-fab-btn" aria-label="طلبات بانتظار الاعتماد">
     🔔
@@ -1085,6 +1107,8 @@
   </button>
   <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫</button>
   <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰</button>
+  </div>
+  <div class="login-fabs-col login-fabs-col-left">
   <button type="button" id="loginChecksBtn" class="login-fab-btn" aria-label="الشيكات المستحقة">
     🧾
     <span class="login-bell-badge" id="loginChecksBadge">0</span>
@@ -1101,6 +1125,7 @@
     🏷️
     <span class="login-bell-badge" id="loginLastPricesBadge">0</span>
   </button>
+  </div>
 </div>
 
 <!-- مودال سريع بيعرض قايمة الغياب أو التأخير النهارده (حسب اللي دوس
@@ -4889,9 +4914,9 @@ window.safeFileName = function(str){
         var rowsHtml = rows.map(function(it, i){
           return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.totalOverdue) + '</td><td>' + it.count + '</td><td>' + fmtAmt_(it.avgDelay) + '</td></tr>';
         }).join('');
-        var gt = data.grandTotal || {};
-        var gtHtml = '<div class="qs-grand-total"><b>الإجمالي العام:</b> ' + fmtAmt_(gt.count) + ' مستحقات — ' + fmtAmt_(gt.amount) + ' جنيه — متوسط تأخير ' + fmtAmt_(gt.avgDelay) + ' يوم</div>';
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اجمالي المتأخر</th><th>عدد المستحقات</th><th>متوسط التأخير (يوم)</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>' + gtHtml;
+        var totalOverdueSum = rows.reduce(function(s, it){ return s + ((typeof it.totalOverdue === 'number') ? it.totalOverdue : 0); }, 0);
+        var totalRowHtml = '<tr class="qs-net-row"><td></td><td>الإجمالي</td><td>' + fmtAmt_(totalOverdueSum) + '</td><td></td><td></td></tr>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اجمالي المتأخر</th><th>عدد المستحقات</th><th>متوسط التأخير (يوم)</th></tr></thead><tbody>' + rowsHtml + totalRowHtml + '</tbody></table></div>';
       })
       .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
   }
@@ -4904,7 +4929,7 @@ window.safeFileName = function(str){
     subtitleEl.textContent = attendanceTodayKey();
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
-    setQuickStatusPaperMode_(false);
+    setQuickStatusPaperMode_(true);
     if (!ATTENDANCE_SCRIPT_URL) {
       listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
       return;
@@ -4913,16 +4938,16 @@ window.safeFileName = function(str){
       .then(function(r){ return r.json(); })
       .then(function(data){
         if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
-        var rows = data.rows || [];
+        var rows = (data.rows || []).filter(function(it){ return it && typeof it.lastSellPrice === 'number' && it.lastSellPrice > 0; });
         if (!rows.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش بيانات أسعار دلوقتي</div>';
           return;
         }
-        function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('ar-EG') : escQuick_(n); }
+        function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('en-US') : escQuick_(n); }
         var rowsHtml = rows.map(function(it, i){
-          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.lastBuyPrice) + '</td><td>' + fmtAmt_(it.lastSellPrice) + '</td><td>' + escQuick_(it.saleOrderNo) + '</td><td>' + escQuick_(it.paymentMethod) + '</td><td>' + escQuick_(it.lastInvoiceDate) + '</td></tr>';
+          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.lastBuyPrice) + '</td><td>' + fmtAmt_(it.lastSellPrice) + '</td><td>' + escQuick_(it.paymentMethod) + '</td><td>' + escQuick_(it.lastInvoiceDate) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اخر سعر شراء</th><th>اخر سعر بيع</th><th>رقم امر البيع</th><th>اخر طريقة السداد</th><th>تاريخ اخر فاتورة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable lp-table"><thead><tr><th>#</th><th>العميل</th><th>اخر سعر شراء</th><th>اخر سعر بيع</th><th>اخر طريقة السداد</th><th>تاريخ اخر فاتورة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
       })
       .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
   }

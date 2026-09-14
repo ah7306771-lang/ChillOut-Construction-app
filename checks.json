@@ -124,14 +124,5 @@
     "bank": "",
     "notes": "",
     "type": "أ.ق"
-  },
-  {
-    "client": "ويكادي",
-    "number": 333,
-    "value": 100,
-    "dueDate": "17/09/2026",
-    "bank": "",
-    "notes": "",
-    "type": "أ.ق"
   }
 ]

@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40600,
+    "saleOrderNo": 41,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "17/08/2026"
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 44,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "03/09/2026"
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم",
+    "lastInvoiceDate": "16/08/2026"
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38450,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 45,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "09/09/2026"
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "18/07/2026"
+  },
+  {
+    "client": "عميل التطوير",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": "T-106/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": null
+  },
+  {
+    "client": "جي دبيو",
+    "lastBuyPrice": 37800,
+    "lastSellPrice": 39250,
+    "saleOrderNo": "D-105/1",
+    "paymentMethod": "شيك اجل 60  يوم",
+    "lastInvoiceDate": "21/07/2026"
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 39,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "16/08/2026"
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "22/08/2026"
+  }
+]
