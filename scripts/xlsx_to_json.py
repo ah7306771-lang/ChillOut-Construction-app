@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-بيحول ملف APP.xlsx (الشيكات / العملاء والموردين / الرواتب / اجمالي متأخرات)
-لـ 4 ملفات JSON (checks.json / parties.json / salaries.json / overdue.json)
-بنفس الشكل اللي كود Apps Script بيتوقعه بالظبط.
+بيحول ملف APP.xlsx (الشيكات / العملاء والموردين / الرواتب / اجمالي متأخرات /
+اخر سعر شراء وبيع) لـ 5 ملفات JSON (checks.json / parties.json /
+salaries.json / overdue.json / lastPrices.json) بنفس الشكل اللي كود
+Apps Script بيتوقعه بالظبط.
 
 الاستخدام:
     python3 xlsx_to_json.py [مسار APP.xlsx] [مجلد الإخراج]
@@ -20,6 +21,9 @@ from openpyxl.utils.datetime import from_excel
 SKIP_LABELS = {'الاجمالي', 'الإجمالي', 'الصافي', 'الإجمالى'}
 OVERDUE_GRAND_TOTAL_LABEL = 'الإجمالي العام'
 OVERDUE_EMPTY_LABEL = 'لا يوجد مستحقات'
+# لاحظ: اسم الشيت فيه مسافتين بين "شراء" و"وبيع" بالظبط زي ما هو متسمي
+# في APP.xlsx — لو غيّرت الاسم في الشيت لازم تغيّره هنا كمان بنفس الشكل.
+LAST_PRICES_SHEET_NAME = 'اخر سعر شراء  وبيع'
 
 
 def is_valid_name(v):
@@ -223,6 +227,42 @@ def convert_overdue(ws):
     return {'rows': out, 'grandTotal': grand_total}
 
 
+def convert_last_prices(ws):
+    """بيقرأ شيت 'اخر سعر شراء وبيع' جوه APP.xlsx (بيتملي أوتوماتيك من شيت
+    'بيانات التوريد' في بيانات التوريد.xlsm عن طريق ماكرو SyncToApp):
+    صف هيدر ('اسم العميل'/'اخر سعر شراء'/'اخر سعر بيع'/'رقم امر البيع'/
+    'اخر طريقة السداد'/'تاريخ اخر فاتورة') وتحته صفوف البيانات (عميل واحد
+    في كل صف — آخر عملية توريد ليه)."""
+    rows = list(ws.iter_rows(values_only=True))
+    header_i, cols = find_header_row(
+        rows, ['اسم العميل', 'اخر سعر شراء', 'اخر سعر بيع']
+    )
+    if header_i == -1:
+        return []
+
+    c_client = cols.get('اسم العميل', 0)
+    c_buy = cols.get('اخر سعر شراء', 1)
+    c_sell = cols.get('اخر سعر بيع', 2)
+    c_order = cols.get('رقم امر البيع', 3)
+    c_payment = cols.get('اخر طريقة السداد', 4)
+    c_date = cols.get('تاريخ اخر فاتورة', 5)
+
+    out = []
+    for row in rows[header_i + 1:]:
+        name = row[c_client] if c_client < len(row) else None
+        if not is_valid_name(name):
+            continue
+        out.append({
+            'client': str(name).strip(),
+            'lastBuyPrice': to_number(row[c_buy]) if c_buy < len(row) else 0,
+            'lastSellPrice': to_number(row[c_sell]) if c_sell < len(row) else 0,
+            'saleOrderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
+            'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
+            'lastInvoiceDate': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
+        })
+    return out
+
+
 def main():
     xlsx_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), 'APP.xlsx')
     out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(xlsx_path))
@@ -233,6 +273,7 @@ def main():
     parties = convert_parties(wb['العملاء والموردين'])
     salaries = convert_salaries(wb['الرواتب'])
     overdue = convert_overdue(wb['اجمالي متأخرات']) if 'اجمالي متأخرات' in wb.sheetnames else {'rows': [], 'grandTotal': {'count': 0, 'amount': 0, 'avgDelay': 0}}
+    last_prices = convert_last_prices(wb[LAST_PRICES_SHEET_NAME]) if LAST_PRICES_SHEET_NAME in wb.sheetnames else []
 
     with open(os.path.join(out_dir, 'checks.json'), 'w', encoding='utf-8') as f:
         json.dump(checks, f, ensure_ascii=False, indent=2)
@@ -242,8 +283,10 @@ def main():
         json.dump(salaries, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'overdue.json'), 'w', encoding='utf-8') as f:
         json.dump(overdue, f, ensure_ascii=False, indent=2)
+    with open(os.path.join(out_dir, 'lastPrices.json'), 'w', encoding='utf-8') as f:
+        json.dump(last_prices, f, ensure_ascii=False, indent=2)
 
-    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']))
+    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices))
 
 
 if __name__ == '__main__':
