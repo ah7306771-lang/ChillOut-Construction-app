@@ -1088,6 +1088,10 @@
     <span class="login-bell-badge" id="loginPartiesBadge">0</span>
   </button>
 </div>
+  <button type="button" id="loginOverdueBtn" class="login-fab-btn" aria-label="اجمالي المتأخرات">
+    📉
+    <span class="login-bell-badge" id="loginOverdueBadge">0</span>
+  </button>
 
 <!-- مودال سريع بيعرض قايمة الغياب أو التأخير النهارده (حسب اللي دوس
      عليه)، مع تحميل/مشاركة صورة PDF منها — مستقل عن أي شاشة تانية عشان
@@ -4849,6 +4853,55 @@ window.safeFileName = function(str){
   refreshPartiesDueBadge_();
   setInterval(refreshPartiesDueBadge_, 60000);
 
+  function loadOverdueStatus_(){
+    var titleEl = document.getElementById('quickStatusTitle');
+    var subtitleEl = document.getElementById('quickStatusSubtitle');
+    var listWrap = document.getElementById('quickStatusListWrap');
+    titleEl.textContent = '📉 اجمالي المتأخرات';
+    subtitleEl.textContent = attendanceTodayKey();
+    listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    document.getElementById('quickStatusOverlay').style.display = 'flex';
+    setQuickStatusPaperMode_(false);
+    if (!ATTENDANCE_SCRIPT_URL) {
+      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
+      return;
+    }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=overdueReport')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
+        var rows = data.rows || [];
+        if (!rows.length) {
+          listWrap.innerHTML = '<div class="empty-note">مفيش متأخرات دلوقتي 🎉</div>';
+          return;
+        }
+        function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('ar-EG') : escQuick_(n); }
+        var rowsHtml = rows.map(function(it, i){
+          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.totalOverdue) + '</td><td>' + it.count + '</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اجمالي المتأخر</th><th>عدد المستحقات</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+      })
+      .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
+  }
+
+  function refreshOverdueBadge_(){
+    var badge = document.getElementById('loginOverdueBadge');
+    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=overdueReport')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var count = (data && data.ok) ? (data.count || 0) : 0;
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : String(count);
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+  }
+  refreshOverdueBadge_();
+  setInterval(refreshOverdueBadge_, 60000);
+
   // مزامنة دورية مع الشيت المشترك طول ما شاشة الحضور مفتوحة — عشان لو حد
   // مسح تسجيل من الشيت يدوياً، الزرار هنا يرجع يشتغل تاني من غير ما الموظف
   // يحتاج يقفل الشاشة ويفتحها تاني.
@@ -5466,6 +5519,7 @@ window.safeFileName = function(str){
   document.getElementById('loginLateBtn').addEventListener('click', function(){ openQuickStatusFromLoginFlow_('late'); });
   document.getElementById('loginChecksBtn').addEventListener('click', loadChecksDueStatus_);
   document.getElementById('loginPartiesBtn').addEventListener('click', loadPartiesDueStatus_);
+  document.getElementById('loginOverdueBtn').addEventListener('click', loadOverdueStatus_);
   document.getElementById('quickStatusCloseBtn').addEventListener('click', function(){
     document.getElementById('quickStatusOverlay').style.display = 'none';
   });
@@ -5754,6 +5808,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLateBtn', label: 'التأخير النهارده ⏰' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksBtn', label: 'الشيكات المستحقة 🧾' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginPartiesBtn', label: 'أرصدة العملاء والموردين 🤝' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginOverdueBtn', label: 'اجمالي المتأخرات 📉' },
     { group: 'الرئيسية', id: 'openTafweedMenuBtn', label: 'تفويضات' },
     { group: 'الرئيسية', id: 'openFormsMenuBtn', label: 'نماذج' },
     { group: 'الرئيسية', id: 'openAttendanceBtn', label: 'حضور وانصراف' },
