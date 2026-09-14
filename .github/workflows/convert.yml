@@ -32,6 +32,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add checks.json parties.json salaries.json overdue.json
+          git add checks.json parties.json salaries.json overdue.json lastPrices.json
           git diff --cached --quiet || git commit -m "Auto-update JSON from APP.xlsx"
           git push
