@@ -1097,6 +1097,10 @@
     📉
     <span class="login-bell-badge" id="loginOverdueBadge">0</span>
   </button>
+  <button type="button" id="loginLastPricesBtn" class="login-fab-btn" aria-label="اخر سعر شراء وبيع">
+    🏷️
+    <span class="login-bell-badge" id="loginLastPricesBadge">0</span>
+  </button>
 </div>
 
 <!-- مودال سريع بيعرض قايمة الغياب أو التأخير النهارده (حسب اللي دوس
@@ -4892,6 +4896,37 @@ window.safeFileName = function(str){
       .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
   }
 
+  function loadLastPricesStatus_(){
+    var titleEl = document.getElementById('quickStatusTitle');
+    var subtitleEl = document.getElementById('quickStatusSubtitle');
+    var listWrap = document.getElementById('quickStatusListWrap');
+    titleEl.textContent = '🏷️ اخر سعر شراء وبيع';
+    subtitleEl.textContent = attendanceTodayKey();
+    listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    document.getElementById('quickStatusOverlay').style.display = 'flex';
+    setQuickStatusPaperMode_(false);
+    if (!ATTENDANCE_SCRIPT_URL) {
+      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
+      return;
+    }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=lastPricesReport')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
+        var rows = data.rows || [];
+        if (!rows.length) {
+          listWrap.innerHTML = '<div class="empty-note">مفيش بيانات أسعار دلوقتي</div>';
+          return;
+        }
+        function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('ar-EG') : escQuick_(n); }
+        var rowsHtml = rows.map(function(it, i){
+          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.lastBuyPrice) + '</td><td>' + fmtAmt_(it.lastSellPrice) + '</td><td>' + escQuick_(it.saleOrderNo) + '</td><td>' + escQuick_(it.paymentMethod) + '</td><td>' + escQuick_(it.lastInvoiceDate) + '</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اخر سعر شراء</th><th>اخر سعر بيع</th><th>رقم امر البيع</th><th>اخر طريقة السداد</th><th>تاريخ اخر فاتورة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+      })
+      .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
+  }
+
   function refreshOverdueBadge_(){
     var badge = document.getElementById('loginOverdueBadge');
     if (!badge || !ATTENDANCE_SCRIPT_URL) return;
@@ -4909,6 +4944,24 @@ window.safeFileName = function(str){
   }
   refreshOverdueBadge_();
   setInterval(refreshOverdueBadge_, 60000);
+
+  function refreshLastPricesBadge_(){
+    var badge = document.getElementById('loginLastPricesBadge');
+    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=lastPricesReport')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var count = (data && data.ok) ? (data.count || 0) : 0;
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : String(count);
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+  }
+  refreshLastPricesBadge_();
+  setInterval(refreshLastPricesBadge_, 60000);
 
   // مزامنة دورية مع الشيت المشترك طول ما شاشة الحضور مفتوحة — عشان لو حد
   // مسح تسجيل من الشيت يدوياً، الزرار هنا يرجع يشتغل تاني من غير ما الموظف
@@ -5528,6 +5581,7 @@ window.safeFileName = function(str){
   document.getElementById('loginChecksBtn').addEventListener('click', loadChecksDueStatus_);
   document.getElementById('loginPartiesBtn').addEventListener('click', loadPartiesDueStatus_);
   document.getElementById('loginOverdueBtn').addEventListener('click', loadOverdueStatus_);
+  document.getElementById('loginLastPricesBtn').addEventListener('click', loadLastPricesStatus_);
   document.getElementById('quickStatusCloseBtn').addEventListener('click', function(){
     document.getElementById('quickStatusOverlay').style.display = 'none';
   });
@@ -5817,6 +5871,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksBtn', label: 'الشيكات المستحقة 🧾' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginPartiesBtn', label: 'أرصدة العملاء والموردين 🤝' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginOverdueBtn', label: 'اجمالي المتأخرات 📉' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLastPricesBtn', label: 'اخر سعر شراء وبيع 🏷️' },
     { group: 'الرئيسية', id: 'openTafweedMenuBtn', label: 'تفويضات' },
     { group: 'الرئيسية', id: 'openFormsMenuBtn', label: 'نماذج' },
     { group: 'الرئيسية', id: 'openAttendanceBtn', label: 'حضور وانصراف' },
