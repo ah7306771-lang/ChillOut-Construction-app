@@ -5342,9 +5342,14 @@ window.safeFileName = function(str){
           var trClass = (it.daysRemaining < 0) ? ' class="row-overdue"' : '';
           return '<tr' + trClass + '><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
-            + '</td><td>' + escQuick_(when) + '</td></tr>';
+            + '</td><td>' + escQuick_(it.type) + '</td><td>' + escQuick_(when) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+          var totalValue = rows.reduce(function(sum, it){
+            var v = (typeof it.value === 'number') ? it.value : (parseFloat(String(it.value).replace(/,/g, '')) || 0);
+            return sum + v;
+          }, 0);
+          var totalTxt = totalValue.toLocaleString('ar-EG');
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>النوع</th><th>الحالة</th></tr></thead><tbody>' + rowsHtml + '</tbody><tfoot><tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="2">الإجمالي</td><td>' + totalTxt + '</td><td colspan="4"></td></tr></tfoot></table></div>';
       })
       .catch(function(){
         listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
@@ -8356,6 +8361,22 @@ window.safeFileName = function(str){
     const btn = $(btnId);
     if(btn) btn.addEventListener('click', () => openDocPreview(btnPaperMap[btnId]));
   });
+})();
+</script>
+<script>
+// لو المستخدم داس على إشعار الشيكات، يفتح تقرير الشيكات المستحقة تلقائي (زي زرار 🧾)
+(function(){
+  try {
+    var qp = new URLSearchParams(location.search);
+    if (qp.get('openChecksReport') === '1') {
+      var runIt = function(){
+        if (typeof loadChecksDueStatus_ === 'function') { loadChecksDueStatus_(); }
+        else { setTimeout(runIt, 300); }
+      };
+      if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', runIt); }
+      else { runIt(); }
+    }
+  } catch (e) {}
 })();
 </script>
 </body>

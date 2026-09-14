@@ -92,7 +92,7 @@ def convert_checks(ws):
     c_value = col('القيمة', 'القيمه')
     c_due = col('تاريخ الاستحقاق', 'تاريخه الاستحقاق')
     c_bank = col('البنك', 'البنك المسحوب عليه')
-    c_notes = col('ملاحظات')
+    c_type = col('الموقف', 'النوع', 'نوع الشيك'); c_notes = col('ملاحظات')
 
     out = []
     for row in rows[header_i + 1:]:
@@ -108,7 +108,7 @@ def convert_checks(ws):
             'value': row[c_value] if c_value > -1 else '',
             'dueDate': due,
             'bank': str(row[c_bank]).strip() if c_bank > -1 and row[c_bank] is not None else '',
-            'notes': str(row[c_notes]).strip() if c_notes > -1 and row[c_notes] is not None else ''
+            'notes': str(row[c_notes]).strip() if c_notes > -1 and row[c_notes] is not None else '', 'type': str(row[c_type]).strip() if c_type > -1 and c_type < len(row) and row[c_type] is not None else ''
         })
     return out
 

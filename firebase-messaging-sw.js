@@ -14,7 +14,7 @@ firebase.initializeApp({
   appId: "1:474818688224:web:967d54f5c0769001690c85"
 });
 
-var messaging = firebase.messaging();
+var messaging = firebase.messaging(); /* عشان أي تحديث جديد للملف ده (زي إضافة خاصية فتح تقرير الشيكات) يشتغل فورًا على جهاز المستخدم من غير ما يحتاج يقفل التطبيق تمامًا ويفتحه تاني */ self.addEventListener('install', function (event) { self.skipWaiting(); }); self.addEventListener('activate', function (event) { event.waitUntil(self.clients.claim()); });
 
 // بيستقبل الإشعار وقت ما التطبيق مقفول أو في الخلفية، ويعرضه كإشعار نظام
 // عادي على الموبايل (زي أي إشعار تطبيق تاني).
@@ -25,7 +25,31 @@ messaging.onBackgroundMessage(function (payload) {
   var title = (payload.data && payload.data.title) || (payload.notification && payload.notification.title) || 'إشعار جديد';
   var options = {
     body: (payload.data && payload.data.body) || (payload.notification && payload.notification.body) || '',
-    icon: 'icon-192.png'
+    icon: 'icon-192.png',
+    data: payload.data || {}
   };
   self.registration.showNotification(title, options);
+});
+
+// لو المستخدم داس على الإشعار: يفتح/يركّز نافذة التطبيق، ولو الإشعار له action معينة (زي الشيكات) يفتح شاشة تقرير الشيكات مباشرة
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  var data = event.notification.data || {};
+  var targetUrl = self.registration.scope;
+  if (data.action === 'checksReport') {
+    targetUrl += (targetUrl.indexOf('?') === -1 ? '?' : '&') + 'openChecksReport=1';
+  }
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if ('focus' in client) {
+          client.focus();
+          if ('navigate' in client) { client.navigate(targetUrl); }
+          return;
+        }
+      }
+      if (clients.openWindow) { return clients.openWindow(targetUrl); }
+    })
+  );
 });
