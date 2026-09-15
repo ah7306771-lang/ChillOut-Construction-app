@@ -4898,11 +4898,14 @@ window.safeFileName = function(str){
   }
   function buildPartiesAllRows_(parties){
     var out = [];
+    // العميل: اللي مدين لينا (debit) بيبان موجب. المورد: عكس كده —
+    // اللي إحنا مديونين له (credit) هو اللي بيبان موجب، مطابق لمنطق
+    // partiesAllReport الأصلي في Apps Script.
     ((parties && parties.clients) || []).forEach(function(c){
       out.push({type:'client', name:c.name, amount: (c.debit||0) - (c.credit||0)});
     });
     ((parties && parties.suppliers) || []).forEach(function(s){
-      out.push({type:'supplier', name:s.name, amount: (s.debit||0) - (s.credit||0)});
+      out.push({type:'supplier', name:s.name, amount: (s.credit||0) - (s.debit||0)});
     });
     out.sort(function(a,b){ return b.amount - a.amount; });
     return out;
