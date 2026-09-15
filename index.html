@@ -949,7 +949,10 @@
   /* شيت "اخر سعر شراء وبيع": اسم العميل وطريقة السداد في سطر واحد،
      وخط أوضح للقيم (أرقام إنجليزية عادية بدل الأرقام العربية الهندية
      اللي بتظهر مبعثرة). */
-  .lp-table td,.lp-table th{white-space:nowrap;font-size:0.8em;padding:6px 8px;}
+  .lp-table td,.lp-table th{
+    white-space:nowrap !important;word-break:normal !important;overflow-wrap:normal !important;
+    font-size:12px !important;letter-spacing:0;padding:6px 8px;
+  }
   .lp-table td:nth-child(3),.lp-table td:nth-child(4),.lp-table td:nth-child(6){
     direction:ltr;font-weight:600;
   }
