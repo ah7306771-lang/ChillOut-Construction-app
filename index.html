@@ -1013,7 +1013,7 @@
   #loginFabs{position:static;max-width:none;}
 .app-refresh-btn{
   position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 14px);z-index:9999;
-  width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff8ee;
+  width:46px;height:46px;border-radius:50%;overflow:hidden;border:none;background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff8ee;
   font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;
   display:flex;align-items:center;justify-content:center;padding:0;
 }
@@ -1170,7 +1170,7 @@
 <!-- زرار تحديث ثابت في الشاشة، ظاهر دايمًا (صفحة الدخول والرئيسية):
      بيعمل ريفريش كامل للتطبيق بأحدث نسخة (index.html + ملفات JSON) —
      مفيد بعد أي push جديد لـ APP.xlsx عشان الأرقام تتحدث فورًا. -->
-<button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات">🔄</button>
+<button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>
 
 <!-- رسالة ترحيب سريعة بتظهر أول ما تسجيل الدخول ينجح (أي طريقة دخول:
      يوزر/باسورد، رقم موظف، أو بصمة) وتختفي لوحدها بعد كام ثانية. -->
