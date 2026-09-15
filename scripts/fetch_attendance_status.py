@@ -13,12 +13,23 @@ def cairo_today_str():
     return now.strftime('%Y-%m-%d')
 
 
+def fetch_json(url):
+    # جوجل بيرفض بعض الطلبات اللي من غير User-Agent شبه المتصفح
+    # وبيرجع 404 بدل ما ينفذ الطلب، فبنبعت هيدرز شبه المتصفح.
+    req = urllib.request.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*'
+    })
+    with urllib.request.urlopen(req, timeout=45) as resp:
+        return resp.read().decode('utf-8')
+
+
 def main():
     date_str = cairo_today_str()
     url = ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + date_str
     try:
-        with urllib.request.urlopen(url, timeout=45) as resp:
-            raw = resp.read().decode('utf-8')
+        raw = fetch_json(url)
         data = json.loads(raw)
     except Exception as e:
         print('ERROR fetching attendance status:', e, file=sys.stderr)
