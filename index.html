@@ -1037,6 +1037,8 @@
   }
   .login-fab-btn:hover{transform:scale(1.06);}
   .login-fab-btn:active{transform:scale(.95);}
+  #loginRadioBtn.is-playing{ color:var(--steel); animation: radioPulse_ 1.4s ease-in-out infinite; }
+  @keyframes radioPulse_{ 0%,100%{ box-shadow:0 8px 20px rgba(26,26,26,0.12); } 50%{ box-shadow:0 8px 22px rgba(226,98,31,0.5); } }
   .login-bell-badge{
     position:absolute;top:-3px;left:-3px;
     background:#e0433a;color:#fff;font-size:11px;font-weight:800;
@@ -1119,6 +1121,9 @@
   </button>
   <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫</button>
   <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰</button>
+  <button type="button" id="loginRadioBtn" class="login-fab-btn" aria-label="إذاعة القرآن الكريم">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8 4 3"></path><path d="M17 8 20 3"></path><rect x="3" y="8" width="18" height="12" rx="2.5"></rect><circle cx="8" cy="14" r="2.3"></circle><line x1="13.5" y1="12" x2="18" y2="12"></line><line x1="13.5" y1="16" x2="18" y2="16"></line></svg>
+  </button>
   </div>
   <div class="login-fabs-col login-fabs-col-left">
   <button type="button" id="loginChecksBtn" class="login-fab-btn" aria-label="الشيكات المستحقة">
@@ -3061,6 +3066,7 @@ window.safeFileName = function(str){
     if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
     var homeFabs = document.getElementById('homeFabs');
     if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
+    if (name !== 'login' && typeof stopQuranRadio_ === 'function') stopQuranRadio_();
     if (name !== 'login') {
       var err = document.getElementById('loginError');
       if (err) err.textContent = '';
@@ -5434,6 +5440,37 @@ window.safeFileName = function(str){
     });
   }
 
+  // ---------------- زرار إذاعة القرآن الكريم (صفحة الدخول فقط) ----------------
+  // بث مباشر من holyquranradio.com، ضغطة تشغّل وضغطة تانية توقف. بيتوقف
+  // تلقائيًا لو المستخدم مشى من صفحة الدخول (بعد الدخول) عشان مايفضلش
+  // شغال في الخلفية من غير ما ينتبه.
+  var QURAN_RADIO_STREAM_URL_ = 'https://stream.radiojar.com/8s5u5tpdtwzuv';
+  var quranRadioAudio_ = null;
+  function stopQuranRadio_(){
+    if (quranRadioAudio_) {
+      quranRadioAudio_.pause();
+      quranRadioAudio_.src = '';
+    }
+    var btn = document.getElementById('loginRadioBtn');
+    if (btn) btn.classList.remove('is-playing');
+  }
+  var loginRadioBtn_ = document.getElementById('loginRadioBtn');
+  if (loginRadioBtn_) {
+    loginRadioBtn_.addEventListener('click', function(){
+      if (quranRadioAudio_ && !quranRadioAudio_.paused) {
+        stopQuranRadio_();
+        return;
+      }
+      if (!quranRadioAudio_) quranRadioAudio_ = new Audio();
+      quranRadioAudio_.src = QURAN_RADIO_STREAM_URL_;
+      quranRadioAudio_.play().then(function(){
+        loginRadioBtn_.classList.add('is-playing');
+      }).catch(function(){
+        stopQuranRadio_();
+      });
+    });
+  }
+
   // ---------------- شاشة "راتبي" (خاصة بالموظف اللي داخل دلوقتي بس) ----------------
   function escSalary_(s){
     var d = document.createElement('div');
@@ -5941,6 +5978,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginBellBtn', label: 'جرس طلبات الاعتماد 🔔' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginAbsentBtn', label: 'الغياب النهارده 🚫' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLateBtn', label: 'التأخير النهارده ⏰' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginRadioBtn', label: 'إذاعة القرآن الكريم 📻' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksBtn', label: 'الشيكات المستحقة 🧾' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginPartiesBtn', label: 'أرصدة العملاء والموردين 🤝' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginOverdueBtn', label: 'اجمالي المتأخرات 📉' },
