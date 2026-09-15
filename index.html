@@ -1011,15 +1011,32 @@
      فاضي. #loginFabs نفسه بقى مجرد حاوية غير متمركزة، والتمركز بقى على
      المجموعتين الفرعيتين. */
   #loginFabs{position:static;max-width:none;}
+.login-top-bar{
+  position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 14px);z-index:9999;
+  display:flex;align-items:center;gap:10px;
+}
 .app-refresh-btn{
-  position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:9999;
-  width:46px;height:46px;border-radius:50%;border:none;background:#2563eb;color:#fff;
+  width:46px;height:46px;border-radius:50%;overflow:hidden;border:none;background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff8ee;
   font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;
   display:flex;align-items:center;justify-content:center;padding:0;
 }
-.app-refresh-btn:active{ transform:translateX(-50%) scale(0.92); }
+.app-refresh-btn:active{ transform:scale(0.92); }
 .app-refresh-btn.is-spinning{ animation: appRefreshSpin_ .7s linear infinite; }
-@keyframes appRefreshSpin_{ from{ transform:translateX(-50%) rotate(0deg); } to{ transform:translateX(-50%) rotate(360deg); } }
+@keyframes appRefreshSpin_{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+.login-radio-btn{
+  position:relative;width:56px;height:56px;border-radius:50%;overflow:hidden;
+  background:#fff;border:1px solid var(--panel-line);color:#333;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+  box-shadow:0 2px 10px rgba(0,0,0,.28);
+  transition:transform .15s ease, box-shadow .15s ease, color .15s ease;
+}
+.login-radio-btn:hover{ transform:scale(1.06); }
+.login-radio-btn:active{ transform:scale(.95); }
+.login-radio-btn .radio-icon-stop{ display:none; }
+.login-radio-btn.is-playing{ color:var(--steel); animation: radioPulse_ 1.4s ease-in-out infinite; }
+.login-radio-btn.is-playing .radio-icon-play{ display:none; }
+.login-radio-btn.is-playing .radio-icon-stop{ display:block; }
+@keyframes radioPulse_{ 0%,100%{ box-shadow:0 2px 10px rgba(0,0,0,.28); } 50%{ box-shadow:0 2px 16px rgba(226,98,31,.55); } }
   .login-fabs-col{
     position:fixed;top:18px;z-index:9999;
     display:flex;flex-direction:column;align-items:center;gap:10px;
@@ -1170,7 +1187,13 @@
 <!-- زرار تحديث ثابت في الشاشة، ظاهر دايمًا (صفحة الدخول والرئيسية):
      بيعمل ريفريش كامل للتطبيق بأحدث نسخة (index.html + ملفات JSON) —
      مفيد بعد أي push جديد لـ APP.xlsx عشان الأرقام تتحدث فورًا. -->
-<button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات">🔄</button>
+<div id="loginTopBar" class="login-top-bar">
+<button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>
+<button type="button" id="loginRadioBtn" class="login-radio-btn" aria-label="إذاعة القرآن الكريم">
+  <svg class="radio-icon-play" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8 4 3"></path><path d="M17 8 20 3"></path><rect x="3" y="8" width="18" height="12" rx="2.5"></rect><circle cx="8" cy="14" r="2.3"></circle><line x1="13.5" y1="12" x2="18" y2="12"></line><line x1="13.5" y1="16" x2="18" y2="16"></line></svg>
+  <svg class="radio-icon-stop" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+</button>
+</div>
 
 <!-- رسالة ترحيب سريعة بتظهر أول ما تسجيل الدخول ينجح (أي طريقة دخول:
      يوزر/باسورد، رقم موظف، أو بصمة) وتختفي لوحدها بعد كام ثانية. -->
@@ -3055,10 +3078,13 @@ window.safeFileName = function(str){
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
     var waBtn = document.getElementById('waFloatBtn');
     if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
+    var loginTopBar = document.getElementById('loginTopBar');
+    if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
     var loginFabs = document.getElementById('loginFabs');
     if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
     var homeFabs = document.getElementById('homeFabs');
     if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
+    if (name !== 'login' && typeof stopQuranRadio_ === 'function') stopQuranRadio_();
     if (name !== 'login') {
       var err = document.getElementById('loginError');
       if (err) err.textContent = '';
@@ -5432,6 +5458,37 @@ window.safeFileName = function(str){
     });
   }
 
+  // ---------------- زرار إذاعة القرآن الكريم (صفحة الدخول فقط) ----------------
+  // بث مباشر من holyquranradio.com، ضغطة تشغّل وضغطة تانية توقف. بيتوقف
+  // تلقائيًا لو المستخدم مشى من صفحة الدخول (بعد الدخول) عشان مايفضلش
+  // شغال في الخلفية من غير ما ينتبه.
+  var QURAN_RADIO_STREAM_URL_ = 'https://stream.radiojar.com/8s5u5tpdtwzuv';
+  var quranRadioAudio_ = null;
+  function stopQuranRadio_(){
+    if (quranRadioAudio_) {
+      quranRadioAudio_.pause();
+      quranRadioAudio_.src = '';
+    }
+    var btn = document.getElementById('loginRadioBtn');
+    if (btn) btn.classList.remove('is-playing');
+  }
+  var loginRadioBtn_ = document.getElementById('loginRadioBtn');
+  if (loginRadioBtn_) {
+    loginRadioBtn_.addEventListener('click', function(){
+      if (quranRadioAudio_ && !quranRadioAudio_.paused) {
+        stopQuranRadio_();
+        return;
+      }
+      if (!quranRadioAudio_) quranRadioAudio_ = new Audio();
+      quranRadioAudio_.src = QURAN_RADIO_STREAM_URL_;
+      quranRadioAudio_.play().then(function(){
+        loginRadioBtn_.classList.add('is-playing');
+      }).catch(function(){
+        stopQuranRadio_();
+      });
+    });
+  }
+
   // ---------------- شاشة "راتبي" (خاصة بالموظف اللي داخل دلوقتي بس) ----------------
   function escSalary_(s){
     var d = document.createElement('div');
@@ -5610,39 +5667,51 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
-    if (!ATTENDANCE_SCRIPT_URL) {
-      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
-      return;
+    function renderQuickStatus_(data){
+      if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
+      if (kind === 'absent') {
+        var absent = data.absent || [];
+        if (!absent.length) {
+          listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
+          return;
+        }
+        var rowsHtml = absent.map(function(name, i){
+          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(name) + '</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+      } else {
+        var late = data.late || [];
+        if (!late.length) {
+          listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
+          return;
+        }
+        var rowsHtml2 = late.map(function(it, i){
+          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td dir="ltr">' + escQuick_(it.time) + '</td><td>' + escQuick_(it.minutes) + ' د</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
+      }
     }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + encodeURIComponent(date))
-      .then(function(r){ return r.json(); })
+    function loadFromLiveSheet_(){
+      if (!ATTENDANCE_SCRIPT_URL) {
+        listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
+        return;
+      }
+      fetch(ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + encodeURIComponent(date))
+        .then(function(r){ return r.json(); })
+        .then(renderQuickStatus_)
+        .catch(function(){
+          listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
+        });
+    }
+    fetchAppJson_('attendanceStatus')
       .then(function(data){
-        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
-        if (kind === 'absent') {
-          var absent = data.absent || [];
-          if (!absent.length) {
-            listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
-            return;
-          }
-          var rowsHtml = absent.map(function(name, i){
-            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(name) + '</td></tr>';
-          }).join('');
-          listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+        if (data && data.ok && data.date === date) {
+          renderQuickStatus_(data);
         } else {
-          var late = data.late || [];
-          if (!late.length) {
-            listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
-            return;
-          }
-          var rowsHtml2 = late.map(function(it, i){
-            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td dir="ltr">' + escQuick_(it.time) + '</td><td>' + escQuick_(it.minutes) + ' د</td></tr>';
-          }).join('');
-          listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
+          loadFromLiveSheet_();
         }
       })
-      .catch(function(){
-        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
-      });
+      .catch(loadFromLiveSheet_);
   }
   function openQuickStatusFromLoginFlow_(kind){
     loadQuickStatus_(kind);
@@ -5939,6 +6008,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginBellBtn', label: 'جرس طلبات الاعتماد 🔔' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginAbsentBtn', label: 'الغياب النهارده 🚫' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLateBtn', label: 'التأخير النهارده ⏰' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginRadioBtn', label: 'إذاعة القرآن الكريم 📻' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksBtn', label: 'الشيكات المستحقة 🧾' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginPartiesBtn', label: 'أرصدة العملاء والموردين 🤝' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginOverdueBtn', label: 'اجمالي المتأخرات 📉' },
