@@ -8764,7 +8764,8 @@ window.safeFileName = function(str){
     var qp = new URLSearchParams(location.search);
     if (qp.get('openChecksReport') === '1') {
       var runIt = function(){
-        if (typeof loadChecksDueStatus_ === 'function') { loadChecksDueStatus_(); }
+        var btn = document.getElementById('loginChecksBtn');
+        if (btn) { btn.click(); }
         else { setTimeout(runIt, 300); }
       };
       if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', runIt); }
