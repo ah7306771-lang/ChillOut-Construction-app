@@ -17,11 +17,11 @@
   },
   {
     "client": "فالتور",
-    "lastBuyPrice": 39450,
-    "lastSellPrice": 39950,
-    "saleOrderNo": 37,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم",
-    "lastInvoiceDate": "16/08/2026"
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 46,
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/09/2026"
   },
   {
     "client": "ويكادي",
