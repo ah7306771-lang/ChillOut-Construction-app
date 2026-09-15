@@ -1603,6 +1603,7 @@
       <select id="salarySendSelect"></select>
     </div>
     <button type="button" class="btn btn-secondary" id="salarySendBtn" style="width:100%;">📢 إرسال إشعار الراتب</button>
+    <button type="button" class="btn btn-secondary" id="salarySendAllBtn" style="width:100%;margin-top:8px;">📢 إرسال إشعار الراتب لكل الموظفين</button>
   </div>
 </div>
 
@@ -6407,6 +6408,46 @@ window.safeFileName = function(str){
       salarySendBtn.disabled = false;
       if (statusEl) { statusEl.textContent = 'تعذّر الاتصال بالسيرفر.'; statusEl.className = 'status-msg err'; }
     });
+  });
+
+  // زرار عام: يبعت إشعار الراتب لكل الموظفين المسجلين دفعة واحدة (نفس
+  // آلية زرار "إرسال إشعار الراتب" لموظف واحد، بس بيلف على القايمة كلها
+  // واحد ورا التاني عشان ميزودش السيرفر طلبات مرة واحدة).
+  var salarySendAllBtn = document.getElementById('salarySendAllBtn');
+  if (salarySendAllBtn) salarySendAllBtn.addEventListener('click', function(){
+    var statusEl = document.getElementById('salarySendStatus');
+    var names = (ATTENDANCE_EMPLOYEES || []).slice();
+    if (!names.length) { if (statusEl) { statusEl.textContent = 'مفيش موظفين مسجلين لسه.'; statusEl.className = 'status-msg err'; } return; }
+    salarySendAllBtn.disabled = true;
+    if (salarySendBtn) salarySendBtn.disabled = true;
+    var okCount = 0, failCount = 0, failNames = [];
+    function sendNext(i){
+      if (i >= names.length) {
+        salarySendAllBtn.disabled = false;
+        if (salarySendBtn) salarySendBtn.disabled = false;
+        if (statusEl) {
+          var msg = 'تم الإرسال لـ ' + okCount + ' من ' + names.length + ' موظف';
+          if (failCount) msg += ' (فشل: ' + failNames.join('، ') + ')';
+          statusEl.textContent = msg + (okCount ? ' ✓' : '');
+          statusEl.className = 'status-msg' + (failCount && !okCount ? ' err' : '');
+        }
+        if (okCount) showSavedToast_();
+        return;
+      }
+      var name = names[i];
+      if (statusEl) { statusEl.textContent = 'جاري الإرسال... (' + (i + 1) + '/' + names.length + ') ' + name; statusEl.className = 'status-msg'; }
+      var url = ATTENDANCE_SCRIPT_URL + '?action=salarySend'
+        + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+        + '&name=' + encodeURIComponent(name);
+      fetch(url).then(function(r){ return r.json(); }).then(function(data){
+        if (data && data.ok) { okCount++; } else { failCount++; failNames.push(name); }
+      }).catch(function(){
+        failCount++; failNames.push(name);
+      }).then(function(){
+        sendNext(i + 1);
+      });
+    }
+    sendNext(0);
   });
 
   document.getElementById('openAppBtn').addEventListener('click', function(){
