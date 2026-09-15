@@ -2,14 +2,14 @@
   "rows": [
     {
       "client": "ويكادي",
-      "count": 3,
-      "amount": 4273191,
+      "count": 2,
+      "amount": 2823191,
       "avgDelay": 7
     }
   ],
   "grandTotal": {
-    "count": 3,
-    "amount": 4273191,
+    "count": 2,
+    "amount": 2823191,
     "avgDelay": 7
   }
 }
