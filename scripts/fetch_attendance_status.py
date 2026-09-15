@@ -51,6 +51,26 @@ def main():
         print('dashboardData response not ok, skipping write:', dash, file=sys.stderr)
         sys.exit(0)
 
+    # كل طلبات الإذن/المأمورية/الإجازة (كل التواريخ) عشان نحسب عدد اللي
+    # لسه محتاج اعتماد — البادچ ده بيبان في صفحة الدخول والصفحة الرئيسية
+    # وبيتحدث كل شوية، فتحويله لملف ثابت بيلغي الحاجة لضرب السيرفر كل
+    # مرة.
+    requests_url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport'
+    try:
+        reqs = fetch_json(requests_url)
+    except Exception as e:
+        print('ERROR fetching requestsReport:', e, file=sys.stderr)
+        sys.exit(0)
+
+    if not isinstance(reqs, dict) or not reqs.get('ok'):
+        print('requestsReport response not ok, skipping write:', reqs, file=sys.stderr)
+        sys.exit(0)
+
+    pending_count = sum(
+        1 for r in reqs.get('rows', [])
+        if r.get('status') not in ('موافق', 'مرفوض')
+    )
+
     out = {
         'ok': True,
         'date': date_str,
@@ -59,7 +79,8 @@ def main():
         'late': quick.get('late', []),
         'dashboardRows': dash.get('rows', []),
         'dashboardRequestRows': dash.get('requestRows', []),
-        'dashboardOfficialOut': dash.get('officialOut', {})
+        'dashboardOfficialOut': dash.get('officialOut', {}),
+        'pendingRequestsCount': pending_count
     }
 
     with open('attendanceStatus.json', 'w', encoding='utf-8') as f:
