@@ -71,6 +71,22 @@ def main():
         if r.get('status') not in ('موافق', 'مرفوض')
     )
 
+    # قايمة الموظفين (الأسماء + الأرقام السرية + الأيقونات المخفية لكل
+    # واحد + تاريخ الميلاد) — بتتحمل من السيرفر أول ما التطبيق يفتح وده
+    # كان بطيء أحياناً. البيانات دي أصلاً عمومية وغير محمية (نفس اللي
+    # بيوصله أي حد بيفتح رابط السكريبت مباشرة)، فتخزينها في ملف ثابت مش
+    # بيكشف حاجة جديدة.
+    employees_url = ATTENDANCE_SCRIPT_URL + '?action=employeesList'
+    try:
+        emps = fetch_json(employees_url)
+    except Exception as e:
+        print('ERROR fetching employeesList:', e, file=sys.stderr)
+        sys.exit(0)
+
+    if not isinstance(emps, dict) or not emps.get('ok'):
+        print('employeesList response not ok, skipping write:', emps, file=sys.stderr)
+        sys.exit(0)
+
     out = {
         'ok': True,
         'date': date_str,
@@ -80,7 +96,8 @@ def main():
         'dashboardRows': dash.get('rows', []),
         'dashboardRequestRows': dash.get('requestRows', []),
         'dashboardOfficialOut': dash.get('officialOut', {}),
-        'pendingRequestsCount': pending_count
+        'pendingRequestsCount': pending_count,
+        'employees': emps.get('employees', [])
     }
 
     with open('attendanceStatus.json', 'w', encoding='utf-8') as f:
