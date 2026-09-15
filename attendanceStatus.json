@@ -1,0 +1,208 @@
+{
+  "ok": true,
+  "date": "2026-09-15",
+  "updatedAt": "2026-09-15T12:03:09.475596+00:00",
+  "absent": [],
+  "late": [
+    {
+      "name": "أحمد مفرح",
+      "time": "10:28:26",
+      "official": "08:30",
+      "minutes": 118
+    },
+    {
+      "name": "محمود كارم",
+      "time": "10:28:35",
+      "official": "10:00",
+      "minutes": 28
+    },
+    {
+      "name": "مني محمد",
+      "time": "10:25:09",
+      "official": "10:00",
+      "minutes": 25
+    },
+    {
+      "name": "شهد خالد",
+      "time": "10:28:41",
+      "official": "09:00",
+      "minutes": 88
+    },
+    {
+      "name": "محمود رجب",
+      "time": "10:29:08",
+      "official": "08:30",
+      "minutes": 119
+    },
+    {
+      "name": "صبري يحي",
+      "time": "10:29:11",
+      "official": "08:30",
+      "minutes": 119
+    }
+  ],
+  "dashboardRows": [
+    {
+      "name": "مني محمد",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:25:09",
+      "lat": "30.0080238",
+      "lng": "30.9838323",
+      "map": "https://maps.google.com/?q=30.0080238,30.9838323",
+      "device": ""
+    },
+    {
+      "name": "أحمد مفرح",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:28:26",
+      "lat": "30.0081444",
+      "lng": "30.983762",
+      "map": "https://maps.google.com/?q=30.0081444,30.983762",
+      "device": ""
+    },
+    {
+      "name": "محمود كارم",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:28:35",
+      "lat": "30.0081444",
+      "lng": "30.983762",
+      "map": "https://maps.google.com/?q=30.0081444,30.983762",
+      "device": ""
+    },
+    {
+      "name": "شهد خالد",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:28:41",
+      "lat": "30.0081444",
+      "lng": "30.983762",
+      "map": "https://maps.google.com/?q=30.0081444,30.983762",
+      "device": ""
+    },
+    {
+      "name": "محمود رجب",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:29:08",
+      "lat": "30.0081444",
+      "lng": "30.983762",
+      "map": "https://maps.google.com/?q=30.0081444,30.983762",
+      "device": ""
+    },
+    {
+      "name": "صبري يحي",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:29:11",
+      "lat": "30.0081444",
+      "lng": "30.983762",
+      "map": "https://maps.google.com/?q=30.0081444,30.983762",
+      "device": ""
+    },
+    {
+      "name": "سيد كارم",
+      "type": "حضور",
+      "date": "2026-09-15",
+      "time": "10:00:00",
+      "lat": "",
+      "lng": "",
+      "map": "",
+      "device": ""
+    },
+    {
+      "name": "سيد كارم",
+      "type": "انصراف",
+      "date": "2026-09-15",
+      "time": "17:00:00",
+      "lat": "",
+      "lng": "",
+      "map": "",
+      "device": ""
+    }
+  ],
+  "dashboardRequestRows": [
+    {
+      "id": "mu2cp7mn-h69v2k",
+      "name": "سيد كارم",
+      "type": "مأمورية",
+      "date": "2026-09-15",
+      "from": "10:00:00",
+      "to": "17:00:00",
+      "reason": "مأمورية التجمع",
+      "status": "موافق",
+      "submittedAt": "2026-09-15T07:29:05.000Z",
+      "leaveFrom": "",
+      "leaveTo": ""
+    },
+    {
+      "id": "mu2cqfuo-ok1oa8",
+      "name": "chill",
+      "type": "إجازة",
+      "date": "2026-09-15",
+      "from": "",
+      "to": "",
+      "reason": "",
+      "status": "موافق",
+      "submittedAt": "2026-09-15T07:30:03.000Z",
+      "leaveFrom": "2026-09-15",
+      "leaveTo": "2026-09-17"
+    }
+  ],
+  "dashboardOfficialOut": {
+    "أحمد مفرح": "04:00",
+    "محمود كارم": "17:00",
+    "مني محمد": "17:00",
+    "شهد خالد": "17:00",
+    "سيد كارم": "17:00",
+    "محمود رجب": "04:00",
+    "صبري يحي": "04:00"
+  },
+  "pendingRequestsCount": 0,
+  "employees": [
+    {
+      "name": "أحمد مفرح",
+      "pass": "11",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "محمود كارم",
+      "pass": "12",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "مني محمد",
+      "pass": "13",
+      "hiddenIcons": "loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "شهد خالد",
+      "pass": "14",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "سيد كارم",
+      "pass": "15",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "محمود رجب",
+      "pass": "16",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "صبري يحي",
+      "pass": "17",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    }
+  ]
+}

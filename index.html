@@ -1024,7 +1024,7 @@
 .app-refresh-btn.is-spinning{ animation: appRefreshSpin_ .7s linear infinite; }
 @keyframes appRefreshSpin_{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
 .login-radio-btn{
-  position:relative;width:56px;height:56px;border-radius:50%;overflow:hidden;
+  position:fixed;right:18px;bottom:18px;z-index:9999;width:56px;height:56px;border-radius:50%;overflow:hidden;
   background:#fff;border:1px solid var(--panel-line);color:#333;
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
   box-shadow:0 2px 10px rgba(0,0,0,.28);
@@ -1189,11 +1189,11 @@
      مفيد بعد أي push جديد لـ APP.xlsx عشان الأرقام تتحدث فورًا. -->
 <div id="loginTopBar" class="login-top-bar">
 <button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>
+</div>
 <button type="button" id="loginRadioBtn" class="login-radio-btn" aria-label="إذاعة القرآن الكريم">
   <svg class="radio-icon-play" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8 4 3"></path><path d="M17 8 20 3"></path><rect x="3" y="8" width="18" height="12" rx="2.5"></rect><circle cx="8" cy="14" r="2.3"></circle><line x1="13.5" y1="12" x2="18" y2="12"></line><line x1="13.5" y1="16" x2="18" y2="16"></line></svg>
   <svg class="radio-icon-stop" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
 </button>
-</div>
 
 <!-- رسالة ترحيب سريعة بتظهر أول ما تسجيل الدخول ينجح (أي طريقة دخول:
      يوزر/باسورد، رقم موظف، أو بصمة) وتختفي لوحدها بعد كام ثانية. -->
@@ -3080,6 +3080,8 @@ window.safeFileName = function(str){
     if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
     var loginTopBar = document.getElementById('loginTopBar');
     if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
+    var loginRadioBtn = document.getElementById('loginRadioBtn');
+    if (loginRadioBtn) loginRadioBtn.style.display = (name === 'login') ? 'flex' : 'none';
     var loginFabs = document.getElementById('loginFabs');
     if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
     var homeFabs = document.getElementById('homeFabs');
@@ -3834,12 +3836,8 @@ window.safeFileName = function(str){
     var bannerCount = document.getElementById('dashPendingCount');
     var bellBadge = document.getElementById('loginBellBadge');
     if ((!badge && !banner && !bellBadge) || !ATTENDANCE_SCRIPT_URL) return;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      var rows = (data && data.rows) || [];
-      var pending = rows.filter(function(r){
-        return r.status !== 'موافق' && r.status !== 'مرفوض';
-      }).length;
+
+    function applyPendingCount_(pending){
       if (badge) {
         if (pending > 0) {
           badge.textContent = pending > 99 ? '99+' : String(pending);
@@ -3867,7 +3865,32 @@ window.safeFileName = function(str){
           bellBadge.style.display = 'none';
         }
       }
-    }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+    }
+
+    function loadFromLiveSheet_(){
+      var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
+      fetch(url).then(function(r){ return r.json(); }).then(function(data){
+        var rows = (data && data.rows) || [];
+        var pending = rows.filter(function(r){
+          return r.status !== 'موافق' && r.status !== 'مرفوض';
+        }).length;
+        applyPendingCount_(pending);
+      }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+    }
+
+    // الرقم ده كان بيتحدث كل نص دقيقة بضرب جوجل شيتس مباشرة (بطيء) —
+    // دلوقتي بيجرب الملف الجاهز اللي بيتحدث كل 10 دقايق تلقائي الأول،
+    // وبيظهر فوراً من غيره أي انتظار. لو الملف مش متاح لأي سبب، يرجع
+    // للطريقة القديمة.
+    fetchAppJson_('attendanceStatus')
+      .then(function(data){
+        if (data && data.ok && typeof data.pendingRequestsCount === 'number') {
+          applyPendingCount_(data.pendingRequestsCount);
+        } else {
+          loadFromLiveSheet_();
+        }
+      })
+      .catch(loadFromLiveSheet_);
   }
 
   // معرّف فريد بسيط لكل طلب — بيتبعت مع الطلب ويترجع في requestsReport،
@@ -4222,30 +4245,52 @@ window.safeFileName = function(str){
 
   function reloadEmployeesFromServer_(onDone){
     if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(data){
-      if (data && data.ok && data.employees && data.employees.length) {
-        var names = [];
-        var pw = {};
-        var hidden = {};
-        var birthdays = {};
-        data.employees.forEach(function(emp){
-          if (!emp || !emp.name || !emp.pass) return;
-          names.push(emp.name);
-          pw[emp.name] = emp.pass;
-          hidden[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
-          birthdays[emp.name] = emp.birthday || '';
-        });
-        if (names.length) {
-          ATTENDANCE_EMPLOYEES = names;
-          ATTENDANCE_PASSWORDS = pw;
-          EMPLOYEE_HIDDEN_ICONS_ = hidden;
-          EMPLOYEE_BIRTHDAYS_ = birthdays;
-          applyIconVisibility_();
-        }
+
+    function applyEmployeesList_(list){
+      var names = [];
+      var pw = {};
+      var hidden = {};
+      var birthdays = {};
+      list.forEach(function(emp){
+        if (!emp || !emp.name || !emp.pass) return;
+        names.push(emp.name);
+        pw[emp.name] = emp.pass;
+        hidden[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
+        birthdays[emp.name] = emp.birthday || '';
+      });
+      if (names.length) {
+        ATTENDANCE_EMPLOYEES = names;
+        ATTENDANCE_PASSWORDS = pw;
+        EMPLOYEE_HIDDEN_ICONS_ = hidden;
+        EMPLOYEE_BIRTHDAYS_ = birthdays;
+        applyIconVisibility_();
       }
-    }).catch(function(){ /* أوفلاين: نفضل شغالين بالقايمة الافتراضية فوق */ }).then(function(){
-      if (onDone) onDone();
-    });
+      return names.length > 0;
+    }
+
+    function loadFromLiveSheet_(){
+      fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(data){
+        if (data && data.ok && data.employees && data.employees.length) {
+          applyEmployeesList_(data.employees);
+        }
+      }).catch(function(){ /* أوفلاين: نفضل شغالين بالقايمة الافتراضية فوق */ }).then(function(){
+        if (onDone) onDone();
+      });
+    }
+
+    // قايمة الموظفين دي كانت بتتحمّل من جوجل شيتس مباشرة كل مرة التطبيق
+    // يفتح (بطيء أحياناً) — دلوقتي بتجرب الملف الجاهز اللي بيتحدث كل 10
+    // دقايق تلقائي الأول، وبيظهر فوراً من غير انتظار؛ ولو مش متاح أو
+    // فاضي، ترجع للطريقة القديمة (نداء مباشر لجوجل شيتس).
+    fetchAppJson_('attendanceStatus')
+      .then(function(data){
+        if (data && data.ok && data.employees && data.employees.length && applyEmployeesList_(data.employees)) {
+          if (onDone) onDone();
+        } else {
+          loadFromLiveSheet_();
+        }
+      })
+      .catch(loadFromLiveSheet_);
   }
   reloadEmployeesFromServer_(function(){
     // بعد أول تحميل من السيرفر، نعيد رسم القايمة واللستة عشان لو حد ضاف
@@ -4424,9 +4469,6 @@ window.safeFileName = function(str){
       return;
     }
 
-    status.style.color = 'var(--ink-soft)';
-    status.textContent = 'جاري التحميل...';
-
     var dashListDate = document.getElementById('dashListDate');
     if (dashListDate) dashListDate.textContent = employee ? (employee + ' — ' + date) : ('بيانات يوم ' + date);
 
@@ -4434,43 +4476,70 @@ window.safeFileName = function(str){
     // ولا تستنى رده — عشان الرد القديم ميجيش بعد الجديد ويلخبط الشاشة.
     var requestId = ++loadAttendanceDashboard._reqId;
 
-    // بعد كام ثانية لو لسه مستني، طمّن المستخدم إن ده طبيعي (Google Apps
-    // Script بياخد وقت أطول في أول طلب بعد فترة خمول) بدل ما يفتكر إن
-    // الشاشة "علّقت".
-    var slowTimer = setTimeout(function(){
-      if (requestId === loadAttendanceDashboard._reqId) {
-        status.textContent = 'لسه بيحمّل... أول اتصال بجوجل شيتس بياخد شوية وقت، استنى شوية 🙏';
-      }
-    }, 6000);
+    function loadFromLiveSheet_(){
+      status.style.color = 'var(--ink-soft)';
+      status.textContent = 'جاري التحميل...';
 
-    // مهلة قصوى: لو عدت من غير رد (شبكة ضعيفة أو مشكلة في السيرفر)، وقف
-    // الانتظار وورّي رسالة واضحة فيها زرار تحديث، بدل "جاري التحميل"
-    // يفضل شغال لحد الأبد.
-    var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var abortTimer = controller ? setTimeout(function(){ controller.abort(); }, 30000) : null;
+      // بعد كام ثانية لو لسه مستني، طمّن المستخدم إن ده طبيعي (Google Apps
+      // Script بياخد وقت أطول في أول طلب بعد فترة خمول) بدل ما يفتكر إن
+      // الشاشة "علّقت".
+      var slowTimer = setTimeout(function(){
+        if (requestId === loadAttendanceDashboard._reqId) {
+          status.textContent = 'لسه بيحمّل... أول اتصال بجوجل شيتس بياخد شوية وقت، استنى شوية 🙏';
+        }
+      }, 6000);
 
-    // نداء واحد بس بيرجع الحضور/الانصراف وطلبات الإذن/المأمورية سوا،
-    // بدل نداءين متوازيين لنفس السكريبت (اللي كان بيتصادفوا وياخدوا وقت
-    // أطول بكتير، وده اللي كان بيسبب "جاري التحميل" الطويل).
-    var url = ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date);
-    fetch(url, controller ? { signal: controller.signal } : undefined)
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if (requestId !== loadAttendanceDashboard._reqId) return;
-        clearTimeout(slowTimer);
-        if (abortTimer) clearTimeout(abortTimer);
-        status.textContent = '';
-        updateDashData((data && data.rows) || [], (data && data.requestRows) || [], employee, date, (data && data.officialOut) || {});
-      }).catch(function(err){
-        if (requestId !== loadAttendanceDashboard._reqId) return;
-        clearTimeout(slowTimer);
-        if (abortTimer) clearTimeout(abortTimer);
-        status.style.color = '#b3261e';
-        status.textContent = (err && err.name === 'AbortError')
-          ? 'الاتصال بجوجل شيتس بطيء جداً دلوقتي — دوس "🔄 تحديث" وحاول تاني.'
-          : 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
-        updateDashData([], [], employee, date);
-      });
+      // مهلة قصوى: لو عدت من غير رد (شبكة ضعيفة أو مشكلة في السيرفر)، وقف
+      // الانتظار وورّي رسالة واضحة فيها زرار تحديث، بدل "جاري التحميل"
+      // يفضل شغال لحد الأبد.
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var abortTimer = controller ? setTimeout(function(){ controller.abort(); }, 30000) : null;
+
+      // نداء واحد بس بيرجع الحضور/الانصراف وطلبات الإذن/المأمورية سوا،
+      // بدل نداءين متوازيين لنفس السكريبت (اللي كان بيتصادفوا وياخدوا وقت
+      // أطول بكتير، وده اللي كان بيسبب "جاري التحميل" الطويل).
+      var url = ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date);
+      fetch(url, controller ? { signal: controller.signal } : undefined)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (requestId !== loadAttendanceDashboard._reqId) return;
+          clearTimeout(slowTimer);
+          if (abortTimer) clearTimeout(abortTimer);
+          status.textContent = '';
+          updateDashData((data && data.rows) || [], (data && data.requestRows) || [], employee, date, (data && data.officialOut) || {});
+        }).catch(function(err){
+          if (requestId !== loadAttendanceDashboard._reqId) return;
+          clearTimeout(slowTimer);
+          if (abortTimer) clearTimeout(abortTimer);
+          status.style.color = '#b3261e';
+          status.textContent = (err && err.name === 'AbortError')
+            ? 'الاتصال بجوجل شيتس بطيء جداً دلوقتي — دوس "🔄 تحديث" وحاول تاني.'
+            : 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+          updateDashData([], [], employee, date);
+        });
+    }
+
+    // لو التاريخ المطلوب هو النهاردة، جرّب أول حاجة الملف الجاهز (JSON) اللي
+    // بيتحدث كل 10 دقايق تلقائي — بيظهر فوراً من غير أي انتظار على جوجل
+    // شيتس. ولو التاريخ قديم، أو الملف مش متاح/مش محدث للنهاردة، ارجع
+    // للطريقة القديمة (نداء مباشر لجوجل شيتس).
+    if (date === attendanceTodayKey()) {
+      status.style.color = 'var(--ink-soft)';
+      status.textContent = 'جاري التحميل...';
+      fetchAppJson_('attendanceStatus')
+        .then(function(data){
+          if (requestId !== loadAttendanceDashboard._reqId) return;
+          if (data && data.ok && data.date === date) {
+            status.textContent = '';
+            updateDashData(data.dashboardRows || [], data.dashboardRequestRows || [], employee, date, data.dashboardOfficialOut || {});
+          } else {
+            loadFromLiveSheet_();
+          }
+        })
+        .catch(function(){ loadFromLiveSheet_(); });
+    } else {
+      loadFromLiveSheet_();
+    }
   }
   loadAttendanceDashboard._reqId = 0;
 

@@ -13,27 +13,91 @@ def cairo_today_str():
     return now.strftime('%Y-%m-%d')
 
 
+def fetch_json(url):
+    # جوجل بيرفض بعض الطلبات اللي من غير User-Agent شبه المتصفح
+    # وبيرجع 404 بدل ما ينفذ الطلب، فبنبعت هيدرز شبه المتصفح.
+    req = urllib.request.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*'
+    })
+    with urllib.request.urlopen(req, timeout=45) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
 def main():
     date_str = cairo_today_str()
-    url = ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + date_str
+
+    quick_url = ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + date_str
+    dash_url = ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + date_str
+
     try:
-        with urllib.request.urlopen(url, timeout=45) as resp:
-            raw = resp.read().decode('utf-8')
-        data = json.loads(raw)
+        quick = fetch_json(quick_url)
     except Exception as e:
-        print('ERROR fetching attendance status:', e, file=sys.stderr)
+        print('ERROR fetching attendanceQuickStatus:', e, file=sys.stderr)
         sys.exit(0)  # لا تفشل الـ workflow، سيبها تحاول تاني بعد 10 دقايق
 
-    if not isinstance(data, dict) or not data.get('ok'):
-        print('Response not ok, skipping write:', data, file=sys.stderr)
+    if not isinstance(quick, dict) or not quick.get('ok'):
+        print('attendanceQuickStatus response not ok, skipping write:', quick, file=sys.stderr)
+        sys.exit(0)
+
+    try:
+        dash = fetch_json(dash_url)
+    except Exception as e:
+        print('ERROR fetching dashboardData:', e, file=sys.stderr)
+        sys.exit(0)
+
+    if not isinstance(dash, dict) or not dash.get('ok'):
+        print('dashboardData response not ok, skipping write:', dash, file=sys.stderr)
+        sys.exit(0)
+
+    # كل طلبات الإذن/المأمورية/الإجازة (كل التواريخ) عشان نحسب عدد اللي
+    # لسه محتاج اعتماد — البادچ ده بيبان في صفحة الدخول والصفحة الرئيسية
+    # وبيتحدث كل شوية، فتحويله لملف ثابت بيلغي الحاجة لضرب السيرفر كل
+    # مرة.
+    requests_url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport'
+    try:
+        reqs = fetch_json(requests_url)
+    except Exception as e:
+        print('ERROR fetching requestsReport:', e, file=sys.stderr)
+        sys.exit(0)
+
+    if not isinstance(reqs, dict) or not reqs.get('ok'):
+        print('requestsReport response not ok, skipping write:', reqs, file=sys.stderr)
+        sys.exit(0)
+
+    pending_count = sum(
+        1 for r in reqs.get('rows', [])
+        if r.get('status') not in ('موافق', 'مرفوض')
+    )
+
+    # قايمة الموظفين (الأسماء + الأرقام السرية + الأيقونات المخفية لكل
+    # واحد + تاريخ الميلاد) — بتتحمل من السيرفر أول ما التطبيق يفتح وده
+    # كان بطيء أحياناً. البيانات دي أصلاً عمومية وغير محمية (نفس اللي
+    # بيوصله أي حد بيفتح رابط السكريبت مباشرة)، فتخزينها في ملف ثابت مش
+    # بيكشف حاجة جديدة.
+    employees_url = ATTENDANCE_SCRIPT_URL + '?action=employeesList'
+    try:
+        emps = fetch_json(employees_url)
+    except Exception as e:
+        print('ERROR fetching employeesList:', e, file=sys.stderr)
+        sys.exit(0)
+
+    if not isinstance(emps, dict) or not emps.get('ok'):
+        print('employeesList response not ok, skipping write:', emps, file=sys.stderr)
         sys.exit(0)
 
     out = {
         'ok': True,
         'date': date_str,
         'updatedAt': datetime.now(timezone.utc).isoformat(),
-        'absent': data.get('absent', []),
-        'late': data.get('late', [])
+        'absent': quick.get('absent', []),
+        'late': quick.get('late', []),
+        'dashboardRows': dash.get('rows', []),
+        'dashboardRequestRows': dash.get('requestRows', []),
+        'dashboardOfficialOut': dash.get('officialOut', {}),
+        'pendingRequestsCount': pending_count,
+        'employees': emps.get('employees', [])
     }
 
     with open('attendanceStatus.json', 'w', encoding='utf-8') as f:
