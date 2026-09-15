@@ -3836,12 +3836,8 @@ window.safeFileName = function(str){
     var bannerCount = document.getElementById('dashPendingCount');
     var bellBadge = document.getElementById('loginBellBadge');
     if ((!badge && !banner && !bellBadge) || !ATTENDANCE_SCRIPT_URL) return;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      var rows = (data && data.rows) || [];
-      var pending = rows.filter(function(r){
-        return r.status !== 'موافق' && r.status !== 'مرفوض';
-      }).length;
+
+    function applyPendingCount_(pending){
       if (badge) {
         if (pending > 0) {
           badge.textContent = pending > 99 ? '99+' : String(pending);
@@ -3869,7 +3865,32 @@ window.safeFileName = function(str){
           bellBadge.style.display = 'none';
         }
       }
-    }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+    }
+
+    function loadFromLiveSheet_(){
+      var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
+      fetch(url).then(function(r){ return r.json(); }).then(function(data){
+        var rows = (data && data.rows) || [];
+        var pending = rows.filter(function(r){
+          return r.status !== 'موافق' && r.status !== 'مرفوض';
+        }).length;
+        applyPendingCount_(pending);
+      }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
+    }
+
+    // الرقم ده كان بيتحدث كل نص دقيقة بضرب جوجل شيتس مباشرة (بطيء) —
+    // دلوقتي بيجرب الملف الجاهز اللي بيتحدث كل 10 دقايق تلقائي الأول،
+    // وبيظهر فوراً من غيره أي انتظار. لو الملف مش متاح لأي سبب، يرجع
+    // للطريقة القديمة.
+    fetchAppJson_('attendanceStatus')
+      .then(function(data){
+        if (data && data.ok && typeof data.pendingRequestsCount === 'number') {
+          applyPendingCount_(data.pendingRequestsCount);
+        } else {
+          loadFromLiveSheet_();
+        }
+      })
+      .catch(loadFromLiveSheet_);
   }
 
   // معرّف فريد بسيط لكل طلب — بيتبعت مع الطلب ويترجع في requestsReport،
