@@ -22,29 +22,44 @@ def fetch_json(url):
         'Accept': 'application/json, text/plain, */*'
     })
     with urllib.request.urlopen(req, timeout=45) as resp:
-        return resp.read().decode('utf-8')
+        return json.loads(resp.read().decode('utf-8'))
 
 
 def main():
     date_str = cairo_today_str()
-    url = ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + date_str
+
+    quick_url = ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + date_str
+    dash_url = ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + date_str
+
     try:
-        raw = fetch_json(url)
-        data = json.loads(raw)
+        quick = fetch_json(quick_url)
     except Exception as e:
-        print('ERROR fetching attendance status:', e, file=sys.stderr)
+        print('ERROR fetching attendanceQuickStatus:', e, file=sys.stderr)
         sys.exit(0)  # لا تفشل الـ workflow، سيبها تحاول تاني بعد 10 دقايق
 
-    if not isinstance(data, dict) or not data.get('ok'):
-        print('Response not ok, skipping write:', data, file=sys.stderr)
+    if not isinstance(quick, dict) or not quick.get('ok'):
+        print('attendanceQuickStatus response not ok, skipping write:', quick, file=sys.stderr)
+        sys.exit(0)
+
+    try:
+        dash = fetch_json(dash_url)
+    except Exception as e:
+        print('ERROR fetching dashboardData:', e, file=sys.stderr)
+        sys.exit(0)
+
+    if not isinstance(dash, dict) or not dash.get('ok'):
+        print('dashboardData response not ok, skipping write:', dash, file=sys.stderr)
         sys.exit(0)
 
     out = {
         'ok': True,
         'date': date_str,
         'updatedAt': datetime.now(timezone.utc).isoformat(),
-        'absent': data.get('absent', []),
-        'late': data.get('late', [])
+        'absent': quick.get('absent', []),
+        'late': quick.get('late', []),
+        'dashboardRows': dash.get('rows', []),
+        'dashboardRequestRows': dash.get('requestRows', []),
+        'dashboardOfficialOut': dash.get('officialOut', {})
     }
 
     with open('attendanceStatus.json', 'w', encoding='utf-8') as f:
