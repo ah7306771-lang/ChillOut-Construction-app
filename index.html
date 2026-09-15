@@ -8758,13 +8758,23 @@ window.safeFileName = function(str){
 })();
 </script>
 <script>
-// لو المستخدم داس على إشعار الشيكات، يفتح تقرير الشيكات المستحقة تلقائي (زي زرار 🧾)
+// لو المستخدم داس على إشعار (الشيكات/الراتب/طلب جديد محتاج اعتماد)، يفتح
+// نفس الشاشة اللي كان هيفتحها لو دوس على الزرار العادي بتاعها يدويًا
 (function(){
   try {
     var qp = new URLSearchParams(location.search);
-    if (qp.get('openChecksReport') === '1') {
+    var paramBtnMap = {
+      openChecksReport: 'loginChecksBtn',
+      openMySalary: 'openMySalaryTileBtn',
+      openPendingRequests: 'loginBellBtn'
+    };
+    var btnId = null;
+    for (var key in paramBtnMap) {
+      if (qp.get(key) === '1') { btnId = paramBtnMap[key]; break; }
+    }
+    if (btnId) {
       var runIt = function(){
-        var btn = document.getElementById('loginChecksBtn');
+        var btn = document.getElementById(btnId);
         if (btn) { btn.click(); }
         else { setTimeout(runIt, 300); }
       };
