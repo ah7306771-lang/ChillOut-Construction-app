@@ -1011,6 +1011,15 @@
      فاضي. #loginFabs نفسه بقى مجرد حاوية غير متمركزة، والتمركز بقى على
      المجموعتين الفرعيتين. */
   #loginFabs{position:static;max-width:none;}
+.app-refresh-btn{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:9999;
+  width:46px;height:46px;border-radius:50%;border:none;background:#2563eb;color:#fff;
+  font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
+.app-refresh-btn:active{ transform:translateX(-50%) scale(0.92); }
+.app-refresh-btn.is-spinning{ animation: appRefreshSpin_ .7s linear infinite; }
+@keyframes appRefreshSpin_{ from{ transform:translateX(-50%) rotate(0deg); } to{ transform:translateX(-50%) rotate(360deg); } }
   .login-fabs-col{
     position:fixed;top:18px;z-index:9999;
     display:flex;flex-direction:column;align-items:center;gap:10px;
@@ -1157,6 +1166,11 @@
 <div class="login-fabs" id="homeFabs" style="display:none;">
   <button type="button" id="homeSettingsBtn" class="login-fab-btn" aria-label="الإعدادات">⚙️</button>
 </div>
+
+<!-- زرار تحديث ثابت في الشاشة، ظاهر دايمًا (صفحة الدخول والرئيسية):
+     بيعمل ريفريش كامل للتطبيق بأحدث نسخة (index.html + ملفات JSON) —
+     مفيد بعد أي push جديد لـ APP.xlsx عشان الأرقام تتحدث فورًا. -->
+<button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات">🔄</button>
 
 <!-- رسالة ترحيب سريعة بتظهر أول ما تسجيل الدخول ينجح (أي طريقة دخول:
      يوزر/باسورد، رقم موظف، أو بصمة) وتختفي لوحدها بعد كام ثانية. -->
@@ -4852,13 +4866,54 @@ window.safeFileName = function(str){
   // بادچ أحمر فوق أيقونة "🧾" في صفحة الدخول: عدد الشيكات اللي باقي على
   // استحقاقها يومين أو أقل (أو فات استحقاقها بالفعل) — طالما صفها لسه
   // موجود في شيت الشيكات. بيتحدث أول ما التطبيق يفتح وكل دقيقة بعد كده.
+  // مصدر بيانات الشيكات/العملاء/المتأخرات/الأسعار بقى ملفات JSON ثابتة
+  // جنب index.html على GitHub Pages نفسه (بدل Apps Script البطيء) —
+  // أسرع بكتير ومفيش تعذر اتصال، وبتتحدث تلقائي أول ما يتعمل push
+  // لـ APP.xlsx (الأتمتة بتنشئها من جديد).
+  function fetchAppJson_(name){
+    return fetch(name + '.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){ return r.json(); });
+  }
+  function parseDdMmYyyy_(s){
+    if (!s) return null;
+    var p = String(s).split('/');
+    if (p.length !== 3) return null;
+    var d = new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function daysRemaining_(dueDateStr){
+    var due = parseDdMmYyyy_(dueDateStr);
+    if (!due) return 999999;
+    var today = new Date();
+    today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return Math.round((due - today) / 86400000);
+  }
+  function buildChecksAllRows_(checks){
+    return (checks || []).map(function(it){
+      return {
+        client: it.client, value: it.value, dueDate: it.dueDate,
+        bank: it.bank, type: it.type, notes: it.notes,
+        daysRemaining: daysRemaining_(it.dueDate)
+      };
+    }).sort(function(a,b){ return a.daysRemaining - b.daysRemaining; });
+  }
+  function buildPartiesAllRows_(parties){
+    var out = [];
+    ((parties && parties.clients) || []).forEach(function(c){
+      out.push({type:'client', name:c.name, amount: (c.debit||0) - (c.credit||0)});
+    });
+    ((parties && parties.suppliers) || []).forEach(function(s){
+      out.push({type:'supplier', name:s.name, amount: (s.debit||0) - (s.credit||0)});
+    });
+    out.sort(function(a,b){ return b.amount - a.amount; });
+    return out;
+  }
+
   function refreshChecksDueBadge_(){
     var badge = document.getElementById('loginChecksBadge');
-    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=checksDueReport')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        var count = (data && data.ok) ? (data.count || 0) : 0;
+    if (!badge) return;
+    fetchAppJson_('checks')
+      .then(function(checks){
+        var count = buildChecksAllRows_(checks).filter(function(it){ return it.daysRemaining <= 2; }).length;
         if (count > 0) {
           badge.textContent = count > 99 ? '99+' : String(count);
           badge.style.display = 'flex';
@@ -4875,11 +4930,10 @@ window.safeFileName = function(str){
   // ظاهر طول ما الرصيد لسه مش صفر في الشيت. بيتحدث كل دقيقة.
   function refreshPartiesDueBadge_(){
     var badge = document.getElementById('loginPartiesBadge');
-    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=partiesDueReport')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        var count = (data && data.ok) ? (data.count || 0) : 0;
+    if (!badge) return;
+    fetchAppJson_('parties')
+      .then(function(parties){
+        var count = buildPartiesAllRows_(parties).filter(function(it){ return it.amount > 0; }).length;
         if (count > 0) {
           badge.textContent = count > 99 ? '99+' : String(count);
           badge.style.display = 'flex';
@@ -4900,14 +4954,8 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
-    if (!ATTENDANCE_SCRIPT_URL) {
-      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
-      return;
-    }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=overdueReport')
-      .then(function(r){ return r.json(); })
+    fetchAppJson_('overdue')
       .then(function(data){
-        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
         var rows = data.rows || [];
         if (!rows.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش متأخرات دلوقتي 🎉</div>';
@@ -4915,9 +4963,9 @@ window.safeFileName = function(str){
         }
         function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('ar-EG') : escQuick_(n); }
         var rowsHtml = rows.map(function(it, i){
-          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.totalOverdue) + '</td><td>' + it.count + '</td><td>' + fmtAmt_(it.avgDelay) + '</td></tr>';
+          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.amount) + '</td><td>' + it.count + '</td><td>' + fmtAmt_(it.avgDelay) + '</td></tr>';
         }).join('');
-        var totalOverdueSum = rows.reduce(function(s, it){ return s + ((typeof it.totalOverdue === 'number') ? it.totalOverdue : 0); }, 0);
+        var totalOverdueSum = rows.reduce(function(s, it){ return s + ((typeof it.amount === 'number') ? it.amount : 0); }, 0);
         var totalRowHtml = '<tr class="qs-net-row"><td></td><td>الإجمالي</td><td>' + fmtAmt_(totalOverdueSum) + '</td><td></td><td></td></tr>';
         listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>العميل</th><th>اجمالي المتأخر</th><th>عدد المستحقات</th><th>متوسط التأخير (يوم)</th></tr></thead><tbody>' + rowsHtml + totalRowHtml + '</tbody></table></div>';
       })
@@ -4933,15 +4981,9 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(true);
-    if (!ATTENDANCE_SCRIPT_URL) {
-      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
-      return;
-    }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=lastPricesReport')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
-        var rows = (data.rows || []).filter(function(it){ return it && typeof it.lastSellPrice === 'number' && it.lastSellPrice > 0; });
+    fetchAppJson_('lastPrices')
+      .then(function(lastPrices){
+        var rows = (lastPrices || []).filter(function(it){ return it && typeof it.lastSellPrice === 'number' && it.lastSellPrice > 0; });
         if (!rows.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش بيانات أسعار دلوقتي</div>';
           return;
@@ -4957,11 +4999,10 @@ window.safeFileName = function(str){
 
   function refreshOverdueBadge_(){
     var badge = document.getElementById('loginOverdueBadge');
-    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=overdueReport')
-      .then(function(r){ return r.json(); })
+    if (!badge) return;
+    fetchAppJson_('overdue')
       .then(function(data){
-        var count = (data && data.ok) ? (data.count || 0) : 0;
+        var count = (data && data.rows) ? data.rows.length : 0;
         if (count > 0) {
           badge.textContent = count > 99 ? '99+' : String(count);
           badge.style.display = 'flex';
@@ -4975,11 +5016,10 @@ window.safeFileName = function(str){
 
   function refreshLastPricesBadge_(){
     var badge = document.getElementById('loginLastPricesBadge');
-    if (!badge || !ATTENDANCE_SCRIPT_URL) return;
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=lastPricesReport')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        var count = (data && data.ok) ? (data.count || 0) : 0;
+    if (!badge) return;
+    fetchAppJson_('lastPrices')
+      .then(function(lastPrices){
+        var count = (lastPrices || []).filter(function(it){ return it && typeof it.lastSellPrice === 'number' && it.lastSellPrice > 0; }).length;
         if (count > 0) {
           badge.textContent = count > 99 ? '99+' : String(count);
           badge.style.display = 'flex';
@@ -5376,6 +5416,18 @@ window.safeFileName = function(str){
   document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', openAttendanceApprovalsFlow_);
   document.getElementById('dashPendingBanner').addEventListener('click', openAttendanceApprovalsFlow_);
   document.getElementById('loginBellBtn').addEventListener('click', openAttendanceApprovalsFromLoginFlow_);
+  // زرار التحديث الثابت (🔄): ريفريش كامل للتطبيق (index.html + كل ملفات
+  // JSON) بأحدث نسخة منشورة على GitHub — يفيد فورًا بعد أي push جديد.
+  var appRefreshBtn_ = document.getElementById('appRefreshBtn');
+  if (appRefreshBtn_) {
+    appRefreshBtn_.addEventListener('click', function(){
+      appRefreshBtn_.classList.add('is-spinning');
+      appRefreshBtn_.disabled = true;
+      setTimeout(function(){
+        location.href = location.pathname + '?refresh=' + Date.now();
+      }, 300);
+    });
+  }
 
   // ---------------- شاشة "راتبي" (خاصة بالموظف اللي داخل دلوقتي بس) ----------------
   function escSalary_(s){
@@ -5464,15 +5516,9 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(true);
-    if (!ATTENDANCE_SCRIPT_URL) {
-      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
-      return;
-    }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=checksAllReport')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
-        var rows = data.rows || [];
+    fetchAppJson_('checks')
+      .then(function(checks){
+        var rows = buildChecksAllRows_(checks);
         if (!rows.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش شيكات مسجلة في الشيت لسه</div>';
           return;
@@ -5519,15 +5565,9 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
-    if (!ATTENDANCE_SCRIPT_URL) {
-      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
-      return;
-    }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=partiesAllReport')
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
-        var rows = data.rows || [];
+    fetchAppJson_('parties')
+      .then(function(parties){
+        var rows = buildPartiesAllRows_(parties);
         if (!rows.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش عملاء أو موردين مسجلين في الشيت لسه</div>';
           return;
