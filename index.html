@@ -4245,30 +4245,52 @@ window.safeFileName = function(str){
 
   function reloadEmployeesFromServer_(onDone){
     if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(data){
-      if (data && data.ok && data.employees && data.employees.length) {
-        var names = [];
-        var pw = {};
-        var hidden = {};
-        var birthdays = {};
-        data.employees.forEach(function(emp){
-          if (!emp || !emp.name || !emp.pass) return;
-          names.push(emp.name);
-          pw[emp.name] = emp.pass;
-          hidden[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
-          birthdays[emp.name] = emp.birthday || '';
-        });
-        if (names.length) {
-          ATTENDANCE_EMPLOYEES = names;
-          ATTENDANCE_PASSWORDS = pw;
-          EMPLOYEE_HIDDEN_ICONS_ = hidden;
-          EMPLOYEE_BIRTHDAYS_ = birthdays;
-          applyIconVisibility_();
-        }
+
+    function applyEmployeesList_(list){
+      var names = [];
+      var pw = {};
+      var hidden = {};
+      var birthdays = {};
+      list.forEach(function(emp){
+        if (!emp || !emp.name || !emp.pass) return;
+        names.push(emp.name);
+        pw[emp.name] = emp.pass;
+        hidden[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
+        birthdays[emp.name] = emp.birthday || '';
+      });
+      if (names.length) {
+        ATTENDANCE_EMPLOYEES = names;
+        ATTENDANCE_PASSWORDS = pw;
+        EMPLOYEE_HIDDEN_ICONS_ = hidden;
+        EMPLOYEE_BIRTHDAYS_ = birthdays;
+        applyIconVisibility_();
       }
-    }).catch(function(){ /* أوفلاين: نفضل شغالين بالقايمة الافتراضية فوق */ }).then(function(){
-      if (onDone) onDone();
-    });
+      return names.length > 0;
+    }
+
+    function loadFromLiveSheet_(){
+      fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(data){
+        if (data && data.ok && data.employees && data.employees.length) {
+          applyEmployeesList_(data.employees);
+        }
+      }).catch(function(){ /* أوفلاين: نفضل شغالين بالقايمة الافتراضية فوق */ }).then(function(){
+        if (onDone) onDone();
+      });
+    }
+
+    // قايمة الموظفين دي كانت بتتحمّل من جوجل شيتس مباشرة كل مرة التطبيق
+    // يفتح (بطيء أحياناً) — دلوقتي بتجرب الملف الجاهز اللي بيتحدث كل 10
+    // دقايق تلقائي الأول، وبيظهر فوراً من غير انتظار؛ ولو مش متاح أو
+    // فاضي، ترجع للطريقة القديمة (نداء مباشر لجوجل شيتس).
+    fetchAppJson_('attendanceStatus')
+      .then(function(data){
+        if (data && data.ok && data.employees && data.employees.length && applyEmployeesList_(data.employees)) {
+          if (onDone) onDone();
+        } else {
+          loadFromLiveSheet_();
+        }
+      })
+      .catch(loadFromLiveSheet_);
   }
   reloadEmployeesFromServer_(function(){
     // بعد أول تحميل من السيرفر، نعيد رسم القايمة واللستة عشان لو حد ضاف
