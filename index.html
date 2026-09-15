@@ -4243,7 +4243,7 @@ window.safeFileName = function(str){
     return null;
   }
 
-  function reloadEmployeesFromServer_(onDone){
+  function reloadEmployeesFromServer_(onDone, forceLive){
     if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
 
     function applyEmployeesList_(list){
@@ -4282,6 +4282,13 @@ window.safeFileName = function(str){
     // يفتح (بطيء أحياناً) — دلوقتي بتجرب الملف الجاهز اللي بيتحدث كل 10
     // دقايق تلقائي الأول، وبيظهر فوراً من غير انتظار؛ ولو مش متاح أو
     // فاضي، ترجع للطريقة القديمة (نداء مباشر لجوجل شيتس).
+    //
+    // forceLive=true بتتخطى الملف المؤقت وتضرب جوجل شيتس على طول —
+    // مستخدمة بس لما موظف يحاول يدخل برقم سري مش موجود في القايمة
+    // المحفوظة، عشان لو هو موظف جديد أو غيّر رقمه لتوّه (ولسه الملف
+    // المؤقت ما اتحدثش) يقدر يدخل من غير ما يستنى لحد 10 دقايق.
+    if (forceLive) { loadFromLiveSheet_(); return; }
+
     fetchAppJson_('attendanceStatus')
       .then(function(data){
         if (data && data.ok && data.employees && data.employees.length && applyEmployeesList_(data.employees)) {
@@ -5367,11 +5374,31 @@ window.safeFileName = function(str){
       if (!maybeCelebrateBirthday_(user)) showWelcomeToast_(user);
       goToHomeOrLinkedAttendance();
     } else if (user && pass && user === pass && findEmployeeByPin_(pass)) {
-      // دخول موظف: بيكتب رقمه السري (نفس رقم الحضور بتاعه) في خانتي اسم
-      // المستخدم وكلمة المرور مع بعض. بنعرف مين هو من رقمه، وبيشوف الرئيسية
-      // بس بالأيقونات اللي المسؤول سايبها ظاهرة له هو تحديدًا.
+      loginEmployeeByPin_(findEmployeeByPin_(pass));
+    } else if (user && pass && user === pass && ATTENDANCE_SCRIPT_URL) {
+      // مفيش تطابق في القايمة المحفوظة — ممكن يكون موظف جديد أو غيّر رقمه
+      // السري لتوّه ولسه الملف المؤقت (اللي بيتحدث كل 10 دقايق) ما اتحدثش.
+      // قبل ما نرفض الدخول، نجرب تحديث حي (live) من جوجل شيتس مرة واحدة
+      // ونجرب تاني، بدل ما نخلي الموظف يستنى لحد 10 دقايق.
+      err.textContent = 'بيتحقق من البيانات...';
+      reloadEmployeesFromServer_(function(){
+        var liveMatch = findEmployeeByPin_(pass);
+        if (liveMatch) {
+          loginEmployeeByPin_(liveMatch);
+        } else {
+          err.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+        }
+      }, true);
+    } else {
+      err.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+    }
+
+    // دخول موظف: بيكتب رقمه السري (نفس رقم الحضور بتاعه) في خانتي اسم
+    // المستخدم وكلمة المرور مع بعض. بنعرف مين هو من رقمه، وبيشوف الرئيسية
+    // بس بالأيقونات اللي المسؤول سايبها ظاهرة له هو تحديدًا.
+    function loginEmployeeByPin_(empName){
       isEmployeeSession = true;
-      currentSessionEmployeeName = findEmployeeByPin_(pass);
+      currentSessionEmployeeName = empName;
       try {
         if (remember) {
           localStorage.setItem(AUTH_KEY, '1');
@@ -5391,8 +5418,6 @@ window.safeFileName = function(str){
       applyIconVisibility_();
       if (!maybeCelebrateBirthday_(currentSessionEmployeeName)) showWelcomeToast_(currentSessionEmployeeName);
       goToHomeOrLinkedAttendance();
-    } else {
-      err.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
     }
   });
 
