@@ -5667,39 +5667,51 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
-    if (!ATTENDANCE_SCRIPT_URL) {
-      listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
-      return;
+    function renderQuickStatus_(data){
+      if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
+      if (kind === 'absent') {
+        var absent = data.absent || [];
+        if (!absent.length) {
+          listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
+          return;
+        }
+        var rowsHtml = absent.map(function(name, i){
+          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(name) + '</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+      } else {
+        var late = data.late || [];
+        if (!late.length) {
+          listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
+          return;
+        }
+        var rowsHtml2 = late.map(function(it, i){
+          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td dir="ltr">' + escQuick_(it.time) + '</td><td>' + escQuick_(it.minutes) + ' د</td></tr>';
+        }).join('');
+        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
+      }
     }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + encodeURIComponent(date))
-      .then(function(r){ return r.json(); })
+    function loadFromLiveSheet_(){
+      if (!ATTENDANCE_SCRIPT_URL) {
+        listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
+        return;
+      }
+      fetch(ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + encodeURIComponent(date))
+        .then(function(r){ return r.json(); })
+        .then(renderQuickStatus_)
+        .catch(function(){
+          listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
+        });
+    }
+    fetchAppJson_('attendanceStatus')
       .then(function(data){
-        if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
-        if (kind === 'absent') {
-          var absent = data.absent || [];
-          if (!absent.length) {
-            listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
-            return;
-          }
-          var rowsHtml = absent.map(function(name, i){
-            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(name) + '</td></tr>';
-          }).join('');
-          listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
+        if (data && data.ok && data.date === date) {
+          renderQuickStatus_(data);
         } else {
-          var late = data.late || [];
-          if (!late.length) {
-            listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
-            return;
-          }
-          var rowsHtml2 = late.map(function(it, i){
-            return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td dir="ltr">' + escQuick_(it.time) + '</td><td>' + escQuick_(it.minutes) + ' د</td></tr>';
-          }).join('');
-          listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
+          loadFromLiveSheet_();
         }
       })
-      .catch(function(){
-        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
-      });
+      .catch(loadFromLiveSheet_);
   }
   function openQuickStatusFromLoginFlow_(kind){
     loadQuickStatus_(kind);
