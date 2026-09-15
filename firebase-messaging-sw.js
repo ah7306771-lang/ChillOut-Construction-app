@@ -36,8 +36,14 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
   var data = event.notification.data || {};
   var targetUrl = self.registration.scope;
-  if (data.action === 'checksReport') {
-    targetUrl += (targetUrl.indexOf('?') === -1 ? '?' : '&') + 'openChecksReport=1';
+  var actionParamMap = {
+    checksReport: 'openChecksReport',
+    mySalary: 'openMySalary',
+    pendingRequests: 'openPendingRequests'
+  };
+  var actionParam = actionParamMap[data.action];
+  if (actionParam) {
+    targetUrl += (targetUrl.indexOf('?') === -1 ? '?' : '&') + actionParam + '=1';
   }
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
