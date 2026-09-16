@@ -3082,12 +3082,11 @@ window.safeFileName = function(str){
     var loginTopBar = document.getElementById('loginTopBar');
     if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
     var loginRadioBtn = document.getElementById('loginRadioBtn');
-    if (loginRadioBtn) loginRadioBtn.style.display = (name === 'login') ? 'flex' : 'none';
+    if (loginRadioBtn) loginRadioBtn.style.display = 'flex';
     var loginFabs = document.getElementById('loginFabs');
     if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
     var homeFabs = document.getElementById('homeFabs');
     if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
-    if (name !== 'login' && typeof stopQuranRadio_ === 'function') stopQuranRadio_();
     if (name !== 'login') {
       var err = document.getElementById('loginError');
       if (err) err.textContent = '';
