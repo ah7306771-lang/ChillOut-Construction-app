@@ -3884,7 +3884,7 @@ window.safeFileName = function(str){
     // للطريقة القديمة.
     fetchAppJson_('attendanceStatus')
       .then(function(data){
-        if (data && data.ok && typeof data.pendingRequestsCount === 'number') {
+        if (data && data.ok && typeof data.pendingRequestsCount === 'number' && isAttendanceStatusFresh_(data.updatedAt)) {
           applyPendingCount_(data.pendingRequestsCount);
         } else {
           loadFromLiveSheet_();
@@ -4536,7 +4536,7 @@ window.safeFileName = function(str){
       fetchAppJson_('attendanceStatus')
         .then(function(data){
           if (requestId !== loadAttendanceDashboard._reqId) return;
-          if (data && data.ok && data.date === date) {
+          if (data && data.ok && data.date === date && isAttendanceStatusFresh_(data.updatedAt)) {
             status.textContent = '';
             updateDashData(data.dashboardRows || [], data.dashboardRequestRows || [], employee, date, data.dashboardOfficialOut || {});
           } else {
@@ -4974,6 +4974,22 @@ window.safeFileName = function(str){
   // لـ APP.xlsx (الأتمتة بتنشئها من جديد).
   function fetchAppJson_(name){
     return fetch(name + '.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){ return r.json(); });
+  }
+  // الملف الجاهز ده (attendanceStatus.json) المفروض يتحدث تلقائي كل 10
+  // دقايق (GitHub Actions)، لكن جيت هَب أحياناً بيأخر تنفيذ الجدولة دي
+  // لساعات من غير أي تنبيه أو خطأ ظاهر (مشكلة معروفة في GitHub Actions مع
+  // الجدولة المتكررة كل شوية). لو اعتمدنا بس على data.date عشان نتأكد إنه
+  // "بتاع النهاردة"، ممكن نعرض بيانات فاتها كذا ساعة على إنها لسه حديثة
+  // (زي حد بصم بعد آخر تحديث للملف فيبان في الداشبورد إنه لسه ما حضرش).
+  // فبنتأكد كمان إن وقت آخر تحديث (data.updatedAt) مش أقدم من
+  // MAX_ATTENDANCE_STATUS_AGE_MIN_ دقيقة، وإلا بنتجاهل الملف ونروح مباشرة
+  // لجوجل شيتس عشان نجيب البيانات الحقيقية دلوقتي.
+  var MAX_ATTENDANCE_STATUS_AGE_MIN_ = 20;
+  function isAttendanceStatusFresh_(updatedAtIso){
+    if (!updatedAtIso) return false;
+    var updatedMs = new Date(updatedAtIso).getTime();
+    if (isNaN(updatedMs)) return false;
+    return ((Date.now() - updatedMs) / 60000) <= MAX_ATTENDANCE_STATUS_AGE_MIN_;
   }
   function parseDdMmYyyy_(s){
     if (!s) return null;
@@ -5799,7 +5815,7 @@ window.safeFileName = function(str){
     }
     fetchAppJson_('attendanceStatus')
       .then(function(data){
-        if (data && data.ok && data.date === date) {
+        if (data && data.ok && data.date === date && isAttendanceStatusFresh_(data.updatedAt)) {
           renderQuickStatus_(data);
         } else {
           loadFromLiveSheet_();
