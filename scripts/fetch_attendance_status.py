@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
@@ -13,16 +14,32 @@ def cairo_today_str():
     return now.strftime('%Y-%m-%d')
 
 
-def fetch_json(url):
+def fetch_json(url, attempts=3, delay_seconds=4):
     # جوجل بيرفض بعض الطلبات اللي من غير User-Agent شبه المتصفح
     # وبيرجع 404 بدل ما ينفذ الطلب، فبنبعت هيدرز شبه المتصفح.
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                      '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/plain, */*'
-    })
-    with urllib.request.urlopen(req, timeout=45) as resp:
-        return json.loads(resp.read().decode('utf-8'))
+    #
+    # كمان أحيانًا (نادر لكن بيحصل فعلاً) جوجل بيرجع صفحة خطأ مؤقتة
+    # ("يتعذر فتح الملف في الوقت الحالي") حتى لو الرابط والتوكن سليمين
+    # 100%، وبتختفي لوحدها خلال ثواني لو اتكرر نفس الطلب. من غير إعادة
+    # محاولة، فشلة واحدة عابرة زي دي كانت بتخلي السكريبت يبطّل يكتب الملف
+    # (sys.exit(0) في main)، فيفضل التطبيق يعرض بيانات قديمة لساعات لحد
+    # أول تشغيل ناجح بعدها — عشان كده بنعيد المحاولة كذا مرة الأول.
+    last_err = None
+    for attempt in range(1, attempts + 1):
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                          '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*'
+        })
+        try:
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                return json.loads(resp.read().decode('utf-8'))
+        except Exception as e:
+            last_err = e
+            if attempt < attempts:
+                print('fetch_json attempt', attempt, 'failed for', url, '-', e, '- retrying...', file=sys.stderr)
+                time.sleep(delay_seconds)
+    raise last_err
 
 
 def main():

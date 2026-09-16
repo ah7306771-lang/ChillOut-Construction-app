@@ -14,7 +14,7 @@ Apps Script بيتوقعه بالظبط.
 import sys
 import json
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 import openpyxl
 from openpyxl.utils.datetime import from_excel
 
@@ -285,6 +285,12 @@ def main():
         json.dump(overdue, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'lastPrices.json'), 'w', encoding='utf-8') as f:
         json.dump(last_prices, f, ensure_ascii=False, indent=2)
+
+    # وقت التحويل ده (مش وقت آخر تعديل في الإكسل نفسه) — بيتقرا في الواجهة
+    # عشان اليوزر يعرف بيانات الشيكات/العملاء/الأسعار/المتأخرات دي جايه من
+    # امتى بالظبط (آخر مرة اتحول فيها APP.xlsx)، بدل ما يفتكرها لحظية.
+    with open(os.path.join(out_dir, 'dataUpdatedAt.json'), 'w', encoding='utf-8') as f:
+        json.dump({'updatedAt': datetime.now(timezone.utc).isoformat()}, f, ensure_ascii=False, indent=2)
 
     print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices))
 

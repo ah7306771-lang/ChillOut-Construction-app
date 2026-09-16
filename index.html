@@ -5072,6 +5072,7 @@ window.safeFileName = function(str){
     var listWrap = document.getElementById('quickStatusListWrap');
     titleEl.textContent = '📉 اجمالي المتأخرات';
     subtitleEl.textContent = attendanceTodayKey();
+    appendExcelDataUpdatedNote_(subtitleEl);
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
@@ -5099,6 +5100,7 @@ window.safeFileName = function(str){
     var listWrap = document.getElementById('quickStatusListWrap');
     titleEl.textContent = '🏷️ اخر سعر شراء وبيع';
     subtitleEl.textContent = attendanceTodayKey();
+    appendExcelDataUpdatedNote_(subtitleEl);
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(true);
@@ -5677,12 +5679,32 @@ window.safeFileName = function(str){
   // من الباك إند أي شيك باقي على استحقاقه يومين أو أقل (أو فات استحقاقه) —
   // وبيفضل يبان هنا وفي البادچ الأحمر يوميًا لحد ما يتمسح صفه من شيت
   // الشيكات (مفيش عمود "حالة" بيوقفه، المسح بس هو اللي بيوقفه).
+  // بيانات الشيكات/العملاء والموردين/آخر الأسعار/المتأخرات مصدرها ملف
+  // Excel (APP.xlsx) بيتحول لملفات JSON على GitHub لحظة ما حد يرفع نسخة
+  // جديدة منه — مش على جدول زمني زي الحضور، فمفيش خطر إن التحديث "يتأخر"
+  // من غير ما حد يلاحظ زي ما حصل مع الحضور. لكن عشان اليوزر يعرف البيانات
+  // دي جايه من امتى بالظبط (آخر مرة حد رفع فيها إكسل جديد)، بنضيف سطر
+  // صغير تحت العنوان بتاريخ ووقت آخر تحديث فعلي، بدل ما يفتكر إنها
+  // "لحظية" زي شاشة الحضور.
+  function appendExcelDataUpdatedNote_(subtitleEl){
+    if (!subtitleEl) return;
+    fetchAppJson_('dataUpdatedAt')
+      .then(function(data){
+        if (!data || !data.updatedAt) return;
+        var d = new Date(data.updatedAt);
+        if (isNaN(d.getTime())) return;
+        var stamp = d.toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+        subtitleEl.textContent += ' — آخر تحديث للبيانات: ' + stamp;
+      })
+      .catch(function(){ /* لو الملف مش موجود لسه، نسيب السطر زي ما هو */ });
+  }
   function loadChecksDueStatus_(){
     var titleEl = document.getElementById('quickStatusTitle');
     var subtitleEl = document.getElementById('quickStatusSubtitle');
     var listWrap = document.getElementById('quickStatusListWrap');
     titleEl.textContent = '🧾 كل الشيكات';
     subtitleEl.textContent = attendanceTodayKey();
+    appendExcelDataUpdatedNote_(subtitleEl);
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(true);
@@ -5732,6 +5754,7 @@ window.safeFileName = function(str){
     var listWrap = document.getElementById('quickStatusListWrap');
     titleEl.textContent = '🤝 أرصدة العملاء والموردين';
     subtitleEl.textContent = attendanceTodayKey();
+    appendExcelDataUpdatedNote_(subtitleEl);
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
