@@ -18,6 +18,15 @@
     "type": "أ.ق"
   },
   {
+    "client": "ويكادي",
+    "number": 554541873,
+    "value": 1556850,
+    "dueDate": "17/09/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
     "client": "فالتور",
     "number": 307379,
     "value": 2388000,
@@ -54,29 +63,11 @@
     "type": "أ.ق"
   },
   {
-    "client": "فالتور",
-    "number": 307381,
-    "value": 2388000,
-    "dueDate": "20/10/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
-    "client": "فالتور",
-    "number": 307384,
-    "value": 13300000,
-    "dueDate": "26/10/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
     "client": "خالد صبري",
     "number": 532937100,
     "value": 5043144,
     "dueDate": "10/10/2026",
-    "bank": "",
+    "bank": "CIB",
     "notes": "",
     "type": "أ.ق"
   },
@@ -90,11 +81,11 @@
     "type": "أ.ق"
   },
   {
-    "client": "ويكادي",
-    "number": 554541873,
-    "value": 1556850,
-    "dueDate": "17/09/2026",
-    "bank": "CIB",
+    "client": "فالتور",
+    "number": 307381,
+    "value": 2388000,
+    "dueDate": "20/10/2026",
+    "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
   },
@@ -103,7 +94,16 @@
     "number": 2798976,
     "value": 17745354,
     "dueDate": "22/10/2026",
-    "bank": "",
+    "bank": "الاستثمار",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307384,
+    "value": 13300000,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
   },
@@ -112,7 +112,7 @@
     "number": 13249953,
     "value": 7167694.63,
     "dueDate": "26/10/2026",
-    "bank": "",
+    "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
   }
