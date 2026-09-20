@@ -7258,7 +7258,15 @@ window.safeFileName = function(str){
   }
 
   document.getElementById('openOrderBtn').addEventListener('click', function(){
-    fetchNextOrderNumber();
+    // مانحجزش رقم من السيرفر لحد ما اليوزر ينزّل/يشارك الأمر فعلياً
+    // (أو يدوس 🔄 يدوياً)، عشان لو فتح الشاشة عشان يبحث عن أمر قديم بس،
+    // ما نستهلكش رقم جديد على الفاضي في الجوجل شيت مع كل فتح للفورم.
+    const input = $('ordNum');
+    input.value = '';
+    input.readOnly = true;
+    input.placeholder = 'يتحدد أوتوماتيك عند التحميل';
+    setOrdNumHint('الرقم يتحدد أوتوماتيك لما تنزّل/تشارك النموذج — أو دوس 🔄 لجيبه دلوقتي.');
+    renderOrdPreview();
   });
   const ordNumRefreshBtnEl = $('ordNumRefreshBtn');
   if(ordNumRefreshBtnEl) ordNumRefreshBtnEl.addEventListener('click', fetchNextOrderNumber);
@@ -7363,10 +7371,21 @@ window.safeFileName = function(str){
   }
 
   $('ordDownloadBtn').addEventListener('click', async () => {
-    const err = validateOrdRequired();
-    if(err){ setOrdStatus(err, true); return; }
     const btn = $('ordDownloadBtn');
     btn.disabled = true;
+    // احجز رقم الأمر أول ما اليوزر يبدأ التحميل — لو مافيش رقم بعد
+    // (يعني أمر جديد مش محمّل من البحث)، بنجيبه من السيرفر الأول عشان
+    // يتحفظ عليه في الشيت مع بقية بيانات الأمر.
+    if(!$('ordNum').value.trim()){
+      setOrdStatus('جارٍ حجز رقم الأمر…');
+      await fetchNextOrderNumber();
+      if(!$('ordNum').value.trim()){
+        setOrdStatus('تعذّر حجز رقم الأمر، حاول تاني', true);
+        btn.disabled = false; return;
+      }
+    }
+    const err = validateOrdRequired();
+    if(err){ setOrdStatus(err, true); btn.disabled = false; return; }
     setOrdStatus('جارٍ إنشاء الملف…');
     try{
       const blob = await buildOrdPdfBlob();
@@ -7384,10 +7403,21 @@ window.safeFileName = function(str){
   });
 
   $('ordShareBtn').addEventListener('click', async () => {
-    const err = validateOrdRequired();
-    if(err){ setOrdStatus(err, true); return; }
     const btn = $('ordShareBtn');
     btn.disabled = true;
+    // نفس منطق زرار التحميل — بنحجز رقم الأمر لأول مرة هنا لو مافيش
+    // رقم لسه، عشان الحجز يبقى مرتبط بتحميل/مشاركة فعلية مش بمجرد فتح
+    // الفورم للبحث.
+    if(!$('ordNum').value.trim()){
+      setOrdStatus('جارٍ حجز رقم الأمر…');
+      await fetchNextOrderNumber();
+      if(!$('ordNum').value.trim()){
+        setOrdStatus('تعذّر حجز رقم الأمر، حاول تاني', true);
+        btn.disabled = false; return;
+      }
+    }
+    const err = validateOrdRequired();
+    if(err){ setOrdStatus(err, true); btn.disabled = false; return; }
     setOrdStatus('جارٍ تجهيز الملف للمشاركة…');
     try{
       const blob = await buildOrdPdfBlob();
