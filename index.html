@@ -1628,6 +1628,8 @@
     <div class="section-tag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
     <button type="button" class="btn btn-secondary" id="enableMyPushBtn" style="width:100%;">🔔 فعّل إشعاراتي الشخصية</button>
     <div class="status-msg" id="myPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+    <button type="button" class="btn btn-secondary" id="testMyPushBtn" style="width:100%;margin-top:8px;">🧪 اختبر الإشعار دلوقتي</button>
+    <div class="status-msg" id="myPushTestStatus" style="margin:6px 0 0;font-size:13px;"></div>
   </div>
 </div>
 
@@ -5666,6 +5668,70 @@ window.safeFileName = function(str){
   if (enableMyPushBtn) enableMyPushBtn.addEventListener('click', function(){
     enablePushNotifications(document.getElementById('myPushStatus'), currentSessionEmployeeName);
   });
+
+  // زرار اختبار الإشعار الشخصي — بيعمل ٣ اختبارات فوق بعض عشان نعرف بالظبط
+  // أنهي جزء اللي مش شغال لما موظف يقول "مش وصلني إشعارات":
+  //   ١) بنطبع إذن الإشعارات الحالي (granted/denied/default) — لو مش granted
+  //      يبقى الإذن اتشال أو مااتوافقش عليه أصلاً.
+  //   ٢) بنعرض إشعار محلي من ServiceWorker — لو الإشعار ده مش ظاهر على
+  //      الموبايل، معناه إعدادات الجهاز نفسه بتقفل إشعارات التطبيق
+  //      (سامسونج "Deep Sleep" أو "Sleeping apps" أو DND أو الإشعارات
+  //      متوقفة من إعدادات المتصفح لنطاق الموقع).
+  //   ٣) بنطلب من السيرفر يبعت إشعار تجريبي على كل التوكنات المسجلة
+  //      باسم المستخدم ده — لو رد إن عدد التوكنات صفر، معناه التوكن
+  //      مااتسجلش أصلاً في الشيت (أو الاسم مختلف).
+  function runMyPushDiagnostics_(){
+    var statusEl = document.getElementById('myPushTestStatus');
+    if (!statusEl) return;
+    var lines = [];
+    function paint(){ statusEl.innerHTML = lines.join('<br>'); }
+    // خطوة ١ — الإذن
+    if (!('Notification' in window)) {
+      lines.push('❌ المتصفح ده مش بيدعم الإشعارات أصلاً.'); paint(); return;
+    }
+    var perm = Notification.permission;
+    if (perm === 'granted') lines.push('✅ إذن الإشعارات: مفعّل.');
+    else if (perm === 'denied') { lines.push('❌ إذن الإشعارات: مرفوض — لازم تفتح إعدادات المتصفح وتسمح بالإشعارات للموقع ده.'); paint(); return; }
+    else { lines.push('⚠️ إذن الإشعارات: لسه مافيش قرار — دوس "فعّل إشعاراتي الشخصية" الأول.'); paint(); return; }
+    paint();
+    // خطوة ٢ — إشعار محلي
+    var localPromise = Promise.resolve();
+    if ('serviceWorker' in navigator) {
+      localPromise = navigator.serviceWorker.ready.then(function(reg){
+        return reg.showNotification('🧪 اختبار محلي', {
+          body: 'لو ظهرلك الإشعار ده يبقى تليفونك بيستقبل إشعارات التطبيق مظبوط.',
+          icon: 'icon-192.png', tag: 'local-test-' + Date.now()
+        });
+      });
+    } else {
+      try { new Notification('🧪 اختبار محلي', {body:'لو ظهرلك الإشعار ده يبقى تليفونك بيستقبل إشعارات التطبيق.'}); } catch(e){}
+    }
+    localPromise.then(function(){
+      lines.push('✅ الإشعار المحلي اتبعت — لو مش شفته على شاشة تليفونك خلال ثواني، معناه إعدادات الجهاز/المتصفح بتقفل الإشعارات (اتفقد "Sleeping apps" / DND / إعدادات إشعارات المتصفح).');
+      paint();
+    }).catch(function(err){
+      lines.push('⚠️ ما قدرش يعرض إشعار محلي: ' + err);
+      paint();
+    });
+    // خطوة ٣ — إشعار من السيرفر (اختياري — لو الأكشن اتضاف على Apps Script)
+    if (ATTENDANCE_SCRIPT_URL && currentSessionEmployeeName) {
+      var url = ATTENDANCE_SCRIPT_URL + '?action=testPush&employee=' + encodeURIComponent(currentSessionEmployeeName);
+      fetch(url).then(function(r){ return r.json(); }).then(function(res){
+        if (!res) { lines.push('⚠️ رد السيرفر فاضي.'); paint(); return; }
+        if (res.ok === false) { lines.push('❌ السيرفر: ' + (res.error || 'خطأ غير معروف')); paint(); return; }
+        var tc = res.tokenCount || 0;
+        var sc = res.sentCount || 0;
+        if (tc === 0) lines.push('❌ السيرفر: مفيش أي توكن مسجّل باسم "' + currentSessionEmployeeName + '". يعني الجهاز ده (أو أي جهاز تاني ليك) لسه ما فعّلش الإشعارات فعلاً — دوس "فعّل إشعاراتي الشخصية" تاني.');
+        else lines.push('📤 السيرفر بعت ' + sc + ' إشعار على ' + tc + ' جهاز مسجّل باسمك. لو مش لاقيتهم، إعدادات التليفون هي السبب.');
+        paint();
+      }).catch(function(err){
+        lines.push('⚠️ ما قدرش يوصل للسيرفر: ' + err);
+        paint();
+      });
+    }
+  }
+  var testMyPushBtn = document.getElementById('testMyPushBtn');
+  if (testMyPushBtn) testMyPushBtn.addEventListener('click', runMyPushDiagnostics_);
 
   // ---------------- ملخص سريع: الغياب / التأخير النهارده (من صفحة الدخول) ----------------
   // زرارين "🚫" و"⏰" في صفحة الدخول، كل واحد بيفتح مودال خفيف فيه قايمة
