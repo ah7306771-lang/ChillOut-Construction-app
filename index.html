@@ -5150,10 +5150,17 @@ window.safeFileName = function(str){
       var buy = (typeof it.buyTotal === 'number') ? it.buyTotal : 0;
       var sell = (typeof it.sellTotal === 'number') ? it.sellTotal : 0;
       totalBuy += buy; totalSell += sell;
-      return '<tr><td>' + (i+1) + '</td><td dir="ltr">' + escQuick_(it.date || '—') + '</td><td dir="ltr">' + escQuick_(it.orderNo || '—') + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(buy) + '</td><td>' + fmtAmt_(sell) + '</td><td>' + escQuick_(it.paymentMethod || '') + '</td></tr>';
+      // سعر الشراء والبيع (لكل طن). لو الأمر فيه أكتر من سعر بنجمعهم في نفس
+      // الخانة مفصولين بـ "/" — بدل ما نزود عمودين تانيين للأوامر النادرة
+      // اللي فيها سعرين، فيبقى الجدول أوسع من غير لزوم.
+      var bp = (typeof it.buyPrice === 'number' && it.buyPrice > 0) ? fmtAmt_(it.buyPrice) : '—';
+      var sp = (typeof it.sellPrice === 'number' && it.sellPrice > 0) ? fmtAmt_(it.sellPrice) : '—';
+      if (typeof it.buyPrice2 === 'number' && it.buyPrice2 > 0) bp += ' / ' + fmtAmt_(it.buyPrice2);
+      if (typeof it.sellPrice2 === 'number' && it.sellPrice2 > 0) sp += ' / ' + fmtAmt_(it.sellPrice2);
+      return '<tr><td>' + (i+1) + '</td><td dir="ltr">' + escQuick_(it.date || '—') + '</td><td dir="ltr">' + escQuick_(it.orderNo || '—') + '</td><td>' + escQuick_(it.client) + '</td><td>' + bp + '</td><td>' + sp + '</td><td>' + fmtAmt_(buy) + '</td><td>' + fmtAmt_(sell) + '</td><td>' + escQuick_(it.paymentMethod || '') + '</td></tr>';
     }).join('');
-    var totalRowHtml = '<tr class="qs-net-row"><td></td><td></td><td></td><td><strong>الإجمالي</strong></td><td><strong>' + fmtAmt_(totalBuy) + '</strong></td><td><strong>' + fmtAmt_(totalSell) + '</strong></td><td></td></tr>';
-    var emptyRow = filtered.length ? '' : '<tr><td colspan="7" style="text-align:center;color:#888;">مفيش أوامر بيع للعميل ده</td></tr>';
+    var totalRowHtml = '<tr class="qs-net-row"><td></td><td></td><td></td><td></td><td></td><td><strong>الإجمالي</strong></td><td><strong>' + fmtAmt_(totalBuy) + '</strong></td><td><strong>' + fmtAmt_(totalSell) + '</strong></td><td></td></tr>';
+    var emptyRow = filtered.length ? '' : '<tr><td colspan="9" style="text-align:center;color:#888;">مفيش أوامر بيع للعميل ده</td></tr>';
     var options = '<option value="">— كل العملاء —</option>' + clientList.map(function(n){
       return '<option value="' + n.replace(/"/g,'&quot;') + '"' + (n === selectedClient ? ' selected' : '') + '>' + escQuick_(n) + '</option>';
     }).join('');
@@ -5164,7 +5171,7 @@ window.safeFileName = function(str){
       (selectedClient ? '<button type="button" id="allSalesClearBtn" style="padding:6px 10px;border:1px solid #ccc;background:#f5f5f5;border-radius:6px;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;">مسح الفلتر</button>' : '') +
     '</div>';
     listWrap.innerHTML = filterHtml +
-      '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>التاريخ</th><th>رقم الأمر</th><th>العميل</th><th>إجمالي الشراء</th><th>إجمالي البيع</th><th>طريقة السداد</th></tr></thead><tbody>' + rowsHtml + emptyRow + totalRowHtml + '</tbody></table></div>';
+      '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>التاريخ</th><th>رقم الأمر</th><th>العميل</th><th>سعر شراء</th><th>سعر بيع</th><th>إجمالي الشراء</th><th>إجمالي البيع</th><th>طريقة السداد</th></tr></thead><tbody>' + rowsHtml + emptyRow + totalRowHtml + '</tbody></table></div>';
     var applyBtn = document.getElementById('allSalesApplyBtn');
     if (applyBtn) applyBtn.addEventListener('click', function(){
       var picker = document.getElementById('allSalesClientPicker');

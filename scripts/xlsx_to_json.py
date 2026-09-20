@@ -285,12 +285,14 @@ def convert_all_sales(ws):
     c_client = col('اسم العميل', default=0)
     c_buy = col('سعر شراء', 'اخر سعر شراء', default=1)
     c_sell = col('سعر بيع', 'اخر سعر بيع', default=2)
-    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=3)
-    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=4)
-    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
-    # الأعمدة الجديدة اللي بيكتبها ماكرو SyncToApp في بيانات التوريد.xlsm —
-    # الإجمالي بالفعل (سعر شراء × كمية، سعر بيع × كمية) لكل أمر بيع، مش
-    # سعر الوحدة. لو مش موجودين في الشيت، بنقع على أعمدة السعر العادية.
+    # أعمدة السعر التانية (لأوامر البيع اللي فيها أكتر من سعر واحد للأصناف
+    # المختلفة). لو الأمر بسعر واحد بس، الأعمدة دي بتفضل فاضية.
+    c_buy2 = col('سعر شراء 2', 'سعر شراء ثاني')
+    c_sell2 = col('سعر بيع 2', 'سعر بيع ثاني')
+    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=5)
+    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=6)
+    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=7)
+    # أعمدة الإجمالي (سعر شراء × كمية، سعر بيع × كمية) لكل أمر بيع
     c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء')
     c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع')
 
@@ -308,10 +310,16 @@ def convert_all_sales(ws):
         sell_val = to_number(row[c_sell_total_col]) if (c_sell_total_col is not None and c_sell_total_col < len(row)) else 0
         if not sell_val:
             sell_val = to_number(row[c_sell]) if c_sell < len(row) else 0
+        buy2_val = to_number(row[c_buy2]) if (c_buy2 is not None and c_buy2 < len(row)) else 0
+        sell2_val = to_number(row[c_sell2]) if (c_sell2 is not None and c_sell2 < len(row)) else 0
         out.append({
             'date': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
             'orderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
             'client': str(name).strip(),
+            'buyPrice': to_number(row[c_buy]) if c_buy < len(row) else 0,
+            'sellPrice': to_number(row[c_sell]) if c_sell < len(row) else 0,
+            'buyPrice2': buy2_val,
+            'sellPrice2': sell2_val,
             'buyTotal': buy_val,
             'sellTotal': sell_val,
             'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
