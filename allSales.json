@@ -3,886 +3,118 @@
     "date": "27/06/2026",
     "orderNo": 1,
     "client": "خالد صبري",
-    "buyTotal": 537703.5,
-    "sellTotal": 549289,
-    "paymentMethod": "شيك 60يوم"
-  },
-  {
-    "date": "27/06/2026",
-    "orderNo": 1,
-    "client": "خالد صبري",
-    "buyTotal": 1384300.5,
-    "sellTotal": 1414127,
+    "buyPrice": 39450,
+    "sellPrice": 40300,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 1922004,
+    "sellTotal": 1963416,
     "paymentMethod": "شيك 60يوم"
   },
   {
     "date": "06/07/2026",
     "orderNo": 19,
     "client": "سامكريت مصر",
-    "buyTotal": 559240,
-    "sellTotal": 579700,
-    "paymentMethod": "شيك 60يوم"
-  },
-  {
-    "date": "06/07/2026",
-    "orderNo": 19,
-    "client": "سامكريت مصر",
-    "buyTotal": 558420,
-    "sellTotal": 578850,
-    "paymentMethod": "شيك 60يوم"
-  },
-  {
-    "date": "06/07/2026",
-    "orderNo": 19,
-    "client": "سامكريت مصر",
-    "buyTotal": 1205400,
-    "sellTotal": 1249500,
-    "paymentMethod": "شيك 60يوم"
-  },
-  {
-    "date": "06/07/2026",
-    "orderNo": 19,
-    "client": "سامكريت مصر",
-    "buyTotal": 638780,
-    "sellTotal": 662150,
+    "buyPrice": 41000,
+    "sellPrice": 42500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2961840,
+    "sellTotal": 3070200,
     "paymentMethod": "شيك 60يوم"
   },
   {
     "date": "08/07/2026",
     "orderNo": 3,
     "client": "فالتور",
-    "buyTotal": 316800,
-    "sellTotal": 318384,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 1030400,
-    "sellTotal": 1035552,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 389600,
-    "sellTotal": 391548,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 257000,
-    "sellTotal": 258285,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 791600,
-    "sellTotal": 795558,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 790800,
-    "sellTotal": 794754,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 77600,
-    "sellTotal": 77988,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 192000,
-    "sellTotal": 192960,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 236400,
-    "sellTotal": 237582,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 872000,
-    "sellTotal": 876360,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 625200,
-    "sellTotal": 628326,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 254800,
-    "sellTotal": 256074,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 314400,
-    "sellTotal": 315972,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 1029600,
-    "sellTotal": 1034748,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 384799.9999999999,
-    "sellTotal": 386723.9999999999,
-    "paymentMethod": "شيك 90 يوم"
-  },
-  {
-    "date": "08/07/2026",
-    "orderNo": 3,
-    "client": "فالتور",
-    "buyTotal": 255800,
-    "sellTotal": 257079,
+    "buyPrice": 40000,
+    "sellPrice": 40200,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 7818800,
+    "sellTotal": 7857894,
     "paymentMethod": "شيك 90 يوم"
   },
   {
     "date": "14/07/2026",
     "orderNo": 18,
     "client": "ويكادي",
-    "buyTotal": 74295,
-    "sellTotal": 74295,
-    "paymentMethod": "كاش 25% - شيك شهر"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": 18,
-    "client": "ويكادي",
-    "buyTotal": 1496568,
-    "sellTotal": 1496568,
-    "paymentMethod": "كاش 25% - شيك شهر"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": 18,
-    "client": "ويكادي",
-    "buyTotal": 374523,
-    "sellTotal": 374523,
-    "paymentMethod": "كاش 25% - شيك شهر"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": 18,
-    "client": "ويكادي",
-    "buyTotal": 2649474,
-    "sellTotal": 2649474,
+    "buyPrice": 38100,
+    "sellPrice": 38100,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 4594860,
+    "sellTotal": 4594860,
     "paymentMethod": "كاش 25% - شيك شهر"
   },
   {
     "date": "18/07/2026",
     "orderNo": "9--4",
     "client": "بيراميدز",
-    "buyTotal": 895875,
-    "sellTotal": 898264,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "18/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 443250,
-    "sellTotal": 444432,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "18/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 805125,
-    "sellTotal": 807272,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1117125,
-    "sellTotal": 1120104,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1248375,
-    "sellTotal": 1251704,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1920000,
-    "sellTotal": 1925120,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 438000,
-    "sellTotal": 439168,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 292500,
-    "sellTotal": 293280,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 807750,
-    "sellTotal": 809904,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 295500,
-    "sellTotal": 296288,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 120000,
-    "sellTotal": 120320,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1856250,
-    "sellTotal": 1861200,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1854000,
-    "sellTotal": 1858944,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1462125,
-    "sellTotal": 1466024,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 588375,
-    "sellTotal": 589944,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1976250,
-    "sellTotal": 1981520,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1020000,
-    "sellTotal": 1022720,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 120000,
-    "sellTotal": 120320,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 120000,
-    "sellTotal": 120320,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 368625,
-    "sellTotal": 369608,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 957375,
-    "sellTotal": 959928,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 733500,
-    "sellTotal": 735456,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 2197500,
-    "sellTotal": 2203360,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1053750,
-    "sellTotal": 1056560,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 2089500,
-    "sellTotal": 2095072,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 573000,
-    "sellTotal": 574528,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": null,
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 37500,
-    "sellTotal": 37600,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1353000,
-    "sellTotal": 1356608,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 239250,
-    "sellTotal": 239888,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 119250,
-    "sellTotal": 119568,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1832250,
-    "sellTotal": 1837136,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 1492875,
-    "sellTotal": 1496856,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 148500,
-    "sellTotal": 148896,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 454499.9999999999,
-    "sellTotal": 455711.9999999999,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 215625,
-    "sellTotal": 216200,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 875250,
-    "sellTotal": 877584,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 725625,
-    "sellTotal": 727560,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--4",
-    "client": "بيراميدز",
-    "buyTotal": 379875.0000000001,
-    "sellTotal": 380888.0000000001,
+    "buyPrice": 37500,
+    "sellPrice": 37600,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 33189750,
+    "sellTotal": 33278256,
     "paymentMethod": "كاش 100%"
   },
   {
     "date": "15/07/2026",
     "orderNo": "9--1",
     "client": "بيراميدز",
-    "buyTotal": 119250,
-    "sellTotal": 119568,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 743624.9999999999,
-    "sellTotal": 745607.9999999999,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 664125,
-    "sellTotal": 665896,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 365250,
-    "sellTotal": 366224,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 758999.9999999999,
-    "sellTotal": 761023.9999999999,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 120000,
-    "sellTotal": 120320,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 518625,
-    "sellTotal": 520008,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 222000,
-    "sellTotal": 222592,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 1179375,
-    "sellTotal": 1182520,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--1",
-    "client": "بيراميدز",
-    "buyTotal": 532500,
-    "sellTotal": 533920,
+    "buyPrice": 37500,
+    "sellPrice": 37600,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 5223750,
+    "sellTotal": 5237680,
     "paymentMethod": "كاش 100%"
   },
   {
     "date": "14/07/2026",
     "orderNo": "9--2",
     "client": "بيراميدز",
-    "buyTotal": 118312.5,
-    "sellTotal": 118628,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 370875,
-    "sellTotal": 371864,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 296062.5,
-    "sellTotal": 296852,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 369562.5,
-    "sellTotal": 370548,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 369000,
-    "sellTotal": 369984,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 72562.5,
-    "sellTotal": 72756,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 119250,
-    "sellTotal": 119568,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 596250,
-    "sellTotal": 597840,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 733125,
-    "sellTotal": 735080,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--2",
-    "client": "بيراميدز",
-    "buyTotal": 528375,
-    "sellTotal": 529784,
+    "buyPrice": 37500,
+    "sellPrice": 37600,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 3573375,
+    "sellTotal": 3582904,
     "paymentMethod": "كاش 100%"
   },
   {
     "date": "14/07/2026",
     "orderNo": "9--3",
     "client": "بيراميدز",
-    "buyTotal": 59625,
-    "sellTotal": 59784,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 1096125,
-    "sellTotal": 1099048,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 146250,
-    "sellTotal": 146640,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 808500,
-    "sellTotal": 810656,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 119625,
-    "sellTotal": 119944,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 1100625,
-    "sellTotal": 1103560,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 806250,
-    "sellTotal": 808400,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 119625,
-    "sellTotal": 119944,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 1025250,
-    "sellTotal": 1027984,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "15/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 2051625,
-    "sellTotal": 2057096,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 62250,
-    "sellTotal": 62416,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 458625,
-    "sellTotal": 459848,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 436875,
-    "sellTotal": 438040,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 1603125,
-    "sellTotal": 1607400,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "14/07/2026",
-    "orderNo": "9--3",
-    "client": "بيراميدز",
-    "buyTotal": 1100625,
-    "sellTotal": 1103560,
+    "buyPrice": 37500,
+    "sellPrice": 37600,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 10995000,
+    "sellTotal": 11024320,
     "paymentMethod": "كاش 100%"
   },
   {
     "date": "21/07/2026",
     "orderNo": "C-102",
     "client": "سامكريت مصر",
-    "buyTotal": 1448792,
-    "sellTotal": 1519738,
-    "paymentMethod": "شيك 45 يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "C-102",
-    "client": "سامكريت مصر",
-    "buyTotal": 2750532,
-    "sellTotal": 2885223,
-    "paymentMethod": "شيك 45 يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "C-102",
-    "client": "سامكريت مصر",
-    "buyTotal": 783372,
-    "sellTotal": 821733,
-    "paymentMethod": "شيك 45 يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "C-102",
-    "client": "سامكريت مصر",
-    "buyTotal": 151708,
-    "sellTotal": 159137,
-    "paymentMethod": "شيك 45 يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "C-102",
-    "client": "سامكريت مصر",
-    "buyTotal": 226980,
-    "sellTotal": 238095,
+    "buyPrice": 38800,
+    "sellPrice": 40700,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 5361384,
+    "sellTotal": 5623926,
     "paymentMethod": "شيك 45 يوم"
   },
   {
     "date": null,
     "orderNo": "T-106/1",
     "client": "عميل التطوير",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": ""
-  },
-  {
-    "date": null,
-    "orderNo": "T-106/1",
-    "client": "عميل التطوير",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": ""
-  },
-  {
-    "date": null,
-    "orderNo": "T-106/1",
-    "client": "عميل التطوير",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": ""
-  },
-  {
-    "date": null,
-    "orderNo": "T-106/1",
-    "client": "عميل التطوير",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": ""
-  },
-  {
-    "date": null,
-    "orderNo": "T-106/1",
-    "client": "عميل التطوير",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": ""
-  },
-  {
-    "date": null,
-    "orderNo": "T-106/1",
-    "client": "عميل التطوير",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": ""
-  },
-  {
-    "date": null,
-    "orderNo": "T-106/1",
-    "client": "عميل التطوير",
+    "buyPrice": 0,
+    "sellPrice": 0,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
     "buyTotal": 0,
     "sellTotal": 0,
     "paymentMethod": ""
@@ -891,94 +123,34 @@
     "date": "29/07/2026",
     "orderNo": "C-104-R/1",
     "client": "فالتور",
-    "buyTotal": 764360,
-    "sellTotal": 775030,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": "C-104-R/1",
-    "client": "فالتور",
-    "buyTotal": 541750,
-    "sellTotal": 549312.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": "C-104-R/1",
-    "client": "فالتور",
-    "buyTotal": 1487350,
-    "sellTotal": 1508112.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": "C-104-R/1",
-    "client": "فالتور",
-    "buyTotal": 890637,
-    "sellTotal": 903069.75,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": "C-104-R/1",
-    "client": "فالتور",
-    "buyTotal": 1095714,
-    "sellTotal": 1111009.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": "C-104-R/1",
-    "client": "فالتور",
-    "buyTotal": 695410,
-    "sellTotal": 705117.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": "C-104-R/1",
-    "client": "فالتور",
-    "buyTotal": 1566544,
-    "sellTotal": 1588412,
+    "buyPrice": 39400,
+    "sellPrice": 39950,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 7041765,
+    "sellTotal": 7140063.75,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
     "date": "21/07/2026",
     "orderNo": "D-105/1",
     "client": "جي دبيو",
-    "buyTotal": 588924,
-    "sellTotal": 611515,
-    "paymentMethod": "شيك اجل 60  يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "D-105/1",
-    "client": "جي دبيو",
-    "buyTotal": 148554,
-    "sellTotal": 154252.5,
-    "paymentMethod": "شيك اجل 60  يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "D-105/1",
-    "client": "جي دبيو",
-    "buyTotal": 592704,
-    "sellTotal": 615440,
-    "paymentMethod": "شيك اجل 60  يوم"
-  },
-  {
-    "date": "21/07/2026",
-    "orderNo": "D-105/1",
-    "client": "جي دبيو",
-    "buyTotal": 147798,
-    "sellTotal": 153467.5,
+    "buyPrice": 37800,
+    "sellPrice": 39250,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 1477980,
+    "sellTotal": 1534675,
     "paymentMethod": "شيك اجل 60  يوم"
   },
   {
     "date": "28/07/2026",
     "orderNo": 26,
     "client": "ويكادي",
+    "buyPrice": 37500,
+    "sellPrice": 37700,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
     "buyTotal": 2971500,
     "sellTotal": 2987348,
     "paymentMethod": "كاش 100%"
@@ -987,318 +159,118 @@
     "date": "29/07/2026",
     "orderNo": 27,
     "client": "خالد صبري",
-    "buyTotal": 1144212,
-    "sellTotal": 1194345,
-    "paymentMethod": "شيك 60 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": 27,
-    "client": "خالد صبري",
-    "buyTotal": 1520572,
-    "sellTotal": 1587195,
-    "paymentMethod": "شيك 60 يوم"
-  },
-  {
-    "date": "29/07/2026",
-    "orderNo": 27,
-    "client": "خالد صبري",
-    "buyTotal": 1139944,
-    "sellTotal": 1189890,
+    "buyPrice": 38800,
+    "sellPrice": 40500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 3804728,
+    "sellTotal": 3971430,
     "paymentMethod": "شيك 60 يوم"
   },
   {
     "date": "31/07/2026",
     "orderNo": 28,
     "client": "ويكادي",
-    "buyTotal": 1850600,
-    "sellTotal": 1867645,
-    "paymentMethod": "كاش 25% - شيك شهر"
-  },
-  {
-    "date": "31/07/2026",
-    "orderNo": 28,
-    "client": "ويكادي",
-    "buyTotal": 1862000,
-    "sellTotal": 1879150,
+    "buyPrice": 38000,
+    "sellPrice": 38350,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 3712600,
+    "sellTotal": 3746795,
     "paymentMethod": "كاش 25% - شيك شهر"
   },
   {
     "date": null,
     "orderNo": 44,
     "client": "سامكريت مصر",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": null,
-    "orderNo": 44,
-    "client": "سامكريت مصر",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": null,
-    "orderNo": 44,
-    "client": "سامكريت مصر",
-    "buyTotal": 0,
-    "sellTotal": 0,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": null,
-    "orderNo": 44,
-    "client": "سامكريت مصر",
-    "buyTotal": 0,
-    "sellTotal": 0,
+    "buyPrice": 0,
+    "sellPrice": 0,
+    "buyPrice2": 40000,
+    "sellPrice2": 41000,
+    "buyTotal": 7134916,
+    "sellTotal": 7243060,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
     "date": "06/08/2026",
     "orderNo": 31,
     "client": "فالتور",
-    "buyTotal": 1952775,
-    "sellTotal": 1977525,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 31,
-    "client": "فالتور",
-    "buyTotal": 1948041,
-    "sellTotal": 1972731,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 31,
-    "client": "فالتور",
-    "buyTotal": 1958298,
-    "sellTotal": 1983118,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 31,
-    "client": "فالتور",
-    "buyTotal": 2221429.5,
-    "sellTotal": 2249584.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 31,
-    "client": "فالتور",
-    "buyTotal": 8194554,
-    "sellTotal": 8298414,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 31,
-    "client": "فالتور",
-    "buyTotal": 3625060.5,
-    "sellTotal": 3671005.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 31,
-    "client": "فالتور",
-    "buyTotal": 854092.5,
-    "sellTotal": 864917.5,
+    "buyPrice": 39450,
+    "sellPrice": 39950,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 20754250.5,
+    "sellTotal": 21017295.5,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
     "date": "06/08/2026",
     "orderNo": 32,
     "client": "ويكادي",
-    "buyTotal": 222885,
-    "sellTotal": 224347.5,
-    "paymentMethod": "كاش 50% - شيك اجل شهر"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 32,
-    "client": "ويكادي",
-    "buyTotal": 730758,
-    "sellTotal": 735553,
-    "paymentMethod": "كاش 50% - شيك اجل شهر"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 32,
-    "client": "ويكادي",
-    "buyTotal": 1146429,
-    "sellTotal": 1153951.5,
-    "paymentMethod": "كاش 50% - شيك اجل شهر"
-  },
-  {
-    "date": "06/08/2026",
-    "orderNo": 32,
-    "client": "ويكادي",
-    "buyTotal": 153924,
-    "sellTotal": 154934,
+    "buyPrice": 38100,
+    "sellPrice": 38350,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2253996,
+    "sellTotal": 2268786,
     "paymentMethod": "كاش 50% - شيك اجل شهر"
   },
   {
     "date": "09/08/2026",
     "orderNo": 33,
     "client": "ويكادي",
-    "buyTotal": 1095750,
-    "sellTotal": 1101594,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "09/08/2026",
-    "orderNo": 33,
-    "client": "ويكادي",
-    "buyTotal": 724874.9999999999,
-    "sellTotal": 728740.9999999999,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "09/08/2026",
-    "orderNo": 33,
-    "client": "ويكادي",
-    "buyTotal": 746625,
-    "sellTotal": 750607,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "09/08/2026",
-    "orderNo": 33,
-    "client": "ويكادي",
-    "buyTotal": 78750,
-    "sellTotal": 79170,
+    "buyPrice": 37500,
+    "sellPrice": 37700,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2646000,
+    "sellTotal": 2660112,
     "paymentMethod": "كاش 100%"
   },
   {
     "date": "09/08/2026",
     "orderNo": 34,
     "client": "ويكادي",
-    "buyTotal": 147645,
-    "sellTotal": 149189,
-    "paymentMethod": "كاش 50% - شيك اجل شهر"
-  },
-  {
-    "date": "09/08/2026",
-    "orderNo": 34,
-    "client": "ويكادي",
-    "buyTotal": 148410,
-    "sellTotal": 149962,
-    "paymentMethod": "كاش 50% - شيك اجل شهر"
-  },
-  {
-    "date": "09/08/2026",
-    "orderNo": 34,
-    "client": "ويكادي",
-    "buyTotal": 2174895,
-    "sellTotal": 2197639,
+    "buyPrice": 38250,
+    "sellPrice": 38650,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2470950,
+    "sellTotal": 2496790,
     "paymentMethod": "كاش 50% - شيك اجل شهر"
   },
   {
     "date": "11/08/2026",
     "orderNo": 36,
     "client": "خالد صبري",
-    "buyTotal": 76927.5,
-    "sellTotal": 78195,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "11/08/2026",
-    "orderNo": 36,
-    "client": "خالد صبري",
-    "buyTotal": 847780.4999999999,
-    "sellTotal": 861748.9999999999,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "11/08/2026",
-    "orderNo": 36,
-    "client": "خالد صبري",
-    "buyTotal": 1082902.5,
-    "sellTotal": 1100745,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "11/08/2026",
-    "orderNo": 36,
-    "client": "خالد صبري",
-    "buyTotal": 2158704,
-    "sellTotal": 2194272,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "11/08/2026",
-    "orderNo": 36,
-    "client": "خالد صبري",
-    "buyTotal": 464326.5,
-    "sellTotal": 471977,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "11/08/2026",
-    "orderNo": 36,
-    "client": "خالد صبري",
-    "buyTotal": 459987,
-    "sellTotal": 467566,
+    "buyPrice": 39450,
+    "sellPrice": 40100,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 5090628,
+    "sellTotal": 5174504,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
     "date": "16/08/2026",
     "orderNo": 37,
     "client": "فالتور",
-    "buyTotal": 4560814.500000001,
-    "sellTotal": 4618619.500000001,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 37,
-    "client": "فالتور",
-    "buyTotal": 463932,
-    "sellTotal": 469812,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 37,
-    "client": "فالتور",
-    "buyTotal": 926286,
-    "sellTotal": 938026,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 37,
-    "client": "فالتور",
-    "buyTotal": 154249.5,
-    "sellTotal": 156204.5,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 37,
-    "client": "فالتور",
-    "buyTotal": 817404,
-    "sellTotal": 827764,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 37,
-    "client": "فالتور",
-    "buyTotal": 1844682,
-    "sellTotal": 1868062,
+    "buyPrice": 39450,
+    "sellPrice": 39950,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 8767368,
+    "sellTotal": 8878488,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
     "date": "16/08/2026",
     "orderNo": 38,
     "client": "ويكادي",
+    "buyPrice": 38000,
+    "sellPrice": 38050,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
     "buyTotal": 1857440,
     "sellTotal": 1859884,
     "paymentMethod": "كاش 100%"
@@ -1307,78 +279,46 @@
     "date": "16/08/2026",
     "orderNo": 39,
     "client": "بينتاكون",
-    "buyTotal": 413565,
-    "sellTotal": 424035,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 39,
-    "client": "بينتاكون",
-    "buyTotal": 154445,
-    "sellTotal": 158355,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "16/08/2026",
-    "orderNo": 39,
-    "client": "بينتاكون",
-    "buyTotal": 1399485,
-    "sellTotal": 1434915,
+    "buyPrice": 39500,
+    "sellPrice": 40500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 1967495,
+    "sellTotal": 2017305,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
     "date": "17/08/2026",
     "orderNo": 40,
     "client": "ويكادي",
-    "buyTotal": 245311,
-    "sellTotal": 247544,
-    "paymentMethod": "كاش 25% - شيك اجل شهر"
-  },
-  {
-    "date": "17/08/2026",
-    "orderNo": 40,
-    "client": "ويكادي",
-    "buyTotal": 1206176.5,
-    "sellTotal": 1217156,
-    "paymentMethod": "كاش 25% - شيك اجل شهر"
-  },
-  {
-    "date": "17/08/2026",
-    "orderNo": 40,
-    "client": "ويكادي",
-    "buyTotal": 605587.5,
-    "sellTotal": 611100,
+    "buyPrice": 38450,
+    "sellPrice": 38800,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2057075,
+    "sellTotal": 2075800,
     "paymentMethod": "كاش 25% - شيك اجل شهر"
   },
   {
     "date": "17/08/2026",
     "orderNo": 41,
     "client": "خالد صبري",
-    "buyTotal": 376829.9999999999,
-    "sellTotal": 387323.9999999999,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "17/08/2026",
-    "orderNo": 41,
-    "client": "خالد صبري",
-    "buyTotal": 776175,
-    "sellTotal": 797790,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "17/08/2026",
-    "orderNo": 41,
-    "client": "خالد صبري",
-    "buyTotal": 2752755,
-    "sellTotal": 2829414,
+    "buyPrice": 39500,
+    "sellPrice": 40600,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 3905760,
+    "sellTotal": 4014528,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
     "date": "18/08/2026",
     "orderNo": 42,
     "client": "ويكادي",
+    "buyPrice": 38000,
+    "sellPrice": 38050,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
     "buyTotal": 2768680,
     "sellTotal": 2772323,
     "paymentMethod": "كاش 100%"
@@ -1387,224 +327,60 @@
     "date": "22/08/2026",
     "orderNo": 43,
     "client": "الشركة المتحده",
-    "buyTotal": 469050,
-    "sellTotal": 472590,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "22/08/2026",
-    "orderNo": 43,
-    "client": "الشركة المتحده",
-    "buyTotal": 2672790,
-    "sellTotal": 2692962,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "22/08/2026",
-    "orderNo": 43,
-    "client": "الشركة المتحده",
-    "buyTotal": 2119350.75,
-    "sellTotal": 2135345.85,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "22/08/2026",
-    "orderNo": 43,
-    "client": "الشركة المتحده",
-    "buyTotal": 1985115,
-    "sellTotal": 2000097,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "22/08/2026",
-    "orderNo": 43,
-    "client": "الشركة المتحده",
-    "buyTotal": 4141274.25,
-    "sellTotal": 4172529.15,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "22/08/2026",
-    "orderNo": 43,
-    "client": "الشركة المتحده",
-    "buyTotal": 6224850,
-    "sellTotal": 6271830,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "03/09/2026",
-    "orderNo": 44,
-    "client": "سامكريت مصر",
-    "buyTotal": 449600,
-    "sellTotal": 460840,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "03/09/2026",
-    "orderNo": 44,
-    "client": "سامكريت مصر",
-    "buyTotal": 3983716,
-    "sellTotal": 4013080,
-    "paymentMethod": "شيك اجل 60 يوم"
-  },
-  {
-    "date": "03/09/2026",
-    "orderNo": 44,
-    "client": "سامكريت مصر",
-    "buyTotal": 2701600,
-    "sellTotal": 2769140,
+    "buyPrice": 39750,
+    "sellPrice": 40050,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 17612430,
+    "sellTotal": 17745354,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
     "date": "09/09/2026",
     "orderNo": 45,
     "client": "ويكادي",
-    "buyTotal": 296807,
-    "sellTotal": 296807,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "09/09/2026",
-    "orderNo": 45,
-    "client": "ويكادي",
-    "buyTotal": 904536.5,
-    "sellTotal": 904536.5,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "09/09/2026",
-    "orderNo": 45,
-    "client": "ويكادي",
-    "buyTotal": 743543.4999999999,
-    "sellTotal": 743543.4999999999,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "09/09/2026",
-    "orderNo": 45,
-    "client": "ويكادي",
-    "buyTotal": 448644,
-    "sellTotal": 448644,
+    "buyPrice": 38150,
+    "sellPrice": 38150,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2393531,
+    "sellTotal": 2393531,
     "paymentMethod": "كاش 100%"
   },
   {
     "date": "16/09/2026",
     "orderNo": 46,
     "client": "فالتور",
-    "buyTotal": 5037629.999999999,
-    "sellTotal": 5115131.999999999,
-    "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
-  },
-  {
-    "date": "16/09/2026",
-    "orderNo": 46,
-    "client": "فالتور",
-    "buyTotal": 306540,
-    "sellTotal": 311256,
-    "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
-  },
-  {
-    "date": "16/09/2026",
-    "orderNo": 46,
-    "client": "فالتور",
-    "buyTotal": 3288870,
-    "sellTotal": 3339468,
-    "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
-  },
-  {
-    "date": "16/09/2026",
-    "orderNo": 46,
-    "client": "فالتور",
-    "buyTotal": 229710,
-    "sellTotal": 233244,
-    "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
-  },
-  {
-    "date": "16/09/2026",
-    "orderNo": 46,
-    "client": "فالتور",
-    "buyTotal": 539370,
-    "sellTotal": 547668,
-    "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
-  },
-  {
-    "date": "16/09/2026",
-    "orderNo": 46,
-    "client": "فالتور",
-    "buyTotal": 381420,
-    "sellTotal": 387288,
+    "buyPrice": 39000,
+    "sellPrice": 39600,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 9783540,
+    "sellTotal": 9934056,
     "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
   },
   {
     "date": "19/09/2026",
     "orderNo": 47,
     "client": "ويكادي",
-    "buyTotal": 2483910,
-    "sellTotal": 2496780,
-    "paymentMethod": ""
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 47,
-    "client": "ويكادي",
-    "buyTotal": 489834,
-    "sellTotal": 492372,
-    "paymentMethod": ""
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 47,
-    "client": "ويكادي",
-    "buyTotal": 601002,
-    "sellTotal": 604116,
-    "paymentMethod": ""
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 47,
-    "client": "ويكادي",
-    "buyTotal": 979282,
-    "sellTotal": 984356,
+    "buyPrice": 38600,
+    "sellPrice": 38800,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 4554028,
+    "sellTotal": 4577624,
     "paymentMethod": ""
   },
   {
     "date": "19/09/2026",
     "orderNo": 48,
     "client": "ويكادي",
-    "buyTotal": 244602,
-    "sellTotal": 244923,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 48,
-    "client": "ويكادي",
-    "buyTotal": 231267,
-    "sellTotal": 231570.5,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 48,
-    "client": "ويكادي",
-    "buyTotal": 373380,
-    "sellTotal": 373870,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 48,
-    "client": "ويكادي",
-    "buyTotal": 823722,
-    "sellTotal": 824803,
-    "paymentMethod": "كاش 100%"
-  },
-  {
-    "date": "19/09/2026",
-    "orderNo": 48,
-    "client": "ويكادي",
-    "buyTotal": 150495,
-    "sellTotal": 150692.5,
+    "buyPrice": 38100,
+    "sellPrice": 38150,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 1823466,
+    "sellTotal": 1825859,
     "paymentMethod": "كاش 100%"
   }
 ]
