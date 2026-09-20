@@ -1,0 +1,74 @@
+[
+  {
+    "date": "17/08/2026",
+    "orderNo": 41,
+    "client": "خالد صبري",
+    "buyTotal": 39500,
+    "sellTotal": 40600,
+    "paymentMethod": "شيك اجل 60 يوم"
+  },
+  {
+    "date": "03/09/2026",
+    "orderNo": 44,
+    "client": "سامكريت مصر",
+    "buyTotal": 40000,
+    "sellTotal": 41000,
+    "paymentMethod": "شيك اجل 60 يوم"
+  },
+  {
+    "date": "16/09/2026",
+    "orderNo": 46,
+    "client": "فالتور",
+    "buyTotal": 39000,
+    "sellTotal": 39600,
+    "paymentMethod": "كاش 34% - شيك اجل 10 يوم - شيك اجل 40 يوم"
+  },
+  {
+    "date": "19/09/2026",
+    "orderNo": 48,
+    "client": "ويكادي",
+    "buyTotal": 38100,
+    "sellTotal": 38150,
+    "paymentMethod": "كاش 100%"
+  },
+  {
+    "date": "18/07/2026",
+    "orderNo": "9--4",
+    "client": "بيراميدز",
+    "buyTotal": 37500,
+    "sellTotal": 37600,
+    "paymentMethod": "كاش 100%"
+  },
+  {
+    "date": null,
+    "orderNo": "T-106/1",
+    "client": "عميل التطوير",
+    "buyTotal": 0,
+    "sellTotal": 0,
+    "paymentMethod": ""
+  },
+  {
+    "date": "21/07/2026",
+    "orderNo": "D-105/1",
+    "client": "جي دبيو",
+    "buyTotal": 37800,
+    "sellTotal": 39250,
+    "paymentMethod": "شيك اجل 60  يوم"
+  },
+  {
+    "date": "16/08/2026",
+    "orderNo": 39,
+    "client": "بينتاكون",
+    "buyTotal": 39500,
+    "sellTotal": 40500,
+    "paymentMethod": "شيك اجل 60 يوم"
+  },
+  {
+    "date": "22/08/2026",
+    "orderNo": 43,
+    "client": "الشركة المتحده",
+    "buyTotal": 39750,
+    "sellTotal": 40050,
+    "paymentMethod": "شيك اجل 60 يوم"
+  }
+]

@@ -263,6 +263,47 @@ def convert_last_prices(ws):
     return out
 
 
+
+def convert_all_sales(ws):
+    """بيقرأ نفس شيت 'اخر سعر شراء وبيع' في APP.xlsx لكن على أساس إن كل صف =
+    أمر بيع مستقل (العميل ممكن يتكرر لو له أكتر من أمر). بيدعم أسماء الأعمدة
+    القديمة (اخر سعر شراء / اخر سعر بيع / اخر طريقة السداد / تاريخ اخر فاتورة)
+    والجديدة (سعر شراء / سعر بيع / طريقة السداد / تاريخ الفاتورة) في نفس الوقت،
+    عشان تشتغل قبل وبعد ما تغيّر أسماء الهيدر من غير ما يبقى فيه انقطاع.
+    الفرونت هو اللي بيرتّبهم تنازليًا حسب التاريخ ويعمل فلتر لعميل واحد."""
+    rows = list(ws.iter_rows(values_only=True))
+    header_i, cols = find_header_row(rows, ['اسم العميل'])
+    if header_i == -1:
+        return []
+
+    def col(*names, default=None):
+        for n in names:
+            if n in cols:
+                return cols[n]
+        return default
+
+    c_client = col('اسم العميل', default=0)
+    c_buy = col('سعر شراء', 'اخر سعر شراء', default=1)
+    c_sell = col('سعر بيع', 'اخر سعر بيع', default=2)
+    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=3)
+    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=4)
+    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
+
+    out = []
+    for row in rows[header_i + 1:]:
+        name = row[c_client] if c_client < len(row) else None
+        if not is_valid_name(name):
+            continue
+        out.append({
+            'date': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
+            'orderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
+            'client': str(name).strip(),
+            'buyTotal': to_number(row[c_buy]) if c_buy < len(row) else 0,
+            'sellTotal': to_number(row[c_sell]) if c_sell < len(row) else 0,
+            'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
+        })
+    return out
+
 def main():
     xlsx_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), 'APP.xlsx')
     out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(xlsx_path))
@@ -274,6 +315,7 @@ def main():
     salaries = convert_salaries(wb['الرواتب'])
     overdue = convert_overdue(wb['اجمالي متأخرات']) if 'اجمالي متأخرات' in wb.sheetnames else {'rows': [], 'grandTotal': {'count': 0, 'amount': 0, 'avgDelay': 0}}
     last_prices = convert_last_prices(wb[LAST_PRICES_SHEET_NAME]) if LAST_PRICES_SHEET_NAME in wb.sheetnames else []
+    all_sales = convert_all_sales(wb[LAST_PRICES_SHEET_NAME]) if LAST_PRICES_SHEET_NAME in wb.sheetnames else []
 
     with open(os.path.join(out_dir, 'checks.json'), 'w', encoding='utf-8') as f:
         json.dump(checks, f, ensure_ascii=False, indent=2)
@@ -285,6 +327,8 @@ def main():
         json.dump(overdue, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'lastPrices.json'), 'w', encoding='utf-8') as f:
         json.dump(last_prices, f, ensure_ascii=False, indent=2)
+    with open(os.path.join(out_dir, 'allSales.json'), 'w', encoding='utf-8') as f:
+        json.dump(all_sales, f, ensure_ascii=False, indent=2)
 
     # وقت التحويل ده (مش وقت آخر تعديل في الإكسل نفسه) — بيتقرا في الواجهة
     # عشان اليوزر يعرف بيانات الشيكات/العملاء/الأسعار/المتأخرات دي جايه من
