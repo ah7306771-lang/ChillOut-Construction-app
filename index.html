@@ -945,7 +945,11 @@
      أفقي عشان جدول الشيكات (6 أعمدة) يبان كامل من غير ما يتقص. */
   .quick-status-modal.qsm-wide{max-width:96vw;width:820px;}
   .qs-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .qs-table-scroll table.dtable{white-space:nowrap;}
+  .qs-table-scroll table.dtable{white-space:nowrap;table-layout:auto;}
+  .qs-table-scroll table.dtable td,.qs-table-scroll table.dtable th{
+    white-space:nowrap !important;word-break:normal !important;
+    overflow-wrap:normal !important;overflow:visible !important;
+  }
   /* شيت "اخر سعر شراء وبيع": اسم العميل وطريقة السداد في سطر واحد،
      وخط أوضح للقيم (أرقام إنجليزية عادية بدل الأرقام العربية الهندية
      اللي بتظهر مبعثرة). */
@@ -5717,12 +5721,13 @@ window.safeFileName = function(str){
         }
         var rowsHtml = rows.map(function(it, i){
           var when = it.daysRemaining < 0 ? ('متأخر ' + Math.abs(it.daysRemaining) + ' يوم')
-            : (it.daysRemaining === 0 ? 'مستحق النهاردة' : ('باقي ' + it.daysRemaining + ' يوم'));
+            : (it.daysRemaining === 0 ? 'مستحق اليوم' : ('باقي ' + it.daysRemaining + ' يوم'));
+          var whenStyle = (it.daysRemaining === 0) ? ' style="color:#e91e63;font-weight:700;"' : '';
           var valTxt = (typeof it.value === 'number') ? it.value.toLocaleString('ar-EG') : escQuick_(it.value);
           var trClass = (it.daysRemaining < 0) ? ' class="row-overdue"' : '';
           return '<tr' + trClass + '><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
-            + '</td><td>' + escQuick_(it.type) + '</td><td>' + escQuick_(when) + '</td></tr>';
+            + '</td><td>' + escQuick_(it.type) + '</td><td' + whenStyle + '>' + escQuick_(when) + '</td></tr>';
         }).join('');
           var totalValue = rows.reduce(function(sum, it){
             var v = (typeof it.value === 'number') ? it.value : (parseFloat(String(it.value).replace(/,/g, '')) || 0);
