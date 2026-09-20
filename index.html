@@ -5656,9 +5656,51 @@ window.safeFileName = function(str){
     });
   }
   function openMySalaryFlow_(){
+    // لو الجلسة مش مربوطة بموظف بعينه (مثلاً الأدمن داخل بـ CHILL/1234)
+    // بنسأله يختار اسم الموظف اللي عايز يشوف/يختبر بياناته، وبعدها
+    // بنكمل عادي. الاختيار ده مؤقت للجلسة الحالية بس (مش بيبقى دخول
+    // فعلي بالاسم ده — مفيش باسوردات ولا صلاحيات إضافية بتتفعل).
+    if (!currentSessionEmployeeName) {
+      pickEmployeeForSalaryView_(function(picked){
+        if (!picked) return;
+        currentSessionEmployeeName = picked;
+        showScreen('my-salary');
+        loadMySalary_();
+        refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
+      });
+      return;
+    }
     showScreen('my-salary');
     loadMySalary_();
     refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
+  }
+  // منتقي اسم الموظف — بيجيب قائمة الموظفين من السيرفر ويعرضها في مودال
+  // بسيط بـ <select>. بيتناديه من openMySalaryFlow_ لما مافيش اسم موظف.
+  function pickEmployeeForSalaryView_(cb){
+    if (!ATTENDANCE_SCRIPT_URL) { cb && cb(null); return; }
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList').then(function(r){ return r.json(); }).then(function(res){
+      var names = (res && res.employees ? res.employees : (res && res.ok && res.list ? res.list : []))
+        .map(function(e){ return typeof e === 'string' ? e : (e && (e.name || e.Name || e.اسم)); })
+        .filter(Boolean);
+      if (!names.length) { alert('تعذّر تحميل قائمة الموظفين'); cb && cb(null); return; }
+      showEmployeePicker_(names, cb);
+    }).catch(function(){ alert('تعذّر الاتصال بالسيرفر'); cb && cb(null); });
+  }
+  function showEmployeePicker_(names, cb){
+    var overlay = document.getElementById('employeePickerOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'employeePickerOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      overlay.innerHTML = '<div style="background:#fff;padding:22px 20px;border-radius:14px;width:88%;max-width:340px;font-family:Cairo,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.35);" dir="rtl"><div style="font-weight:700;font-size:16px;margin-bottom:12px;text-align:center;">اختار اسم الموظف</div><select id="employeePickerSelect" style="width:100%;padding:10px;font-size:15px;font-family:Cairo,sans-serif;border:1px solid #ccc;border-radius:8px;margin-bottom:16px;"></select><div style="display:flex;gap:10px;"><button type="button" id="employeePickerCancel" style="flex:1;padding:10px;border:1px solid #ccc;background:#f5f5f5;border-radius:8px;font-family:Cairo,sans-serif;font-size:14px;cursor:pointer;">إلغاء</button><button type="button" id="employeePickerOk" style="flex:1;padding:10px;border:0;background:#0d6efd;color:#fff;border-radius:8px;font-family:Cairo,sans-serif;font-size:14px;cursor:pointer;">اختيار</button></div></div>';
+      document.body.appendChild(overlay);
+    }
+    var sel = overlay.querySelector('#employeePickerSelect');
+    sel.innerHTML = '<option value="">— اختار —</option>' + names.map(function(n){ return '<option value="' + n.replace(/"/g,'&quot;') + '">' + n + '</option>'; }).join('');
+    overlay.style.display = 'flex';
+    function close(picked){ overlay.style.display = 'none'; cb && cb(picked || null); }
+    overlay.querySelector('#employeePickerCancel').onclick = function(){ close(null); };
+    overlay.querySelector('#employeePickerOk').onclick = function(){ close(sel.value); };
   }
   var openMySalaryTileBtn = document.getElementById('openMySalaryTileBtn');
   if (openMySalaryTileBtn) openMySalaryTileBtn.addEventListener('click', openMySalaryFlow_);
@@ -6251,7 +6293,10 @@ window.safeFileName = function(str){
     // "راتبي" مخصوصة للموظفين بس — دخول المسؤول مالوش راتب شخصي يشوفه هنا،
     // فمنفصلة عن قايمة TOGGLE_TILES_ (اللي بتتحكم فيها شاشة "إدارة الشاشات").
     var salaryTile = document.getElementById('openMySalaryTileBtn');
-    if (salaryTile) salaryTile.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
+    // "راتبي" بقت تبان دايماً — حتى للأدمن اللي داخل بـ CHILL — عشان
+    // يقدر يختبر إشعارات أي موظف من نفس التطبيق. لو الجلسة مش لموظف
+    // بعينه، أول ضغطة على الأيقونة بتطلب من الأدمن يختار اسم الموظف.
+    if (salaryTile) salaryTile.style.display = '';
   }
 
   function setIconManageStatus_(msg, isErr){
