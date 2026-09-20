@@ -265,12 +265,13 @@ def convert_last_prices(ws):
 
 
 def convert_all_sales(ws):
-    """بيقرأ نفس شيت 'اخر سعر شراء وبيع' في APP.xlsx لكن على أساس إن كل صف =
-    أمر بيع مستقل (العميل ممكن يتكرر لو له أكتر من أمر). بيدعم أسماء الأعمدة
-    القديمة (اخر سعر شراء / اخر سعر بيع / اخر طريقة السداد / تاريخ اخر فاتورة)
-    والجديدة (سعر شراء / سعر بيع / طريقة السداد / تاريخ الفاتورة) في نفس الوقت،
-    عشان تشتغل قبل وبعد ما تغيّر أسماء الهيدر من غير ما يبقى فيه انقطاع.
-    الفرونت هو اللي بيرتّبهم تنازليًا حسب التاريخ ويعمل فلتر لعميل واحد."""
+    """بيقرأ شيت 'اخر سعر شراء وبيع' في APP.xlsx ويجمّع الصفوف حسب (اسم
+    العميل + رقم أمر البيع) في سطر واحد لكل أمر — لأن الماكرو بيكتب صف لكل
+    صنف (قطر) في نفس أمر البيع، فنجمع الإجماليات ونحتفظ بأول سعر ظهر لكل
+    أمر. النتيجة مرتبة تنازليًا حسب التاريخ ثم رقم الأمر، ومفلترة لإخفاء أي
+    أمر بدون سعر بيع (زي ما كان في الشاشة الأصلية). بيدعم أسماء الأعمدة
+    القديمة والجديدة (يعني اخر سعر شراء / سعر شراء / إلخ) عشان يشتغل قبل
+    وبعد أي تغيير في أسماء الهيدر."""
     rows = list(ws.iter_rows(values_only=True))
     header_i, cols = find_header_row(rows, ['اسم العميل'])
     if header_i == -1:
@@ -285,45 +286,97 @@ def convert_all_sales(ws):
     c_client = col('اسم العميل', default=0)
     c_buy = col('سعر شراء', 'اخر سعر شراء', default=1)
     c_sell = col('سعر بيع', 'اخر سعر بيع', default=2)
-    # أعمدة السعر التانية (لأوامر البيع اللي فيها أكتر من سعر واحد للأصناف
-    # المختلفة). لو الأمر بسعر واحد بس، الأعمدة دي بتفضل فاضية.
-    c_buy2 = col('سعر شراء 2', 'سعر شراء ثاني')
-    c_sell2 = col('سعر بيع 2', 'سعر بيع ثاني')
-    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=5)
-    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=6)
-    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=7)
-    # أعمدة الإجمالي (سعر شراء × كمية، سعر بيع × كمية) لكل أمر بيع
-    c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء')
-    c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع')
+    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=3)
+    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=4)
+    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
+    c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء', default=6)
+    c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع', default=7)
 
-    out = []
+    # Group by (client + orderNo) — كل مفتاح فيه: totals مُجمَّعة + أول سعر
+    # شراء/بيع لقيته + مجموعة الأسعار المختلفة (لو الأمر فيه أصناف بأسعار
+    # مختلفة، نعرضهم في العمود مفصولين بـ "/") + تاريخ الأول + طريقة السداد.
+    grouped = {}
+    order_list = []
     for row in rows[header_i + 1:]:
         name = row[c_client] if c_client < len(row) else None
         if not is_valid_name(name):
             continue
-        # لو فيه أعمدة "إجمالي..." نستخدمها (المفضّل). غير كده fallback على
-        # عمود السعر العادي (أول ما تنشئ الشيت الجديد ما يبقاش فيها إجماليات
-        # لسه، فنعرض السعر ذاته على الأقل).
-        buy_val = to_number(row[c_buy_total_col]) if (c_buy_total_col is not None and c_buy_total_col < len(row)) else 0
-        if not buy_val:
-            buy_val = to_number(row[c_buy]) if c_buy < len(row) else 0
-        sell_val = to_number(row[c_sell_total_col]) if (c_sell_total_col is not None and c_sell_total_col < len(row)) else 0
-        if not sell_val:
-            sell_val = to_number(row[c_sell]) if c_sell < len(row) else 0
-        buy2_val = to_number(row[c_buy2]) if (c_buy2 is not None and c_buy2 < len(row)) else 0
-        sell2_val = to_number(row[c_sell2]) if (c_sell2 is not None and c_sell2 < len(row)) else 0
+        order_val = row[c_order] if c_order < len(row) else None
+        order_str = str(order_val).strip() if order_val is not None else ''
+        key = str(name).strip() + '|' + order_str
+        if key not in grouped:
+            grouped[key] = {
+                'date': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
+                'orderNo': order_val if order_val is not None else '',
+                'client': str(name).strip(),
+                'buy_prices': [],
+                'sell_prices': [],
+                'buyTotal': 0.0,
+                'sellTotal': 0.0,
+                'paymentMethod': '',
+            }
+            order_list.append(key)
+        g = grouped[key]
+        # جمع الإجماليات
+        bt = to_number(row[c_buy_total_col]) if c_buy_total_col < len(row) else 0
+        st = to_number(row[c_sell_total_col]) if c_sell_total_col < len(row) else 0
+        g['buyTotal'] += bt
+        g['sellTotal'] += st
+        # لو الأمر بأكتر من سعر (أصناف مختلفة)، نجمع الأسعار المتميزة
+        bp = to_number(row[c_buy]) if c_buy < len(row) else 0
+        sp = to_number(row[c_sell]) if c_sell < len(row) else 0
+        if bp and bp not in g['buy_prices']:
+            g['buy_prices'].append(bp)
+        if sp and sp not in g['sell_prices']:
+            g['sell_prices'].append(sp)
+        # أول طريقة سداد غير فاضية
+        if not g['paymentMethod'] and c_payment < len(row) and row[c_payment] is not None:
+            pm = str(row[c_payment]).strip()
+            if pm:
+                g['paymentMethod'] = pm
+        # لو التاريخ الأول كان فاضي وفيه تاريخ في الصف الحالي، ناخده
+        if not g['date'] and c_date < len(row):
+            g['date'] = cell_to_ddmmyyyy(row[c_date])
+
+    # نبني الإخراج مع فلترة الأوامر بدون سعر بيع
+    out = []
+    for k in order_list:
+        g = grouped[k]
+        # إخفاء الأمر لو مفيش أي سعر بيع (لا في العمود العادي ولا في الإجمالي)
+        if not g['sell_prices'] and not g['sellTotal']:
+            continue
+        # الأسعار: لو أكتر من واحد نعرضهم كنص "40000 / 41000"
+        buy_price = g['buy_prices'][0] if g['buy_prices'] else 0
+        sell_price = g['sell_prices'][0] if g['sell_prices'] else 0
+        buy_price2 = g['buy_prices'][1] if len(g['buy_prices']) > 1 else 0
+        sell_price2 = g['sell_prices'][1] if len(g['sell_prices']) > 1 else 0
         out.append({
-            'date': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
-            'orderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
-            'client': str(name).strip(),
-            'buyPrice': to_number(row[c_buy]) if c_buy < len(row) else 0,
-            'sellPrice': to_number(row[c_sell]) if c_sell < len(row) else 0,
-            'buyPrice2': buy2_val,
-            'sellPrice2': sell2_val,
-            'buyTotal': buy_val,
-            'sellTotal': sell_val,
-            'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
+            'date': g['date'],
+            'orderNo': g['orderNo'],
+            'client': g['client'],
+            'buyPrice': buy_price,
+            'sellPrice': sell_price,
+            'buyPrice2': buy_price2,
+            'sellPrice2': sell_price2,
+            'buyTotal': g['buyTotal'],
+            'sellTotal': g['sellTotal'],
+            'paymentMethod': g['paymentMethod'],
         })
+
+    # ترتيب تنازلي حسب التاريخ (الأحدث أولاً)، ثم حسب رقم الأمر تنازلي
+    def sort_key(o):
+        d = o.get('date') or ''
+        try:
+            p = d.split('/')
+            dt = (int(p[2]), int(p[1]), int(p[0]))
+        except Exception:
+            dt = (0, 0, 0)
+        try:
+            ord_num = float(o.get('orderNo') or 0)
+        except Exception:
+            ord_num = 0
+        return (dt, ord_num)
+    out.sort(key=sort_key, reverse=True)
     return out
 
 def main():
