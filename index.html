@@ -5136,6 +5136,13 @@ window.safeFileName = function(str){
       var d = new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
       return isNaN(d.getTime()) ? 0 : d.getTime();
     }
+    function parseOrder_(v){
+      // رقم الأمر ممكن يكون رقم (1, 19) أو نص فيه شرطات (D-105/1, 9--4)
+      // نجرب نحوّله لعدد؛ لو ماقدرش، نستخدم صفر عشان يقع في الآخر
+      if (v === null || v === undefined || v === '') return 0;
+      var n = parseFloat(String(v).replace(/[^0-9.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    }
     var clientNames = {};
     orders.forEach(function(o){ clientNames[o.client] = true; });
     var clientList = Object.keys(clientNames).sort();
@@ -5143,8 +5150,20 @@ window.safeFileName = function(str){
     if (selectedClient) {
       filtered = filtered.filter(function(o){ return o.client === selectedClient; });
     }
-    // ترتيب تنازلي حسب التاريخ (الأحدث أولاً)
-    filtered.sort(function(a,b){ return parseDate_(b.date) - parseDate_(a.date); });
+    // إخفاء أي أمر بدون سعر بيع (لا في العمود العادي ولا في الإجمالي) —
+    // زي ما كان في الشاشة الأصلية "اخر سعر شراء وبيع".
+    filtered = filtered.filter(function(o){
+      var hasSellPrice = (typeof o.sellPrice === 'number' && o.sellPrice > 0);
+      var hasSellTotal = (typeof o.sellTotal === 'number' && o.sellTotal > 0);
+      return hasSellPrice || hasSellTotal;
+    });
+    // ترتيب تنازلي: التاريخ أولاً (الأحدث فوق)، ثم رقم أمر البيع تنازلي
+    // عشان أوامر نفس اليوم تفضل مجمّعة ومرتّبة من الأكبر للأصغر.
+    filtered.sort(function(a,b){
+      var dd = parseDate_(b.date) - parseDate_(a.date);
+      if (dd !== 0) return dd;
+      return parseOrder_(b.orderNo) - parseOrder_(a.orderNo);
+    });
     var totalBuy = 0, totalSell = 0;
     var rowsHtml = filtered.map(function(it, i){
       var buy = (typeof it.buyTotal === 'number') ? it.buyTotal : 0;
