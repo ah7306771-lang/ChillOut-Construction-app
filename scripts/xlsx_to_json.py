@@ -288,18 +288,32 @@ def convert_all_sales(ws):
     c_order = col('رقم امر البيع', 'رقم أمر البيع', default=3)
     c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=4)
     c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
+    # الأعمدة الجديدة اللي بيكتبها ماكرو SyncToApp في بيانات التوريد.xlsm —
+    # الإجمالي بالفعل (سعر شراء × كمية، سعر بيع × كمية) لكل أمر بيع، مش
+    # سعر الوحدة. لو مش موجودين في الشيت، بنقع على أعمدة السعر العادية.
+    c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء')
+    c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع')
 
     out = []
     for row in rows[header_i + 1:]:
         name = row[c_client] if c_client < len(row) else None
         if not is_valid_name(name):
             continue
+        # لو فيه أعمدة "إجمالي..." نستخدمها (المفضّل). غير كده fallback على
+        # عمود السعر العادي (أول ما تنشئ الشيت الجديد ما يبقاش فيها إجماليات
+        # لسه، فنعرض السعر ذاته على الأقل).
+        buy_val = to_number(row[c_buy_total_col]) if (c_buy_total_col is not None and c_buy_total_col < len(row)) else 0
+        if not buy_val:
+            buy_val = to_number(row[c_buy]) if c_buy < len(row) else 0
+        sell_val = to_number(row[c_sell_total_col]) if (c_sell_total_col is not None and c_sell_total_col < len(row)) else 0
+        if not sell_val:
+            sell_val = to_number(row[c_sell]) if c_sell < len(row) else 0
         out.append({
             'date': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
             'orderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
             'client': str(name).strip(),
-            'buyTotal': to_number(row[c_buy]) if c_buy < len(row) else 0,
-            'sellTotal': to_number(row[c_sell]) if c_sell < len(row) else 0,
+            'buyTotal': buy_val,
+            'sellTotal': sell_val,
             'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
         })
     return out
