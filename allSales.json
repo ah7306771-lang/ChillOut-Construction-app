@@ -367,8 +367,8 @@
     "sellPrice": 40300,
     "buyPrice2": 0,
     "sellPrice2": 0,
-    "buyTotal": 1922004.0,
-    "sellTotal": 1963416.0,
+    "buyTotal": 1922004.0000000002,
+    "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
   }
 ]
