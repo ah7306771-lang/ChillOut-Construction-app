@@ -7610,7 +7610,7 @@ window.safeFileName = function(str){
   function loadOrderIntoForm(row){
     $('ordNum').value = row.num || '';
     $('ordNum').readOnly = true;
-    $('ordDate').value = row.date || '';
+    $('ordDate').value = (function(v){if(!v)return'';var s=String(v).trim();var m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');var m2=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);if(m2)return m2[3]+'-'+String(m2[2]).padStart(2,'0')+'-'+String(m2[1]).padStart(2,'0');var d=new Date(s);return isNaN(d.getTime())?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(row.date);
     $('ordSupplier').value = row.supplier || '';
     $('ordClient').value = row.client || '';
     $('ordAttention').value = row.attention || '';
