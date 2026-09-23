@@ -1,0 +1,110 @@
+[
+  {
+    "client": "فالتور",
+    "number": 307385,
+    "value": 2388000,
+    "dueDate": "20/08/2026",
+    "bank": "NBE",
+    "notes": "متبقي منه 380021",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 554541873,
+    "value": 1556850,
+    "dueDate": "17/09/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307379,
+    "value": 2388000,
+    "dueDate": "20/09/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307383,
+    "value": 13300000,
+    "dueDate": "26/09/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "خالد صبري",
+    "number": 532937070,
+    "value": 3971430,
+    "dueDate": "29/09/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307380,
+    "value": 7857894,
+    "dueDate": "06/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "خالد صبري",
+    "number": 532937100,
+    "value": 5043144,
+    "dueDate": "10/10/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "خالد صبري",
+    "number": 9165752,
+    "value": 3979312.84,
+    "dueDate": "17/10/2026",
+    "bank": "BM",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307381,
+    "value": 2388000,
+    "dueDate": "20/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "الشركة المتحده",
+    "number": 2798976,
+    "value": 17745354,
+    "dueDate": "22/10/2026",
+    "bank": "aib",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307384,
+    "value": 13300000,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "سامكريت مصر",
+    "number": 13249953,
+    "value": 7167694.63,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  }
+]
