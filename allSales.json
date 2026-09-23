@@ -1,5 +1,17 @@
 [
   {
+    "date": "23/09/2026",
+    "orderNo": 50,
+    "client": "ويكادي",
+    "buyPrice": 38100,
+    "sellPrice": 38150,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 3910584.0,
+    "sellTotal": 3915716.0,
+    "paymentMethod": ""
+  },
+  {
     "date": "21/09/2026",
     "orderNo": 49,
     "client": "بينتاكون",
@@ -382,17 +394,5 @@
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
-  },
-  {
-    "date": null,
-    "orderNo": 50,
-    "client": "ويكادي",
-    "buyPrice": 38100,
-    "sellPrice": 38150,
-    "buyPrice2": 0,
-    "sellPrice2": 0,
-    "buyTotal": 0.0,
-    "sellTotal": 0.0,
-    "paymentMethod": ""
   }
 ]
