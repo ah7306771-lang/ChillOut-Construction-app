@@ -1,5 +1,17 @@
 [
   {
+    "date": "21/09/2026",
+    "orderNo": 49,
+    "client": "بينتاكون",
+    "buyPrice": 0,
+    "sellPrice": 41500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 1923110.0,
+    "paymentMethod": "اجل 60 يوم"
+  },
+  {
     "date": "19/09/2026",
     "orderNo": 48,
     "client": "ويكادي",
@@ -21,7 +33,7 @@
     "sellPrice2": 0,
     "buyTotal": 4554028.0,
     "sellTotal": 4577624.0,
-    "paymentMethod": "كاش 25% - شيك اجل شهر"
+    "paymentMethod": "كاش 25% - شيك اجل 30 يوم"
   },
   {
     "date": "16/09/2026",
@@ -370,5 +382,17 @@
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
+  },
+  {
+    "date": null,
+    "orderNo": 50,
+    "client": "ويكادي",
+    "buyPrice": 38100,
+    "sellPrice": 38150,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "paymentMethod": ""
   }
 ]
