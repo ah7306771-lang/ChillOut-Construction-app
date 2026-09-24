@@ -995,6 +995,19 @@
   /* شيك متأخر (فات معاد استحقاقه) — صف وردي فاتح يلفت النظر له في الجدول. */
   table.dtable tr.row-overdue td,table.dtable tr.row-due-today td{background:#ffdce6;}
   .qs-net-row td{font-weight:700;background:var(--panel-2,#f4f4f4);}
+  /* أقساط: أي صف حالته "مستحق" (متأخر أو مستحق اليوم) يتلوّن كله أحمر وردي
+     زي شيك متأخر بالظبط (نفس اللون #ffdce6) — على الشاشة وفي الـ PDF. */
+  .installments-table tr.inst-due td,.installments-table tr.inst-due td.status-due,.installments-table tr.inst-due td.overdue{background:#ffdce6;color:#9c0006;}
+  /* وضع تصدير PDF للأقساط (بيتفعّل على النسخة المؤقتة بس وقت التصدير): خط أصغر
+     زي جدول الشيكات، والجدول كله ياخد عرض الورقة من غير سكرول ولا قص، عشان
+     كل الأعمدة والصفوف تظهر في الـ PDF. الخط بيتظبط تلقائيًا (--qs-fs). */
+  .quick-status-modal.installments-modal.qs-exporting{max-width:none;width:100%;}
+  .qs-exporting .installments-table-wrap{max-height:none;overflow:visible;border:none;border-radius:0;}
+  .qs-exporting .installments-table{min-width:0;width:100%;table-layout:auto;}
+  .qs-exporting .installments-table th,.qs-exporting .installments-table td{padding:3px 2px;font-size:var(--qs-fs,9px);line-height:1.2;}
+  .qs-exporting .installments-table th{width:auto;white-space:normal;}
+  .qs-exporting .installments-table td:nth-child(2){white-space:normal;word-break:break-word;}
+  .qs-exporting .installments-summary span{font-size:10px;padding:3px 8px;}
 
   /* ---------- Floating "Contact us" WhatsApp button (login + home only) ---------- */
   .wa-float-btn{
@@ -1540,6 +1553,10 @@
         <span class="home-tile-icon" style="font-size:26px;">🖥️</span>
         <span class="home-tile-label">إدارة الشاشات</span>
       </button>
+      <button type="button" class="home-tile" id="openNotifTestTileBtn" style="display:none;">
+        <span class="home-tile-icon" style="font-size:26px;">🔔</span>
+        <span class="home-tile-label">اختبار الإشعارات</span>
+      </button>
     </div>
   </div>
 </div>
@@ -1651,7 +1668,7 @@
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card" style="max-width:520px;">
-    <h1 class="gate-title">راتبي</h1>
+    <h1 class="gate-title" id="mySalaryTitle">راتبي</h1>
     <div id="mySalaryContent"><div class="empty-note">جاري التحميل...</div></div>
 
     <div class="settings-divider"></div>
@@ -3066,7 +3083,9 @@ window.safeFileName = function(str){
   var currentSessionEmployeeName = null;
   try {
     isEmployeeSession = (localStorage.getItem(ROLE_KEY) === 'employee');
-    currentSessionEmployeeName = localStorage.getItem(ROLE_EMP_NAME_KEY) || null;
+    // اسم الموظف بيتقرا بس لو الجلسة المحفوظة جلسة موظف — عشان اسم قديم
+    // فاضل من موظف دخل قبل كده على نفس الجهاز ما يتنسبش للأدمن.
+    currentSessionEmployeeName = isEmployeeSession ? (localStorage.getItem(ROLE_EMP_NAME_KEY) || null) : null;
   } catch(e){}
   var BIO_ENABLED_KEY = 'tafweedBioEnabled_v1';
   var BIO_CRED_ID_KEY = 'tafweedBioCredId_v1';
@@ -5191,7 +5210,7 @@ window.safeFileName = function(str){
         var shown=(i===2||i===5)?fmtInstallmentDate_(v[i]):([3,6,7,8].indexOf(i)>=0?fmtInstallmentMoney_(v[i]):i===9?fmtInstallmentMoney_(x.lateAmount):i===10?(x.delay!==null?(x.delay+' '+(x.delay===1?'يوم':'أيام')):''):i===11?x.status:escQuick_(v[i]===null||v[i]===undefined?'':v[i]));
         cells.push('<td class="'+cls.join(' ')+'">'+shown+'</td>');
       }
-      return '<tr>'+cells.join('')+'</tr>';
+      return '<tr'+((x.key==='overdue'||x.key==='today')?' class="inst-due"':'')+'>'+cells.join('')+'</tr>';
     }
     listWrap.innerHTML=summary+toolbar+
       '<div class="installments-table-wrap"><table class="installments-table"><thead><tr>'+th+'</tr></thead><tbody id="instTbody"></tbody></table></div>';
@@ -5624,6 +5643,8 @@ window.safeFileName = function(str){
     var err = document.getElementById('loginError');
     if (user === APP_USER && pass === APP_PASS) {
       isEmployeeSession = false;
+      currentSessionEmployeeName = null;
+      try { localStorage.removeItem(ROLE_EMP_NAME_KEY); } catch(e){}
       try {
         if (remember) {
           localStorage.setItem(AUTH_KEY, '1');
@@ -5899,24 +5920,33 @@ window.safeFileName = function(str){
       if (wrap) wrap.innerHTML = '<div class="empty-note">تعذر تحميل الراتب، تأكد من الإنترنت وحاول تاني.</div>';
     });
   }
-  function openMySalaryFlow_(){
-    // لو الجلسة مش مربوطة بموظف بعينه (مثلاً الأدمن داخل بـ CHILL/1234)
-    // بنسأله يختار اسم الموظف اللي عايز يشوف/يختبر بياناته، وبعدها
-    // بنكمل عادي. الاختيار ده مؤقت للجلسة الحالية بس (مش بيبقى دخول
-    // فعلي بالاسم ده — مفيش باسوردات ولا صلاحيات إضافية بتتفعل).
-    if (!currentSessionEmployeeName) {
-      pickEmployeeForSalaryView_(function(picked){
-        if (!picked) return;
-        currentSessionEmployeeName = picked;
-        showScreen('my-salary');
-        loadMySalary_();
-        refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
-      });
-      return;
-    }
+  // بيفتح شاشة "راتبي" ويظبط عنوانها وزرار الرجوع حسب مين فاتحها.
+  function showMySalaryScreen_(){
+    var titleEl = document.getElementById('mySalaryTitle');
+    if (titleEl) titleEl.textContent = isEmployeeSession ? 'راتبي' : ('راتب ' + currentSessionEmployeeName);
+    var backBtn = document.getElementById('backHomeBtnMySalary');
+    if (backBtn) backBtn.textContent = isEmployeeSession ? '→ رجوع للرئيسية' : '→ رجوع للإعدادات';
+    var testStatus = document.getElementById('myPushTestStatus');
+    if (testStatus) testStatus.innerHTML = '';
     showScreen('my-salary');
     loadMySalary_();
     refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
+  }
+  function openMySalaryFlow_(){
+    // الموظف: بيفتح راتبه هو على طول من غير أي سؤال.
+    if (isEmployeeSession) {
+      if (!currentSessionEmployeeName) return;
+      showMySalaryScreen_();
+      return;
+    }
+    // الأدمن: بيختار الموظف اللي عايز يشوف راتبه/يختبر إشعاراته في كل مرة.
+    // الاختيار ده مؤقت للشاشة دي بس (مش دخول فعلي بالاسم ده — مفيش
+    // باسوردات ولا صلاحيات إضافية بتتفعل).
+    pickEmployeeForSalaryView_(function(picked){
+      if (!picked) return;
+      currentSessionEmployeeName = picked;
+      showMySalaryScreen_();
+    });
   }
   // منتقي اسم الموظف — بيجيب قائمة الموظفين من السيرفر ويعرضها في مودال
   // بسيط بـ <select>. بيتناديه من openMySalaryFlow_ لما مافيش اسم موظف.
@@ -5948,8 +5978,18 @@ window.safeFileName = function(str){
   }
   var openMySalaryTileBtn = document.getElementById('openMySalaryTileBtn');
   if (openMySalaryTileBtn) openMySalaryTileBtn.addEventListener('click', openMySalaryFlow_);
+  var openNotifTestTileBtn = document.getElementById('openNotifTestTileBtn');
+  if (openNotifTestTileBtn) openNotifTestTileBtn.addEventListener('click', function(){
+    if (isEmployeeSession) return; // للأدمن بس
+    openMySalaryFlow_();
+  });
   var backHomeBtnMySalary = document.getElementById('backHomeBtnMySalary');
-  if (backHomeBtnMySalary) backHomeBtnMySalary.addEventListener('click', function(){ showScreen('home'); });
+  if (backHomeBtnMySalary) backHomeBtnMySalary.addEventListener('click', function(){
+    if (isEmployeeSession) { showScreen('home'); return; }
+    // الأدمن: نرجع للإعدادات وننسى الموظف اللي كان مختاره.
+    currentSessionEmployeeName = null;
+    showScreen('settings-menu');
+  });
   var enableMyPushBtn = document.getElementById('enableMyPushBtn');
   if (enableMyPushBtn) enableMyPushBtn.addEventListener('click', function(){
     enablePushNotifications(document.getElementById('myPushStatus'), currentSessionEmployeeName);
@@ -6216,6 +6256,25 @@ window.safeFileName = function(str){
     var modal=document.querySelector('.quick-status-modal');
     if(modal) modal.classList.remove('installments-modal');
   });
+  // تصدير جدول الأقساط: بنفعّل وضع "qs-exporting" على النسخة المؤقتة بس
+  // (اللي html2canvas بيصوّرها)، فالشاشة الحقيقية ما بتتغيرش. بعدها بنصغّر
+  // الخط خطوة خطوة لحد ما الجدول كله يبقى داخل عرض الورقة (من غير قص).
+  function qsPrepareInstallmentsExport_(doc){
+    try {
+      var m = doc.querySelector('.quick-status-modal');
+      if (!m || !m.classList.contains('installments-modal')) return;
+      m.classList.add('qs-exporting');
+      var t = m.querySelector('.installments-table');
+      var w = m.querySelector('.installments-table-wrap');
+      if (!t || !w) return;
+      var fs = 9;
+      t.style.setProperty('--qs-fs', fs + 'px');
+      while (fs > 5 && t.offsetWidth > w.clientWidth - 2) {
+        fs -= 0.5;
+        t.style.setProperty('--qs-fs', fs + 'px');
+      }
+    } catch (e) { /* لو فشل الضبط بنكمل بالتنسيق الافتراضي */ }
+  }
   async function buildQuickStatusPdfBlob_(){
     var paper = document.getElementById('quickStatusPaper');
     if (document.fonts && document.fonts.ready) {
@@ -6223,7 +6282,8 @@ window.safeFileName = function(str){
     }
     var canvasImg = await html2canvas(paper, {
       scale: 3, backgroundColor: '#ffffff', useCORS: true,
-      windowWidth: 700, windowHeight: Math.max(paper.scrollHeight + 100, 900)
+      windowWidth: 700, windowHeight: Math.max(paper.scrollHeight + 100, 900),
+      onclone: function(doc){ qsPrepareInstallmentsExport_(doc); }
     });
     var jsPDF = window.jspdf.jsPDF;
     var pdf = new jsPDF('p', 'mm', 'a4');
@@ -6537,13 +6597,15 @@ window.safeFileName = function(str){
       var el = document.getElementById(t.id);
       if (el) el.style.display = (effectiveHidden.indexOf(t.id) > -1) ? 'none' : '';
     });
-    // "راتبي" مخصوصة للموظفين بس — دخول المسؤول مالوش راتب شخصي يشوفه هنا،
-    // فمنفصلة عن قايمة TOGGLE_TILES_ (اللي بتتحكم فيها شاشة "إدارة الشاشات").
+    // "راتبي" مخصوصة للموظفين بس (بيشوف راتبه هو) — منفصلة عن قايمة
+    // TOGGLE_TILES_ (اللي بتتحكم فيها شاشة "إدارة الشاشات").
     var salaryTile = document.getElementById('openMySalaryTileBtn');
-    // "راتبي" بقت تبان دايماً — حتى للأدمن اللي داخل بـ CHILL — عشان
-    // يقدر يختبر إشعارات أي موظف من نفس التطبيق. لو الجلسة مش لموظف
-    // بعينه، أول ضغطة على الأيقونة بتطلب من الأدمن يختار اسم الموظف.
-    if (salaryTile) salaryTile.style.display = '';
+    if (salaryTile) salaryTile.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
+    // "اختبار الإشعارات" في شاشة الإعدادات: للأدمن بس (بيختار أي موظف
+    // ويشوف راتبه ويختبر إشعاراته). مش بتظهر أبدًا لموظف حتى لو الإعدادات
+    // ظاهرة له، عشان ما يقدرش يشوف رواتب غيره.
+    var notifTestTile = document.getElementById('openNotifTestTileBtn');
+    if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
   }
 
   function setIconManageStatus_(msg, isErr){
