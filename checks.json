@@ -9,15 +9,6 @@
     "type": "أ.ق"
   },
   {
-    "client": "ويكادي",
-    "number": 554541873,
-    "value": 1556850,
-    "dueDate": "17/09/2026",
-    "bank": "CIB",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
     "client": "فالتور",
     "number": 307379,
     "value": 2388000,
@@ -104,6 +95,15 @@
     "value": 7167694.63,
     "dueDate": "26/10/2026",
     "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 551298792,
+    "value": 3433000,
+    "dueDate": "20/10/2026",
+    "bank": "CIB",
     "notes": "",
     "type": "أ.ق"
   }
