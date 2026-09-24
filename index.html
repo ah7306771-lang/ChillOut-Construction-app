@@ -6269,7 +6269,7 @@ window.safeFileName = function(str){
       if (!t || !w) return;
       var fs = 9;
       t.style.setProperty('--qs-fs', fs + 'px');
-      while (fs > 5 && t.offsetWidth > w.clientWidth - 2) {
+      while (fs > 5 && t.offsetWidth > w.clientWidth + 1) {
         fs -= 0.5;
         t.style.setProperty('--qs-fs', fs + 'px');
       }
