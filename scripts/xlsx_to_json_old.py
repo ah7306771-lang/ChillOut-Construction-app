@@ -24,15 +24,6 @@ OVERDUE_EMPTY_LABEL = 'لا يوجد مستحقات'
 # لاحظ: اسم الشيت فيه مسافتين بين "شراء" و"وبيع" بالظبط زي ما هو متسمي
 # في APP.xlsx — لو غيّرت الاسم في الشيت لازم تغيّره هنا كمان بنفس الشكل.
 LAST_PRICES_SHEET_NAME = 'اخر سعر شراء  وبيع'
-INSTALLMENTS_SHEET_NAME = 'الاقساط'
-# ترتيب/أسماء أعمدة شيت الأقساط بالظبط زي ما الواجهة (index.html) بتتوقعها:
-# index 5 = تاريخ الاستحقاق، index 8 = المتبقّي — الواجهة بتحسب "مدة
-# التأخير"/"الحالة" لوحدها من التاريخ، فمش لازم تيجي صح من هنا.
-INSTALLMENTS_COLUMNS = [
-    'أمر البيع', 'العميل', 'تاريخ التحميل', 'إجمالي الفاتورة', 'القسط',
-    'تاريخ الاستحقاق', 'قيمة القسط', 'المسدّد', 'المتبقّي',
-    'المتبقّي المتأخر', 'مدة التأخير', 'الحالة',
-]
 
 
 def is_valid_name(v):
@@ -388,63 +379,6 @@ def convert_all_sales(ws):
     out.sort(key=sort_key, reverse=True)
     return out
 
-def convert_installments(ws):
-    """بيقرأ شيت 'الاقساط' ويرجّع نفس شكل {sheet, columns, rows} اللي
-    الواجهة (loadInstallmentsData_ في index.html) بتتوقعه: كل صف فيه
-    'row' (رقم الصف في الإكسل) و'values' (12 قيمة بنفس ترتيب
-    INSTALLMENTS_COLUMNS بالظبط). الواجهة بتحسب مدة التأخير/الحالة/المتبقي
-    المتأخر بنفسها من عمود 'تاريخ الاستحقاق' وعمود 'المتبقّي'، فمش محتاجين
-    نحسبهم هنا ولا نبعت أي تنسيقات/ألوان."""
-    rows = list(ws.iter_rows(values_only=True))
-    header_i, cols = find_header_row(rows, ['العميل', 'تاريخ الاستحقاق'])
-    if header_i == -1:
-        return {'sheet': INSTALLMENTS_SHEET_NAME, 'columns': INSTALLMENTS_COLUMNS, 'rows': []}
-
-    def col(*names):
-        for n in names:
-            if n in cols:
-                return cols[n]
-        return -1
-
-    c_order = col('أمر البيع', 'رقم أمر البيع')
-    c_client = col('العميل')
-    c_load = col('تاريخ التحميل')
-    c_invoice = col('إجمالي الفاتورة')
-    c_label = col('القسط')
-    c_due = col('تاريخ الاستحقاق')
-    c_value = col('قيمة القسط')
-    c_paid = col('المسدّد')
-    c_remaining = col('المتبقّي')
-    c_late_remaining = col('المتبقّي المتأخر')
-    c_delay = col('مدة التأخير')
-    c_status = col('الحالة')
-
-    def get(row, idx):
-        return row[idx] if idx > -1 and idx < len(row) else None
-
-    out = []
-    for row_num, row in enumerate(rows[header_i + 1:], start=header_i + 2):
-        client = get(row, c_client)
-        if not is_valid_name(client):
-            continue
-        values = [
-            get(row, c_order),
-            str(client).strip(),
-            cell_to_ddmmyyyy(get(row, c_load)),
-            to_number(get(row, c_invoice)),
-            get(row, c_label),
-            cell_to_ddmmyyyy(get(row, c_due)),
-            to_number(get(row, c_value)),
-            to_number(get(row, c_paid)),
-            to_number(get(row, c_remaining)),
-            get(row, c_late_remaining),
-            get(row, c_delay),
-            get(row, c_status),
-        ]
-        out.append({'row': row_num, 'values': values})
-    return {'sheet': INSTALLMENTS_SHEET_NAME, 'columns': INSTALLMENTS_COLUMNS, 'rows': out}
-
-
 def main():
     xlsx_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), 'APP.xlsx')
     out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(xlsx_path))
@@ -457,7 +391,6 @@ def main():
     overdue = convert_overdue(wb['اجمالي متأخرات']) if 'اجمالي متأخرات' in wb.sheetnames else {'rows': [], 'grandTotal': {'count': 0, 'amount': 0, 'avgDelay': 0}}
     last_prices = convert_last_prices(wb[LAST_PRICES_SHEET_NAME]) if LAST_PRICES_SHEET_NAME in wb.sheetnames else []
     all_sales = convert_all_sales(wb[LAST_PRICES_SHEET_NAME]) if LAST_PRICES_SHEET_NAME in wb.sheetnames else []
-    installments = convert_installments(wb[INSTALLMENTS_SHEET_NAME]) if INSTALLMENTS_SHEET_NAME in wb.sheetnames else {'sheet': INSTALLMENTS_SHEET_NAME, 'columns': INSTALLMENTS_COLUMNS, 'rows': []}
 
     with open(os.path.join(out_dir, 'checks.json'), 'w', encoding='utf-8') as f:
         json.dump(checks, f, ensure_ascii=False, indent=2)
@@ -471,8 +404,6 @@ def main():
         json.dump(last_prices, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'allSales.json'), 'w', encoding='utf-8') as f:
         json.dump(all_sales, f, ensure_ascii=False, indent=2)
-    with open(os.path.join(out_dir, 'installments.json'), 'w', encoding='utf-8') as f:
-        json.dump(installments, f, ensure_ascii=False, indent=2)
 
     # وقت التحويل ده (مش وقت آخر تعديل في الإكسل نفسه) — بيتقرا في الواجهة
     # عشان اليوزر يعرف بيانات الشيكات/العملاء/الأسعار/المتأخرات دي جايه من
@@ -480,7 +411,7 @@ def main():
     with open(os.path.join(out_dir, 'dataUpdatedAt.json'), 'w', encoding='utf-8') as f:
         json.dump({'updatedAt': datetime.now(timezone.utc).isoformat()}, f, ensure_ascii=False, indent=2)
 
-    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices), '| installments rows:', len(installments['rows']))
+    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices))
 
 
 if __name__ == '__main__':
