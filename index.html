@@ -946,6 +946,7 @@
   .installments-table{width:100%;min-width:1120px;border-collapse:collapse;background:#fff;font-size:11px;direction:rtl;}
   .installments-table th,.installments-table td{border:1px solid #333;padding:6px 5px;text-align:center;vertical-align:middle;white-space:nowrap;}
   .installments-table thead th{background:#efefef;font-weight:800;}
+  .installments-table td{font-weight:700;}
   .installments-table tbody tr:nth-child(even){background:#faf7f4;}
   .installments-table td.money{font-variant-numeric:tabular-nums;}
   .installments-table td.overdue{color:#c00000;font-weight:800;}
@@ -958,7 +959,8 @@
   .installments-summary .is-overdue{color:#9c0006;background:#fff2f2;}
   .installments-summary .is-near{color:#9c5700;background:#fff7e6;}
   .installments-summary .is-paid{color:#006100;background:#edf8ef;}
-  .installments-source-note{font-size:11px;color:var(--ink-soft);text-align:center;margin:0 0 8px;}
+  .installments-toolbar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;font-weight:800;}
+  .installments-toolbar select{padding:6px 10px;border:1px solid var(--panel-line);border-radius:8px;font:inherit;background:#fff;color:inherit;cursor:pointer;}
   .installments-table .c-a{width:7%}.installments-table .c-b{width:11%}.installments-table .c-c{width:9%}
   .installments-table .c-d{width:11%}.installments-table .c-e{width:9%}.installments-table .c-f{width:9%}
   .installments-table .c-g{width:11%}.installments-table .c-h{width:10%}.installments-table .c-i{width:10%}
@@ -1173,7 +1175,6 @@
   </button>
   <button type="button" id="loginPartiesBtn" class="login-fab-btn" aria-label="أرصدة العملاء والموردين">
     🤝
-    <span class="login-bell-badge" id="loginPartiesBadge">0</span>
   </button>
   <button type="button" id="loginOverdueBtn" class="login-fab-btn" aria-label="اجمالي المتأخرات">
     📉
@@ -5081,26 +5082,6 @@ window.safeFileName = function(str){
   refreshChecksDueBadge_();
   setInterval(refreshChecksDueBadge_, 60000);
 
-  // بادچ أحمر فوق أيقونة "🤝" في صفحة الدخول: عدد العملاء المديونين لينا
-  // + الموردين اللي لهم مبلغ عندنا (من شيت "العملاء والموردين") — بيفضل
-  // ظاهر طول ما الرصيد لسه مش صفر في الشيت. بيتحدث كل دقيقة.
-  function refreshPartiesDueBadge_(){
-    var badge = document.getElementById('loginPartiesBadge');
-    if (!badge) return;
-    fetchAppJson_('parties')
-      .then(function(parties){
-        var count = buildPartiesAllRows_(parties).filter(function(it){ return it.amount > 0; }).length;
-        if (count > 0) {
-          badge.textContent = count > 99 ? '99+' : String(count);
-          badge.style.display = 'flex';
-        } else {
-          badge.style.display = 'none';
-        }
-      }).catch(function(){ /* أوفلاين: نسيب الرقم القديم زي ما هو */ });
-  }
-  refreshPartiesDueBadge_();
-  setInterval(refreshPartiesDueBadge_, 60000);
-
   // ---------- تقرير الأقساط (زرار "💳" في الصف الشمال بصفحة الدخول) ----------
   // المصدر الأساسي installments.json الناتج من شيت "الاقساط" في APP.xlsx.
   // لو JSON غير موجود، بنقرأ APP.xlsx مباشرة كحل احتياطي باستخدام SheetJS.
@@ -5174,19 +5155,32 @@ window.safeFileName = function(str){
     var near=!paid&&dueDays!==null&&dueDays>0&&dueDays<=2;
     var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':dueToday?'⚠ مستحق اليوم':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
     return {values:v,remaining:remaining,days:dueDays,lateAmount:overdue?remaining:0,delay:overdue?Math.abs(dueDays):null,
-      status:status,statusClass:paid?'status-paid':(overdue||dueToday?'status-due':(near?'status-near':'status-running'))};
+      status:status,key:paid?'paid':overdue?'overdue':dueToday?'today':near?'near':'running',statusClass:paid?'status-paid':(overdue||dueToday?'status-due':(near?'status-near':'status-running'))};
   }
   function renderInstallmentsStatus_(data){
-    var listWrap=document.getElementById('quickStatusListWrap'), rows=(data.rows||[]).map(buildInstallmentRow_);
-    if(!rows.length){listWrap.innerHTML='<div class="empty-note">مفيش أقساط مسجلة في الشيت لسه.</div>';return;}
-    var overdueCount=rows.filter(function(x){return x.remaining>0&&x.days!==null&&x.days<0;}).length;
-    var nearCount=rows.filter(function(x){return x.remaining>0&&x.days!==null&&x.days>=0&&x.days<=2;}).length;
-    var paidCount=rows.filter(function(x){return x.remaining<=0;}).length;
-    var totalRemaining=rows.reduce(function(s,x){return s+x.remaining;},0);
-    var summary='<div class="installments-summary"><span class="is-overdue">متأخر: '+overdueCount+'</span><span class="is-near">مستحق/قريب: '+nearCount+'</span><span class="is-paid">مسدّد: '+paidCount+'</span><span>إجمالي المتبقي: '+totalRemaining.toLocaleString('en-US',{maximumFractionDigits:2})+'</span></div>';
+    var listWrap=document.getElementById('quickStatusListWrap'), all=(data.rows||[]).map(buildInstallmentRow_);
+    if(!all.length){listWrap.innerHTML='<div class="empty-note">مفيش أقساط مسجلة في الشيت لسه.</div>';return;}
+    // المسدّد مش بيظهر خالص في الجدول
+    var rows=all.filter(function(x){return x.key!=='paid';});
+    if(!rows.length){listWrap.innerHTML='<div class="empty-note">مفيش أقساط غير مسدّدة حاليًا. ✅</div>';return;}
+    function money(n){return n.toLocaleString('en-US',{maximumFractionDigits:2});}
+    var overdueAmt=0, nearAmt=0, totalRemaining=0;
+    rows.forEach(function(x){
+      totalRemaining+=x.remaining;
+      if(x.key==='overdue') overdueAmt+=x.remaining;
+      else if(x.key==='today'||x.key==='near') nearAmt+=x.remaining;
+    });
+    var summary='<div class="installments-summary"><span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span></div>';
+    var toolbar='<div class="installments-toolbar"><label for="instStatusFilter">فلتر الحالة:</label><select id="instStatusFilter">'
+      +'<option value="">الكل</option>'
+      +'<option value="overdue">⚠ مستحق (متأخر)</option>'
+      +'<option value="today">⚠ مستحق اليوم</option>'
+      +'<option value="near">🔔 قريب الاستحقاق</option>'
+      +'<option value="running">🟢 جارٍ</option>'
+      +'</select></div>';
     var headers=(data.columns&&data.columns.length>=12)?data.columns.slice(0,12):['أمر البيع','العميل','تاريخ التحميل','إجمالي الفاتورة','القسط','تاريخ الاستحقاق','قيمة القسط','المسدّد','المتبقّي','المتبقي المتأخر','مدة التأخير','الحالة'];
-    var th=headers.map(function(h,i){return '<th class="c-'+String.fromCharCode(97+i)+'">'+escQuick_(h||'')+'</th>';}).join('');
-    var body=rows.map(function(x){
+    var th=headers.map(function(h,i){return '<th class="c-'+String.fromCharCode(97+i)+'">'+escQuick_(h==='تاريخ التحميل'?'تاريخ الفاتورة':(h||''))+'</th>';}).join('');
+    function rowHtml(x){
       var v=x.values,cells=[];
       for(var i=0;i<12;i++){
         var cls=[];
@@ -5198,9 +5192,16 @@ window.safeFileName = function(str){
         cells.push('<td class="'+cls.join(' ')+'">'+shown+'</td>');
       }
       return '<tr>'+cells.join('')+'</tr>';
-    }).join('');
-    listWrap.innerHTML='<div class="installments-source-note">المصدر: شيت «الاقساط» من APP.xlsx — مدة التأخير والحالة يتم حسابهما تلقائيًا حسب تاريخ اليوم.</div>'+summary+
-      '<div class="installments-table-wrap"><table class="installments-table"><thead><tr>'+th+'</tr></thead><tbody>'+body+'</tbody></table></div>';
+    }
+    listWrap.innerHTML=summary+toolbar+
+      '<div class="installments-table-wrap"><table class="installments-table"><thead><tr>'+th+'</tr></thead><tbody id="instTbody"></tbody></table></div>';
+    var sel=document.getElementById('instStatusFilter'), tbody=document.getElementById('instTbody');
+    function draw(){
+      var f=sel.value, list=f?rows.filter(function(x){return x.key===f;}):rows;
+      tbody.innerHTML=list.length?list.map(rowHtml).join(''):'<tr><td colspan="12">مفيش أقساط بالحالة دي.</td></tr>';
+    }
+    sel.addEventListener('change',draw);
+    draw();
   }
   function loadInstallmentsStatus_(){
     var titleEl=document.getElementById('quickStatusTitle'), subtitleEl=document.getElementById('quickStatusSubtitle'), listWrap=document.getElementById('quickStatusListWrap');
@@ -5213,7 +5214,7 @@ window.safeFileName = function(str){
   function refreshInstallmentsBadge_(){
     var badge=document.getElementById('loginInstallmentsBadge'); if(!badge)return;
     loadInstallmentsData_().then(function(data){
-      var count=(data.rows||[]).map(buildInstallmentRow_).filter(function(x){return x.remaining>0&&x.days!==null&&x.days<=2;}).length;
+      var count=(data.rows||[]).map(buildInstallmentRow_).filter(function(x){return x.remaining>0&&x.days!==null&&x.days<0;}).length;
       if(count){badge.textContent=count>99?'99+':String(count);badge.style.display='flex';}else badge.style.display='none';
     }).catch(function(){});
   }
