@@ -942,18 +942,6 @@
   .quick-status-paper table.dtable{table-layout:auto;}
   /* ---------- INSTALLMENTS (الأقساط) ---------- */
   .installments-modal.qsm-wide{max-width:98vw;width:1180px;}
-  .installments-table-wrap{overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--panel-line);border-radius:10px;background:#fff;max-height:70vh;}
-  .installments-table{width:100%;min-width:1120px;border-collapse:collapse;background:#fff;font-size:11px;direction:rtl;}
-  .installments-table th,.installments-table td{border:1px solid #333;padding:6px 5px;text-align:center;vertical-align:middle;white-space:nowrap;}
-  .installments-table thead th{background:#efefef;font-weight:800;}
-  .installments-table td{font-weight:700;}
-  .installments-table tbody tr:nth-child(even){background:#faf7f4;}
-  .installments-table td.money{font-variant-numeric:tabular-nums;}
-  .installments-table td.overdue{color:#c00000;font-weight:800;}
-  .installments-table td.status-paid{color:#006100;font-weight:800;}
-  .installments-table td.status-due{color:#9c0006;background:#fff2f2;font-weight:800;}
-  .installments-table td.status-near{color:#9c5700;background:#fff7e6;font-weight:800;}
-  .installments-table td.status-running{color:#1f4e78;font-weight:800;}
   .installments-summary{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 10px;}
   .installments-summary span{padding:5px 10px;border-radius:18px;border:1px solid var(--panel-line);font-size:11px;font-weight:800;background:#fff8f2;}
   .installments-summary .is-overdue{color:#9c0006;background:#fff2f2;}
@@ -961,10 +949,6 @@
   .installments-summary .is-paid{color:#006100;background:#edf8ef;}
   .installments-toolbar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;font-weight:800;}
   .installments-toolbar select{padding:6px 10px;border:1px solid var(--panel-line);border-radius:8px;font:inherit;background:#fff;color:inherit;cursor:pointer;}
-  .installments-table .c-a{width:7%}.installments-table .c-b{width:11%}.installments-table .c-c{width:9%}
-  .installments-table .c-d{width:11%}.installments-table .c-e{width:9%}.installments-table .c-f{width:9%}
-  .installments-table .c-g{width:11%}.installments-table .c-h{width:10%}.installments-table .c-i{width:10%}
-  .installments-table .c-j{width:10%}.installments-table .c-k{width:8%}.installments-table .c-l{width:10%}
 
   .quick-status-actions{display:flex;gap:8px;margin-top:16px;}
   .quick-status-actions .btn{flex:1;}
@@ -995,18 +979,23 @@
   /* شيك متأخر (فات معاد استحقاقه) — صف وردي فاتح يلفت النظر له في الجدول. */
   table.dtable tr.row-overdue td,table.dtable tr.row-due-today td{background:#ffdce6;}
   .qs-net-row td{font-weight:700;background:var(--panel-2,#f4f4f4);}
-  /* أقساط: أي صف حالته "مستحق" (متأخر أو مستحق اليوم) يتلوّن كله أحمر وردي
-     زي شيك متأخر بالظبط (نفس اللون #ffdce6) — على الشاشة وفي الـ PDF. */
-  .installments-table tr.inst-due td,.installments-table tr.inst-due td.status-due,.installments-table tr.inst-due td.overdue{background:#ffdce6;color:#9c0006;}
-  /* وضع تصدير PDF للأقساط (بيتفعّل على النسخة المؤقتة بس وقت التصدير): خط أصغر
-     زي جدول الشيكات، والجدول كله ياخد عرض الورقة من غير سكرول ولا قص، عشان
-     كل الأعمدة والصفوف تظهر في الـ PDF. الخط بيتظبط تلقائيًا (--qs-fs). */
+  /* أقساط: جدول الأقساط بيستخدم نفس تنسيق جدول الشيكات (table.dtable) بالظبط،
+     والصف المستحق (متأخر/النهارده) بياخد نفس اللون الوردي بتاع الشيك المتأخر
+     (row-overdue). */
+  .installments-toolbar select{max-width:100%;}
+  /* عمود التاريخ التالت في dtable الشيكات بيتكبّر (عشان هناك هو عمود القيمة)؛
+     في الأقساط هو تاريخ، فبنخليه بنفس حجم باقي الأعمدة. */
+  table.dtable.installments-table td:nth-child(3){font-size:0.72em;letter-spacing:0;}
+  @media (max-width:760px){table.dtable.installments-table td:nth-child(3){font-size:10px;}}
+  /* وضع تصدير PDF للأقساط (بيتفعّل على النسخة المؤقتة بس وقت التصدير): الجدول
+     ياخد عرض الورقة من غير سكرول ولا قص، وخطه هو خط جدول الشيكات نفسه؛ ولو
+     الأعمدة الـ12 ما اتساعوش بيصغر الخط تلقائيًا لحد ما يتساعوا (--qs-fs). */
   .quick-status-modal.installments-modal.qs-exporting{max-width:none;width:100%;}
-  .qs-exporting .installments-table-wrap{max-height:none;overflow:visible;border:none;border-radius:0;}
-  .qs-exporting .installments-table{min-width:0;width:100%;table-layout:auto;}
-  .qs-exporting .installments-table th,.qs-exporting .installments-table td{padding:3px 2px;font-size:var(--qs-fs,9px);line-height:1.2;}
-  .qs-exporting .installments-table th{width:auto;white-space:normal;}
-  .qs-exporting .installments-table td:nth-child(2){white-space:normal;word-break:break-word;}
+  .qs-exporting .qs-table-scroll{overflow:visible;}
+  .qs-exporting .qs-table-scroll table.dtable{min-width:0;width:100%;}
+  .qs-exporting .qs-table-scroll table.dtable th,.qs-exporting .qs-table-scroll table.dtable td{font-size:var(--qs-fs,10px);padding:3px 2px;line-height:1.2;}
+  .qs-exporting .qs-table-scroll table.dtable th{white-space:normal !important;}
+  .qs-exporting .qs-table-scroll table.dtable tbody td:nth-child(2){white-space:normal !important;word-break:break-word !important;}
   .qs-exporting .installments-summary span{font-size:10px;padding:3px 8px;}
 
   /* ---------- Floating "Contact us" WhatsApp button (login + home only) ---------- */
@@ -1557,7 +1546,12 @@
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
         <span class="home-tile-label">اختبار الإشعارات</span>
       </button>
+      <button type="button" class="home-tile" id="salarySendAllBtn" style="display:none;">
+        <span class="home-tile-icon" style="font-size:26px;">📢</span>
+        <span class="home-tile-label">إشعار الراتب لكل الموظفين</span>
+      </button>
     </div>
+    <div class="status-msg" id="salarySendAllStatus" style="margin:12px 0 0;font-size:13px;text-align:center;"></div>
   </div>
 </div>
 
@@ -1654,7 +1648,6 @@
       <select id="salarySendSelect"></select>
     </div>
     <button type="button" class="btn btn-secondary" id="salarySendBtn" style="width:100%;">📢 إرسال إشعار الراتب</button>
-    <button type="button" class="btn btn-secondary" id="salarySendAllBtn" style="width:100%;margin-top:8px;">📢 إرسال إشعار الراتب لكل الموظفين</button>
   </div>
 </div>
 
@@ -1669,14 +1662,17 @@
   </div>
   <div class="gate-card home-card" style="max-width:520px;">
     <h1 class="gate-title" id="mySalaryTitle">راتبي</h1>
+    <button type="button" class="btn btn-secondary" id="viewEmployeeSalaryBtn" style="width:100%;margin-bottom:12px;display:none;">💰 عرض راتب موظف</button>
     <div id="mySalaryContent"><div class="empty-note">جاري التحميل...</div></div>
 
-    <div class="settings-divider"></div>
-    <div class="section-tag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
+    <div class="settings-divider" id="mySalaryDivider"></div>
+    <div id="mySalaryPushBox">
+    <div class="section-tag" id="mySalaryPushTag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
     <button type="button" class="btn btn-secondary" id="enableMyPushBtn" style="width:100%;">🔔 فعّل إشعاراتي الشخصية</button>
     <div class="status-msg" id="myPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
     <button type="button" class="btn btn-secondary" id="testMyPushBtn" style="width:100%;margin-top:8px;">🧪 اختبر الإشعار دلوقتي</button>
     <div class="status-msg" id="myPushTestStatus" style="margin:6px 0 0;font-size:13px;"></div>
+    </div>
   </div>
 </div>
 
@@ -3228,18 +3224,52 @@ window.safeFileName = function(str){
   // "فعّل إشعاراتي الشخصية" في شاشة "راتبي")، منفصل تمامًا عن زرار الإدمن
   // العام "فعّل إشعارات الجوال للطلبات الجديدة". التوكن بتاع الجهاز واحد
   // في الحالتين، بس بيتسجل مربوط باسم الموظف عشان نقدر نبعتله إشعار خاص.
+  function pushStatus_(statusEl, text, isErr){
+    if (!statusEl) return;
+    statusEl.textContent = text;
+    statusEl.style.color = isErr ? '#b3261e' : '';
+  }
+  // كود/نص الخطأ الحقيقي بيتعرض جنب الرسالة، عشان لو التفعيل فشل نعرف السبب بالظبط.
+  function pushErrText_(err){
+    if (!err) return '';
+    var code = err.code || err.name || '';
+    var msg = err.message ? String(err.message) : String(err);
+    if (msg.length > 140) msg = msg.slice(0, 140) + '…';
+    return ' (' + (code ? code + ': ' : '') + msg + ')';
+  }
+  // اشتراك إشعارات قديم/بايظ على الجهاز هو أشهر سبب إن "إعادة التفعيل" ما تشتغلش.
+  // بنمسح التوكن والاشتراك القديم عشان نبدأ من جديد.
+  function cleanupOldPush_(messaging, registration){
+    var jobs = [];
+    try { jobs.push(messaging.deleteToken().catch(function(){})); } catch (e) {}
+    try {
+      if (registration && registration.pushManager) {
+        jobs.push(registration.pushManager.getSubscription().then(function(sub){
+          return sub ? sub.unsubscribe() : null;
+        }).catch(function(){}));
+      }
+    } catch (e) {}
+    return Promise.all(jobs);
+  }
   function enablePushNotifications(statusEl, employeeName, topic){
     if (!initFcmIfNeeded() || !('serviceWorker' in navigator) || !('Notification' in window)) {
-      if (statusEl) statusEl.textContent = FCM_CONFIGURED
+      pushStatus_(statusEl, FCM_CONFIGURED
         ? 'المتصفح ده مش بيدعم إشعارات الموبايل.'
-        : 'ميزة الإشعارات لسه محتاجة إعداد (كلم المطوّر).';
+        : 'ميزة الإشعارات لسه محتاجة إعداد (كلم المطوّر).', true);
       return;
     }
-    if (statusEl) statusEl.textContent = 'جاري التفعيل...';
+    // لو الإذن مرفوض قبل كده، المتصفح مش هيسأل تاني — الكود مش هيقدر يفعّلها.
+    if (Notification.permission === 'denied') {
+      pushStatus_(statusEl, 'الإشعارات ممنوعة للموقع ده من إعدادات المتصفح، فمش هينفع تتفعّل من هنا. افتح إعدادات الموقع (أيقونة 🔒 جنب الرابط ← الأذونات ← الإشعارات ← سماح) أو من إعدادات التليفون ← التطبيقات ← المتصفح ← الإشعارات، وبعدها ارجع دوس تفعيل.', true);
+      return;
+    }
+    pushStatus_(statusEl, 'جاري التفعيل...', false);
     navigator.serviceWorker.register('firebase-messaging-sw.js').then(function(registration){
       return Notification.requestPermission().then(function(permission){
         if (permission !== 'granted') {
-          if (statusEl) statusEl.textContent = 'محتاج توافق على إذن الإشعارات من المتصفح عشان تشتغل.';
+          pushStatus_(statusEl, permission === 'denied'
+            ? 'الإذن اترفض — لازم تسمح بالإشعارات من إعدادات الموقع/المتصفح وبعدها دوس تفعيل تاني.'
+            : 'لازم تختار "سماح" لما المتصفح يسألك عن الإشعارات، وبعدها دوس تفعيل تاني.', true);
           return;
         }
         var messaging = firebase.messaging();
@@ -3259,30 +3289,41 @@ window.safeFileName = function(str){
             }
           });
         }
-        return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration }).then(function(token){
-          if (!token) { if (statusEl) statusEl.textContent = 'تعذر تفعيل الإشعارات، حاول تاني.'; return; }
+        var readyP = registration.active ? Promise.resolve() : navigator.serviceWorker.ready;
+        function fetchToken(){
+          return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration });
+        }
+        return readyP.then(fetchToken).catch(function(){
+          // فشل غالبًا بسبب اشتراك قديم — ننضّفه ونجرب تاني مرة واحدة.
+          return cleanupOldPush_(messaging, registration).then(fetchToken);
+        }).then(function(token){
+          if (!token) { pushStatus_(statusEl, 'تعذر تفعيل الإشعارات، حاول تاني.', true); return; }
           registerPushToken(token, statusEl, employeeName, topic);
         });
       });
-    }).catch(function(){
-      if (statusEl) statusEl.textContent = 'حصل خطأ أثناء تفعيل الإشعارات، تأكد إنك فاتح التطبيق من رابط https.';
+    }).catch(function(err){
+      pushStatus_(statusEl, 'حصل خطأ أثناء تفعيل الإشعارات، تأكد إنك فاتح التطبيق من رابط https.' + pushErrText_(err), true);
     });
   }
 
   function registerPushToken(token, statusEl, employeeName, topic){
-    if (!ATTENDANCE_SCRIPT_URL) return;
+    if (!ATTENDANCE_SCRIPT_URL) { pushStatus_(statusEl, 'رابط السيرفر مش متظبط، كلم المطوّر.', true); return; }
     var url = ATTENDANCE_SCRIPT_URL + '?action=registerPush&token=' + encodeURIComponent(token);
     if (employeeName) url += '&employee=' + encodeURIComponent(employeeName);
     if (topic) url += '&topic=' + encodeURIComponent(topic);
-    fetch(url).then(function(r){ return r.json(); }).then(function(){
+    fetch(url).then(function(r){ return r.json(); }).then(function(res){
+      if (res && res.ok === false) {
+        pushStatus_(statusEl, 'السيرفر رفض تسجيل الجهاز: ' + (res.error || 'خطأ غير معروف'), true);
+        return;
+      }
       try {
         localStorage.setItem('fcmTokenRegistered', token);
         if (employeeName) localStorage.setItem('fcmEmployeeTokenRegistered', token);
         if (topic === 'checks') localStorage.setItem('fcmChecksTokenRegistered', token);
       } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
-    }).catch(function(){
-      if (statusEl) statusEl.textContent = 'تعذر حفظ إعداد الإشعارات، تأكد من الإنترنت وحاول تاني.';
+    }).catch(function(err){
+      pushStatus_(statusEl, 'تعذر حفظ إعداد الإشعارات، تأكد من الإنترنت وحاول تاني.' + pushErrText_(err), true);
     });
   }
 
@@ -5183,43 +5224,52 @@ window.safeFileName = function(str){
     var rows=all.filter(function(x){return x.key!=='paid';});
     if(!rows.length){listWrap.innerHTML='<div class="empty-note">مفيش أقساط غير مسدّدة حاليًا. ✅</div>';return;}
     function money(n){return n.toLocaleString('en-US',{maximumFractionDigits:2});}
-    var overdueAmt=0, nearAmt=0, totalRemaining=0;
-    rows.forEach(function(x){
-      totalRemaining+=x.remaining;
-      if(x.key==='overdue') overdueAmt+=x.remaining;
-      else if(x.key==='today'||x.key==='near') nearAmt+=x.remaining;
-    });
-    var summary='<div class="installments-summary"><span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span></div>';
+    function clientOf(x){var c=x.values[1];return (c===null||c===undefined)?'':String(c).trim();}
+    // قايمة العملاء (من غير تكرار) لفلتر العميل
+    var clients=[], seen=Object.create(null);
+    rows.forEach(function(x){var c=clientOf(x); if(c&&!seen[c]){seen[c]=1;clients.push(c);}});
+    clients.sort(function(a,b){return a.localeCompare(b,'ar');});
     var toolbar='<div class="installments-toolbar"><label for="instStatusFilter">فلتر الحالة:</label><select id="instStatusFilter">'
       +'<option value="">الكل</option>'
       +'<option value="overdue">⚠ مستحق (متأخر)</option>'
       +'<option value="today">⚠ مستحق اليوم</option>'
       +'<option value="near">🔔 قريب الاستحقاق</option>'
       +'<option value="running">🟢 جارٍ</option>'
+      +'</select>'
+      +'<label for="instClientFilter">فلتر العميل:</label><select id="instClientFilter"><option value="">كل العملاء</option>'
+      +clients.map(function(c,i){return '<option value="'+i+'">'+escQuick_(c)+'</option>';}).join('')
       +'</select></div>';
     var headers=(data.columns&&data.columns.length>=12)?data.columns.slice(0,12):['أمر البيع','العميل','تاريخ التحميل','إجمالي الفاتورة','القسط','تاريخ الاستحقاق','قيمة القسط','المسدّد','المتبقّي','المتبقي المتأخر','مدة التأخير','الحالة'];
-    var th=headers.map(function(h,i){return '<th class="c-'+String.fromCharCode(97+i)+'">'+escQuick_(h==='تاريخ التحميل'?'تاريخ الفاتورة':(h||''))+'</th>';}).join('');
+    var th=headers.map(function(h){return '<th>'+escQuick_(h==='تاريخ التحميل'?'تاريخ الفاتورة':(h||''))+'</th>';}).join('');
     function rowHtml(x){
       var v=x.values,cells=[];
       for(var i=0;i<12;i++){
-        var cls=[];
-        if([3,6,7,8,9].indexOf(i)>=0) cls.push('money');
-        if(i===9&&x.lateAmount>0) cls.push('overdue');
-        if(i===10&&x.delay!==null) cls.push('overdue');
-        if(i===11) cls.push(x.statusClass);
         var shown=(i===2||i===5)?fmtInstallmentDate_(v[i]):([3,6,7,8].indexOf(i)>=0?fmtInstallmentMoney_(v[i]):i===9?fmtInstallmentMoney_(x.lateAmount):i===10?(x.delay!==null?(x.delay+' '+(x.delay===1?'يوم':'أيام')):''):i===11?x.status:escQuick_(v[i]===null||v[i]===undefined?'':v[i]));
-        cells.push('<td class="'+cls.join(' ')+'">'+shown+'</td>');
+        cells.push('<td'+(i===5?' dir="ltr"':'')+'>'+shown+'</td>');
       }
-      return '<tr'+((x.key==='overdue'||x.key==='today')?' class="inst-due"':'')+'>'+cells.join('')+'</tr>';
+      // الصف المستحق (متأخر أو مستحق اليوم) بيتلوّن كله وردي زي الشيك المتأخر
+      return '<tr'+((x.key==='overdue'||x.key==='today')?' class="row-overdue"':'')+'>'+cells.join('')+'</tr>';
     }
-    listWrap.innerHTML=summary+toolbar+
-      '<div class="installments-table-wrap"><table class="installments-table"><thead><tr>'+th+'</tr></thead><tbody id="instTbody"></tbody></table></div>';
-    var sel=document.getElementById('instStatusFilter'), tbody=document.getElementById('instTbody');
+    listWrap.innerHTML='<div class="installments-summary" id="instSummary"></div>'+toolbar+
+      '<div class="qs-table-scroll"><table class="dtable installments-table"><thead><tr>'+th+'</tr></thead><tbody id="instTbody"></tbody><tfoot id="instTfoot"></tfoot></table></div>';
+    var sel=document.getElementById('instStatusFilter'), csel=document.getElementById('instClientFilter');
+    var tbody=document.getElementById('instTbody'), tfoot=document.getElementById('instTfoot'), summaryEl=document.getElementById('instSummary');
     function draw(){
-      var f=sel.value, list=f?rows.filter(function(x){return x.key===f;}):rows;
-      tbody.innerHTML=list.length?list.map(rowHtml).join(''):'<tr><td colspan="12">مفيش أقساط بالحالة دي.</td></tr>';
+      var f=sel.value, cname=(csel.value==='')?null:clients[parseInt(csel.value,10)];
+      var list=rows.filter(function(x){return (!f||x.key===f)&&(cname===null||clientOf(x)===cname);});
+      // الملخص والإجمالي بيتحسبوا من الصفوف المعروضة بس (حسب الفلاتر)
+      var overdueAmt=0, nearAmt=0, totalRemaining=0, sumInst=0, sumPaid=0, sumLate=0;
+      list.forEach(function(x){
+        totalRemaining+=x.remaining; sumInst+=installmentNum_(x.values[6]); sumPaid+=installmentNum_(x.values[7]); sumLate+=x.lateAmount;
+        if(x.key==='overdue') overdueAmt+=x.remaining;
+        else if(x.key==='today'||x.key==='near') nearAmt+=x.remaining;
+      });
+      summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
+      tbody.innerHTML=list.length?list.map(rowHtml).join(''):'<tr><td colspan="12">مفيش أقساط بالفلتر ده.</td></tr>';
+      tfoot.innerHTML=list.length?('<tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="6">الإجمالي</td><td>'+money(sumInst)+'</td><td>'+money(sumPaid)+'</td><td>'+money(totalRemaining)+'</td><td>'+money(sumLate)+'</td><td colspan="2"></td></tr>'):'';
     }
     sel.addEventListener('change',draw);
+    csel.addEventListener('change',draw);
     draw();
   }
   function loadInstallmentsStatus_(){
@@ -5920,34 +5970,75 @@ window.safeFileName = function(str){
       if (wrap) wrap.innerHTML = '<div class="empty-note">تعذر تحميل الراتب، تأكد من الإنترنت وحاول تاني.</div>';
     });
   }
-  // بيفتح شاشة "راتبي" ويظبط عنوانها وزرار الرجوع حسب مين فاتحها.
+  // بيفتح الشاشة ويظبطها حسب مين فاتحها:
+  //  - الموظف: راتبه هو + إشعاراته الشخصية.
+  //  - الأدمن (من الإعدادات ← اختبار الإشعارات): شاشة اختبار إشعارات الجهاز
+  //    من غير ما يتسأل يختار موظف. لو عايز يشوف راتب موظف بيدوس "عرض راتب موظف"
+  //    (اختيار اختياري، مش بيتطلب منه).
+  // الأدمن ممكن يوصل للشاشة دي من الرئيسية (تايل "راتبي" ← اختيار موظف) أو من
+  // الإعدادات (اختبار الإشعارات) — بنفتكر جه منين عشان زرار الرجوع يرجّعه صح.
+  var mySalaryAdminOrigin_ = 'settings';
   function showMySalaryScreen_(){
+    var admin = !isEmployeeSession;
+    var viewingSalary = !admin || !!currentSessionEmployeeName;
     var titleEl = document.getElementById('mySalaryTitle');
-    if (titleEl) titleEl.textContent = isEmployeeSession ? 'راتبي' : ('راتب ' + currentSessionEmployeeName);
+    if (titleEl) titleEl.textContent = !admin ? 'راتبي' : (currentSessionEmployeeName ? ('راتب ' + currentSessionEmployeeName) : 'اختبار الإشعارات');
     var backBtn = document.getElementById('backHomeBtnMySalary');
-    if (backBtn) backBtn.textContent = isEmployeeSession ? '→ رجوع للرئيسية' : '→ رجوع للإعدادات';
+    if (backBtn) backBtn.textContent = (admin && mySalaryAdminOrigin_ === 'settings') ? '→ رجوع للإعدادات' : '→ رجوع للرئيسية';
+    var viewBtn = document.getElementById('viewEmployeeSalaryBtn');
+    if (viewBtn) {
+      viewBtn.style.display = admin ? '' : 'none';
+      viewBtn.textContent = currentSessionEmployeeName ? '💰 اختيار موظف آخر' : '💰 عرض راتب موظف';
+    }
+    var contentEl = document.getElementById('mySalaryContent');
+    if (contentEl) contentEl.style.display = viewingSalary ? '' : 'none';
+    // قسم الإشعارات: للموظف (إشعاراته الشخصية) ولشاشة "اختبار الإشعارات" بتاعة
+    // الأدمن بس. لما الأدمن بيشوف راتب موظف بيتخفي (الاختبار مكانه الإعدادات).
+    var showPush = !admin || !currentSessionEmployeeName;
+    var pushBoxEl = document.getElementById('mySalaryPushBox');
+    if (pushBoxEl) pushBoxEl.style.display = showPush ? '' : 'none';
+    var dividerEl = document.getElementById('mySalaryDivider');
+    if (dividerEl) dividerEl.style.display = (!admin) ? '' : 'none';
+    var tagEl = document.getElementById('mySalaryPushTag');
+    if (tagEl) tagEl.textContent = admin ? 'إشعارات الجهاز ده' : 'إشعاراتي الشخصية';
     var testStatus = document.getElementById('myPushTestStatus');
     if (testStatus) testStatus.innerHTML = '';
     showScreen('my-salary');
-    loadMySalary_();
-    refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
+    if (viewingSalary) loadMySalary_();
+    // الأدمن: حالة التفعيل العامة (نفس زرار اعتماد الأذون)، الموظف: حالته الشخصية.
+    refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), !admin);
   }
   function openMySalaryFlow_(){
-    // الموظف: بيفتح راتبه هو على طول من غير أي سؤال.
     if (isEmployeeSession) {
       if (!currentSessionEmployeeName) return;
       showMySalaryScreen_();
       return;
     }
-    // الأدمن: بيختار الموظف اللي عايز يشوف راتبه/يختبر إشعاراته في كل مرة.
-    // الاختيار ده مؤقت للشاشة دي بس (مش دخول فعلي بالاسم ده — مفيش
-    // باسوردات ولا صلاحيات إضافية بتتفعل).
+    // الأدمن (من الإعدادات ← اختبار الإشعارات): يدخل على طول من غير سؤال.
+    mySalaryAdminOrigin_ = 'settings';
+    currentSessionEmployeeName = null;
+    showMySalaryScreen_();
+  }
+  // تايل "راتبي" في الرئيسية: الموظف بيفتح راتبه على طول، والأدمن بيختار أي
+  // موظف من القايمة ويظهرله مرتبه.
+  function openMySalaryTile_(){
+    if (isEmployeeSession) { openMySalaryFlow_(); return; }
+    mySalaryAdminOrigin_ = 'home';
     pickEmployeeForSalaryView_(function(picked){
       if (!picked) return;
       currentSessionEmployeeName = picked;
       showMySalaryScreen_();
     });
   }
+  var viewEmployeeSalaryBtn = document.getElementById('viewEmployeeSalaryBtn');
+  if (viewEmployeeSalaryBtn) viewEmployeeSalaryBtn.addEventListener('click', function(){
+    if (isEmployeeSession) return;
+    pickEmployeeForSalaryView_(function(picked){
+      if (!picked) return;
+      currentSessionEmployeeName = picked;
+      showMySalaryScreen_();
+    });
+  });
   // منتقي اسم الموظف — بيجيب قائمة الموظفين من السيرفر ويعرضها في مودال
   // بسيط بـ <select>. بيتناديه من openMySalaryFlow_ لما مافيش اسم موظف.
   function pickEmployeeForSalaryView_(cb){
@@ -5977,7 +6068,7 @@ window.safeFileName = function(str){
     overlay.querySelector('#employeePickerOk').onclick = function(){ close(sel.value); };
   }
   var openMySalaryTileBtn = document.getElementById('openMySalaryTileBtn');
-  if (openMySalaryTileBtn) openMySalaryTileBtn.addEventListener('click', openMySalaryFlow_);
+  if (openMySalaryTileBtn) openMySalaryTileBtn.addEventListener('click', openMySalaryTile_);
   var openNotifTestTileBtn = document.getElementById('openNotifTestTileBtn');
   if (openNotifTestTileBtn) openNotifTestTileBtn.addEventListener('click', function(){
     if (isEmployeeSession) return; // للأدمن بس
@@ -5986,13 +6077,13 @@ window.safeFileName = function(str){
   var backHomeBtnMySalary = document.getElementById('backHomeBtnMySalary');
   if (backHomeBtnMySalary) backHomeBtnMySalary.addEventListener('click', function(){
     if (isEmployeeSession) { showScreen('home'); return; }
-    // الأدمن: نرجع للإعدادات وننسى الموظف اللي كان مختاره.
+    // الأدمن: ننسى الموظف اللي كان مختاره ونرجع للمكان اللي جه منه.
     currentSessionEmployeeName = null;
-    showScreen('settings-menu');
+    showScreen(mySalaryAdminOrigin_ === 'home' ? 'home' : 'settings-menu');
   });
   var enableMyPushBtn = document.getElementById('enableMyPushBtn');
   if (enableMyPushBtn) enableMyPushBtn.addEventListener('click', function(){
-    enablePushNotifications(document.getElementById('myPushStatus'), currentSessionEmployeeName);
+    enablePushNotifications(document.getElementById('myPushStatus'), isEmployeeSession ? currentSessionEmployeeName : null);
   });
 
   // زرار اختبار الإشعار الشخصي — بيعمل ٣ اختبارات فوق بعض عشان نعرف بالظبط
@@ -6018,7 +6109,7 @@ window.safeFileName = function(str){
     var perm = Notification.permission;
     if (perm === 'granted') lines.push('✅ إذن الإشعارات: مفعّل.');
     else if (perm === 'denied') { lines.push('❌ إذن الإشعارات: مرفوض — لازم تفتح إعدادات المتصفح وتسمح بالإشعارات للموقع ده.'); paint(); return; }
-    else { lines.push('⚠️ إذن الإشعارات: لسه مافيش قرار — دوس "فعّل إشعاراتي الشخصية" الأول.'); paint(); return; }
+    else { lines.push('⚠️ إذن الإشعارات: لسه مافيش قرار — دوس زرار التفعيل اللي فوق الأول.'); paint(); return; }
     paint();
     // خطوة ٢ — إشعار محلي
     var localPromise = Promise.resolve();
@@ -6039,8 +6130,17 @@ window.safeFileName = function(str){
       lines.push('⚠️ ما قدرش يعرض إشعار محلي: ' + err);
       paint();
     });
+    // الأدمن: نتأكد إن الجهاز مسجّل لإشعارات الإدارة (نفس تسجيل شاشة اعتماد الأذون).
+    if (!isEmployeeSession) {
+      var savedAdminToken = null;
+      try { savedAdminToken = localStorage.getItem('fcmTokenRegistered'); } catch (e) {}
+      lines.push(savedAdminToken
+        ? '✅ الجهاز ده مسجّل لاستقبال إشعارات الإدارة (الطلبات الجديدة).'
+        : '⚠️ الجهاز ده لسه مش مسجّل — دوس زرار التفعيل اللي فوق الأول.');
+      paint();
+    }
     // خطوة ٣ — إشعار من السيرفر (اختياري — لو الأكشن اتضاف على Apps Script)
-    if (ATTENDANCE_SCRIPT_URL && currentSessionEmployeeName) {
+    if (isEmployeeSession && ATTENDANCE_SCRIPT_URL && currentSessionEmployeeName) {
       var url = ATTENDANCE_SCRIPT_URL + '?action=testPush&employee=' + encodeURIComponent(currentSessionEmployeeName);
       fetch(url).then(function(r){ return r.json(); }).then(function(res){
         if (!res) { lines.push('⚠️ رد السيرفر فاضي.'); paint(); return; }
@@ -6263,11 +6363,14 @@ window.safeFileName = function(str){
     try {
       var m = doc.querySelector('.quick-status-modal');
       if (!m || !m.classList.contains('installments-modal')) return;
-      m.classList.add('qs-exporting');
-      var t = m.querySelector('.installments-table');
-      var w = m.querySelector('.installments-table-wrap');
+      var t = m.querySelector('table.installments-table');
+      var w = t && t.parentNode;
       if (!t || !w) return;
-      var fs = 9;
+      // نبدأ بنفس خط جدول الشيكات (المحسوب فعليًا) وبعدين نصغّره لو لازم.
+      var firstTd = t.querySelector('tbody td');
+      var fs = 10;
+      if (firstTd && doc.defaultView) fs = parseFloat(doc.defaultView.getComputedStyle(firstTd).fontSize) || 10;
+      m.classList.add('qs-exporting');
       t.style.setProperty('--qs-fs', fs + 'px');
       while (fs > 5 && t.offsetWidth > w.clientWidth + 1) {
         fs -= 0.5;
@@ -6600,12 +6703,16 @@ window.safeFileName = function(str){
     // "راتبي" مخصوصة للموظفين بس (بيشوف راتبه هو) — منفصلة عن قايمة
     // TOGGLE_TILES_ (اللي بتتحكم فيها شاشة "إدارة الشاشات").
     var salaryTile = document.getElementById('openMySalaryTileBtn');
-    if (salaryTile) salaryTile.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
+    // للأدمن: بتظهر دايمًا (بيختار الموظف ويشوف راتبه). للموظف: بتظهر لو داخل باسمه.
+    if (salaryTile) salaryTile.style.display = (!isEmployeeSession || currentSessionEmployeeName) ? '' : 'none';
     // "اختبار الإشعارات" في شاشة الإعدادات: للأدمن بس (بيختار أي موظف
     // ويشوف راتبه ويختبر إشعاراته). مش بتظهر أبدًا لموظف حتى لو الإعدادات
     // ظاهرة له، عشان ما يقدرش يشوف رواتب غيره.
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
+    // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
+    var salarySendAllTile = document.getElementById('salarySendAllBtn');
+    if (salarySendAllTile) salarySendAllTile.style.display = isEmployeeSession ? 'none' : '';
   }
 
   function setIconManageStatus_(msg, isErr){
@@ -6877,9 +6984,12 @@ window.safeFileName = function(str){
   // واحد ورا التاني عشان ميزودش السيرفر طلبات مرة واحدة).
   var salarySendAllBtn = document.getElementById('salarySendAllBtn');
   if (salarySendAllBtn) salarySendAllBtn.addEventListener('click', function(){
-    var statusEl = document.getElementById('salarySendStatus');
+    if (isEmployeeSession) return; // للأدمن بس
+    var statusEl = document.getElementById('salarySendAllStatus');
     var names = (ATTENDANCE_EMPLOYEES || []).slice();
     if (!names.length) { if (statusEl) { statusEl.textContent = 'مفيش موظفين مسجلين لسه.'; statusEl.className = 'status-msg err'; } return; }
+    // الزرار بقى تايل في الإعدادات (سهل يتداس بالغلط)، فبنطلب تأكيد قبل الإرسال للكل.
+    if (!window.confirm('هيتبعت إشعار الراتب لـ ' + names.length + ' موظف. تأكيد الإرسال؟')) return;
     salarySendAllBtn.disabled = true;
     if (salarySendBtn) salarySendBtn.disabled = true;
     var okCount = 0, failCount = 0, failNames = [];
