@@ -264,6 +264,9 @@
   .remember-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--steel);cursor:pointer;}
   #loginForm button[type="submit"]{margin-top:6px;}
   #loginError{margin-top:10px;}
+  /* صفحة الدخول: الحقول وزرار الدخول بنص العرض بالظبط ومتوسّطين */
+  #loginForm .field,#loginForm button[type="submit"]{width:50%;margin-left:auto;margin-right:auto;}
+  #loginForm .remember-row{justify-content:center;}
   .forgot-link{
     display:block;margin:14px auto 0;background:none;border:none;color:var(--steel);
     font-family:'Cairo',sans-serif;font-size:12.5px;text-decoration:underline;cursor:pointer;
@@ -958,6 +961,20 @@
   /* الجدول بياخد عرض المودال كامل من غير الحيز الأبيض الضايع على الجنب —
      بيتمدد لحد حواف المودال (تعويض البادينج بمارجن سالب). */
   .installments-modal .qs-table-scroll{margin:0 -10px;padding:0 10px;}
+  /* تقرير الأقساط: أقصى استغلال للمساحة — العنوان في النص بخط أصغر، التاريخ وآخر
+     تحديث بخط صغير، الفلاتر مضمومة، والجدول مسحوب لفوق. */
+  .quick-status-overlay:has(.installments-modal){padding-top:6px;padding-bottom:6px;}
+  .installments-modal.qsm-wide{padding:8px 10px 10px;}
+  .installments-modal .quick-status-header{position:relative;justify-content:center;margin-bottom:2px;min-height:24px;}
+  .installments-modal .quick-status-header #quickStatusTitle{font-size:13px;text-align:center;}
+  .installments-modal .quick-status-close{position:absolute;left:0;top:50%;transform:translateY(-50%);}
+  .installments-modal .quick-status-subtitle{font-size:10px;line-height:1.35;margin:0 0 4px;}
+  .installments-modal .installments-summary{margin:0 0 4px;gap:4px;}
+  .installments-modal .installments-summary span{padding:2px 7px;font-size:10px;}
+  .installments-modal .installments-toolbar{max-width:300px;margin:0 auto 4px;gap:4px;}
+  .installments-modal .inst-filter{padding:2px 6px;gap:4px;border-radius:7px;}
+  .installments-modal .inst-filter label{font-size:9.5px;}
+  .installments-modal .installments-toolbar select{font-size:10px;padding:1px 0;}
 
   .quick-status-actions{display:flex;gap:8px;margin-top:16px;}
   .quick-status-actions .btn{flex:1;}
@@ -1058,15 +1075,7 @@
      فاضي. #loginFabs نفسه بقى مجرد حاوية غير متمركزة، والتمركز بقى على
      المجموعتين الفرعيتين. */
   #loginFabs{position:static;max-width:none;}
-.login-top-bar{
-  position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 14px);z-index:9999;
-  display:flex;align-items:center;gap:10px;
-}
-.app-refresh-btn{
-  width:46px;height:46px;border-radius:50%;overflow:hidden;border:none;background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff8ee;
-  font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;padding:0;
-}
+.app-refresh-btn{color:var(--steel);}
 .app-refresh-btn:active{ transform:scale(0.92); }
 .app-refresh-btn.is-spinning{ animation: appRefreshSpin_ .7s linear infinite; }
 @keyframes appRefreshSpin_{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
@@ -1108,6 +1117,97 @@
     display:none;align-items:center;justify-content:center;padding:0 4px;
     box-shadow:0 0 0 2px #fff;
   }
+
+  /* ================= قوايم الإشعارات (3 شرط) في صفحة الدخول =================
+     كل جهة (يمين/شمال) ليها زرار 3 شرط. الأيقونات مقفولة افتراضيًا، وبتنزل
+     من الزرار بحركة متتابعة لما تدوس عليه، وما بترجعش غير لما تدوس عليه تاني. */
+  .login-fabs-col{--fab:50px;--step:60px;}
+  .fab-toggle{
+    position:relative;width:var(--fab);height:var(--fab);padding:0;cursor:pointer;
+    border:none;border-radius:16px;
+    background:linear-gradient(135deg,var(--steel),#b8471a);
+    box-shadow:0 8px 20px rgba(226,98,31,.35);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s ease, box-shadow .25s ease, border-radius .35s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .fab-toggle:hover{transform:scale(1.05);}
+  .fab-toggle:active{transform:scale(.94);}
+  .fab-toggle.is-open{border-radius:50%;box-shadow:0 8px 22px rgba(226,98,31,.5);}
+  .fab-toggle[hidden]{display:none;}
+  .fab-burger{position:relative;width:22px;height:16px;display:block;}
+  .fab-burger i{
+    position:absolute;left:0;right:0;height:2.5px;border-radius:2px;background:#fff8ee;
+    transition:transform .35s cubic-bezier(.68,-.3,.27,1.3), opacity .2s ease, top .35s ease;
+  }
+  .fab-burger i:nth-child(1){top:0;}
+  .fab-burger i:nth-child(2){top:6.75px;}
+  .fab-burger i:nth-child(3){top:13.5px;}
+  .fab-toggle.is-open .fab-burger i:nth-child(1){top:6.75px;transform:rotate(45deg);}
+  .fab-toggle.is-open .fab-burger i:nth-child(2){opacity:0;transform:scaleX(0);}
+  .fab-toggle.is-open .fab-burger i:nth-child(3){top:6.75px;transform:rotate(-45deg);}
+  /* نقطة تنبيه على الزرار وهو مقفول لو فيه إشعارات جوّه */
+  .fab-toggle-dot{
+    position:absolute;top:-3px;left:-3px;width:14px;height:14px;border-radius:50%;
+    background:#e0433a;box-shadow:0 0 0 2px #fff;display:none;
+    animation:fabDotPulse 1.6s ease-in-out infinite;
+  }
+  .fab-toggle.has-alert:not(.is-open) .fab-toggle-dot{display:block;}
+  @keyframes fabDotPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.28);}}
+
+  .fab-stack{
+    position:absolute;top:100%;left:0;right:0;margin-top:12px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    pointer-events:none;
+  }
+  .fab-stack.is-open{pointer-events:auto;}
+  .fab-stack > :nth-child(1){--i:0;} .fab-stack > :nth-child(2){--i:1;}
+  .fab-stack > :nth-child(3){--i:2;} .fab-stack > :nth-child(4){--i:3;}
+  .fab-stack > :nth-child(5){--i:4;} .fab-stack > :nth-child(6){--i:5;}
+  /* الحالة المقفولة: الأيقونة مصغّرة وشفافة ومرفوعة لمكان زرار الـ3 شرط */
+  .fab-stack .login-fab-btn{
+    opacity:0;visibility:hidden;
+    transform:translateY(calc(-1 * (var(--i) + 1) * var(--step))) scale(.3);
+    transition:transform .38s cubic-bezier(.5,0,.75,0) calc((5 - var(--i)) * 35ms),
+               opacity .25s ease calc((5 - var(--i)) * 35ms),
+               visibility 0s linear calc(.4s + (5 - var(--i)) * 35ms),
+               box-shadow .15s ease;
+  }
+  .fab-stack.is-open .login-fab-btn{
+    opacity:1;visibility:visible;transform:none;
+    transition:transform .55s cubic-bezier(.34,1.56,.64,1) calc(var(--i) * 60ms),
+               opacity .3s ease calc(var(--i) * 60ms),
+               visibility 0s linear calc(var(--i) * 60ms),
+               box-shadow .15s ease;
+  }
+  .fab-stack.is-open .login-fab-btn:hover{transform:scale(1.06);transition-delay:0s;transition-duration:.15s;}
+  .fab-stack.is-open .login-fab-btn:active{transform:scale(.95);}
+  /* الاسم الشفاف جنب كل أيقونة */
+  .fab-label{
+    position:absolute;top:50%;transform:translateY(-50%) translateX(var(--lx,0));
+    padding:4px 11px;border-radius:999px;white-space:nowrap;pointer-events:none;
+    font-family:'Cairo',sans-serif;font-size:11.5px;font-weight:700;line-height:1.5;letter-spacing:0;
+    color:#3a3f45;text-shadow:0 0 6px rgba(255,255,255,.8);
+    background:rgba(255,255,255,.55);
+    -webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4);
+    border:1px solid rgba(240,213,184,.85);box-shadow:0 4px 12px rgba(26,26,26,.08);
+    opacity:0;transition:opacity .2s ease, transform .3s ease;
+  }
+  .login-fabs-col-right .fab-label{right:calc(100% + 8px);--lx:10px;}
+  .login-fabs-col-left  .fab-label{left:calc(100% + 8px);--lx:-10px;}
+  .fab-stack.is-open .fab-label{
+    opacity:1;transform:translateY(-50%) translateX(0);
+    transition:opacity .35s ease calc(var(--i) * 60ms + 220ms), transform .4s ease calc(var(--i) * 60ms + 220ms);
+  }
+  /* زرار التحديث جوه القايمة */
+  .fab-stack .app-refresh-btn{color:var(--steel);}
+  .fab-stack .app-refresh-btn svg{display:block;}
+  .fab-stack .app-refresh-btn.is-spinning{animation:none;}
+  .fab-stack .app-refresh-btn.is-spinning svg{animation:appRefreshSpin_ .7s linear infinite;}
+  @media (prefers-reduced-motion:reduce){
+    .fab-stack .login-fab-btn,.fab-label,.fab-burger i,.fab-toggle{transition-duration:.01s !important;transition-delay:0s !important;}
+    .fab-toggle-dot{animation:none;}
+  }
   @media (max-width:480px){
     .login-fabs{right:14px;top:14px;gap:8px;}
     .login-fabs-col{top:14px;gap:8px;}
@@ -1115,6 +1215,8 @@
     .login-fabs-col-left{left:14px;}
     #homeFabs{top:2px;left:14px;right:auto;}
     .login-fab-btn{width:44px;height:44px;font-size:19px;}
+    .login-fabs-col{--fab:44px;--step:54px;}
+    .fab-label{font-size:11px;padding:3px 9px;}
   }
 
   /* ---------- رسالة ترحيب عند نجاح الدخول ---------- */
@@ -1176,34 +1278,41 @@
      تانية. -->
 <div class="login-fabs" id="loginFabs">
   <div class="login-fabs-col login-fabs-col-right">
-  <button type="button" id="loginDashboardBtn" class="login-fab-btn" aria-label="لوحة الحضور والانصراف">📊</button>
-  <button type="button" id="loginBellBtn" class="login-fab-btn" aria-label="طلبات بانتظار الاعتماد">
-    🔔
-    <span class="login-bell-badge" id="loginBellBadge">0</span>
-  </button>
-  <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫</button>
-  <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰</button>
+    <button type="button" class="fab-toggle" id="fabToggleRight" aria-label="قايمة الإشعارات" aria-expanded="false" aria-controls="fabStackRight"><span class="fab-burger"><i></i><i></i><i></i></span><span class="fab-toggle-dot"></span></button>
+    <div class="fab-stack" id="fabStackRight">
+      <button type="button" id="loginDashboardBtn" class="login-fab-btn" aria-label="لوحة الحضور والانصراف">📊<span class="fab-label" aria-hidden="true">لوحة الحضور</span></button>
+      <button type="button" id="loginBellBtn" class="login-fab-btn" aria-label="طلبات بانتظار الاعتماد">
+        🔔<span class="fab-label" aria-hidden="true">الاعتماد</span>
+        <span class="login-bell-badge" id="loginBellBadge">0</span>
+      </button>
+      <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫<span class="fab-label" aria-hidden="true">الغياب</span></button>
+      <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰<span class="fab-label" aria-hidden="true">التأخير</span></button>
+      <button type="button" id="appRefreshBtn" class="login-fab-btn app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg><span class="fab-label" aria-hidden="true">تحديث</span></button>
+    </div>
   </div>
   <div class="login-fabs-col login-fabs-col-left">
-  <button type="button" id="loginChecksBtn" class="login-fab-btn" aria-label="الشيكات المستحقة">
-    🧾
-    <span class="login-bell-badge" id="loginChecksBadge">0</span>
-  </button>
-  <button type="button" id="loginPartiesBtn" class="login-fab-btn" aria-label="أرصدة العملاء والموردين">
-    🤝
-  </button>
-  <button type="button" id="loginOverdueBtn" class="login-fab-btn" aria-label="اجمالي المتأخرات">
-    📉
-    <span class="login-bell-badge" id="loginOverdueBadge">0</span>
-  </button>
-  <button type="button" id="loginInstallmentsBtn" class="login-fab-btn" aria-label="الأقساط">
-    💳
-    <span class="login-bell-badge" id="loginInstallmentsBadge">0</span>
-  </button>
-  <button type="button" id="loginLastPricesBtn" class="login-fab-btn" aria-label="اخر سعر شراء وبيع">
-    🏷️
-    <span class="login-bell-badge" id="loginLastPricesBadge">0</span>
-  </button>
+    <button type="button" class="fab-toggle" id="fabToggleLeft" aria-label="قايمة الإشعارات" aria-expanded="false" aria-controls="fabStackLeft"><span class="fab-burger"><i></i><i></i><i></i></span><span class="fab-toggle-dot"></span></button>
+    <div class="fab-stack" id="fabStackLeft">
+      <button type="button" id="loginChecksBtn" class="login-fab-btn" aria-label="الشيكات المستحقة">
+        🧾<span class="fab-label" aria-hidden="true">الشيكات</span>
+        <span class="login-bell-badge" id="loginChecksBadge">0</span>
+      </button>
+      <button type="button" id="loginPartiesBtn" class="login-fab-btn" aria-label="أرصدة العملاء والموردين">
+        🤝<span class="fab-label" aria-hidden="true">العملاء والموردين</span>
+      </button>
+      <button type="button" id="loginOverdueBtn" class="login-fab-btn" aria-label="اجمالي المتأخرات">
+        📉<span class="fab-label" aria-hidden="true">المتأخرات</span>
+        <span class="login-bell-badge" id="loginOverdueBadge">0</span>
+      </button>
+      <button type="button" id="loginInstallmentsBtn" class="login-fab-btn" aria-label="الأقساط">
+        💳<span class="fab-label" aria-hidden="true">الأقساط</span>
+        <span class="login-bell-badge" id="loginInstallmentsBadge">0</span>
+      </button>
+      <button type="button" id="loginLastPricesBtn" class="login-fab-btn" aria-label="اخر سعر شراء وبيع">
+        🏷️<span class="fab-label" aria-hidden="true">آخر الأسعار</span>
+        <span class="login-bell-badge" id="loginLastPricesBadge">0</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1234,12 +1343,8 @@
   <button type="button" id="homeSettingsBtn" class="login-fab-btn" aria-label="الإعدادات">⚙️</button>
 </div>
 
-<!-- زرار تحديث ثابت في الشاشة، ظاهر دايمًا (صفحة الدخول والرئيسية):
-     بيعمل ريفريش كامل للتطبيق بأحدث نسخة (index.html + ملفات JSON) —
-     مفيد بعد أي push جديد لـ APP.xlsx عشان الأرقام تتحدث فورًا. -->
-<div id="loginTopBar" class="login-top-bar">
-<button type="button" id="appRefreshBtn" class="app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>
-</div>
+<!-- زرار التحديث (appRefreshBtn) بقى جوه قايمة الـ3 شرط اليمين في صفحة الدخول -->
+<div id="loginTopBar" style="display:none;"></div>
 <button type="button" id="loginRadioBtn" class="login-radio-btn" aria-label="إذاعة القرآن الكريم">
   <svg class="radio-icon-play" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8 4 3"></path><path d="M17 8 20 3"></path><rect x="3" y="8" width="18" height="12" rx="2.5"></rect><circle cx="8" cy="14" r="2.3"></circle><line x1="13.5" y1="12" x2="18" y2="12"></line><line x1="13.5" y1="16" x2="18" y2="16"></line></svg>
   <svg class="radio-icon-stop" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
@@ -1331,10 +1436,8 @@
         <input type="checkbox" id="rememberMe" checked>
         تذكر اسم المستخدم وكلمة المرور
       </label>
-      <button type="submit" class="btn btn-primary" style="width:100%;">دخول</button>
+      <button type="submit" class="btn btn-primary">دخول</button>
       <div class="status-msg err" id="loginError"></div>
-      <button type="button" id="forgotBtn" class="forgot-link">ذكرني بكلمة المرور</button>
-      <div id="passwordHint" class="password-hint" style="display:none;"></div>
     </form>
   </div>
 </div>
@@ -5784,11 +5887,6 @@ window.safeFileName = function(str){
     }
   });
 
-  document.getElementById('forgotBtn').addEventListener('click', function(){
-    var hint = document.getElementById('passwordHint');
-    hint.textContent = 'اسم المستخدم: ' + APP_USER + '  —  كلمة المرور: ' + APP_PASS;
-    hint.style.display = '';
-  });
 
   // Top-level home tiles: open the "تفويضات" or "نماذج" submenu.
   document.getElementById('openTafweedMenuBtn').addEventListener('click', function(){
@@ -9439,6 +9537,39 @@ window.safeFileName = function(str){
       else { runIt(); }
     }
   } catch (e) {}
+})();
+</script>
+<script>
+// قوايم الإشعارات (3 شرط) في صفحة الدخول: فتح/قفل بحركة، وبتفتكر آخر حالة.
+(function(){
+  var sides=[{t:'fabToggleRight',s:'fabStackRight',k:'loginFabOpenRight'},{t:'fabToggleLeft',s:'fabStackLeft',k:'loginFabOpenLeft'}];
+  sides.forEach(function(cfg){
+    var t=document.getElementById(cfg.t), st=document.getElementById(cfg.s);
+    if(!t||!st) return;
+    function setOpen(open,save){
+      t.classList.toggle('is-open',open); st.classList.toggle('is-open',open);
+      t.setAttribute('aria-expanded',open?'true':'false');
+      if(save){ try{ localStorage.setItem(cfg.k,open?'1':'0'); }catch(e){} }
+    }
+    function refreshState(){
+      var visible=0, alert=false;
+      Array.prototype.forEach.call(st.children,function(b){
+        if(b.style.display==='none') return;
+        visible++;
+        var bd=b.querySelector('.login-bell-badge');
+        if(bd && bd.style.display && bd.style.display!=='none') alert=true;
+      });
+      t.hidden = visible===0;              // لو كل الأيقونات مخفية بالصلاحيات، الزرار نفسه يختفي
+      t.classList.toggle('has-alert',alert);
+    }
+    t.addEventListener('click',function(){ setOpen(!t.classList.contains('is-open'),true); });
+    if('MutationObserver' in window){
+      new MutationObserver(refreshState).observe(st,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style']});
+    }
+    refreshState();
+    var saved=null; try{ saved=localStorage.getItem(cfg.k); }catch(e){}
+    if(saved==='1') setOpen(true,false);
+  });
 })();
 </script>
 </body>
