@@ -987,13 +987,18 @@
      في الأقساط هو تاريخ، فبنخليه بنفس حجم باقي الأعمدة. */
   table.dtable.installments-table td:nth-child(3){font-size:0.72em;letter-spacing:0;}
   @media (max-width:760px){table.dtable.installments-table td:nth-child(3){font-size:10px;}}
+  /* كل كلام جدول الأقساط بولد */
+  table.dtable.installments-table th,table.dtable.installments-table td{font-weight:700;}
   /* وضع تصدير PDF للأقساط (بيتفعّل على النسخة المؤقتة بس وقت التصدير): الجدول
      ياخد عرض الورقة من غير سكرول ولا قص، وخطه هو خط جدول الشيكات نفسه؛ ولو
      الأعمدة الـ12 ما اتساعوش بيصغر الخط تلقائيًا لحد ما يتساعوا (--qs-fs). */
-  .quick-status-modal.installments-modal.qs-exporting{max-width:none;width:100%;}
+  .quick-status-modal.installments-modal.qs-exporting{max-width:none;width:100%;padding:4px;box-shadow:none;border-radius:0;}
+  .qs-exporting .quick-status-subtitle{margin:2px 0 6px;font-size:11px;}
+  .qs-exporting .installments-toolbar{margin:0 0 6px;font-size:10px;gap:4px 6px;}
+  .qs-exporting .installments-toolbar .inst-fval{font-weight:800;padding:1px 10px;border:1px solid #d9c6b0;border-radius:6px;background:#fff8f2;}
   .qs-exporting .qs-table-scroll{overflow:visible;}
   .qs-exporting .qs-table-scroll table.dtable{min-width:0;width:100%;}
-  .qs-exporting .qs-table-scroll table.dtable th,.qs-exporting .qs-table-scroll table.dtable td{font-size:var(--qs-fs,10px);padding:3px 2px;line-height:1.2;}
+  .qs-exporting .qs-table-scroll table.dtable th,.qs-exporting .qs-table-scroll table.dtable td{font-size:var(--qs-fs,10px);padding:3px 1px;line-height:1.2;font-weight:800;}
   .qs-exporting .qs-table-scroll table.dtable th{white-space:normal !important;}
   .qs-exporting .qs-table-scroll table.dtable tbody td:nth-child(2){white-space:normal !important;word-break:break-word !important;}
   .qs-exporting .installments-summary span{font-size:10px;padding:3px 8px;}
@@ -5987,7 +5992,9 @@ window.safeFileName = function(str){
     if (backBtn) backBtn.textContent = (admin && mySalaryAdminOrigin_ === 'settings') ? '→ رجوع للإعدادات' : '→ رجوع للرئيسية';
     var viewBtn = document.getElementById('viewEmployeeSalaryBtn');
     if (viewBtn) {
-      viewBtn.style.display = admin ? '' : 'none';
+      // زرار اختيار موظف يظهر بس لما الأدمن جاي من تايل "راتبي" في الرئيسية.
+      // في شاشة "اختبار الإشعارات" (من الإعدادات) مالوش لازمة — عرض الراتب برّه.
+      viewBtn.style.display = (admin && mySalaryAdminOrigin_ === 'home') ? '' : 'none';
       viewBtn.textContent = currentSessionEmployeeName ? '💰 اختيار موظف آخر' : '💰 عرض راتب موظف';
     }
     var contentEl = document.getElementById('mySalaryContent');
@@ -6366,16 +6373,36 @@ window.safeFileName = function(str){
       var t = m.querySelector('table.installments-table');
       var w = t && t.parentNode;
       if (!t || !w) return;
+      // نلغي هامش الخلفية حوالين المودال عشان الجدول ياخد عرض الورقة كله (يمين وشمال).
+      if (m.parentNode && m.parentNode.style) m.parentNode.style.padding = '0';
       // نبدأ بنفس خط جدول الشيكات (المحسوب فعليًا) وبعدين نصغّره لو لازم.
       var firstTd = t.querySelector('tbody td');
       var fs = 10;
       if (firstTd && doc.defaultView) fs = parseFloat(doc.defaultView.getComputedStyle(firstTd).fontSize) || 10;
-      m.classList.add('qs-exporting');
-      t.style.setProperty('--qs-fs', fs + 'px');
-      while (fs > 5 && t.offsetWidth > w.clientWidth + 1) {
-        fs -= 0.5;
-        t.style.setProperty('--qs-fs', fs + 'px');
+      // القوايم المنسدلة بتترسم وحشة في الـ PDF — بنبدّلها بنص بالاختيار الحالي.
+      var liveSels = document.querySelectorAll('.installments-toolbar select');
+      var cloneSels = m.querySelectorAll('.installments-toolbar select');
+      for (var si = 0; si < cloneSels.length; si++) {
+        var ls = liveSels[si], opt = ls && ls.options[ls.selectedIndex];
+        var sp = doc.createElement('span');
+        sp.className = 'inst-fval';
+        sp.textContent = opt ? opt.text : '';
+        cloneSels[si].parentNode.replaceChild(sp, cloneSels[si]);
       }
+      m.classList.add('qs-exporting');
+      function setFs_(){ t.style.setProperty('--qs-fs', fs + 'px'); }
+      setFs_();
+      // ١) كل الأعمدة تتساع في عرض الورقة من غير قص.
+      while (fs > 5 && t.offsetWidth > w.clientWidth + 1) { fs -= 0.5; setFs_(); }
+      // ٢) أي صف مايزيدش عن سطرين — لو فيه صف أطول (اسم عميل طويل مثلًا)
+      //    بنصغّر الخط شوية لحد ما يدخل في سطرين (مش أقل من 6px).
+      function tooTall_(){
+        var lim = 2 * fs * 1.2 + 9; // سطرين + الـ padding والحدود
+        var trs = t.tBodies[0] ? t.tBodies[0].rows : [];
+        for (var i = 0; i < trs.length; i++) { if (trs[i].offsetHeight > lim) return true; }
+        return false;
+      }
+      while (fs > 6 && tooTall_()) { fs -= 0.5; setFs_(); }
     } catch (e) { /* لو فشل الضبط بنكمل بالتنسيق الافتراضي */ }
   }
   async function buildQuickStatusPdfBlob_(){
@@ -6392,7 +6419,9 @@ window.safeFileName = function(str){
     var pdf = new jsPDF('p', 'mm', 'a4');
     var pageW = pdf.internal.pageSize.getWidth();
     var pageH = pdf.internal.pageSize.getHeight();
-    var marginMm = 10;
+    // الأقساط: هوامش الورقة أصغر (4mm) عشان الجدول ياخد العرض كله.
+    var qsModal = document.querySelector('.quick-status-modal');
+    var marginMm = (qsModal && qsModal.classList.contains('installments-modal')) ? 4 : 10;
     var maxW = pageW - marginMm * 2;
     var maxH = pageH - marginMm * 2;
     var ratio = Math.min(maxW / canvasImg.width, maxH / canvasImg.height);
