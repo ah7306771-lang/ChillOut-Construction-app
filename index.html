@@ -232,10 +232,18 @@
     padding:26px 24px;color:var(--ink);
   }
   .gate-card{width:100%;max-width:360px;text-align:center;}
-  .gate-logo{display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
-  .gate-logo img{width:120px;height:auto;object-fit:contain;}
+  .gate-logo{
+    position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;
+    display:flex;align-items:center;justify-content:center;margin:0;
+  }
+  .gate-logo img{width:100px;height:auto;object-fit:contain;display:block;}
   /* صورة متحركة (كرين + مبنى تحت الإنشاء) في صفحة الدخول */
   .construction-anim{display:block;width:100%;max-width:230px;height:auto;margin:0 auto 22px;}
+  /* صفحة الدخول: اللوجو بقى ثابت فوق الشاشة (خارج تدفق الكارت)، فبنشيل
+     توسيط الكارت رأسيًا ونسحبه لفوق تحت اللوجو على طول بدل ما يفضل
+     في نص الشاشة. */
+  #loginScreen{justify-content:flex-start;padding-top:78px;}
+  #loginScreen .construction-anim{max-width:190px;margin:0 auto 14px;}
   .ca-beacon{animation:caBeacon 1.4s ease-in-out infinite;transform-origin:center;}
   .ca-boom{animation:caSway 4s ease-in-out infinite;transform-origin:96px 22px;}
   .ca-hookline{animation:caSway 4s ease-in-out infinite;transform-origin:96px 22px;}
@@ -932,20 +940,20 @@
     background:#fff;border-radius:12px;max-width:480px;width:100%;padding:16px;
     box-shadow:0 10px 30px rgba(0,0,0,.35);
   }
-  .quick-status-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .quick-status-header #quickStatusTitle{font-weight:800;font-size:1.15em;color:var(--ink);}
+  .quick-status-header{position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:2px;min-height:24px;}
+  .quick-status-header #quickStatusTitle{font-weight:800;font-size:13px;color:var(--ink);text-align:center;}
   .quick-status-close{
+    position:absolute;left:0;top:50%;transform:translateY(-50%);
     background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1;
     padding:2px 8px;border-radius:6px;
   }
   .quick-status-close:hover{background:#f1f1f1;color:#333;}
   .quick-status-paper{background:#fff;}
-  .quick-status-subtitle{text-align:center;color:var(--ink-soft);margin:4px 0 14px;font-size:0.92em;}
+  .quick-status-subtitle{text-align:center;color:var(--ink-soft);margin:0 0 4px;font-size:10px;line-height:1.35;}
   .quick-status-paper .empty-note{text-align:center;color:var(--ink-soft);padding:18px 8px;}
   .quick-status-paper table.dtable{table-layout:auto;}
   /* ---------- INSTALLMENTS (الأقساط) ---------- */
   .installments-modal.qsm-wide{max-width:98vw;width:1180px;padding:14px 10px;}
-  .installments-modal .quick-status-subtitle{margin:2px 0 8px;}
   .installments-summary{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:0 0 8px;}
   .installments-summary span{padding:4px 9px;border-radius:16px;border:1px solid var(--panel-line);font-size:10.5px;font-weight:800;background:#fff8f2;}
   .installments-summary .is-overdue{color:#9c0006;background:#fff2f2;}
@@ -965,10 +973,6 @@
      تحديث بخط صغير، الفلاتر مضمومة، والجدول مسحوب لفوق. */
   .quick-status-overlay:has(.installments-modal){padding-top:6px;padding-bottom:6px;}
   .installments-modal.qsm-wide{padding:8px 10px 10px;}
-  .installments-modal .quick-status-header{position:relative;justify-content:center;margin-bottom:2px;min-height:24px;}
-  .installments-modal .quick-status-header #quickStatusTitle{font-size:13px;text-align:center;}
-  .installments-modal .quick-status-close{position:absolute;left:0;top:50%;transform:translateY(-50%);}
-  .installments-modal .quick-status-subtitle{font-size:10px;line-height:1.35;margin:0 0 4px;}
   .installments-modal .installments-summary{margin:0 0 4px;gap:4px;}
   .installments-modal .installments-summary span{padding:2px 7px;font-size:10px;}
   .installments-modal .installments-toolbar{max-width:300px;margin:0 auto 4px;gap:4px;}
@@ -1149,7 +1153,7 @@
   /* نقطة تنبيه على الزرار وهو مقفول لو فيه إشعارات جوّه */
   .fab-toggle-dot{
     position:absolute;top:-3px;left:-3px;width:14px;height:14px;border-radius:50%;
-    background:#e0433a;box-shadow:0 0 0 2px #fff;display:none;
+    background:#2f7dfb;box-shadow:0 0 0 2px #fff;display:none;
     animation:fabDotPulse 1.6s ease-in-out infinite;
   }
   .fab-toggle.has-alert:not(.is-open) .fab-toggle-dot{display:block;}
@@ -1185,12 +1189,11 @@
   /* الاسم الشفاف جنب كل أيقونة */
   .fab-label{
     position:absolute;top:50%;transform:translateY(-50%) translateX(var(--lx,0));
-    padding:4px 11px;border-radius:999px;white-space:nowrap;pointer-events:none;
-    font-family:'Cairo',sans-serif;font-size:11.5px;font-weight:700;line-height:1.5;letter-spacing:0;
-    color:#3a3f45;text-shadow:0 0 6px rgba(255,255,255,.8);
-    background:rgba(255,255,255,.55);
-    -webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4);
-    border:1px solid rgba(240,213,184,.85);box-shadow:0 4px 12px rgba(26,26,26,.08);
+    padding:5px 12px;border-radius:999px;white-space:nowrap;pointer-events:none;
+    font-family:'Cairo',sans-serif;font-size:11.5px;font-weight:800;line-height:1.5;letter-spacing:0;
+    color:#fff8ee;text-shadow:none;
+    background:linear-gradient(135deg,var(--steel),#b8471a);
+    border:1px solid rgba(255,255,255,.3);box-shadow:0 4px 12px rgba(26,26,26,.28);
     opacity:0;transition:opacity .2s ease, transform .3s ease;
   }
   .login-fabs-col-right .fab-label{right:calc(100% + 8px);--lx:10px;}
@@ -1208,6 +1211,12 @@
     .fab-stack .login-fab-btn,.fab-label,.fab-burger i,.fab-toggle{transition-duration:.01s !important;transition-delay:0s !important;}
     .fab-toggle-dot{animation:none;}
   }
+  .fab-scrim{
+    position:fixed;inset:0;z-index:9990;background:rgba(20,15,10,.5);
+    -webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px);
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s ease;
+  }
+  .fab-scrim.is-show{opacity:1;visibility:visible;pointer-events:auto;}
   @media (max-width:480px){
     .login-fabs{right:14px;top:14px;gap:8px;}
     .login-fabs-col{top:14px;gap:8px;}
@@ -1276,6 +1285,7 @@
      الاعتماد + ملخص سريع للغياب والتأخير النهارده — كلها بقت من غير
      باسورد، وبتتحكم فيها إظهار/إخفاء من صلاحيات المستخدمين زي أي أيقونة
      تانية. -->
+<div class="fab-scrim" id="fabScrim"></div>
 <div class="login-fabs" id="loginFabs">
   <div class="login-fabs-col login-fabs-col-right">
     <button type="button" class="fab-toggle" id="fabToggleRight" aria-label="قايمة الإشعارات" aria-expanded="false" aria-controls="fabStackRight"><span class="fab-burger"><i></i><i></i><i></i></span><span class="fab-toggle-dot"></span></button>
@@ -1375,17 +1385,8 @@
   <div class="home-footer-byline">BY/ Ahmed Hamdy</div>
   <div class="gate-card">
     <div class="gate-logo" id="loginLogoSlot"></div>
-    <svg class="construction-anim" viewBox="0 0 230 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مقاولات">
+    <svg class="construction-anim" viewBox="40 0 190 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="مقاولات">
       <rect x="4" y="112" width="222" height="3" rx="1.5" fill="var(--panel-line)"/>
-      <g>
-        <rect x="16" y="66" width="34" height="46" fill="#fff8f2" stroke="var(--panel-line)" stroke-width="2"/>
-        <rect class="ca-window" x="22" y="74" width="8" height="8" fill="var(--panel-line)"/>
-        <rect class="ca-window" x="36" y="74" width="8" height="8" fill="var(--panel-line)"/>
-        <rect class="ca-window" x="22" y="88" width="8" height="8" fill="var(--panel-line)"/>
-        <rect class="ca-window" x="36" y="88" width="8" height="8" fill="var(--panel-line)"/>
-        <rect class="ca-window" x="22" y="100" width="8" height="8" fill="var(--panel-line)"/>
-        <rect class="ca-window" x="36" y="100" width="8" height="8" fill="var(--panel-line)"/>
-      </g>
       <g>
         <rect x="150" y="46" width="48" height="66" fill="#ffffff" stroke="var(--steel-dark)" stroke-width="2"/>
         <rect class="ca-window" x="158" y="54" width="9" height="9" fill="var(--panel-line)"/>
@@ -1661,12 +1662,7 @@
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
         <span class="home-tile-label">إعدادات الإشعارات</span>
       </button>
-      <button type="button" class="home-tile" id="salarySendAllBtn" style="display:none;">
-        <span class="home-tile-icon" style="font-size:26px;">📢</span>
-        <span class="home-tile-label">إشعار الراتب لكل الموظفين</span>
-      </button>
     </div>
-    <div class="status-msg" id="salarySendAllStatus" style="margin:12px 0 0;font-size:13px;text-align:center;"></div>
   </div>
 </div>
 
@@ -1798,6 +1794,11 @@
       <div class="section-tag" style="margin:20px 0 8px;">إشعارات الشيكات</div>
       <button type="button" class="btn btn-secondary" id="enableChecksPushBtn" style="width:100%;">🔔 فعّل إشعارات الشيكات على الجهاز ده</button>
       <div class="status-msg" id="checksPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+
+      <div class="settings-divider"></div>
+      <div class="section-tag" style="margin:20px 0 8px;">إشعار الراتب لكل الموظفين</div>
+      <button type="button" class="btn btn-secondary" id="salarySendAllBtn" style="width:100%;display:none;">📢 إرسال إشعار الراتب لكل الموظفين</button>
+      <div class="status-msg" id="salarySendAllStatus" style="margin:6px 0 0;font-size:13px;"></div>
     </div>
   </div>
 </div>
@@ -3234,6 +3235,7 @@ window.safeFileName = function(str){
   var appScreenCustody    = document.getElementById('appScreenCustody');
 
   function showScreen(name){
+    if (name === 'login' && window.resetLoginFabs_) window.resetLoginFabs_();
     loginScreen.style.display       = (name === 'login')         ? '' : 'none';
     homeScreen.style.display        = (name === 'home')          ? '' : 'none';
     tafweedMenuScreen.style.display = (name === 'tafweed-menu')  ? '' : 'none';
@@ -3461,7 +3463,7 @@ window.safeFileName = function(str){
   function refreshPushButtonState(statusEl, btnEl, employeeMode){
     var storageKey = employeeMode === 'checks' ? 'fcmChecksTokenRegistered' : (employeeMode ? 'fcmEmployeeTokenRegistered' : 'fcmTokenRegistered');
     var defaultLabel = employeeMode === 'checks' ? '🔔 فعّل إشعارات الشيكات على الجهاز ده' : (employeeMode ? '🔔 فعّل إشعاراتي الشخصية' : '🔔 فعّل إشعارات الجوال للطلبات الجديدة');
-    var reenableLabel = employeeMode === 'checks' ? '🔔 إعادة تفعيل إشعارات الشيكات' : (employeeMode ? '🔔 إعادة تفعيل إشعاراتي' : '🔔 إعادة تفعيل الإشعارات');
+    var reenableLabel = employeeMode === 'checks' ? '🔔 إعادة تفعيل إشعارات الشيكات' : (employeeMode ? '🔔 إعادة تفعيل إشعاراتي الشخصية' : '🔔 إعادة تفعيل إشعارات طلبات الاعتماد');
     var savedToken = null;
     try { savedToken = localStorage.getItem(storageKey); } catch (e) {}
     var permission = ('Notification' in window) ? Notification.permission : 'default';
@@ -5366,13 +5368,19 @@ window.safeFileName = function(str){
       +'<div class="inst-filter"><label for="instClientFilter">العميل</label><select id="instClientFilter"><option value="">كل العملاء</option>'
       +clients.map(function(c,i){return '<option value="'+i+'">'+escQuick_(c)+'</option>';}).join('')
       +'</select></div></div>';
-    var headers=(data.columns&&data.columns.length>=12)?data.columns.slice(0,12):['أمر البيع','العميل','تاريخ التحميل','إجمالي الفاتورة','القسط','تاريخ الاستحقاق','قيمة القسط','المسدّد','المتبقّي','المتبقي المتأخر','مدة التأخير','الحالة'];
+    // ترتيب عرض الأعمدة (مختلف عن ترتيب الشيت الأصلي): تاريخ الاستحقاق بقى
+    // بعد تاريخ التحميل على طول، وإجمالي الفاتورة بقى قبل قيمة القسط على طول.
+    // INST_COL_ORDER[موضع العرض] = رقم العمود الأصلي في الشيت (0-based).
+    var INST_COL_ORDER=[0,1,2,5,3,6,4,7,8,9,10,11];
+    var baseHeaders=(data.columns&&data.columns.length>=12)?data.columns.slice(0,12):['أمر البيع','العميل','تاريخ التحميل','إجمالي الفاتورة','القسط','تاريخ الاستحقاق','قيمة القسط','المسدّد','المتبقّي','المتبقي المتأخر','مدة التأخير','الحالة'];
+    var headers=INST_COL_ORDER.map(function(oi){return baseHeaders[oi];});
     var th=headers.map(function(h){return '<th>'+escQuick_(h==='تاريخ التحميل'?'تاريخ الفاتورة':(h||''))+'</th>';}).join('');
     function rowHtml(x){
       var v=x.values,cells=[];
-      for(var i=0;i<12;i++){
-        var shown=(i===2||i===5)?fmtInstallmentDate_(v[i]):([3,6,7,8].indexOf(i)>=0?fmtInstallmentMoney_(v[i]):i===9?fmtInstallmentMoney_(x.lateAmount):i===10?(x.delay!==null?(x.delay+' '+(x.delay===1?'يوم':'أيام')):''):i===11?x.status:escQuick_(v[i]===null||v[i]===undefined?'':v[i]));
-        cells.push('<td'+(i===5?' dir="ltr"':'')+'>'+shown+'</td>');
+      for(var p=0;p<12;p++){
+        var oi=INST_COL_ORDER[p];
+        var shown=(oi===2||oi===5)?fmtInstallmentDate_(v[oi]):([3,6,7,8].indexOf(oi)>=0?fmtInstallmentMoney_(v[oi]):oi===9?fmtInstallmentMoney_(x.lateAmount):oi===10?(x.delay!==null?(x.delay+' '+(x.delay===1?'يوم':'أيام')):''):oi===11?x.status:escQuick_(v[oi]===null||v[oi]===undefined?'':v[oi]));
+        cells.push('<td'+(oi===5?' dir="ltr"':'')+'>'+shown+'</td>');
       }
       // الصف المستحق (متأخر أو مستحق اليوم) بيتلوّن كله وردي زي الشيك المتأخر
       return '<tr'+((x.key==='overdue'||x.key==='today')?' class="row-overdue"':'')+'>'+cells.join('')+'</tr>';
@@ -5393,7 +5401,7 @@ window.safeFileName = function(str){
       });
       summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
       tbody.innerHTML=list.length?list.map(rowHtml).join(''):'<tr><td colspan="12">مفيش أقساط بالفلتر ده.</td></tr>';
-      tfoot.innerHTML=list.length?('<tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="6">الإجمالي</td><td>'+money(sumInst)+'</td><td>'+money(sumPaid)+'</td><td>'+money(totalRemaining)+'</td><td>'+money(sumLate)+'</td><td colspan="2"></td></tr>'):'';
+      tfoot.innerHTML=list.length?('<tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="5">الإجمالي</td><td>'+money(sumInst)+'</td><td></td><td>'+money(sumPaid)+'</td><td>'+money(totalRemaining)+'</td><td>'+money(sumLate)+'</td><td colspan="2"></td></tr>'):'';
     }
     sel.addEventListener('change',draw);
     csel.addEventListener('change',draw);
@@ -9540,16 +9548,29 @@ window.safeFileName = function(str){
 })();
 </script>
 <script>
-// قوايم الإشعارات (3 شرط) في صفحة الدخول: فتح/قفل بحركة، وبتفتكر آخر حالة.
+// قوايم الإشعارات (3 شرط) في صفحة الدخول: فتح بحركة، وبتقفل نفسها -
+// يدويًا (تاني ضغطة على الزرار)، أو تلقائيًا بعد 20 ثانية من غير حركة،
+// أو فورًا لو دخلنا للبرنامج أو رجعنا لصفحة الدخول تاني (مفيش حفظ لحالة
+// الفتح؛ كل مرة تُفتح صفحة الدخول من جديد تبقى القوايم مقفولة).
 (function(){
-  var sides=[{t:'fabToggleRight',s:'fabStackRight',k:'loginFabOpenRight'},{t:'fabToggleLeft',s:'fabStackLeft',k:'loginFabOpenLeft'}];
+  var AUTO_CLOSE_MS = 20000;
+  var scrim = document.getElementById('fabScrim');
+  var closers = [];
+  function anyOpen(){ return closers.some(function(c){ return c.isOpen(); }); }
+  function syncScrim(){ if(scrim) scrim.classList.toggle('is-show', anyOpen()); }
+
+  var sides=[{t:'fabToggleRight',s:'fabStackRight'},{t:'fabToggleLeft',s:'fabStackLeft'}];
   sides.forEach(function(cfg){
     var t=document.getElementById(cfg.t), st=document.getElementById(cfg.s);
     if(!t||!st) return;
-    function setOpen(open,save){
+    var closeTimer=null;
+    function clearTimer(){ if(closeTimer){ clearTimeout(closeTimer); closeTimer=null; } }
+    function setOpen(open){
       t.classList.toggle('is-open',open); st.classList.toggle('is-open',open);
       t.setAttribute('aria-expanded',open?'true':'false');
-      if(save){ try{ localStorage.setItem(cfg.k,open?'1':'0'); }catch(e){} }
+      clearTimer();
+      if(open){ closeTimer=setTimeout(function(){ setOpen(false); }, AUTO_CLOSE_MS); }
+      syncScrim();
     }
     function refreshState(){
       var visible=0, alert=false;
@@ -9562,14 +9583,21 @@ window.safeFileName = function(str){
       t.hidden = visible===0;              // لو كل الأيقونات مخفية بالصلاحيات، الزرار نفسه يختفي
       t.classList.toggle('has-alert',alert);
     }
-    t.addEventListener('click',function(){ setOpen(!t.classList.contains('is-open'),true); });
+    t.addEventListener('click',function(){ setOpen(!t.classList.contains('is-open')); });
     if('MutationObserver' in window){
       new MutationObserver(refreshState).observe(st,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style']});
     }
     refreshState();
-    var saved=null; try{ saved=localStorage.getItem(cfg.k); }catch(e){}
-    if(saved==='1') setOpen(true,false);
+    closers.push({ isOpen:function(){ return t.classList.contains('is-open'); }, close:function(){ setOpen(false); } });
   });
+  if(scrim){
+    scrim.addEventListener('click', function(){ closers.forEach(function(c){ c.close(); }); });
+  }
+  // بتتصفّر (تقفل الاتنين فورًا، من غير أنيميشن) في أي وقت نرجع لصفحة الدخول:
+  // بعد الدخول للبرنامج والخروج تاني، أو أي navigation تانية لصفحة الدخول.
+  window.resetLoginFabs_ = function(){
+    closers.forEach(function(c){ c.close(); });
+  };
 })();
 </script>
 </body>
