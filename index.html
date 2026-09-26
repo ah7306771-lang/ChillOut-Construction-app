@@ -1811,6 +1811,16 @@
       <div class="status-msg" id="checksPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
 
       <div class="settings-divider"></div>
+      <div class="section-tag" style="margin:20px 0 8px;">إشعارات أوامر الشراء</div>
+      <button type="button" class="btn btn-secondary" id="enableOrderPushBtn" style="width:100%;">🛒 فعّل إشعارات أوامر الشراء على الجهاز ده</button>
+      <div class="status-msg" id="orderPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+
+      <div class="settings-divider"></div>
+      <div class="section-tag" style="margin:20px 0 8px;">إشعارات المتأخرات</div>
+      <button type="button" class="btn btn-secondary" id="enableOverduePushBtn" style="width:100%;">📉 فعّل إشعارات المتأخرات على الجهاز ده</button>
+      <div class="status-msg" id="overduePushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+
+      <div class="settings-divider"></div>
       <div class="section-tag" style="margin:20px 0 8px;">إشعار الراتب لكل الموظفين</div>
       <button type="button" class="btn btn-secondary" id="salarySendAllBtn" style="width:100%;display:none;">📢 إرسال إشعار الراتب لكل الموظفين</button>
       <div class="status-msg" id="salarySendAllStatus" style="margin:6px 0 0;font-size:13px;"></div>
@@ -3422,13 +3432,52 @@ window.safeFileName = function(str){
         // الموبايل. هنا بنعرضه يدوياً بنفس الشكل.
         if (!window.__fcmForegroundHandlerAdded) {
           window.__fcmForegroundHandlerAdded = true;
+          // ذاكرة صغيرة لمنع تكرار نفس الإشعار خلال 60 ثانية (سواء وصل مرتين
+          // من السيرفر أو من foreground + background). key = title+body.
+          window.__fcmSeen = window.__fcmSeen || {};
+          function fcmDedupKey(t, b){ return String(t) + '||' + String(b); }
           messaging.onMessage(function(payload){
-            var title = (payload.data && payload.data.title) || (payload.notification && payload.notification.title) || 'إشعار جديد';
-            var body = (payload.data && payload.data.body) || (payload.notification && payload.notification.body) || '';
+            var d = payload.data || {};
+            var n = payload.notification || {};
+            var title = d.title || n.title || 'إشعار جديد';
+            var body  = d.body  || n.body  || '';
+            var topic = (d.topic || d.kind || '').toLowerCase();
+            // لو السيرفر بعت كمية (qty) وحدة (unit) نضيفها في آخر السطر —
+            // مثلاً "20 طن" لأمر شراء، أو مبلغ متأخر لعميل. لو خالص مبعتش،
+            // بيسيب النص زي ما جه بدون أي إضافة.
+            if (d.qty && String(body).indexOf(d.qty) === -1) {
+              var unit = d.unit ? (' ' + d.unit) : '';
+              body = body + (body ? ' — ' : '') + d.qty + unit;
+            }
+            // امنع التكرار: نفس النص خلال 60 ثانية بيتشال.
+            var key = fcmDedupKey(title, body);
+            var now = Date.now();
+            if (window.__fcmSeen[key] && (now - window.__fcmSeen[key]) < 60000) return;
+            window.__fcmSeen[key] = now;
+            // أيقونة ولون وtag مختلف لكل نوع إشعار — علشان الشيكات والمتأخرات
+            // وأوامر الشراء يبانوا مختلفين عن باقي الإشعارات على شاشة الجهاز.
+            var iconMap = {
+              order:    { icon: 'icon-order.png',    badge: 'icon-order.png',    tag: 'hhm-order',    color: '#0284c7' },
+              overdue:  { icon: 'icon-overdue.png',  badge: 'icon-overdue.png',  tag: 'hhm-overdue',  color: '#dc2626' },
+              checks:   { icon: 'icon-checks.png',   badge: 'icon-checks.png',   tag: 'hhm-checks',   color: '#059669' },
+              salary:   { icon: 'icon-salary.png',   badge: 'icon-salary.png',   tag: 'hhm-salary',   color: '#7c3aed' },
+              request:  { icon: 'icon-192.png',      badge: 'icon-192.png',      tag: 'hhm-request',  color: '#111827' }
+            };
+            var m = iconMap[topic] || iconMap.request;
+            // fallback: لو الأيقونة الخاصة مش موجودة على السيرفر (404) الـ browser
+            // بيرجع للـ icon الافتراضي لوحده، مفيش داعي لأي كود إضافي هنا.
+            var opts = {
+              body: body,
+              icon: m.icon,
+              badge: m.badge,
+              tag:  m.tag + '-' + (d.dedupId || key),
+              renotify: true,
+              data: { topic: topic, dedupId: d.dedupId || '', ts: now }
+            };
             if (registration && registration.showNotification) {
-              registration.showNotification(title, { body: body, icon: 'icon-192.png' });
+              registration.showNotification(title, opts);
             } else if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(title, { body: body, icon: 'icon-192.png' });
+              new Notification(title, opts);
             }
           });
         }
@@ -3462,7 +3511,9 @@ window.safeFileName = function(str){
       try {
         localStorage.setItem('fcmTokenRegistered', token);
         if (employeeName) localStorage.setItem('fcmEmployeeTokenRegistered', token);
-        if (topic === 'checks') localStorage.setItem('fcmChecksTokenRegistered', token);
+        if (topic === 'checks')  localStorage.setItem('fcmChecksTokenRegistered', token);
+        if (topic === 'order')   localStorage.setItem('fcmOrderTokenRegistered', token);
+        if (topic === 'overdue') localStorage.setItem('fcmOverdueTokenRegistered', token);
       } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
     }).catch(function(err){
@@ -3476,9 +3527,29 @@ window.safeFileName = function(str){
   // كل مرة. "employeeMode" بيفصل حالة تفعيل الموظف الشخصية عن حالة تفعيل
   // الإدمن العامة (نفس الجهاز ممكن يكون فيه الاتنين مسجلين لوحدهم).
   function refreshPushButtonState(statusEl, btnEl, employeeMode){
-    var storageKey = employeeMode === 'checks' ? 'fcmChecksTokenRegistered' : (employeeMode ? 'fcmEmployeeTokenRegistered' : 'fcmTokenRegistered');
-    var defaultLabel = employeeMode === 'checks' ? '🔔 فعّل إشعارات الشيكات على الجهاز ده' : (employeeMode ? '🔔 فعّل إشعاراتي الشخصية' : '🔔 فعّل إشعارات الجوال للطلبات الجديدة');
-    var reenableLabel = employeeMode === 'checks' ? '🔔 إعادة تفعيل إشعارات الشيكات' : (employeeMode ? '🔔 إعادة تفعيل إشعاراتي الشخصية' : '🔔 إعادة تفعيل إشعارات طلبات الاعتماد');
+    // employeeMode ممكن يبقى: true (شخصي)، 'checks'، 'order'، 'overdue'، أو null/undefined (أدمن عام).
+    var storageKey, defaultLabel, reenableLabel;
+    if (employeeMode === 'checks') {
+      storageKey    = 'fcmChecksTokenRegistered';
+      defaultLabel  = '🔔 فعّل إشعارات الشيكات على الجهاز ده';
+      reenableLabel = '🔔 إعادة تفعيل إشعارات الشيكات';
+    } else if (employeeMode === 'order') {
+      storageKey    = 'fcmOrderTokenRegistered';
+      defaultLabel  = '🛒 فعّل إشعارات أوامر الشراء على الجهاز ده';
+      reenableLabel = '🛒 إعادة تفعيل إشعارات أوامر الشراء';
+    } else if (employeeMode === 'overdue') {
+      storageKey    = 'fcmOverdueTokenRegistered';
+      defaultLabel  = '📉 فعّل إشعارات المتأخرات على الجهاز ده';
+      reenableLabel = '📉 إعادة تفعيل إشعارات المتأخرات';
+    } else if (employeeMode) {
+      storageKey    = 'fcmEmployeeTokenRegistered';
+      defaultLabel  = '🔔 فعّل إشعاراتي الشخصية';
+      reenableLabel = '🔔 إعادة تفعيل إشعاراتي الشخصية';
+    } else {
+      storageKey    = 'fcmTokenRegistered';
+      defaultLabel  = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+      reenableLabel = '🔔 إعادة تفعيل إشعارات طلبات الاعتماد';
+    }
     var savedToken = null;
     try { savedToken = localStorage.getItem(storageKey); } catch (e) {}
     var permission = ('Notification' in window) ? Notification.permission : 'default';
@@ -6159,6 +6230,8 @@ window.safeFileName = function(str){
     if (showAdminPush) {
       refreshPushButtonState(document.getElementById('pushStatus'), document.getElementById('enablePushBtn'));
       refreshPushButtonState(document.getElementById('checksPushStatus'), document.getElementById('enableChecksPushBtn'), 'checks');
+      refreshPushButtonState(document.getElementById('orderPushStatus'), document.getElementById('enableOrderPushBtn'), 'order');
+      refreshPushButtonState(document.getElementById('overduePushStatus'), document.getElementById('enableOverduePushBtn'), 'overdue');
     }
     showScreen('my-salary');
     if (viewingSalary) loadMySalary_();
@@ -6974,6 +7047,14 @@ window.safeFileName = function(str){
   var enableChecksPushBtn = document.getElementById('enableChecksPushBtn');
   if (enableChecksPushBtn) enableChecksPushBtn.addEventListener('click', function(){
     enablePushNotifications(document.getElementById('checksPushStatus'), '', 'checks');
+  });
+  var enableOrderPushBtn = document.getElementById('enableOrderPushBtn');
+  if (enableOrderPushBtn) enableOrderPushBtn.addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('orderPushStatus'), '', 'order');
+  });
+  var enableOverduePushBtn = document.getElementById('enableOverduePushBtn');
+  if (enableOverduePushBtn) enableOverduePushBtn.addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('overduePushStatus'), '', 'overdue');
   });
   document.getElementById('backSettingsBtnIcons').addEventListener('click', function(){
     showScreen('settings-menu');
@@ -7947,12 +8028,23 @@ window.safeFileName = function(str){
   // ينزّل أو يشارك الـ PDF (سواء أمر جديد أو أمر قديم اتحمّل من البحث)،
   // عشان يفضل في السجل ويقدر يدوّر عليه تاني بعد كده. لو فشل الحفظ (مثلاً
   // مفيش نت)، ده مبيوقفش تحميل/مشاركة الملف نفسه.
+  // ذاكرة مؤقتة (per-session) لأرقام الأوامر اللي اتبعتت للسيرفر بالفعل —
+  // بتمنع تكرار حفظ نفس الأمر لو اليوزر ضغط Download وبعدها Share (أو
+  // بالعكس)، وبالتالي بتمنع وصول إشعارين لنفس الأمر على الموبايل.
+  var __orderSavedSet = new Set();
   function saveOrderToServer(){
     if(!ATTENDANCE_SCRIPT_URL) return;
+    var num = $('ordNum').value.trim();
+    if(!num) return;
+    // بصمة موحّدة (رقم الأمر + العميل) — لو اليوزر بدّل بيانات، بصمته تتغير
+    // ويتحفظ تاني كأنه نسخة جديدة. لو مالمسش حاجة، مبنبعتش تاني.
+    var fp = num + '|' + $('ordClient').value.trim() + '|' + $('ordSupplier').value.trim();
+    if(__orderSavedSet.has(fp)) return;
+    __orderSavedSet.add(fp);
     try{
       const params = new URLSearchParams({
         action: 'orderSubmit',
-        num: $('ordNum').value.trim(),
+        num: num,
         date: $('ordDate').value,
         supplier: $('ordSupplier').value.trim(),
         client: $('ordClient').value.trim(),
@@ -7964,8 +8056,13 @@ window.safeFileName = function(str){
         notes: $('ordNotes').value.trim(),
         items: JSON.stringify(ordItems.filter(it => it.diameter || it.qty || it.spec || it.type))
       });
-      fetch(ATTENDANCE_SCRIPT_URL + '?' + params.toString()).catch(function(){});
-    }catch(e){}
+      fetch(ATTENDANCE_SCRIPT_URL + '?' + params.toString()).catch(function(){
+        // فشل الشبكة → شيل البصمة عشان يقدر يعيد المحاولة تاني في ضغطة جاية.
+        __orderSavedSet.delete(fp);
+      });
+    }catch(e){
+      __orderSavedSet.delete(fp);
+    }
   }
 
   $('ordDownloadBtn').addEventListener('click', async () => {
