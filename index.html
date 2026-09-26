@@ -552,6 +552,7 @@
      A fixed top margin keeps it clear on every screen size. */
   #attendanceDashboardScreen .gate-card{margin-top:64px;}
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
+  #mySalaryScreen .gate-card{margin-top:64px;}
 
   /* لوحة الحضور والانصراف بس: تصغير الخط شوية عموماً، وتصغير مربعات
      التاريخ والفلتر (الموظف) ومربعات حضور/انصراف اللي كانت حجمها زيادة
@@ -6137,15 +6138,17 @@ window.safeFileName = function(str){
     }
     var contentEl = document.getElementById('mySalaryContent');
     if (contentEl) contentEl.style.display = viewingSalary ? '' : 'none';
-    // قسم الإشعارات: للموظف (إشعاراته الشخصية) ولشاشة "إعدادات الإشعارات" بتاعة
-    // الأدمن بس. لما الأدمن بيشوف راتب موظف بيتخفي (الاختبار مكانه الإعدادات).
-    var showPush = !admin || !currentSessionEmployeeName;
+    // قسم الإشعارات: للموظف بس (إشعاراته الشخصية). لما الأدمن بيفتح الشاشة —
+    // سواء وهو بيشوف راتب موظف أو في "إعدادات الإشعارات" العامة — بيتخفي هنا
+    // لأنه نفس تفعيل "إشعارات طلبات الاعتماد" تحت بالظبط (نفس الزرار ونفس
+    // التسجيل)، وكان ظاهر مرتين بنفس الاسم في وضع "إعدادات الإشعارات".
+    var showPush = !admin;
     var pushBoxEl = document.getElementById('mySalaryPushBox');
     if (pushBoxEl) pushBoxEl.style.display = showPush ? '' : 'none';
     var dividerEl = document.getElementById('mySalaryDivider');
     if (dividerEl) dividerEl.style.display = (!admin) ? '' : 'none';
     var tagEl = document.getElementById('mySalaryPushTag');
-    if (tagEl) tagEl.textContent = admin ? 'إشعارات الجهاز ده' : 'إشعاراتي الشخصية';
+    if (tagEl) tagEl.textContent = 'إشعاراتي الشخصية';
     var testStatus = document.getElementById('myPushTestStatus');
     if (testStatus) testStatus.innerHTML = '';
     // إشعارات طلبات الاعتماد + إشعارات الشيكات: أدمن بس، وبس وهو في وضع
@@ -6159,8 +6162,9 @@ window.safeFileName = function(str){
     }
     showScreen('my-salary');
     if (viewingSalary) loadMySalary_();
-    // الأدمن: حالة التفعيل العامة (نفس زرار اعتماد الأذون)، الموظف: حالته الشخصية.
-    refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), !admin);
+    // الموظف بس: حالة تفعيل إشعاراته الشخصية (الأدمن مالوش زرار هنا، شايف
+    // "إشعارات طلبات الاعتماد" تحت بدل منه).
+    if (showPush) refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
   }
   function openMySalaryFlow_(){
     if (isEmployeeSession) {
