@@ -6083,7 +6083,17 @@ window.safeFileName = function(str){
     attendanceSessionShowAll = false;
     showScreen('home');
   });
-  function openAttendanceDashboardInner_(){
+  // بيتسجّل جوّه الشاشة كانت اتفتحت منين (من صفحة الدخول قبل تسجيل أي
+  // حد دخوله، ولا من الرئيسية بعد الدخول) — عشان زرار "رجوع" يرجّع
+  // فعلاً لنفس المكان اللي دخلنا منه، مش للرئيسية دايمًا.
+  var attendanceDashboardOrigin_ = 'home';
+  function updateAttendanceBackLabel_(btnId, origin){
+    var btn = document.getElementById(btnId);
+    if (btn) btn.textContent = (origin === 'login') ? '→ رجوع لصفحة الدخول' : '→ رجوع للرئيسية';
+  }
+  function openAttendanceDashboardInner_(origin){
+    attendanceDashboardOrigin_ = origin || 'home';
+    updateAttendanceBackLabel_('backHomeBtnDashboard', attendanceDashboardOrigin_);
     showScreen('attendance-dashboard');
     loadAttendanceDashboard();
     refreshPendingRequestsBadge(); // يحدّث بانر الطلبات المعلّقة فور فتح اللوحة
@@ -6092,25 +6102,28 @@ window.safeFileName = function(str){
   // بقى متحكم فيه بإظهار/إخفاء الأيقونة نفسها من "إدارة الشاشات" (المسؤول
   // بيشوفها دايمًا، والموظف بس لو المسؤول سايبها ظاهرة له).
   function openAttendanceDashboardFlow_(){
-    openAttendanceDashboardInner_();
+    openAttendanceDashboardInner_('home');
   }
   // من أيقونة "📊" في صفحة الدخول نفسها (قبل ما يسجل أي حد دخوله أصلاً) —
   // مفيش باسورد هنا خالص دلوقتي؛ الوصول بقى متحكم فيه بإظهار/إخفاء
   // الأيقونة نفسها من "إدارة الشاشات" (صلاحيات المستخدمين) زي أي أيقونة
   // تانية في TOGGLE_TILES_.
   function openAttendanceDashboardFromLoginFlow_(){
-    openAttendanceDashboardInner_();
+    openAttendanceDashboardInner_('login');
   }
   document.getElementById('openAttendanceDashboardBtn').addEventListener('click', openAttendanceDashboardFlow_);
   document.getElementById('loginDashboardBtn').addEventListener('click', openAttendanceDashboardFromLoginFlow_);
   document.getElementById('backHomeBtnDashboard').addEventListener('click', function(){
-    showScreen('home');
+    showScreen(attendanceDashboardOrigin_ === 'login' ? 'login' : 'home');
   });
   document.getElementById('dashDateInput').addEventListener('change', loadAttendanceDashboard);
   document.getElementById('dashEmployeeSelect').addEventListener('change', loadAttendanceDashboard);
   document.getElementById('dashRefreshBtn').addEventListener('click', loadAttendanceDashboard);
 
-  function openAttendanceApprovalsInner_(){
+  var attendanceApprovalsOrigin_ = 'home';
+  function openAttendanceApprovalsInner_(origin){
+    attendanceApprovalsOrigin_ = origin || 'home';
+    updateAttendanceBackLabel_('backHomeBtnApprovals', attendanceApprovalsOrigin_);
     showScreen('attendance-approvals');
     // كل مرة تفتح الشاشة، ترجع تلقائي لفلتر "قيد المراجعة" عشان اللي
     // محتاج اعتماد يبان قدامك على طول من غير ما تدور عليه.
@@ -6120,13 +6133,13 @@ window.safeFileName = function(str){
   // من الصفحة الرئيسية أو بانر الطلبات المعلّقة (بعد تسجيل الدخول أصلاً):
   // مفيش باسورد تاني، نفس منطق "إدارة الشاشات".
   function openAttendanceApprovalsFlow_(){
-    openAttendanceApprovalsInner_();
+    openAttendanceApprovalsInner_('home');
   }
   // من أيقونة "🔔" في صفحة الدخول نفسها — مفيش باسورد هنا خالص دلوقتي؛
   // الوصول بقى متحكم فيه بإظهار/إخفاء الأيقونة نفسها من "إدارة الشاشات"
   // (صلاحيات المستخدمين) زي أي أيقونة تانية.
   function openAttendanceApprovalsFromLoginFlow_(){
-    openAttendanceApprovalsInner_();
+    openAttendanceApprovalsInner_('login');
   }
   document.getElementById('openAttendanceApprovalsBtn').addEventListener('click', openAttendanceApprovalsFlow_);
   document.getElementById('dashPendingBanner').addEventListener('click', openAttendanceApprovalsFlow_);
@@ -6742,7 +6755,7 @@ window.safeFileName = function(str){
     enablePushNotifications(document.getElementById('pushStatus'));
   });
   document.getElementById('backHomeBtnApprovals').addEventListener('click', function(){
-    showScreen('home');
+    showScreen(attendanceApprovalsOrigin_ === 'login' ? 'login' : 'home');
   });
   document.getElementById('approvalsRefreshBtn').addEventListener('click', loadAttendanceApprovals);
 
