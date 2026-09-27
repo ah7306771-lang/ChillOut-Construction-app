@@ -671,6 +671,24 @@
 
   /* البحث عن أمر شراء سابق */
   .ord-search-open-btn{width:100%;margin-bottom:16px;}
+
+  /* زرارين "حذف" و"سجل جديد" — بيظهروا بس لما يتحمّل أمر قديم من نتيجة
+     البحث جوه نموذج أمر الشراء. الحذف بيمسح الأمر نهائيًا من قاعدة
+     البيانات (Supabase)، و"سجل جديد" بيفضي النموذج عشان تبدأ أمر جديد. */
+  .ord-loaded-actions{display:flex;gap:8px;margin-bottom:16px;}
+  .ord-icon-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    border:1px solid var(--panel-line);border-radius:8px;padding:10px 8px;
+    background:#fff;font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:700;
+    cursor:pointer;transition:background .15s ease;
+  }
+  .ord-icon-btn svg{width:17px;height:17px;flex:0 0 auto;}
+  .ord-icon-btn:active{transform:scale(0.96);}
+  .ord-icon-btn[disabled]{opacity:0.55;cursor:not-allowed;}
+  .ord-icon-delete{color:#b3261e;border-color:#f0b8ad;}
+  .ord-icon-delete:hover{background:#fdecea;}
+  .ord-icon-new{color:#1f7a4c;border-color:#bfe3cf;}
+  .ord-icon-new:hover{background:#eafaf1;}
   .ord-search-overlay{
     position:fixed;inset:0;background:rgba(20,18,16,0.55);z-index:80;
     display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto;
@@ -2086,6 +2104,18 @@
 
     <button type="button" class="btn btn-secondary ord-search-open-btn" id="ordSearchOpenBtn">🔍 البحث عن أمر سابق</button>
 
+    <!-- بيظهروا بس لما يتحمّل أمر قديم من نتيجة البحث -->
+    <div class="ord-loaded-actions" id="ordLoadedActions" style="display:none;">
+      <button type="button" class="ord-icon-btn ord-icon-delete" id="ordDeleteBtn" title="حذف الأمر نهائيًا من قاعدة البيانات">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        <span>حذف نهائي</span>
+      </button>
+      <button type="button" class="ord-icon-btn ord-icon-new" id="ordNewBtn" title="تفريغ النموذج والبدء بأمر جديد">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        <span>سجل جديد</span>
+      </button>
+    </div>
+
     <div class="section-tag">بيانات أمر الشراء</div>
     <div class="row2">
       <div class="field">
@@ -3260,7 +3290,11 @@ window.safeFileName = function(str){
   var appScreenCustody    = document.getElementById('appScreenCustody');
 
   function showScreen(name){
-    if (name === 'login' && window.resetLoginFabs_) window.resetLoginFabs_();
+    // بتتقفل قوايم إشعارات صفحة الدخول (والخلفية السمراء المظلّلة اللي
+    // وراها) عند أي تنقل بين الشاشات، مش بس لما نرجع لصفحة الدخول —
+    // عشان لو دخلنا شاشة تانية (زي من إشعار خارجي) تفضل مقفولة، مش واقفة
+    // فاتحة وراها الخلفية المظلمة من غير داعي.
+    if (window.resetLoginFabs_) window.resetLoginFabs_();
     loginScreen.style.display       = (name === 'login')         ? '' : 'none';
     homeScreen.style.display        = (name === 'home')          ? '' : 'none';
     tafweedMenuScreen.style.display = (name === 'tafweed-menu')  ? '' : 'none';
@@ -3297,6 +3331,10 @@ window.safeFileName = function(str){
     }
     try { window.scrollTo(0, 0); } catch(e){}
   }
+  // معروضة بره الـ IIFE عشان سكريبت التعامل مع الدخول من الإشعارات
+  // الخارجية (تحت في آخر الصفحة) يقدر يعرض شاشة الدخول تاني لما نرجع
+  // بالـ history، من غير ما نكرر منطق إظهار/إخفاء الشاشات هناك.
+  window.showScreen_ = showScreen;
 
   // Clone the brand logo (defined once in the app header) into the
   // login/home screens instead of duplicating the embedded image data.
@@ -7970,7 +8008,10 @@ window.safeFileName = function(str){
     renderOrdPreview();
   }
 
-  document.getElementById('openOrderBtn').addEventListener('click', function(){
+  // بيفضّي النموذج بالكامل ويرجّعه لحالة "أمر جديد" — مستخدم لما تفتح
+  // شاشة أمر الشراء من الرئيسية، وكذلك من زرار "سجل جديد" بعد تحميل أمر
+  // قديم من نتيجة البحث.
+  function resetOrderForm(){
     // مانحجزش رقم من السيرفر لحد ما اليوزر ينزّل/يشارك الأمر فعلياً
     // (أو يدوس 🔄 يدوياً)، عشان لو فتح الشاشة عشان يبحث عن أمر قديم بس،
     // ما نستهلكش رقم جديد على الفاضي في الجوجل شيت مع كل فتح للفورم.
@@ -7979,10 +8020,68 @@ window.safeFileName = function(str){
     input.readOnly = true;
     input.placeholder = 'يتحدد أوتوماتيك عند التحميل';
     setOrdNumHint('الرقم يتحدد أوتوماتيك لما تنزّل/تشارك النموذج — أو دوس 🔄 لجيبه دلوقتي.');
+
+    $('ordDate').value = toIso(new Date());
+    $('ordSupplier').value = '';
+    $('ordClient').value = '';
+    $('ordAttention').value = '';
+    $('ordAddress').value = '';
+    $('ordContactName').value = '';
+    $('ordContactPhone').value = '';
+    $('ordRep').value = '';
+    $('ordNotes').value = '';
+
+    ordItems = [newOrdItem()];
+    renderOrdForm();
     renderOrdPreview();
-  });
+
+    setOrdStatus('');
+    const loadedActions = $('ordLoadedActions');
+    if(loadedActions) loadedActions.style.display = 'none';
+  }
+
+  document.getElementById('openOrderBtn').addEventListener('click', resetOrderForm);
   const ordNumRefreshBtnEl = $('ordNumRefreshBtn');
   if(ordNumRefreshBtnEl) ordNumRefreshBtnEl.addEventListener('click', fetchNextOrderNumber);
+
+  // ---- "سجل جديد": يفضّي النموذج المحمّل ويرجّعه لحالة أمر جديد ----
+  const ordNewBtnEl = $('ordNewBtn');
+  if(ordNewBtnEl) ordNewBtnEl.addEventListener('click', resetOrderForm);
+
+  // ---- "حذف نهائي": يمسح الأمر المحمّل نهائيًا من قاعدة البيانات ----
+  const ordDeleteBtnEl = $('ordDeleteBtn');
+  if(ordDeleteBtnEl) ordDeleteBtnEl.addEventListener('click', async function(){
+    const num = $('ordNum').value.trim();
+    if(!num) return;
+    const sure = confirm('هل أنت متأكد من حذف أمر الشراء رقم ' + num + ' نهائيًا؟ لا يمكن التراجع عن هذا الإجراء.');
+    if(!sure) return;
+
+    ordDeleteBtnEl.disabled = true;
+    setOrdStatus('جارٍ حذف الأمر...');
+    try{
+      const r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), {
+        method: 'DELETE',
+        headers: sbHeaders({ 'Prefer': 'return=minimal' })
+      });
+      if(!r.ok){
+        setOrdStatus('تعذّر حذف الأمر، حاول تاني', true);
+        ordDeleteBtnEl.disabled = false;
+        return;
+      }
+      // نسخة احتياطية: نبلّغ الشيت كذلك (best-effort، مش لازم ننتظره)
+      if (ATTENDANCE_SCRIPT_URL) {
+        try {
+          const delParams = new URLSearchParams({ action: 'orderDelete', num: num });
+          fetch(ATTENDANCE_SCRIPT_URL + '?' + delParams.toString()).catch(function(){});
+        } catch(e){}
+      }
+      resetOrderForm();
+      setOrdStatus('تم حذف الأمر رقم ' + num + ' نهائيًا ✓');
+    }catch(err){
+      setOrdStatus('تعذّر حذف الأمر، تأكد من الإنترنت وحاول تاني', true);
+    }
+    ordDeleteBtnEl.disabled = false;
+  });
 
   // ---- PDF generation ----
   function setOrdStatus(msg, isErr){
@@ -8111,6 +8210,8 @@ window.safeFileName = function(str){
     __orderSavedSet.add(fp);
 
     var rows = buildOrderRows_();
+    var meta = rows[0] || {};
+    var totalQty = meta.total_qty || 0;
     var supabaseOk = false;
     try {
       // امسح كل صفوف الأمر ده أولاً (لو موجود من قبل)
@@ -8130,23 +8231,48 @@ window.safeFileName = function(str){
       console.warn('Supabase order save error:', err);
     }
 
+    // الإشعار (FCM Push): لو Supabase نجح، نبعت notifyEvent مباشرة من الفرونت،
+    // ونقول للشيت backup skipNotify=1 عشان ما نبعتش الإشعار مرتين. لو Supabase
+    // فشل، الشيت backup هو اللي هيبعت الإشعار (السلوك القديم) عشان ما ينقطعش.
+    if (supabaseOk && ATTENDANCE_SCRIPT_URL) {
+      try {
+        var title = '🛒 أمر شراء جديد #' + num + (meta.client ? (' — ' + meta.client) : '');
+        var body  = 'مورد: ' + (meta.supplier || '—');
+        var notifyParams = new URLSearchParams({
+          action: 'notifyEvent',
+          title: title,
+          body: body,
+          topic: 'order',
+          dedupId: 'order-' + num,
+          qty: String(totalQty),
+          unit: 'طن'
+        });
+        fetch(ATTENDANCE_SCRIPT_URL + '?' + notifyParams.toString()).catch(function(){});
+      } catch (e) {}
+    }
+
     // نسخة احتياطية للشيت (بتاخد 2-4 ثواني — بنبعتها في الخلفية بدون انتظار).
+    // skipNotify=1 لو Supabase نجح (لأن الإشعار اتبعت فوق)، وإلا الشيت يبعت
+    // الإشعار عادي.
     if (ATTENDANCE_SCRIPT_URL) {
       try {
         var params = new URLSearchParams({
           action: 'orderSubmit',
           num: num,
           date: $('ordDate').value,
-          supplier: row.supplier,
-          client: row.client,
-          attention: row.attention,
-          address: row.address,
-          contactName: row.contact_name,
-          contactPhone: row.contact_phone,
-          rep: row.rep,
-          notes: row.notes,
-          items: JSON.stringify(row.items)
+          supplier: meta.supplier || '',
+          client: meta.client || '',
+          attention: meta.attention || '',
+          address: meta.address || '',
+          contactName: meta.contact_name || '',
+          contactPhone: meta.contact_phone || '',
+          rep: meta.rep || '',
+          notes: meta.notes || '',
+          items: JSON.stringify(rows.map(function(rr){
+            return { diameter: rr.diameter, qty: rr.qty, spec: rr.spec, type: rr.item_type };
+          }))
         });
+        if (supabaseOk) params.set('skipNotify', '1');
         fetch(ATTENDANCE_SCRIPT_URL + '?' + params.toString()).catch(function(){
           if (!supabaseOk) __orderSavedSet.delete(fp);
         });
@@ -8409,6 +8535,10 @@ window.safeFileName = function(str){
     renderOrdForm();
     renderOrdPreview();
     setOrdNumHint('تم تحميل بيانات أمر رقم ' + row.num + ' — تقدر تنزّل/تشارك نفس PDF تاني، أو تعدّل وتحفظ.');
+
+    // بعد ما اتحمّل أمر قديم فعلي، هات زرارين "حذف نهائي" و"سجل جديد"
+    const loadedActions = document.getElementById('ordLoadedActions');
+    if(loadedActions) loadedActions.style.display = 'flex';
   }
 })();
 </script>
@@ -9812,7 +9942,15 @@ window.safeFileName = function(str){
 </script>
 <script>
 // لو المستخدم داس على إشعار (الشيكات/الراتب/طلب جديد محتاج اعتماد)، يفتح
-// نفس الشاشة اللي كان هيفتحها لو دوس على الزرار العادي بتاعها يدويًا
+// نفس الشاشة اللي كان هيفتحها لو دوس على الزرار العادي بتاعها يدويًا.
+//
+// كمان: بما إن الدخول من الإشعار بيفتح صفحة جديدة (مفيش أي history خلفها
+// جوه التطبيق)، لو المستخدم دوس "رجوع" كان بيخرج من التطبيق على طول بدل
+// ما يرجعله لصفحة الدخول. عشان كده بنضيف حالتين في الـ history: الأولى
+// بتمثّل صفحة الدخول، والتانية (فوقيها) بتمثّل الشاشة اللي فتحناها من
+// الإشعار. أول ضغطة "رجوع" بترجّع المتصفح للحالة الأولى (صفحة الدخول)
+// وإحنا بنمسك حدث popstate ده ونعرض شاشة الدخول فعليًا؛ وبعد كده "رجوع"
+// تانية تخرج من التطبيق زي أي دخول عادي لصفحة الدخول.
 (function(){
   try {
     var qp = new URLSearchParams(location.search);
@@ -9826,6 +9964,21 @@ window.safeFileName = function(str){
       if (qp.get(key) === '1') { btnId = paramBtnMap[key]; break; }
     }
     if (btnId) {
+      // شيل الـ query params من الـ URL الظاهر (من غير إعادة تحميل)، عشان
+      // لو المستخدم عمل تحديث للصفحة بعد كده ما يرجعش يفتح نفس الشاشة تاني.
+      var cleanUrl = location.pathname + location.hash;
+      try {
+        history.replaceState({ chilloutLoginBase: true }, '', cleanUrl);
+        history.pushState({ chilloutNotifScreen: btnId }, '', cleanUrl);
+      } catch(e){}
+
+      window.addEventListener('popstate', function(ev){
+        if (ev.state && ev.state.chilloutLoginBase) {
+          if (window.resetLoginFabs_) window.resetLoginFabs_();
+          if (typeof window.showScreen_ === 'function') { window.showScreen_('login'); }
+        }
+      });
+
       var runIt = function(){
         var btn = document.getElementById(btnId);
         if (btn) { btn.click(); }
