@@ -7731,6 +7731,21 @@ window.safeFileName = function(str){
   // الحضور، فمحتاجة نسخة محلية من الرابط عشان تقدر تطلب رقم الأمر التلقائي.
   var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyx1csVo37UKOdvZzQD_KGrGjtvWMOM8g3cPte1FQ92lhK7dR5KlvxMaWCLZBbak1k/exec';
 
+  // Supabase (أوامر الشراء): البحث والحفظ بيتمّوا هنا مباشرة من الفرونت،
+  // من غير المرور بـ Apps Script (الأداء ~20x أسرع). الحفظ في الشيت بيفضل
+  // شغّال بالتوازي كنسخة احتياطية.
+  var SUPABASE_URL = 'https://jezqnjrnjshruxavwnbd.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
+  function sbHeaders(extra){
+    var h = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
   const today = new Date();
   const toIso = d => d.toISOString().slice(0,10);
 
@@ -8032,35 +8047,75 @@ window.safeFileName = function(str){
   // بتمنع تكرار حفظ نفس الأمر لو اليوزر ضغط Download وبعدها Share (أو
   // بالعكس)، وبالتالي بتمنع وصول إشعارين لنفس الأمر على الموبايل.
   var __orderSavedSet = new Set();
-  function saveOrderToServer(){
-    if(!ATTENDANCE_SCRIPT_URL) return;
+
+  // بيبني object لحفظه في Supabase من قيم الفورم الحالية.
+  function buildOrderRow_(){
+    var items = ordItems.filter(it => it.diameter || it.qty || it.spec || it.type);
+    var totalQty = items.reduce(function(s, it){ return s + (Number(it.qty) || 0); }, 0);
+    return {
+      num: $('ordNum').value.trim(),
+      date: $('ordDate').value || '',
+      supplier: $('ordSupplier').value.trim(),
+      client: $('ordClient').value.trim(),
+      attention: $('ordAttention').value.trim(),
+      address: $('ordAddress').value.trim(),
+      contact_name: $('ordContactName').value.trim(),
+      contact_phone: $('ordContactPhone').value.trim(),
+      rep: $('ordRep').value.trim(),
+      notes: $('ordNotes').value.trim(),
+      items: items,
+      total_qty: totalQty
+    };
+  }
+
+  // الحفظ الأساسي: Supabase (سريع، ~200ms). لو نجح، بنبعت النسخة الاحتياطية
+  // للشيت في الخلفية (مش بنستنى). لو Supabase فشل، الشيت هو الـ fallback
+  // الوحيد وبنستناه ونتعامل مع الفشل عادي.
+  async function saveOrderToServer(){
     var num = $('ordNum').value.trim();
     if(!num) return;
-    // بصمة موحّدة (رقم الأمر + العميل) — لو اليوزر بدّل بيانات، بصمته تتغير
-    // ويتحفظ تاني كأنه نسخة جديدة. لو مالمسش حاجة، مبنبعتش تاني.
     var fp = num + '|' + $('ordClient').value.trim() + '|' + $('ordSupplier').value.trim();
     if(__orderSavedSet.has(fp)) return;
     __orderSavedSet.add(fp);
-    try{
-      const params = new URLSearchParams({
-        action: 'orderSubmit',
-        num: num,
-        date: $('ordDate').value,
-        supplier: $('ordSupplier').value.trim(),
-        client: $('ordClient').value.trim(),
-        attention: $('ordAttention').value.trim(),
-        address: $('ordAddress').value.trim(),
-        contactName: $('ordContactName').value.trim(),
-        contactPhone: $('ordContactPhone').value.trim(),
-        rep: $('ordRep').value.trim(),
-        notes: $('ordNotes').value.trim(),
-        items: JSON.stringify(ordItems.filter(it => it.diameter || it.qty || it.spec || it.type))
+
+    var row = buildOrderRow_();
+    var supabaseOk = false;
+    try {
+      var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?on_conflict=num', {
+        method: 'POST',
+        headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify([row])
       });
-      fetch(ATTENDANCE_SCRIPT_URL + '?' + params.toString()).catch(function(){
-        // فشل الشبكة → شيل البصمة عشان يقدر يعيد المحاولة تاني في ضغطة جاية.
-        __orderSavedSet.delete(fp);
-      });
-    }catch(e){
+      supabaseOk = r.ok;
+      if (!r.ok) console.warn('Supabase order save failed:', r.status, await r.text());
+    } catch (err) {
+      console.warn('Supabase order save error:', err);
+    }
+
+    // نسخة احتياطية للشيت (بتاخد 2-4 ثواني — بنبعتها في الخلفية بدون انتظار).
+    if (ATTENDANCE_SCRIPT_URL) {
+      try {
+        var params = new URLSearchParams({
+          action: 'orderSubmit',
+          num: num,
+          date: $('ordDate').value,
+          supplier: row.supplier,
+          client: row.client,
+          attention: row.attention,
+          address: row.address,
+          contactName: row.contact_name,
+          contactPhone: row.contact_phone,
+          rep: row.rep,
+          notes: row.notes,
+          items: JSON.stringify(row.items)
+        });
+        fetch(ATTENDANCE_SCRIPT_URL + '?' + params.toString()).catch(function(){
+          if (!supabaseOk) __orderSavedSet.delete(fp);
+        });
+      } catch (e) {
+        if (!supabaseOk) __orderSavedSet.delete(fp);
+      }
+    } else if (!supabaseOk) {
       __orderSavedSet.delete(fp);
     }
   }
@@ -8155,6 +8210,8 @@ window.safeFileName = function(str){
     if(e.target === $('ordSearchOverlay')) closeOrdSearch();
   });
 
+  // البحث بيتم من Supabase مباشرة — بيرجع نتيجة في ~150ms بدل 2-4 ثواني عبر
+  // Apps Script. لو Supabase فشل لأي سبب، بنجرب Apps Script كـ fallback.
   async function performOrdSearch(){
     const q = $('ordSearchInput').value.trim();
     const statusEl = $('ordSearchStatus');
@@ -8165,41 +8222,79 @@ window.safeFileName = function(str){
       statusEl.className = 'ord-search-status err';
       return;
     }
-    if(!ATTENDANCE_SCRIPT_URL){
-      statusEl.textContent = 'ميزة البحث لسه محتاجة إعداد.';
+    statusEl.textContent = 'جاري البحث…';
+    statusEl.className = 'ord-search-status';
+
+    // نبني URL بحث في Supabase: نبحث في num/client/supplier/date كلهم بالـ ILIKE
+    // (case-insensitive contains). PostgREST يدعم OR عن طريق ?or=(...) syntax.
+    var pattern = '*' + q.replace(/[,()]/g, ' ').trim() + '*';
+    var params = new URLSearchParams();
+    params.set('or', '(num.ilike.' + pattern + ',client.ilike.' + pattern + ',supplier.ilike.' + pattern + ',date.ilike.' + pattern + ')');
+    params.set('order', 'created_at.desc');
+    params.set('limit', '30');
+    params.set('select', 'num,date,supplier,client,attention,address,contact_name,contact_phone,rep,notes,items');
+
+    let rows = null;
+    try {
+      var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?' + params.toString(), {
+        headers: sbHeaders()
+      });
+      if (r.ok) rows = await r.json();
+    } catch (err) { /* نجرب الـ fallback تحت */ }
+
+    // Fallback: Apps Script (لو Supabase فشل)
+    if (!rows && ATTENDANCE_SCRIPT_URL) {
+      try {
+        const url = ATTENDANCE_SCRIPT_URL + '?action=ordersSearch&q=' + encodeURIComponent(q);
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data && data.ok && Array.isArray(data.rows)) {
+          rows = data.rows.map(function(r){
+            // نوحّد الشكل بحيث loadOrderIntoForm يشتغل معاه زي Supabase
+            return {
+              num: r.num, date: r.date, supplier: r.supplier, client: r.client,
+              attention: r.attention, address: r.address,
+              contact_name: r.contactName, contact_phone: r.contactPhone,
+              rep: r.rep, notes: r.notes,
+              items: (function(){ try { return JSON.parse(r.items || '[]'); } catch(e){ return []; } })(),
+              itemsSummary: r.itemsSummary
+            };
+          });
+        }
+      } catch (e) {}
+    }
+
+    if (!rows) {
+      statusEl.textContent = 'تعذّر البحث، تأكد من الإنترنت وحاول تاني.';
       statusEl.className = 'ord-search-status err';
       return;
     }
-    statusEl.textContent = 'جاري البحث…';
-    statusEl.className = 'ord-search-status';
-    try{
-      const url = ATTENDANCE_SCRIPT_URL + '?action=ordersSearch&q=' + encodeURIComponent(q);
-      const resp = await fetch(url);
-      const data = await resp.json();
-      if(!data || !data.ok) throw new Error('bad response');
-      if(!data.rows || !data.rows.length){
-        statusEl.textContent = 'مفيش أي أمر شراء مطابق.';
-        return;
-      }
-      statusEl.textContent = data.rows.length + ' نتيجة';
-      data.rows.forEach(row => {
-        const div = document.createElement('div');
-        div.className = 'ord-search-item';
-        div.innerHTML = `
-          <div class="osi-num">أمر رقم ${esc(row.num)}</div>
-          <div class="osi-meta">${esc(row.date || '—')} &nbsp;|&nbsp; ${esc(row.client || '—')} / ${esc(row.supplier || '—')}</div>
-          ${row.itemsSummary ? `<div class="osi-meta">${esc(row.itemsSummary).replace(/\n/g,' • ')}</div>` : ''}
-        `;
-        div.addEventListener('click', () => {
-          loadOrderIntoForm(row);
-          closeOrdSearch();
-        });
-        resultsEl.appendChild(div);
-      });
-    }catch(err){
-      statusEl.textContent = 'تعذّر البحث، تأكد من الإنترنت وحاول تاني.';
-      statusEl.className = 'ord-search-status err';
+    if (!rows.length) {
+      statusEl.textContent = 'مفيش أي أمر شراء مطابق.';
+      return;
     }
+    statusEl.textContent = rows.length + ' نتيجة';
+    rows.forEach(row => {
+      // ملخص أصناف مختصر لو موجود (من Apps Script) أو نبنيه من items JSONB
+      var summary = row.itemsSummary || '';
+      if (!summary && Array.isArray(row.items) && row.items.length) {
+        summary = row.items.map(function(it){
+          return (it.diameter || '') + 'مم × ' + (it.qty || '') + 'ط';
+        }).join(' • ');
+      }
+      const div = document.createElement('div');
+      div.className = 'ord-search-item';
+      div.innerHTML = `
+        <div class="osi-num">أمر رقم ${esc(row.num)}</div>
+        <div class="osi-meta">${esc(row.date || '—')} &nbsp;|&nbsp; ${esc(row.client || '—')} / ${esc(row.supplier || '—')}</div>
+        ${summary ? `<div class="osi-meta">${esc(summary)}</div>` : ''}
+      `;
+      div.addEventListener('click', () => {
+        loadOrderIntoForm(row);
+        closeOrdSearch();
+      });
+      resultsEl.appendChild(div);
+    });
   }
   $('ordSearchGoBtn').addEventListener('click', performOrdSearch);
   $('ordSearchInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') performOrdSearch(); });
@@ -8215,13 +8310,19 @@ window.safeFileName = function(str){
     $('ordClient').value = row.client || '';
     $('ordAttention').value = row.attention || '';
     $('ordAddress').value = row.address || '';
-    $('ordContactName').value = row.contactName || '';
-    $('ordContactPhone').value = row.contactPhone || '';
+    // نتعامل مع snake_case (Supabase) و camelCase (Apps Script fallback)
+    $('ordContactName').value = row.contact_name || row.contactName || '';
+    $('ordContactPhone').value = row.contact_phone || row.contactPhone || '';
     $('ordRep').value = row.rep || '';
     $('ordNotes').value = row.notes || '';
 
+    // items ممكن يبقى Array (من Supabase JSONB) أو String JSON (من Apps Script)
     let items = [];
-    try{ items = JSON.parse(row.items || '[]'); }catch(e){ items = []; }
+    if (Array.isArray(row.items)) {
+      items = row.items;
+    } else if (typeof row.items === 'string' && row.items) {
+      try { items = JSON.parse(row.items); if (!Array.isArray(items)) items = []; } catch(e){ items = []; }
+    }
     ordItems = items.length ? items.map(it => {
       const item = newOrdItem();
       item.diameter = it.diameter || '';
