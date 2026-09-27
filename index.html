@@ -7922,27 +7922,46 @@ window.safeFileName = function(str){
   async function fetchNextOrderNumber(){
     const input = $('ordNum');
     const btn = $('ordNumRefreshBtn');
-    if(!ATTENDANCE_SCRIPT_URL){
-      input.readOnly = false;
-      setOrdNumHint('ميزة الترقيم التلقائي لسه محتاجة إعداد — اكتب الرقم يدويًا.', true);
-      return;
-    }
     input.readOnly = true;
     input.value = '';
     input.placeholder = 'جاري تحميل الرقم…';
     if(btn) btn.disabled = true;
     setOrdNumHint('جاري تحميل رقم الأمر…');
-    try{
-      const url = ATTENDANCE_SCRIPT_URL + '?action=nextOrderNumber';
-      const resp = await fetch(url);
-      const data = await resp.json();
-      if(data && data.ok && data.number){
-        input.value = data.number;
-        setOrdNumHint('رقم تلقائي من السيرفر ✅');
+
+    // نجرب Supabase الأول: RPC اسمها next_order_num بتزوّد sequence وترجّع
+    // الرقم بصيغة 4 أرقام (مثال: "0052"). Sequence في Postgres atomic بطبيعتها
+    // فمافيش خطر تكرار حتى لو أكتر من جهاز طلبوا رقم في نفس اللحظة.
+    let num = null;
+    try {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/next_order_num', {
+        method: 'POST',
+        headers: sbHeaders(),
+        body: '{}'
+      });
+      if (r.ok) {
+        const data = await r.json();
+        if (data) num = String(data);
       } else {
-        throw new Error('bad response');
+        console.warn('Supabase next_order_num RPC failed:', r.status, await r.text());
       }
-    }catch(err){
+    } catch (err) {
+      console.warn('Supabase next_order_num error:', err);
+    }
+
+    // Fallback: Apps Script (لو Supabase وقع/RPC ما شغّالتش)
+    if (!num && ATTENDANCE_SCRIPT_URL) {
+      try {
+        const url = ATTENDANCE_SCRIPT_URL + '?action=nextOrderNumber';
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data && data.ok && data.number) num = data.number;
+      } catch (e) {}
+    }
+
+    if (num) {
+      input.value = num;
+      setOrdNumHint('رقم تلقائي من السيرفر ✅');
+    } else {
       input.readOnly = false;
       input.placeholder = 'مثال: 0035';
       setOrdNumHint('تعذّر تحميل الرقم تلقائيًا — اكتب الرقم يدويًا أو دوس 🔄 للمحاولة تاني.', true);
