@@ -8048,11 +8048,11 @@ window.safeFileName = function(str){
   // بالعكس)، وبالتالي بتمنع وصول إشعارين لنفس الأمر على الموبايل.
   var __orderSavedSet = new Set();
 
-  // بيبني object لحفظه في Supabase من قيم الفورم الحالية.
-  function buildOrderRow_(){
+  // بيبني rows لحفظهم في Supabase — صف لكل صنف (زي شكل الشيت).
+  function buildOrderRows_(){
     var items = ordItems.filter(it => it.diameter || it.qty || it.spec || it.type);
     var totalQty = items.reduce(function(s, it){ return s + (Number(it.qty) || 0); }, 0);
-    return {
+    var meta = {
       num: $('ordNum').value.trim(),
       date: $('ordDate').value || '',
       supplier: $('ordSupplier').value.trim(),
@@ -8063,14 +8063,27 @@ window.safeFileName = function(str){
       contact_phone: $('ordContactPhone').value.trim(),
       rep: $('ordRep').value.trim(),
       notes: $('ordNotes').value.trim(),
-      items: items,
       total_qty: totalQty
     };
+    if (!items.length) {
+      return [Object.assign({}, meta, { diameter: '', qty: null, spec: '', item_type: '', item_index: 0 })];
+    }
+    return items.map(function (it, idx) {
+      return Object.assign({}, meta, {
+        diameter: String(it.diameter || ''),
+        qty: (it.qty === '' || it.qty == null) ? null : Number(it.qty),
+        spec: String(it.spec || ''),
+        item_type: String(it.type || ''),
+        item_index: idx
+      });
+    });
   }
 
   // الحفظ الأساسي: Supabase (سريع، ~200ms). لو نجح، بنبعت النسخة الاحتياطية
   // للشيت في الخلفية (مش بنستنى). لو Supabase فشل، الشيت هو الـ fallback
   // الوحيد وبنستناه ونتعامل مع الفشل عادي.
+  // ملحوظة: كل قطر بيتحفظ في صف مستقل (زي شكل الشيت). لو الأمر موجود قبل كده،
+  // بنمسح صفوفه القديمة الأول عشان ما يتكرروش لو عدد الأصناف اتغيّر.
   async function saveOrderToServer(){
     var num = $('ordNum').value.trim();
     if(!num) return;
@@ -8078,13 +8091,19 @@ window.safeFileName = function(str){
     if(__orderSavedSet.has(fp)) return;
     __orderSavedSet.add(fp);
 
-    var row = buildOrderRow_();
+    var rows = buildOrderRows_();
     var supabaseOk = false;
     try {
-      var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?on_conflict=num', {
+      // امسح كل صفوف الأمر ده أولاً (لو موجود من قبل)
+      await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), {
+        method: 'DELETE',
+        headers: sbHeaders({ 'Prefer': 'return=minimal' })
+      });
+      // ثم أدخل الصفوف الجديدة
+      var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders', {
         method: 'POST',
-        headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
-        body: JSON.stringify([row])
+        headers: sbHeaders({ 'Prefer': 'return=minimal' }),
+        body: JSON.stringify(rows)
       });
       supabaseOk = r.ok;
       if (!r.ok) console.warn('Supabase order save failed:', r.status, await r.text());
@@ -8227,19 +8246,55 @@ window.safeFileName = function(str){
 
     // نبني URL بحث في Supabase: نبحث في num/client/supplier/date كلهم بالـ ILIKE
     // (case-insensitive contains). PostgREST يدعم OR عن طريق ?or=(...) syntax.
+    // كل أمر عنده صفوف متعددة (صف لكل قطر)، فنجيب كل الصفوف الموافقة
+    // ونجمّعهم في JS في objects موحّدة (أمر واحد ومعاه لستة أصنافه).
     var pattern = '*' + q.replace(/[,()]/g, ' ').trim() + '*';
     var params = new URLSearchParams();
     params.set('or', '(num.ilike.' + pattern + ',client.ilike.' + pattern + ',supplier.ilike.' + pattern + ',date.ilike.' + pattern + ')');
-    params.set('order', 'created_at.desc');
-    params.set('limit', '30');
-    params.set('select', 'num,date,supplier,client,attention,address,contact_name,contact_phone,rep,notes,items');
+    params.set('order', 'created_at.desc,item_index.asc');
+    params.set('limit', '300');
+    params.set('select', 'num,date,supplier,client,attention,address,contact_name,contact_phone,rep,notes,diameter,qty,spec,item_type,item_index');
 
     let rows = null;
     try {
       var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?' + params.toString(), {
         headers: sbHeaders()
       });
-      if (r.ok) rows = await r.json();
+      if (r.ok) {
+        var raw = await r.json();
+        // جمّع بحسب رقم الأمر: أول صف يظهر لكل أمر ياخد الميتاداتا،
+        // وكل الصفوف بتاعت نفس الأمر بتتحوّل لأصناف داخل items.
+        var byNum = {};
+        var order = [];
+        raw.forEach(function (rr) {
+          if (!byNum[rr.num]) {
+            byNum[rr.num] = {
+              num: rr.num, date: rr.date, supplier: rr.supplier, client: rr.client,
+              attention: rr.attention, address: rr.address,
+              contact_name: rr.contact_name, contact_phone: rr.contact_phone,
+              rep: rr.rep, notes: rr.notes,
+              items: []
+            };
+            order.push(rr.num);
+          }
+          if (rr.diameter || rr.qty || rr.spec || rr.item_type) {
+            byNum[rr.num].items.push({
+              diameter: rr.diameter || '',
+              qty: (rr.qty == null) ? '' : rr.qty,
+              spec: rr.spec || 'B500DWR',
+              type: rr.item_type || '',
+              _idx: (rr.item_index == null) ? 0 : rr.item_index
+            });
+          }
+        });
+        // رتّب أصناف كل أمر بحسب item_index، وارجع أول 30 أمر بس
+        rows = order.slice(0, 30).map(function (n) {
+          var o = byNum[n];
+          o.items.sort(function (a, b) { return (a._idx || 0) - (b._idx || 0); });
+          o.items.forEach(function (it) { delete it._idx; });
+          return o;
+        });
+      }
     } catch (err) { /* نجرب الـ fallback تحت */ }
 
     // Fallback: Apps Script (لو Supabase فشل)
