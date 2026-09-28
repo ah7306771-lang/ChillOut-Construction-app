@@ -1277,6 +1277,36 @@
   }
   .settings-divider{height:1px;background:var(--panel-line);margin:26px 0 4px;}
 
+  /* ---------- بيانات الموظفين (واجهة موحّدة بأيقونات) ---------- */
+  .emp-search{position:relative;margin-bottom:10px;}
+  .emp-search input{width:100%;background:#fff;border:1px solid var(--panel-line);border-radius:12px;padding:12px 42px 12px 12px;font-family:'Cairo',sans-serif;font-size:16px;outline:none;color:var(--ink);transition:border-color .15s ease, box-shadow .15s ease;}
+  .emp-search input:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(226,98,31,0.18);}
+  .emp-search svg{position:absolute;top:50%;right:14px;transform:translateY(-50%);width:19px;height:19px;color:var(--ink-soft);pointer-events:none;}
+  .emp-count{font-size:11.5px;color:var(--ink-soft);margin:0 2px 6px;display:flex;justify-content:space-between;}
+  .emp-list{max-height:184px;overflow-y:auto;border:1px solid var(--panel-line);border-radius:12px;background:#fff;padding:4px;margin-bottom:16px;-webkit-overflow-scrolling:touch;}
+  .emp-item{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;padding:8px 10px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:right;}
+  .emp-item:hover{background:#fff5ec;}
+  .emp-item.active{background:#ffe9d6;box-shadow:inset 0 0 0 1px var(--steel);}
+  .emp-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none;}
+  .emp-empty{padding:14px;text-align:center;color:var(--ink-soft);font-size:13px;}
+  .emp-card{background:#fff;border:1px solid var(--panel-line);border-radius:14px;padding:14px 14px 4px;}
+  .emp-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .emp-badge{font-size:12px;font-weight:800;color:var(--steel);background:#fff0e0;border:1px solid var(--panel-line);border-radius:20px;padding:3px 12px;}
+  .emp-badge.new{color:var(--ok);background:#e9f7ef;border-color:#bfe3cd;}
+  .emp-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .emp-act{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:10px 2px 8px;border:1px solid var(--panel-line);background:#fff8f2;border-radius:12px;font-family:'Cairo',sans-serif;font-size:11.5px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .1s ease, background .15s ease;}
+  .emp-act svg{width:22px;height:22px;}
+  .emp-act:hover{background:#ffe9d6;}
+  .emp-act:active{transform:scale(0.96);}
+  .emp-act.add{color:var(--ok);}
+  .emp-act.edit{color:var(--steel);}
+  .emp-act.del{color:#c0392b;}
+  .emp-act.notify{color:var(--blue-stamp);}
+  .emp-act[disabled]{opacity:.4;cursor:not-allowed;}
+  .emp-form input:disabled,.emp-form input[readonly]{background:#faf6f1;color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1;}
+  .emp-formbar{display:none;gap:10px;margin:2px 0 12px;}
+  .emp-formbar .btn{flex:1;}
+
   /* ---------- احتفال عيد الميلاد ---------- */
   .birthday-overlay{
     position:fixed;inset:0;z-index:10050;display:none;
@@ -1691,6 +1721,10 @@
         <span class="home-tile-icon" style="font-size:26px;">🖥️</span>
         <span class="home-tile-label">إدارة الشاشات</span>
       </button>
+      <button type="button" class="home-tile" id="openScreenPassTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🔐</span>
+        <span class="home-tile-label">كلمات سر الشاشات</span>
+      </button>
       <button type="button" class="home-tile" id="openNotifTestTileBtn" style="display:none;">
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
         <span class="home-tile-label">إعدادات الإشعارات</span>
@@ -1719,56 +1753,119 @@
   </div>
 </div>
 
-<!-- شاشة إدارة الموظفين: إضافة موظف جديد، تغيير رقمه السري، أو حذفه —
-     محمية بكلمة سر منفصلة عن كل الباسوردات التانية لأنها بتتحكم في نفس
-     أرقام الدخول (PINs) اللي بتتحقق منها شاشة الحضور. -->
+<!-- شاشة "إدارة الموظفين" (قايمة فرعية): أيقونتين — بيانات الموظفين، ولائحة الحضور والانصراف. -->
+<div id="employeeHubScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backSettingsBtnHub" class="back-btn">→ رجوع للإعدادات</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">إدارة الموظفين</h1>
+    <div class="home-grid">
+      <button type="button" class="home-tile" id="openEmpDataTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🪪</span>
+        <span class="home-tile-label">بيانات الموظفين</span>
+      </button>
+      <button type="button" class="home-tile" id="openAttScheduleTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🕒</span>
+        <span class="home-tile-label">لائحة الحضور والانصراف</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- شاشة "لائحة الحضور والانصراف": جدول بصف لكل موظف وميعاد حضوره وانصرافه الرسمي. -->
+<div id="attendanceScheduleScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHubBtnSchedule" class="back-btn">→ رجوع لإدارة الموظفين</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:620px;">
+    <h1 class="gate-title">لائحة الحضور والانصراف</h1>
+    <div class="status-msg" id="scheduleStatus" style="margin:0 0 10px;"></div>
+    <div style="overflow-x:auto;">
+      <table class="dtable" id="scheduleTable" style="width:100%;">
+        <thead><tr><th>الموظف</th><th>ساعة الحضور</th><th>ساعة الانصراف</th></tr></thead>
+        <tbody id="scheduleTbody"></tbody>
+      </table>
+    </div>
+    <button type="button" class="btn btn-primary" id="saveScheduleBtn" style="width:100%;margin-top:16px;">💾 حفظ اللائحة</button>
+  </div>
+</div>
+
+<!-- شاشة "بيانات الموظفين": كل حاجة عن الموظف في شاشة واحدة — بحث بقايمة منسدلة،
+     عرض/تعديل بياناته (الرقم السري وتاريخ الميلاد)، حذفه، وإضافة موظف جديد.
+     محمية بكلمة سر منفصلة لأنها بتتحكم في نفس أرقام الدخول (PINs) اللي بتتحقق منها شاشة الحضور. -->
 <div id="employeeManageScreen" class="gate-screen shifted-bar-screen" style="display:none;">
   <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
   <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
-    <button type="button" id="backHomeBtnEmployees" class="back-btn">→ رجوع للإعدادات</button>
+    <button type="button" id="backHomeBtnEmployees" class="back-btn">→ رجوع لإدارة الموظفين</button>
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card" style="max-width:560px;">
-    <h1 class="gate-title">إدارة الموظفين</h1>
-    <div class="status-msg" id="employeeManageStatus" style="margin:0 0 10px;"></div>
+    <h1 class="gate-title">بيانات الموظفين</h1>
 
-    <div class="section-tag" style="margin:0 0 8px;">قائمة الموظفين</div>
-    <div class="dash-list" id="employeeManageList"></div>
+    <div class="emp-search">
+      <input type="search" id="empSearchInput" placeholder="ابحث عن موظف بالاسم..." autocomplete="off">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    </div>
+    <div class="emp-count"><span id="empCountLabel">—</span><span>اضغط على الموظف لعرض بياناته</span></div>
+    <div class="emp-list" id="empPickerList"></div>
+    <!-- القايمة المنسدلة الأصلية: مخفية، بتفضل هي مصدر الاختيار للكود -->
+    <select id="empPassSelect" style="display:none;" tabindex="-1" aria-hidden="true"></select>
 
-    <div class="section-tag" style="margin:20px 0 8px;">إضافة موظف جديد</div>
-    <div class="row2">
-      <div class="field">
-        <label for="newEmpName">اسم الموظف</label>
-        <input type="text" id="newEmpName" placeholder="مثال: محمد علي">
+    <div class="emp-card">
+      <div class="emp-card-head">
+        <span style="font-weight:800;font-size:14px;">بيانات الموظف</span>
+        <span class="emp-badge" id="empModeBadge">عرض</span>
       </div>
-      <div class="field">
-        <label for="newEmpPass">الرقم السري</label>
-        <input type="text" id="newEmpPass" inputmode="numeric" autocomplete="off" placeholder="مثال: 18">
+
+      <div class="emp-actions">
+        <button type="button" class="emp-act add" id="newEmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>سجل جديد</span></button>
+        <button type="button" class="emp-act edit" id="editEmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg><span>تعديل</span></button>
+        <button type="button" class="emp-act del" id="deleteEmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>حذف</span></button>
+        <button type="button" class="emp-act notify" id="salarySendBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span>إشعار الراتب</span></button>
+      </div>
+
+      <div class="emp-form">
+        <div class="field">
+          <label for="empNameValue">الاسم</label>
+          <input type="text" id="empNameValue" readonly placeholder="—">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="empPassValue">الرقم السري</label>
+            <input type="text" id="empPassValue" inputmode="numeric" autocomplete="off" placeholder="—" disabled>
+          </div>
+          <div class="field">
+            <label for="empBirthdayValue">تاريخ الميلاد <span id="empBdayOptional" style="display:none;">(اختياري)</span></label>
+            <input type="date" id="empBirthdayValue" disabled>
+          </div>
+        </div>
+      </div>
+
+      <div class="emp-formbar" id="empFormBar">
+        <button type="button" class="btn btn-primary" id="saveEmpPassBtn">💾 حفظ</button>
+        <button type="button" class="btn btn-secondary" id="cancelEmpBtn">إلغاء</button>
       </div>
     </div>
-    <div class="field">
-      <label for="newEmpBirthday">تاريخ الميلاد (اختياري)</label>
-      <input type="date" id="newEmpBirthday">
-    </div>
-    <button type="button" class="btn btn-primary" id="addEmpBtn" style="width:100%;">+ إضافة موظف</button>
 
-    <div class="section-tag" style="margin:24px 0 8px;">بيانات الموظف (الرقم السري وتاريخ الميلاد)</div>
-    <div class="field">
-      <label for="empPassSelect">اختر الموظف</label>
-      <select id="empPassSelect"></select>
-    </div>
-    <div class="field">
-      <label for="empPassValue">الرقم السري</label>
-      <input type="text" id="empPassValue" inputmode="numeric" autocomplete="off" placeholder="—">
-    </div>
-    <div class="field">
-      <label for="empBirthdayValue">تاريخ الميلاد</label>
-      <input type="date" id="empBirthdayValue">
-    </div>
-    <button type="button" class="btn btn-secondary" id="saveEmpPassBtn" style="width:100%;">💾 حفظ</button>
+    <div class="status-msg" id="employeeManageStatus" style="margin:10px 0 0;"></div>
+  </div>
+</div>
 
-    <div class="settings-divider"></div>
-    <div class="section-tag" style="margin:24px 0 8px;">كلمات سر الشاشات</div>
+<!-- شاشة "كلمات سر الشاشات": اتنقلت من بيانات الموظفين لأيقونة لوحدها في الإعدادات (للأدمن بس). -->
+<div id="screenPassScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backSettingsBtnScreenPass" class="back-btn">→ رجوع للإعدادات</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">كلمات سر الشاشات</h1>
+    <div class="status-msg" id="screenPassStatus" style="margin:0 0 10px;"></div>
     <div class="field">
       <label for="screenPassSelect">اختر الشاشة</label>
       <select id="screenPassSelect"></select>
@@ -1777,16 +1874,7 @@
       <label for="screenPassValue">القيمة</label>
       <input type="text" id="screenPassValue" autocomplete="off" placeholder="فارغ (بدون باسورد)">
     </div>
-    <button type="button" class="btn btn-secondary" id="saveScreenPassBtn" style="width:100%;">💾 حفظ</button>
-
-    <div class="settings-divider"></div>
-    <div class="section-tag" style="margin:24px 0 8px;">إشعار الراتب</div>
-    <div class="status-msg" id="salarySendStatus" style="margin:0 0 8px;font-size:13px;"></div>
-    <div class="field">
-      <label for="salarySendSelect">اختر الموظف</label>
-      <select id="salarySendSelect"></select>
-    </div>
-    <button type="button" class="btn btn-secondary" id="salarySendBtn" style="width:100%;">📢 إرسال إشعار الراتب</button>
+    <button type="button" class="btn btn-primary" id="saveScreenPassBtn" style="width:100%;">💾 حفظ</button>
   </div>
 </div>
 
@@ -3278,6 +3366,9 @@ window.safeFileName = function(str){
   var settingsMenuScreen = document.getElementById('settingsMenuScreen');
   var iconManageScreen = document.getElementById('iconManageScreen');
   var employeeManageScreen = document.getElementById('employeeManageScreen');
+  var employeeHubScreen = document.getElementById('employeeHubScreen');
+  var screenPassScreen = document.getElementById('screenPassScreen');
+  var attendanceScheduleScreen = document.getElementById('attendanceScheduleScreen');
   var mySalaryScreen = document.getElementById('mySalaryScreen');
   var appScreen         = document.getElementById('appScreen');
   var orderScreen       = document.getElementById('orderScreen');
@@ -3305,6 +3396,9 @@ window.safeFileName = function(str){
     settingsMenuScreen.style.display = (name === 'settings-menu') ? '' : 'none';
     iconManageScreen.style.display = (name === 'icon-manage') ? '' : 'none';
     employeeManageScreen.style.display = (name === 'employee-manage') ? '' : 'none';
+    employeeHubScreen.style.display = (name === 'employee-hub') ? '' : 'none';
+    if (screenPassScreen) screenPassScreen.style.display = (name === 'screen-pass') ? '' : 'none';
+    attendanceScheduleScreen.style.display = (name === 'attendance-schedule') ? '' : 'none';
     if (mySalaryScreen) mySalaryScreen.style.display = (name === 'my-salary') ? '' : 'none';
     appScreen.style.display         = (name === 'app')           ? '' : 'none';
     orderScreen.style.display       = (name === 'order')         ? '' : 'none';
@@ -6952,18 +7046,107 @@ window.safeFileName = function(str){
       sel.appendChild(opt);
     });
     function fillValue(){
+      var nm = document.getElementById('empNameValue');
+      if (nm) nm.value = sel.value || '';
       val.value = ATTENDANCE_PASSWORDS[sel.value] || '';
       if (bday) bday.value = EMPLOYEE_BIRTHDAYS_[sel.value] || '';
+      setEmpMode_('view');
+      renderEmpPicker_();
     }
     sel.onchange = fillValue;
     if (sel.options.length) {
+      if (empPendingSelect_ && ATTENDANCE_EMPLOYEES.indexOf(empPendingSelect_) > -1) { prevSelected = empPendingSelect_; }
+      empPendingSelect_ = '';
       if (prevSelected && ATTENDANCE_PASSWORDS.hasOwnProperty(prevSelected)) sel.value = prevSelected;
       else sel.selectedIndex = 0;
       fillValue();
     } else {
       val.value = '';
+      var nm2 = document.getElementById('empNameValue');
+      if (nm2) nm2.value = '';
       if (bday) bday.value = '';
+      setEmpMode_('view');
+      renderEmpPicker_();
     }
+  }
+
+  // ---------------- واجهة بيانات الموظفين الموحّدة ----------------
+  // الأوضاع: view (عرض فقط) / edit (تعديل الرقم السري والميلاد) / new (سجل جديد).
+  var empMode_ = 'view';
+  var empPendingSelect_ = '';
+
+  function setEmpMode_(mode){
+    empMode_ = mode;
+    var nm = document.getElementById('empNameValue');
+    var pass = document.getElementById('empPassValue');
+    var bday = document.getElementById('empBirthdayValue');
+    var sel = document.getElementById('empPassSelect');
+    if (!nm || !pass || !bday) return;
+    var hasSel = !!(sel && sel.value);
+    nm.readOnly = (mode !== 'new');
+    pass.disabled = (mode === 'view');
+    bday.disabled = (mode === 'view');
+    if (mode === 'new') {
+      nm.value = ''; pass.value = ''; bday.value = '';
+      nm.placeholder = 'مثال: محمد علي';
+      pass.placeholder = 'مثال: 18';
+    } else {
+      nm.placeholder = '—';
+      pass.placeholder = '—';
+    }
+    var opt = document.getElementById('empBdayOptional');
+    if (opt) opt.style.display = (mode === 'new') ? '' : 'none';
+    var badge = document.getElementById('empModeBadge');
+    if (badge) {
+      badge.textContent = mode === 'new' ? 'سجل جديد' : (mode === 'edit' ? 'وضع التعديل' : 'عرض');
+      badge.className = 'emp-badge' + (mode === 'new' ? ' new' : '');
+    }
+    var bar = document.getElementById('empFormBar');
+    if (bar) bar.style.display = (mode === 'view') ? 'none' : 'flex';
+    var b;
+    b = document.getElementById('newEmpBtn');  if (b) b.disabled = (mode === 'new');
+    b = document.getElementById('editEmpBtn'); if (b) b.disabled = (mode !== 'view' || !hasSel);
+    b = document.getElementById('deleteEmpBtn'); if (b) b.disabled = (mode !== 'view' || !hasSel);
+    b = document.getElementById('salarySendBtn'); if (b) b.disabled = (mode !== 'view' || !hasSel);
+    if (mode === 'new') { try { nm.focus(); } catch(e){} }
+    renderEmpPicker_();
+  }
+
+  function renderEmpPicker_(){
+    var box = document.getElementById('empPickerList');
+    var sel = document.getElementById('empPassSelect');
+    if (!box) return;
+    var qEl = document.getElementById('empSearchInput');
+    var q = qEl ? qEl.value.trim().toLowerCase() : '';
+    var all = ATTENDANCE_EMPLOYEES || [];
+    var names = all.filter(function(n){ return !q || String(n).toLowerCase().indexOf(q) > -1; });
+    var cnt = document.getElementById('empCountLabel');
+    if (cnt) cnt.textContent = q ? (names.length + ' من ' + all.length + ' موظف') : (all.length + ' موظف');
+    box.innerHTML = '';
+    if (!names.length) {
+      var em = document.createElement('div');
+      em.className = 'emp-empty';
+      em.textContent = all.length ? 'مفيش نتايج للبحث ده.' : 'مفيش موظفين مسجلين لسه.';
+      box.appendChild(em);
+      return;
+    }
+    names.forEach(function(name){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'emp-item' + ((sel && sel.value === name && empMode_ !== 'new') ? ' active' : '');
+      var av = document.createElement('span');
+      av.className = 'emp-avatar';
+      av.textContent = String(name).trim().charAt(0) || '?';
+      var tx = document.createElement('span');
+      tx.textContent = name;
+      b.appendChild(av); b.appendChild(tx);
+      b.addEventListener('click', function(){
+        if (!sel) return;
+        sel.value = name;
+        if (sel.onchange) sel.onchange();
+      });
+      box.appendChild(b);
+    });
   }
 
   // قايمة منسدلة تانية لباسوردات الشاشات (بدل 4 خانات منفصلة): اختر
@@ -6972,7 +7155,7 @@ window.safeFileName = function(str){
     { key: 'appLoginUser', label: 'اسم المستخدم لتسجيل الدخول للتطبيق', required: true },
     { key: 'appLoginPass', label: 'كلمة مرور تسجيل الدخول للتطبيق', required: true },
     { key: 'dashboardPassword', label: 'باسورد لوحة الحضور واعتماد الأذون', required: false },
-    { key: 'employeeManagePassword', label: 'باسورد شاشة إدارة الموظفين (نفس الشاشة دي)', required: false }
+    { key: 'employeeManagePassword', label: 'باسورد شاشة إدارة الموظفين', required: false }
   ];
   var CURRENT_SETTINGS_ = {};
 
@@ -7021,18 +7204,170 @@ window.safeFileName = function(str){
     showScreen('home');
   });
 
+  // "إدارة الموظفين" بقت قايمة فيها أيقونتين: بيانات الموظفين + لائحة الحضور والانصراف.
+  function openEmployeeHubFlow_(){
+    showScreen('employee-hub');
+  }
+  document.getElementById('openEmployeeManageTileBtn').addEventListener('click', openEmployeeHubFlow_);
+  document.getElementById('backSettingsBtnHub').addEventListener('click', function(){
+    showScreen('settings-menu');
+  });
+
   function openEmployeeManageFlow_(){
     showScreen('employee-manage');
     setEmployeeManageStatus_('');
     loadEmployeeManageList_();
-    loadSettingsFormFields_();
+    var searchEl = document.getElementById('empSearchInput');
+    if (searchEl) searchEl.value = '';
+    setEmpMode_('view');
     reloadEmployeesFromServer_(function(){ populateEmpPassSelect_(); populateSalarySendSelect_(); });
-    var salaryStatus = document.getElementById('salarySendStatus');
-    if (salaryStatus) salaryStatus.textContent = '';
   }
-  document.getElementById('openEmployeeManageTileBtn').addEventListener('click', openEmployeeManageFlow_);
-  document.getElementById('backHomeBtnEmployees').addEventListener('click', function(){
+
+  // شاشة كلمات سر الشاشات (أيقونة لوحدها في الإعدادات)
+  function setScreenPassStatus_(msg, isErr){
+    var el = document.getElementById('screenPassStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'status-msg' + (isErr ? ' err' : '');
+  }
+  function openScreenPassFlow_(){
+    if (isEmployeeSession) return; // للأدمن بس
+    showScreen('screen-pass');
+    setScreenPassStatus_('');
+    loadSettingsFormFields_();
+  }
+  document.getElementById('openScreenPassTileBtn').addEventListener('click', openScreenPassFlow_);
+  document.getElementById('backSettingsBtnScreenPass').addEventListener('click', function(){
     showScreen('settings-menu');
+  });
+
+  // أزرار الواجهة الموحّدة: بحث / سجل جديد / تعديل / إلغاء
+  document.getElementById('empSearchInput').addEventListener('input', renderEmpPicker_);
+  document.getElementById('newEmpBtn').addEventListener('click', function(){
+    setEmployeeManageStatus_('');
+    setEmpMode_('new');
+  });
+  document.getElementById('editEmpBtn').addEventListener('click', function(){
+    var sel = document.getElementById('empPassSelect');
+    if (!sel || !sel.value) { setEmployeeManageStatus_('اختر الموظف الأول.', true); return; }
+    setEmployeeManageStatus_('');
+    setEmpMode_('edit');
+    try { document.getElementById('empPassValue').focus(); } catch(e){}
+  });
+  document.getElementById('cancelEmpBtn').addEventListener('click', function(){
+    setEmployeeManageStatus_('');
+    var sel = document.getElementById('empPassSelect');
+    if (sel && sel.onchange) sel.onchange();
+  });
+  document.getElementById('openEmpDataTileBtn').addEventListener('click', openEmployeeManageFlow_);
+  document.getElementById('backHomeBtnEmployees').addEventListener('click', function(){
+    showScreen('employee-hub');
+  });
+
+  // زرار حذف الموظف المختار من القايمة المنسدلة (بدل قايمة الحذف القديمة).
+  document.getElementById('deleteEmpBtn').addEventListener('click', function(){
+    var sel = document.getElementById('empPassSelect');
+    var name = sel ? sel.value : '';
+    if (!name) { setEmployeeManageStatus_('اختر الموظف الأول.', true); return; }
+    if (!confirm('متأكد إنك عايز تحذف "' + name + '"؟ مش هيقدر يسجل حضور أو انصراف بعد كده.')) return;
+    var btn = document.getElementById('deleteEmpBtn');
+    btn.disabled = true;
+    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeDelete'
+      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+      + '&name=' + encodeURIComponent(name);
+    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      btn.disabled = false;
+      if (data && data.ok) {
+        setEmployeeManageStatus_('تم حذف ' + name + ' ✓');
+        refreshEverythingAfterEmployeeChange_();
+      } else {
+        setEmployeeManageStatus_((data && data.error) || 'تعذّر الحذف.', true);
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+    });
+  });
+
+  // ---------------- لائحة الحضور والانصراف (ميعاد كل موظف الرسمي) ----------------
+  var SCHEDULE_CACHE_ = {};
+  function setScheduleStatus_(msg, isErr){
+    var el = document.getElementById('scheduleStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'status-msg' + (isErr ? ' err' : '');
+  }
+  function renderScheduleTable_(){
+    var tb = document.getElementById('scheduleTbody');
+    if (!tb) return;
+    tb.innerHTML = '';
+    ATTENDANCE_EMPLOYEES.forEach(function(name){
+      var rec = SCHEDULE_CACHE_[name] || {};
+      var tr = document.createElement('tr');
+      var tdN = document.createElement('td');
+      tdN.textContent = name;
+      var tdIn = document.createElement('td');
+      var inI = document.createElement('input');
+      inI.type = 'time'; inI.value = rec.in || ''; inI.dataset.emp = name; inI.dataset.kind = 'in';
+      tdIn.appendChild(inI);
+      var tdOut = document.createElement('td');
+      var outI = document.createElement('input');
+      outI.type = 'time'; outI.value = rec.out || ''; outI.dataset.emp = name; outI.dataset.kind = 'out';
+      tdOut.appendChild(outI);
+      tr.appendChild(tdN); tr.appendChild(tdIn); tr.appendChild(tdOut);
+      tb.appendChild(tr);
+    });
+  }
+  function openAttendanceScheduleFlow_(){
+    showScreen('attendance-schedule');
+    setScheduleStatus_('جارِ التحميل...');
+    reloadEmployeesFromServer_(function(){
+      fetch(ATTENDANCE_SCRIPT_URL + '?action=scheduleList').then(function(r){ return r.json(); }).then(function(data){
+        SCHEDULE_CACHE_ = (data && data.ok && data.schedule) ? data.schedule : {};
+        setScheduleStatus_((data && data.ok) ? '' : ((data && data.error) || 'تعذّر تحميل اللائحة.'), !(data && data.ok));
+      }).catch(function(){
+        SCHEDULE_CACHE_ = {};
+        setScheduleStatus_('تعذّر الاتصال بالسيرفر.', true);
+      }).then(renderScheduleTable_);
+    });
+  }
+  document.getElementById('openAttScheduleTileBtn').addEventListener('click', openAttendanceScheduleFlow_);
+  document.getElementById('backHubBtnSchedule').addEventListener('click', function(){
+    showScreen('employee-hub');
+  });
+  document.getElementById('saveScheduleBtn').addEventListener('click', function(){
+    var inputs = document.querySelectorAll('#scheduleTbody input[type="time"]');
+    var byEmp = {};
+    inputs.forEach(function(i){
+      var n = i.dataset.emp;
+      byEmp[n] = byEmp[n] || {};
+      byEmp[n][i.dataset.kind] = i.value || '';
+    });
+    var names = Object.keys(byEmp);
+    if (!names.length) return;
+    var btn = document.getElementById('saveScheduleBtn');
+    btn.disabled = true;
+    setScheduleStatus_('جارِ الحفظ...');
+    var failed = 0;
+    var chain = Promise.resolve();
+    names.forEach(function(n){
+      chain = chain.then(function(){
+        var url = ATTENDANCE_SCRIPT_URL + '?action=scheduleSave'
+          + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
+          + '&name=' + encodeURIComponent(n)
+          + '&in=' + encodeURIComponent(byEmp[n].in || '')
+          + '&out=' + encodeURIComponent(byEmp[n].out || '');
+        return fetch(url).then(function(r){ return r.json(); }).then(function(d){
+          if (d && d.ok) SCHEDULE_CACHE_[n] = { in: byEmp[n].in || '', out: byEmp[n].out || '' };
+          else failed++;
+        }).catch(function(){ failed++; });
+      });
+    });
+    chain.then(function(){
+      btn.disabled = false;
+      if (failed) setScheduleStatus_('تعذّر حفظ ' + failed + ' موظف/موظفين.', true);
+      else { setScheduleStatus_('تم حفظ اللائحة ✓'); showSavedToast_(); }
+    });
   });
 
   // ---------------- إدارة الشاشات (إظهار/إخفاء أيقونات الرئيسية) ----------------
@@ -7093,6 +7428,8 @@ window.safeFileName = function(str){
     // "إعدادات الإشعارات" في شاشة الإعدادات: للأدمن بس (بيختار أي موظف
     // ويشوف راتبه ويختبر إشعاراته). مش بتظهر أبدًا لموظف حتى لو الإعدادات
     // ظاهرة له، عشان ما يقدرش يشوف رواتب غيره.
+    var screenPassTile = document.getElementById('openScreenPassTileBtn');
+    if (screenPassTile) screenPassTile.style.display = isEmployeeSession ? 'none' : '';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
@@ -7224,40 +7561,6 @@ window.safeFileName = function(str){
       setIconManageStatus_('تعذّر الاتصال بالسيرفر.', true);
     });
   });
-  document.getElementById('addEmpBtn').addEventListener('click', function(){
-    var nameInput = document.getElementById('newEmpName');
-    var passInput = document.getElementById('newEmpPass');
-    var birthdayInput = document.getElementById('newEmpBirthday');
-    var name = nameInput.value.trim();
-    var pass = passInput.value.trim();
-    var birthday = birthdayInput ? birthdayInput.value.trim() : '';
-    if (!name) { setEmployeeManageStatus_('اسم الموظف مطلوب.', true); nameInput.focus(); return; }
-    if (!pass) { setEmployeeManageStatus_('الرقم السري مطلوب.', true); passInput.focus(); return; }
-    var btn = document.getElementById('addEmpBtn');
-    btn.disabled = true;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
-      + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
-      + '&name=' + encodeURIComponent(name)
-      + '&pass=' + encodeURIComponent(pass)
-      + '&birthday=' + encodeURIComponent(birthday);
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      btn.disabled = false;
-      if (data && data.ok) {
-        nameInput.value = '';
-        passInput.value = '';
-        if (birthdayInput) birthdayInput.value = '';
-        setEmployeeManageStatus_('تمت إضافة ' + name + ' ✓');
-        showSavedToast_();
-        refreshEverythingAfterEmployeeChange_();
-      } else {
-        setEmployeeManageStatus_((data && data.error) || 'تعذّرت الإضافة.', true);
-      }
-    }).catch(function(){
-      btn.disabled = false;
-      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
-    });
-  });
-
   // تغيير الرقم السري و/أو تاريخ ميلاد موظف موجود عن طريق القايمة
   // المنسدلة (بدل كتابة اسمه يدويًا): اختاره، القيم الحالية بتتحط جاهزة،
   // غيّر اللي عايزه واحفظ.
@@ -7265,11 +7568,16 @@ window.safeFileName = function(str){
     var sel = document.getElementById('empPassSelect');
     var val = document.getElementById('empPassValue');
     var bday = document.getElementById('empBirthdayValue');
-    var name = sel.value;
+    var isNew = (empMode_ === 'new');
+    var name = isNew ? document.getElementById('empNameValue').value.trim() : sel.value;
     var newPass = val.value.trim();
     var newBirthday = bday ? bday.value.trim() : '';
-    if (!name) { setEmployeeManageStatus_('اختر الموظف الأول.', true); return; }
-    if (!newPass) { setEmployeeManageStatus_('الرقم السري مطلوب.', true); return; }
+    if (!name) { setEmployeeManageStatus_(isNew ? 'اسم الموظف مطلوب.' : 'اختر الموظف الأول.', true); return; }
+    if (!newPass) { setEmployeeManageStatus_('الرقم السري مطلوب.', true); val.focus(); return; }
+    if (isNew && ATTENDANCE_EMPLOYEES.indexOf(name) > -1) {
+      setEmployeeManageStatus_('الموظف ده موجود بالفعل — اخترو من القايمة واضغط تعديل.', true);
+      return;
+    }
     var btn = document.getElementById('saveEmpPassBtn');
     btn.disabled = true;
     var url = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
@@ -7280,8 +7588,9 @@ window.safeFileName = function(str){
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       btn.disabled = false;
       if (data && data.ok) {
-        setEmployeeManageStatus_('تم تحديث بيانات ' + name + ' ✓');
+        setEmployeeManageStatus_(isNew ? ('تمت إضافة ' + name + ' ✓') : ('تم تحديث بيانات ' + name + ' ✓'));
         showSavedToast_();
+        empPendingSelect_ = name;
         refreshEverythingAfterEmployeeChange_();
       } else {
         setEmployeeManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
@@ -7304,7 +7613,7 @@ window.safeFileName = function(str){
     var field = SCREEN_PASSWORD_FIELDS_.filter(function(f){ return f.key === key; })[0];
     var newVal = val.value.trim();
     if (field && field.required && !newVal) {
-      setEmployeeManageStatus_('"' + field.label + '" لازم يكون له قيمة، ماينفعش يفضل فاضي.', true);
+      setScreenPassStatus_('"' + field.label + '" لازم يكون له قيمة، ماينفعش يفضل فاضي.', true);
       return;
     }
     var prevVal = CURRENT_SETTINGS_[key];
@@ -7329,16 +7638,16 @@ window.safeFileName = function(str){
         APP_PASS = CURRENT_SETTINGS_.appLoginPass;
         ATTENDANCE_DASHBOARD_PASSWORD = CURRENT_SETTINGS_.dashboardPassword;
         EMPLOYEE_MANAGE_PASSWORD = CURRENT_SETTINGS_.employeeManagePassword;
-        setEmployeeManageStatus_('تم حفظ "' + (field ? field.label : key) + '" ✓');
+        setScreenPassStatus_('تم حفظ "' + (field ? field.label : key) + '" ✓');
         showSavedToast_();
       } else {
         CURRENT_SETTINGS_[key] = prevVal;
-        setEmployeeManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
+        setScreenPassStatus_((data && data.error) || 'تعذّر الحفظ.', true);
       }
     }).catch(function(){
       btn.disabled = false;
       CURRENT_SETTINGS_[key] = prevVal;
-      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+      setScreenPassStatus_('تعذّر الاتصال بالسيرفر.', true);
     });
   });
 
@@ -7348,9 +7657,10 @@ window.safeFileName = function(str){
   // الإدمن العام "فعّل إشعارات الجوال للطلبات الجديدة".
   var salarySendBtn = document.getElementById('salarySendBtn');
   if (salarySendBtn) salarySendBtn.addEventListener('click', function(){
-    var sel = document.getElementById('salarySendSelect');
+    var sel = document.getElementById('empPassSelect');
     var name = sel ? sel.value : '';
-    var statusEl = document.getElementById('salarySendStatus');
+    var statusEl = document.getElementById('employeeManageStatus');
+    if (name && !window.confirm('إرسال إشعار الراتب إلى "' + name + '"؟')) return;
     if (!name) { if (statusEl) { statusEl.textContent = 'مفيش موظفين مسجلين لسه.'; statusEl.className = 'status-msg err'; } return; }
     salarySendBtn.disabled = true;
     if (statusEl) { statusEl.textContent = 'جاري الإرسال...'; statusEl.className = 'status-msg'; }
