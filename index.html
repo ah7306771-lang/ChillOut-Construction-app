@@ -1844,6 +1844,16 @@
             <input type="date" id="empBirthdayValue" disabled>
           </div>
         </div>
+        <div class="row2">
+          <div class="field">
+            <label for="empOfficialInTime">ميعاد الحضور الرسمي <span style="color:var(--ink-soft);font-size:11px;">(اختياري)</span></label>
+            <input type="time" id="empOfficialInTime" placeholder="08:30" disabled>
+          </div>
+          <div class="field">
+            <label for="empOfficialOutTime">ميعاد الانصراف الرسمي <span style="color:var(--ink-soft);font-size:11px;">(اختياري)</span></label>
+            <input type="time" id="empOfficialOutTime" placeholder="16:00" disabled>
+          </div>
+        </div>
       </div>
 
       <div class="emp-formbar" id="empFormBar">
@@ -4300,20 +4310,44 @@ window.safeFileName = function(str){
   // (تاب "Requests")، عشان لو حد وافق على طلب حد يدوياً من الشيت، الموظف
   // يلاقي زراير حضور/انصراف بتاعته اتقفلت تلقائياً ويبان سبب الغياب.
   function refreshAttendanceRequestsFromServer(){
-    if (!ATTENDANCE_SCRIPT_URL) return;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport&date=' + encodeURIComponent(attendanceTodayKey());
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      var rows = (data && data.rows) || [];
-      var latest = {};
-      rows.forEach(function(r){
-        latest[r.name] = {
-          id: r.id, type: r.type, status: r.status, reason: r.reason,
-          from: r.from, to: r.to, leaveFrom: r.leaveFrom, leaveTo: r.leaveTo
-        };
+    var today = attendanceTodayKey();
+
+    // نجرب Supabase الأول — أسرع بكتير. بنجيب الطلبات اللي ليها علاقة
+    // بالنهاردة (date = today، أو إجازة النهاردة داخل leave_from/leave_to).
+    var supabaseUrl = SUPABASE_URL + '/rest/v1/requests'
+      + '?or=(date.eq.' + encodeURIComponent(today)
+      + ',and(leave_from.lte.' + encodeURIComponent(today) + ',leave_to.gte.' + encodeURIComponent(today) + '))'
+      + '&select=id,name,type,status,reason,from_time,to_time,leave_from,leave_to,date';
+    fetch(supabaseUrl, { headers: sbHeaders() })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('sb')); })
+      .then(function(rows){
+        var latest = {};
+        (rows || []).forEach(function(r){
+          latest[r.name] = {
+            id: r.id, type: r.type, status: r.status, reason: r.reason,
+            from: r.from_time, to: r.to_time, leaveFrom: r.leave_from, leaveTo: r.leave_to
+          };
+        });
+        attendanceRequestsToday = latest;
+        Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
+      })
+      .catch(function(){
+        // Fallback: Apps Script (لو Supabase وقع)
+        if (!ATTENDANCE_SCRIPT_URL) return;
+        var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport&date=' + encodeURIComponent(today);
+        fetch(url).then(function(r){ return r.json(); }).then(function(data){
+          var rows = (data && data.rows) || [];
+          var latest = {};
+          rows.forEach(function(r){
+            latest[r.name] = {
+              id: r.id, type: r.type, status: r.status, reason: r.reason,
+              from: r.from, to: r.to, leaveFrom: r.leaveFrom, leaveTo: r.leaveTo
+            };
+          });
+          attendanceRequestsToday = latest;
+          Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
+        }).catch(function(){});
       });
-      attendanceRequestsToday = latest;
-      Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
-    }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر زي ما هو */ });
   }
 
   // عدد كل طلبات الإذن/المأمورية (من أي يوم) اللي لسه "قيد المراجعة" —
@@ -4805,8 +4839,26 @@ window.safeFileName = function(str){
           applyEmployeesList_(data.employees);
         }
       }).catch(function(){ /* أوفلاين: نفضل شغالين بالقايمة الافتراضية فوق */ }).then(function(){
-        if (onDone) onDone();
+        loadOfficialTimesFromSupabase_(function(){
+          if (onDone) onDone();
+        });
       });
+    }
+
+    // نجيب مواعيد الحضور الرسمية من Supabase ونحطها في cache عالمي
+    // (window.EMPLOYEE_OFFICIAL_TIMES_) عشان شاشة بيانات الموظفين تعرضها.
+    function loadOfficialTimesFromSupabase_(cb) {
+      try {
+        fetch(SUPABASE_URL + '/rest/v1/official_times?select=name,in_time,out_time', {
+          headers: sbHeaders()
+        }).then(function(r){ return r.ok ? r.json() : []; }).then(function(rows){
+          var map = {};
+          (rows || []).forEach(function(r){
+            if (r && r.name) map[r.name] = { in_time: r.in_time || '', out_time: r.out_time || '' };
+          });
+          window.EMPLOYEE_OFFICIAL_TIMES_ = map;
+        }).catch(function(){}).then(function(){ if (cb) cb(); });
+      } catch (e) { if (cb) cb(); }
     }
 
     // قايمة الموظفين دي كانت بتتحمّل من جوجل شيتس مباشرة كل مرة التطبيق
@@ -7149,6 +7201,12 @@ window.safeFileName = function(str){
       if (nm) nm.value = sel.value || '';
       val.value = ATTENDANCE_PASSWORDS[sel.value] || '';
       if (bday) bday.value = EMPLOYEE_BIRTHDAYS_[sel.value] || '';
+      // Load official hours from cache (populated by loadOfficialTimesFromSupabase_)
+      var offIn = document.getElementById('empOfficialInTime');
+      var offOut = document.getElementById('empOfficialOutTime');
+      var t = (window.EMPLOYEE_OFFICIAL_TIMES_ || {})[sel.value] || {};
+      if (offIn)  offIn.value  = t.in_time  || '';
+      if (offOut) offOut.value = t.out_time || '';
       setEmpMode_('view');
       renderEmpPicker_();
     }
@@ -7179,14 +7237,20 @@ window.safeFileName = function(str){
     var nm = document.getElementById('empNameValue');
     var pass = document.getElementById('empPassValue');
     var bday = document.getElementById('empBirthdayValue');
+    var offIn = document.getElementById('empOfficialInTime');
+    var offOut = document.getElementById('empOfficialOutTime');
     var sel = document.getElementById('empPassSelect');
     if (!nm || !pass || !bday) return;
     var hasSel = !!(sel && sel.value);
     nm.readOnly = (mode !== 'new');
     pass.disabled = (mode === 'view');
     bday.disabled = (mode === 'view');
+    if (offIn)  offIn.disabled  = (mode === 'view');
+    if (offOut) offOut.disabled = (mode === 'view');
     if (mode === 'new') {
       nm.value = ''; pass.value = ''; bday.value = '';
+      if (offIn)  offIn.value = '';
+      if (offOut) offOut.value = '';
       nm.placeholder = 'مثال: محمد علي';
       pass.placeholder = 'مثال: 18';
     } else {
@@ -7679,6 +7743,27 @@ window.safeFileName = function(str){
     }
     var btn = document.getElementById('saveEmpPassBtn');
     btn.disabled = true;
+
+    // مواعيد الحضور الرسمية — بتتحفظ على Supabase (جدول official_times)
+    // بالتوازي مع باقي البيانات (اسم/رقم سري/ميلاد اللي بيروحوا للشيت).
+    var offInEl = document.getElementById('empOfficialInTime');
+    var offOutEl = document.getElementById('empOfficialOutTime');
+    var offIn = offInEl ? offInEl.value.trim() : '';
+    var offOut = offOutEl ? offOutEl.value.trim() : '';
+    if (offIn || offOut || (window.EMPLOYEE_OFFICIAL_TIMES_ && window.EMPLOYEE_OFFICIAL_TIMES_[name])) {
+      try {
+        var payload = { name: name, in_time: offIn || null, out_time: offOut || null };
+        fetch(SUPABASE_URL + '/rest/v1/official_times?on_conflict=name', {
+          method: 'POST',
+          headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+          body: JSON.stringify([payload])
+        }).then(function(){
+          if (!window.EMPLOYEE_OFFICIAL_TIMES_) window.EMPLOYEE_OFFICIAL_TIMES_ = {};
+          window.EMPLOYEE_OFFICIAL_TIMES_[name] = { in_time: offIn, out_time: offOut };
+        }).catch(function(){});
+      } catch (e) {}
+    }
+
     var url = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
       + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
       + '&name=' + encodeURIComponent(name)
