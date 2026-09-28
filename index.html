@@ -5033,27 +5033,80 @@ window.safeFileName = function(str){
       var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
       var abortTimer = controller ? setTimeout(function(){ controller.abort(); }, 30000) : null;
 
-      // نداء واحد بس بيرجع الحضور/الانصراف وطلبات الإذن/المأمورية سوا،
-      // بدل نداءين متوازيين لنفس السكريبت (اللي كان بيتصادفوا وياخدوا وقت
-      // أطول بكتير، وده اللي كان بيسبب "جاري التحميل" الطويل).
-      var url = ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date);
-      fetch(url, controller ? { signal: controller.signal } : undefined)
-        .then(function(r){ return r.json(); })
+      // بنجيب الحضور من Supabase مباشرة (سريع جدًا، ~150ms) في وقت
+      // ما بنجيب طلبات الإذن/المأمورية والمواعيد الرسمية للانصراف من
+      // Apps Script في نفس الوقت (بالتوازي). الحضور من Supabase ثابت مش
+      // ممكن يقع، فالكاش القديم بقى مجرد نسخة احتياطية لو Supabase وقع.
+      var supabaseAttUrl = SUPABASE_URL + '/rest/v1/attendance?date=eq.' + encodeURIComponent(date)
+        + '&select=name,type,date,in_time,in_lat,in_lng,in_map,in_device,out_time,out_lat,out_lng,out_map,out_device&limit=2000';
+
+      // نحوّل صفوف Supabase (كل صف فيه in و out سوا) للشكل القديم:
+      // صف "حضور" وصف "انصراف" منفصلين، عشان الشاشة تفهمها بدون تغيير.
+      function splitSupabaseRow(row){
+        var out = [];
+        if (row.in_time) out.push({
+          name: row.name, type: 'حضور', date: row.date, time: row.in_time,
+          lat: row.in_lat, lng: row.in_lng, map: row.in_map, device: row.in_device
+        });
+        if (row.out_time) out.push({
+          name: row.name, type: 'انصراف', date: row.date, time: row.out_time,
+          lat: row.out_lat, lng: row.out_lng, map: row.out_map, device: row.out_device
+        });
+        // لو صف "غياب" ما فيهوش أوقات، نسيبه كصف واحد بنوعه
+        if (!row.in_time && !row.out_time) out.push({
+          name: row.name, type: row.type || 'غياب', date: row.date, time: ''
+        });
+        return out;
+      }
+
+      var supabasePromise = fetch(supabaseAttUrl, { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('supabase')); })
         .then(function(data){
+          var rows = [];
+          (data || []).forEach(function(row){
+            splitSupabaseRow(row).forEach(function(r){ rows.push(r); });
+          });
+          return { rows: rows, fromSupabase: true };
+        });
+
+      // Apps Script لطلبات الإذن + المواعيد الرسمية (اللي لسه على الشيت).
+      var appsScriptPromise = fetch(ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date),
+        controller ? { signal: controller.signal } : undefined)
+        .then(function(r){ return r.json(); })
+        .catch(function(){ return { rows: [], requestRows: [], officialOut: {} }; });
+
+      // بنستنى الاتنين — الحضور من Supabase غالبًا هيرجع أول (~150ms)،
+      // وApps Script للطلبات هيرجع بعده. مجموع الوقت = أبطأ نداء (مش المجموع).
+      Promise.all([supabasePromise, appsScriptPromise])
+        .then(function(results){
           if (requestId !== loadAttendanceDashboard._reqId) return;
           clearTimeout(slowTimer);
           if (abortTimer) clearTimeout(abortTimer);
           status.textContent = '';
-          updateDashData((data && data.rows) || [], (data && data.requestRows) || [], employee, date, (data && data.officialOut) || {});
-        }).catch(function(err){
+          var supData = results[0], appData = results[1] || {};
+          // الحضور من Supabase (أساسي)، والطلبات + المواعيد الرسمية من Apps Script
+          updateDashData(supData.rows || [], appData.requestRows || [], employee, date, appData.officialOut || {});
+        })
+        .catch(function(err){
           if (requestId !== loadAttendanceDashboard._reqId) return;
           clearTimeout(slowTimer);
           if (abortTimer) clearTimeout(abortTimer);
-          status.style.color = '#b3261e';
-          status.textContent = (err && err.name === 'AbortError')
-            ? 'الاتصال بجوجل شيتس بطيء جداً دلوقتي — دوس "🔄 تحديث" وحاول تاني.'
-            : 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
-          updateDashData([], [], employee, date);
+          // Supabase فشل — رجع للـ Apps Script بالكامل زي السلوك القديم
+          fetch(ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date))
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+              if (requestId !== loadAttendanceDashboard._reqId) return;
+              status.textContent = '';
+              updateDashData((data && data.rows) || [], (data && data.requestRows) || [], employee, date, (data && data.officialOut) || {});
+            })
+            .catch(function(err2){
+              if (requestId !== loadAttendanceDashboard._reqId) return;
+              status.style.color = '#b3261e';
+              status.textContent = (err2 && err2.name === 'AbortError')
+                ? 'الاتصال بجوجل شيتس بطيء جداً دلوقتي — دوس "🔄 تحديث" وحاول تاني.'
+                : 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+              updateDashData([], [], employee, date);
+            });
         });
     }
 
@@ -6785,6 +6838,44 @@ window.safeFileName = function(str){
         listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
       }
     }
+    // نجرب Supabase الأول (سريع، ~200ms): بنجيب قائمة الموظفين + حضور
+    // اليوم، وبنحسب الغياب/التأخير محلياً. المواعيد الرسمية لسه في الشيت
+    // فبنجيبها من كاش Apps Script (attendanceStatus) لو موجود.
+    function loadFromSupabase_(cachedOfficialIn){
+      var empsUrl = SUPABASE_URL + '/rest/v1/employees?active=eq.true&select=name';
+      var attUrl  = SUPABASE_URL + '/rest/v1/attendance?date=eq.' + encodeURIComponent(date)
+        + '&select=name,in_time&limit=2000';
+      Promise.all([
+        fetch(empsUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }),
+        fetch(attUrl,  { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; })
+      ]).then(function(res){
+        var emps = res[0] || [];
+        var att  = res[1] || [];
+        var checkedIn = {};
+        att.forEach(function(r){
+          if (r.name && r.in_time) {
+            if (!checkedIn[r.name] || r.in_time < checkedIn[r.name]) checkedIn[r.name] = r.in_time;
+          }
+        });
+        var absent = [], late = [];
+        var officialIn = cachedOfficialIn || {};
+        emps.forEach(function(e){
+          var name = e.name;
+          var tIn = checkedIn[name];
+          if (!tIn) { absent.push(name); return; }
+          var official = officialIn[name];
+          if (official) {
+            // فرق الدقايق بين الرسمي والفعلي
+            var a = official.split(':'), b = tIn.split(':');
+            var diff = ((+b[0]) * 60 + (+b[1])) - ((+a[0]) * 60 + (+a[1]));
+            if (diff > 0) late.push({ name: name, time: tIn, official: official, minutes: diff });
+          }
+        });
+        renderQuickStatus_({ ok: true, absent: absent, late: late });
+      }).catch(function(){
+        loadFromLiveSheet_();
+      });
+    }
     function loadFromLiveSheet_(){
       if (!ATTENDANCE_SCRIPT_URL) {
         listWrap.innerHTML = '<div class="empty-note">لم يتم ربط شيت جوجل شيتس بعد.</div>';
@@ -6797,15 +6888,15 @@ window.safeFileName = function(str){
           listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
         });
     }
+    // Supabase أولاً — بنجيب المواعيد الرسمية من الكاش (لو موجود) عشان
+    // نحسب "التأخير" بالظبط. لو مافيش كاش، بنحسب الغياب بس (اللي مالوش
+    // ميعاد رسمي مش هيبان في قايمة التأخير).
     fetchAppJson_('attendanceStatus')
-      .then(function(data){
-        if (data && data.ok && data.date === date && isAttendanceStatusFresh_(data.updatedAt)) {
-          renderQuickStatus_(data);
-        } else {
-          loadFromLiveSheet_();
-        }
+      .then(function(cached){
+        var officialIn = (cached && cached.officialIn) || {};
+        loadFromSupabase_(officialIn);
       })
-      .catch(loadFromLiveSheet_);
+      .catch(function(){ loadFromSupabase_({}); });
   }
   function openQuickStatusFromLoginFlow_(kind){
     loadQuickStatus_(kind);
