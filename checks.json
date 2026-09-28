@@ -97,5 +97,50 @@
     "bank": "CIB",
     "notes": "",
     "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 67491042,
+    "value": 304550,
+    "dueDate": "25/10/2026",
+    "bank": "QNB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 532070,
+    "value": 1500000,
+    "dueDate": "28/10/2026",
+    "bank": "WAFA",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 552585549,
+    "value": 805700,
+    "dueDate": "24/11/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 67491043,
+    "value": 304550,
+    "dueDate": "25/11/2026",
+    "bank": "QNB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 551695622,
+    "value": 855540,
+    "dueDate": "28/11/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
   }
 ]
