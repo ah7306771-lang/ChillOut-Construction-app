@@ -1,0 +1,21 @@
+{
+  "rows": [
+    {
+      "client": "فالتور",
+      "count": 5,
+      "amount": 8448007.5,
+      "avgDelay": 16.8
+    },
+    {
+      "client": "ويكادي",
+      "count": 3,
+      "amount": 6216022,
+      "avgDelay": 7.666666666666667
+    }
+  ],
+  "grandTotal": {
+    "count": 8,
+    "amount": 14664029.5,
+    "avgDelay": 13.375
+  }
+}
