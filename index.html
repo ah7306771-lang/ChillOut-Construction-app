@@ -3383,6 +3383,21 @@ window.safeFileName = function(str){
 
   var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyx1csVo37UKOdvZzQD_KGrGjtvWMOM8g3cPte1FQ92lhK7dR5KlvxMaWCLZBbak1k/exec';
 
+  // ---- Supabase (الحضور والانصراف + الموظفين) ----
+  // الحفظ الأساسي بيروح على Supabase مباشرة، والشيت بيتحفظ فيه نسخة
+  // احتياطية في الخلفية (بـ skipNotify=1 عشان الإشعار ما يتبعتش مرتين).
+  var SUPABASE_URL = 'https://jezqnjrnjshruxavwnbd.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
+  function sbHeaders(extra){
+    var h = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+
   // ---- إعدادات إشعارات الموبايل (Firebase Cloud Messaging) ----
   // بدّل القيم دي بالقيم الحقيقية من مشروع Firebase بتاعك (Project settings
   // > General > Your apps > Web app) وبـ VAPID key بتاعك (Project settings
@@ -4478,7 +4493,8 @@ window.safeFileName = function(str){
 
       msg.textContent = 'جاري الإرسال...';
       getAttendanceDeviceLabel(function(deviceLabel){
-      var url = ATTENDANCE_SCRIPT_URL
+      // بناء URL نسخة الشيت الاحتياطية (نفس المنطق القديم بالظبط)
+      var sheetUrl = ATTENDANCE_SCRIPT_URL
         + '?name=' + encodeURIComponent(name)
         + '&type=' + encodeURIComponent(type)
         + '&date=' + encodeURIComponent(dateStr)
@@ -4488,7 +4504,45 @@ window.safeFileName = function(str){
         + '&map=' + encodeURIComponent(mapLink)
         + '&device=' + encodeURIComponent(deviceLabel);
 
-      fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      // نجرب Supabase أولاً (سريع، ~200ms). لو نجح: (1) نبعت الإشعار مباشرة
+      // من الفرونت (2) نبعت نسخة احتياطية للشيت في الخلفية بـ skipNotify=1.
+      // لو Supabase فشل: نرجع للشيت زي السلوك القديم (السيرفر هيبعت الإشعار).
+      var supabasePromise = fetch(SUPABASE_URL + '/rest/v1/rpc/record_attendance', {
+        method: 'POST',
+        headers: sbHeaders(),
+        body: JSON.stringify({
+          p_name: name, p_type: type, p_date: dateStr, p_time: timeStr,
+          p_lat: (lat != null ? String(lat) : ''),
+          p_lng: (lng != null ? String(lng) : ''),
+          p_map: mapLink, p_device: deviceLabel
+        })
+      }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+
+      var dataPromise = supabasePromise.then(function(supabaseData){
+        if (supabaseData && supabaseData.ok) {
+          // Supabase نجح — ابعت الإشعار من الفرونت (لو مش مسجّل قبل كده)
+          if (!supabaseData.alreadyRecorded) {
+            try {
+              var notifTitle = name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف');
+              var notifBody  = name + ' سجّل ' + type + ' الساعة ' + timeStr + (deviceLabel ? (' — ' + deviceLabel) : '');
+              var notifParams = new URLSearchParams({
+                action: 'notifyEvent',
+                title: notifTitle,
+                body: notifBody,
+                dedupId: 'attendance-' + name + '-' + type + '-' + dateStr
+              });
+              fetch(ATTENDANCE_SCRIPT_URL + '?' + notifParams.toString()).catch(function(){});
+            } catch (e) {}
+          }
+          // نسخة احتياطية للشيت (في الخلفية، مش بننتظر) مع skipNotify=1
+          fetch(sheetUrl + '&skipNotify=1').catch(function(){});
+          return supabaseData;
+        }
+        // Supabase فشل — رجع للشيت (السيرفر هيتعامل مع الإشعار زي الأول)
+        return fetch(sheetUrl).then(function(r){ return r.json(); });
+      });
+
+      dataPromise.then(function(data){
         // لو جهاز تاني سبق وسجّل نفس الحركة لنفس الموظف في نفس اليوم قبل ما
         // نوصل هنا (تعارض توقيت)، السيرفر بيرجع الوقت الأصلي بدل ما يكرر الصف.
         var alreadyRecorded = !!(data && data.alreadyRecorded);
