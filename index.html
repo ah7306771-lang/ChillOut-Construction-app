@@ -3608,8 +3608,15 @@ window.safeFileName = function(str){
               overdue:  { icon: 'icon-overdue.png',  badge: 'icon-overdue.png',  tag: 'hhm-overdue',  color: '#dc2626' },
               checks:   { icon: 'icon-checks.png',   badge: 'icon-checks.png',   tag: 'hhm-checks',   color: '#059669' },
               salary:   { icon: 'icon-salary.png',   badge: 'icon-salary.png',   tag: 'hhm-salary',   color: '#7c3aed' },
+              presence: { icon: 'icon-presence.png',  badge: 'icon-presence.png',  tag: 'hhm-presence',  color: '#16a34a' },
+              departure:{ icon: 'icon-departure.png', badge: 'icon-departure.png', tag: 'hhm-departure', color: '#dc2626' },
               request:  { icon: 'icon-192.png',      badge: 'icon-192.png',      tag: 'hhm-request',  color: '#111827' }
             };
+            // حضور/انصراف: نتعرف عليهم من الـ topic أو من dedupId (attendance-الاسم-حضور-التاريخ).
+            var dId = String(d.dedupId || '');
+            if (!iconMap[topic]) {
+              if (dId.indexOf('attendance-') === 0) topic = (dId.indexOf('-انصراف-') > -1) ? 'departure' : 'presence';
+            }
             var m = iconMap[topic] || iconMap.request;
             // fallback: لو الأيقونة الخاصة مش موجودة على السيرفر (404) الـ browser
             // بيرجع للـ icon الافتراضي لوحده، مفيش داعي لأي كود إضافي هنا.
@@ -4644,7 +4651,8 @@ window.safeFileName = function(str){
           if (!supabaseData.alreadyRecorded) {
             try {
               var notifTitle = name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف');
-              var notifBody  = name + ' سجّل ' + type + ' الساعة ' + timeStr + (deviceLabel ? (' — ' + deviceLabel) : '');
+              // العنوان فيه الاسم ونوع الحركة، فالنص بقى الساعة بس.
+              var notifBody  = timeStr;
               var notifParams = new URLSearchParams({
                 action: 'notifyEvent',
                 title: notifTitle,
