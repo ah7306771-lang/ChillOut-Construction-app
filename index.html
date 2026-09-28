@@ -4151,21 +4151,47 @@ window.safeFileName = function(str){
   // تتطابق مع الشيت المشترك بالظبط: لو حد سجّل من جهاز تاني، الزرار هنا
   // بيبقى باهت؛ ولو حد مسح تسجيل من الشيت، الزرار هنا بيرجع يشتغل تاني.
   function refreshAttendanceFromServer(){
-    if (!ATTENDANCE_SCRIPT_URL) return;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(attendanceTodayKey());
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      var rows = (data && data.rows) || [];
-      Object.keys(attendanceRowRefs).forEach(function(name){
-        ['حضور', 'انصراف'].forEach(function(type){
-          var rec = rows.filter(function(r){ return r.name === name && r.type === type; }).pop();
-          if (rec && rec.time) {
-            applyAttendanceRecord(name, type, rec.time);
-          } else {
-            clearAttendanceRecord(name, type);
-          }
+    var today = attendanceTodayKey();
+
+    // نجرب Supabase أولاً — أسرع بكتير من Apps Script (~150ms بدل 2-4 ثواني).
+    // كل صف في Supabase عنده in_time و out_time في نفس الصف، فبنحوّله لسجلين
+    // منفصلين (حضور + انصراف) عشان يتطابق مع اللي الشاشة بتتوقعه.
+    var supabaseUrl = SUPABASE_URL + '/rest/v1/attendance?date=eq.' + encodeURIComponent(today)
+      + '&select=name,in_time,out_time&limit=1000';
+    fetch(supabaseUrl, { headers: sbHeaders() })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(data){
+        if (!data) throw new Error('supabase-fail');
+        // نبني map: name → { حضور: time, انصراف: time }
+        var byName = {};
+        data.forEach(function(row){
+          if (!byName[row.name]) byName[row.name] = {};
+          if (row.in_time)  byName[row.name]['حضور']   = row.in_time;
+          if (row.out_time) byName[row.name]['انصراف'] = row.out_time;
         });
+        Object.keys(attendanceRowRefs).forEach(function(name){
+          ['حضور', 'انصراف'].forEach(function(type){
+            var t = byName[name] && byName[name][type];
+            if (t) applyAttendanceRecord(name, type, t);
+            else   clearAttendanceRecord(name, type);
+          });
+        });
+      })
+      .catch(function(){
+        // Fallback: Apps Script (لو Supabase وقع)
+        if (!ATTENDANCE_SCRIPT_URL) return;
+        var url = ATTENDANCE_SCRIPT_URL + '?action=report&date=' + encodeURIComponent(today);
+        fetch(url).then(function(r){ return r.json(); }).then(function(data){
+          var rows = (data && data.rows) || [];
+          Object.keys(attendanceRowRefs).forEach(function(name){
+            ['حضور', 'انصراف'].forEach(function(type){
+              var rec = rows.filter(function(r){ return r.name === name && r.type === type; }).pop();
+              if (rec && rec.time) applyAttendanceRecord(name, type, rec.time);
+              else                 clearAttendanceRecord(name, type);
+            });
+          });
+        }).catch(function(){});
       });
-    }).catch(function(){ /* أوفلاين: نسيب اللي ظاهر على الجهاز زي ما هو */ });
     refreshAttendanceRequestsFromServer();
   }
 
@@ -4571,16 +4597,17 @@ window.safeFileName = function(str){
     }
 
     if (navigator.geolocation) {
-      // enableHighAccuracy:true كان بيجبر الموبايل يستنى تثبيت GPS كامل
-      // (ثواني كتير، خصوصًا جوه مبنى أو موقع مقاولات مغطى) قبل ما يرجع
-      // أي نتيجة، وده أكبر سبب في إحساس الموظف إن الشاشة "بطيئة". دقة
-      // الموقع هنا مجرد رابط "شوف على الخريطة" للإداري، مش حاجة حرجة،
-      // فبنرضى بدقة أوطى (شبكة/واي فاي) عشان يرجع الموقع فورًا تقريبًا،
-      // وبنقلل مهلة الانتظار من 8 ثواني لـ 5.
+      // بنعتمد على أي موقع مكاش (حتى لو عمره ساعة كاملة) عشان الضغطة الأولى
+      // في اليوم تلاقي موقع جاهز فورًا لو الموبايل خزّن حاجة قبل كده،
+      // وبنقلل مهلة الانتظار للـ GPS الجديد من 5 ثواني لـ 2 ثانية بس —
+      // لأن الحفظ الأساسي بقى على Supabase (~200ms) فمافيش داعي نستنى GPS
+      // فترة طويلة قبل ما نبعت أصلاً. لو ما لقيناش موقع خلال 2 ثانية،
+      // بنبعت الحضور بدون إحداثيات، وممكن الإدمن يشوف الموقع من صف تاني
+      // للموظف نفسه في يوم آخر.
       navigator.geolocation.getCurrentPosition(
         function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
         function(){ send(null, null); },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+        { enableHighAccuracy: false, timeout: 2000, maximumAge: 3600000 }
       );
     } else {
       send(null, null);
