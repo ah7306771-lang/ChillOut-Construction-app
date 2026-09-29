@@ -2031,6 +2031,8 @@
       <div class="section-tag" style="margin:20px 0 8px;">إشعارات طلبات الاعتماد</div>
       <button type="button" class="btn btn-secondary" id="enablePushBtn" style="width:100%;">🔔 فعّل إشعارات الجوال للطلبات الجديدة</button>
       <div class="status-msg" id="pushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <button type="button" class="btn btn-secondary" id="testAdminPushBtn" style="width:100%;margin-top:8px;">🧪 اختبر إشعار على جهازك</button>
+      <div class="status-msg" id="adminPushTestStatus" style="margin:6px 0 0;font-size:13px;"></div>
 
       <div class="settings-divider"></div>
       <div class="section-tag" style="margin:20px 0 8px;">إشعارات الشيكات</div>
@@ -6938,6 +6940,42 @@ window.safeFileName = function(str){
   }
   var testMyPushBtn = document.getElementById('testMyPushBtn');
   if (testMyPushBtn) testMyPushBtn.addEventListener('click', runMyPushDiagnostics_);
+
+  // زرار اختبار الإشعار للأدمن — بيبعت إشعار تجريبي على كل التوكنات
+  // المسجلة (زي زرار إرسال الشيكات اليدوي، بس بنص عام).
+  var testAdminPushBtn = document.getElementById('testAdminPushBtn');
+  if (testAdminPushBtn) testAdminPushBtn.addEventListener('click', function(){
+    if (isEmployeeSession) return;
+    var statusEl = document.getElementById('adminPushTestStatus');
+    if (!statusEl) return;
+    var savedToken = null;
+    try { savedToken = localStorage.getItem('fcmTokenRegistered'); } catch (e) {}
+    if (!savedToken) {
+      statusEl.textContent = '⚠️ الجهاز ده لسه مش مسجّل — دوس زرار التفعيل اللي فوق الأول.';
+      statusEl.className = 'status-msg err';
+      return;
+    }
+    testAdminPushBtn.disabled = true;
+    statusEl.textContent = 'جاري الإرسال...'; statusEl.className = 'status-msg';
+    var url = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+      + '&title=' + encodeURIComponent('🧪 اختبار إشعار')
+      + '&body=' + encodeURIComponent('لو ظهرلك الإشعار ده، معناه كل حاجة شغّالة تمام. ' + new Date().toLocaleTimeString('ar-EG'))
+      + '&dedupId=' + encodeURIComponent('admin-test-' + Date.now());
+    fetch(url).then(function(r){ return r.json(); }).then(function(res){
+      testAdminPushBtn.disabled = false;
+      if (res && res.ok !== false) {
+        statusEl.textContent = '✅ اتبعت — لو مش شفت الإشعار خلال ثواني، اتفقد إعدادات الإشعارات على الموبايل (Sleeping apps / DND).';
+        statusEl.className = 'status-msg';
+      } else {
+        statusEl.textContent = 'تعذّر الإرسال: ' + ((res && res.error) || 'خطأ غير معروف');
+        statusEl.className = 'status-msg err';
+      }
+    }).catch(function(){
+      testAdminPushBtn.disabled = false;
+      statusEl.textContent = 'تعذّر الاتصال بالسيرفر.';
+      statusEl.className = 'status-msg err';
+    });
+  });
 
   // ---------------- ملخص سريع: الغياب / التأخير النهارده (من صفحة الدخول) ----------------
   // زرارين "🚫" و"⏰" في صفحة الدخول، كل واحد بيفتح مودال خفيف فيه قايمة
