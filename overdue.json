@@ -4,18 +4,18 @@
       "client": "فالتور",
       "count": 5,
       "amount": 8448007.5,
-      "avgDelay": 17.8
+      "avgDelay": 18.8
     },
     {
       "client": "ويكادي",
       "count": 3,
       "amount": 6216022,
-      "avgDelay": 8.666666666666668
+      "avgDelay": 9.666666666666666
     }
   ],
   "grandTotal": {
     "count": 8,
     "amount": 14664029.5,
-    "avgDelay": 14.375
+    "avgDelay": 15.375
   }
 }
