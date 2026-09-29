@@ -5016,18 +5016,31 @@ window.safeFileName = function(str){
   // شاشة "إدارة الموظفين" (قسم كلمات السر)، بنستبدلهم بالقيمة المحفوظة في
   // شيت "Settings" فور ما الصفحة تفتح.
   function reloadSettingsFromServer_(onDone){
-    if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
-    fetch(ATTENDANCE_SCRIPT_URL + '?action=settingsList').then(function(r){ return r.json(); }).then(function(data){
-      var s = (data && data.ok && data.settings) ? data.settings : null;
-      if (s) {
+    // Supabase أول (سريع وثابت). لو وقع، نرجع للـ Apps Script.
+    fetch(SUPABASE_URL + '/rest/v1/app_settings?select=key,value', { headers: sbHeaders() })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('sb')); })
+      .then(function(rows){
+        var s = {};
+        (rows || []).forEach(function(r){ if (r && r.key) s[r.key] = r.value || ''; });
         if (s.appLoginUser) APP_USER = s.appLoginUser;
         if (s.appLoginPass) APP_PASS = s.appLoginPass;
         if (s.dashboardPassword) ATTENDANCE_DASHBOARD_PASSWORD = s.dashboardPassword;
         if (s.employeeManagePassword) EMPLOYEE_MANAGE_PASSWORD = s.employeeManagePassword;
-      }
-    }).catch(function(){ /* أوفلاين: نفضل شغالين بالقيم الافتراضية فوق */ }).then(function(){
-      if (onDone) onDone();
-    });
+        if (onDone) onDone();
+      })
+      .catch(function(){
+        // Fallback: Apps Script
+        if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
+        fetch(ATTENDANCE_SCRIPT_URL + '?action=settingsList').then(function(r){ return r.json(); }).then(function(data){
+          var s = (data && data.ok && data.settings) ? data.settings : null;
+          if (s) {
+            if (s.appLoginUser) APP_USER = s.appLoginUser;
+            if (s.appLoginPass) APP_PASS = s.appLoginPass;
+            if (s.dashboardPassword) ATTENDANCE_DASHBOARD_PASSWORD = s.dashboardPassword;
+            if (s.employeeManagePassword) EMPLOYEE_MANAGE_PASSWORD = s.employeeManagePassword;
+          }
+        }).catch(function(){}).then(function(){ if (onDone) onDone(); });
+      });
   }
   reloadSettingsFromServer_();
 
@@ -7653,20 +7666,28 @@ window.safeFileName = function(str){
     if (!confirm('متأكد إنك عايز تحذف "' + name + '"؟ مش هيقدر يسجل حضور أو انصراف بعد كده.')) return;
     var btn = document.getElementById('deleteEmpBtn');
     btn.disabled = true;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeDelete'
+    // نمسح من Supabase مباشرة + Apps Script في نفس الوقت (backup للشيت)
+    var sbUrl = SUPABASE_URL + '/rest/v1/employees?name=eq.' + encodeURIComponent(name);
+    var supabasePromise = fetch(sbUrl, {
+      method: 'DELETE',
+      headers: sbHeaders({ 'Prefer': 'return=minimal' })
+    }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+
+    var scriptUrl = ATTENDANCE_SCRIPT_URL + '?action=employeeDelete'
       + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
       + '&name=' + encodeURIComponent(name);
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    var scriptPromise = fetch(scriptUrl).then(function(r){ return r.json(); }).catch(function(){ return { ok: false }; });
+
+    Promise.all([supabasePromise, scriptPromise]).then(function(results){
       btn.disabled = false;
-      if (data && data.ok) {
+      var sbOk = results[0], gsOk = results[1] && results[1].ok !== false;
+      if (sbOk || gsOk) {
         setEmployeeManageStatus_('تم حذف ' + name + ' ✓');
         refreshEverythingAfterEmployeeChange_();
       } else {
-        setEmployeeManageStatus_((data && data.error) || 'تعذّر الحذف.', true);
+        var err = (results[1] && results[1].error) || 'تعذّر الحذف.';
+        setEmployeeManageStatus_(err, true);
       }
-    }).catch(function(){
-      btn.disabled = false;
-      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
     });
   });
 
@@ -8013,24 +8034,39 @@ window.safeFileName = function(str){
       } catch (e) {}
     }
 
-    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
+    // نكتب على Supabase مباشرة (سريع + مصدر الحقيقة).
+    // نداء الـ Apps Script بيمشي في نفس الوقت — للـ Sheet mirror (نسخة عرض).
+    var sbPayload = {
+      name: name,
+      password: newPass,
+      birthday: newBirthday || null,
+      active: true
+    };
+    var supabasePromise = fetch(SUPABASE_URL + '/rest/v1/employees?on_conflict=name', {
+      method: 'POST',
+      headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify([sbPayload])
+    }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+
+    var scriptUrl = ATTENDANCE_SCRIPT_URL + '?action=employeeSave'
       + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
       + '&name=' + encodeURIComponent(name)
       + '&pass=' + encodeURIComponent(newPass)
       + '&birthday=' + encodeURIComponent(newBirthday);
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    var scriptPromise = fetch(scriptUrl).then(function(r){ return r.json(); }).catch(function(){ return { ok: false }; });
+
+    Promise.all([supabasePromise, scriptPromise]).then(function(results){
       btn.disabled = false;
-      if (data && data.ok) {
+      var sbOk = results[0], gsOk = results[1] && results[1].ok !== false;
+      if (sbOk || gsOk) {
         setEmployeeManageStatus_(isNew ? ('تمت إضافة ' + name + ' ✓') : ('تم تحديث بيانات ' + name + ' ✓'));
         showSavedToast_();
         empPendingSelect_ = name;
         refreshEverythingAfterEmployeeChange_();
       } else {
-        setEmployeeManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
+        var err = (results[1] && results[1].error) || 'تعذّر الحفظ.';
+        setEmployeeManageStatus_(err, true);
       }
-    }).catch(function(){
-      btn.disabled = false;
-      setEmployeeManageStatus_('تعذّر الاتصال بالسيرفر.', true);
     });
   });
 
@@ -8056,17 +8092,32 @@ window.safeFileName = function(str){
     // بنبعت الباسورد الحالي (اللي الشاشة داخلة بيه دلوقتي) كـ adminPass،
     // مش القيمة الجديدة المكتوبة في الخانة — السيرفر بيتحقق بالقيمة
     // القديمة قبل ما يستبدلها بالجديدة.
-    var url = ATTENDANCE_SCRIPT_URL + '?action=settingsSaveAll'
+    // نكتب مباشرة على Supabase (سريع) + Apps Script في نفس الوقت (backup للشيت).
+    // Supabase: نبعت كل الأربع كـ upsert دفعة واحدة على جدول app_settings.
+    var sbPayload = [
+      { key: 'appLoginUser',           value: CURRENT_SETTINGS_.appLoginUser || '' },
+      { key: 'appLoginPass',           value: CURRENT_SETTINGS_.appLoginPass || '' },
+      { key: 'dashboardPassword',      value: CURRENT_SETTINGS_.dashboardPassword || '' },
+      { key: 'employeeManagePassword', value: CURRENT_SETTINGS_.employeeManagePassword || '' }
+    ];
+    var supabasePromise = fetch(SUPABASE_URL + '/rest/v1/app_settings?on_conflict=key', {
+      method: 'POST',
+      headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify(sbPayload)
+    }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+
+    var scriptUrl = ATTENDANCE_SCRIPT_URL + '?action=settingsSaveAll'
       + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
       + '&appLoginUser=' + encodeURIComponent(CURRENT_SETTINGS_.appLoginUser || '')
       + '&appLoginPass=' + encodeURIComponent(CURRENT_SETTINGS_.appLoginPass || '')
       + '&dashboardPassword=' + encodeURIComponent(CURRENT_SETTINGS_.dashboardPassword || '')
       + '&employeeManagePassword=' + encodeURIComponent(CURRENT_SETTINGS_.employeeManagePassword || '');
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    var scriptPromise = fetch(scriptUrl).then(function(r){ return r.json(); }).catch(function(){ return { ok: false }; });
+
+    Promise.all([supabasePromise, scriptPromise]).then(function(results){
       btn.disabled = false;
-      if (data && data.ok) {
-        // نحدّث القيم شغالة بيها الصفحة فورًا (من غير ما نستنى Reload)
-        // عشان لو غيّر باسورد إدارة الموظفين نفسه، يفضل شغال بيه على طول.
+      var sbOk = results[0], gsOk = results[1] && results[1].ok !== false;
+      if (sbOk || gsOk) {
         APP_USER = CURRENT_SETTINGS_.appLoginUser;
         APP_PASS = CURRENT_SETTINGS_.appLoginPass;
         ATTENDANCE_DASHBOARD_PASSWORD = CURRENT_SETTINGS_.dashboardPassword;
@@ -8075,12 +8126,9 @@ window.safeFileName = function(str){
         showSavedToast_();
       } else {
         CURRENT_SETTINGS_[key] = prevVal;
-        setScreenPassStatus_((data && data.error) || 'تعذّر الحفظ.', true);
+        var err = (results[1] && results[1].error) || 'تعذّر الحفظ.';
+        setScreenPassStatus_(err, true);
       }
-    }).catch(function(){
-      btn.disabled = false;
-      CURRENT_SETTINGS_[key] = prevVal;
-      setScreenPassStatus_('تعذّر الاتصال بالسيرفر.', true);
     });
   });
 
