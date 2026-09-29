@@ -2051,6 +2051,16 @@
       <div class="section-tag" style="margin:20px 0 8px;">إشعار الراتب لكل الموظفين</div>
       <button type="button" class="btn btn-secondary" id="salarySendAllBtn" style="width:100%;display:none;">📢 إرسال إشعار الراتب لكل الموظفين</button>
       <div class="status-msg" id="salarySendAllStatus" style="margin:6px 0 0;font-size:13px;"></div>
+
+      <!-- زراير إرسال يدوي — لو الإشعار الأوتوماتيكي (الجدولة كل يوم/كل 7 ساعات) وقف
+           لأي سبب، الأدمن يقدر يبعت الإشعار للناس دلوقتي بضغطة واحدة، من غير ما
+           يستنى الوقت المحدد التالي. -->
+      <div class="settings-divider"></div>
+      <div class="section-tag" style="margin:20px 0 8px;">إرسال يدوي فوري (لو الأوتوماتيك وقف)</div>
+      <button type="button" class="btn btn-secondary" id="manualSendChecksBtn" style="width:100%;">🧾 إرسال إشعار الشيكات المستحقة دلوقتي</button>
+      <div class="status-msg" id="manualSendChecksStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <button type="button" class="btn btn-secondary" id="manualSendOverdueBtn" style="width:100%;margin-top:8px;">📉 إرسال إشعار المتأخرات دلوقتي</button>
+      <div class="status-msg" id="manualSendOverdueStatus" style="margin:6px 0 0;font-size:13px;"></div>
     </div>
   </div>
 </div>
@@ -8239,6 +8249,50 @@ window.safeFileName = function(str){
       });
     }
     sendNext(0);
+  });
+
+  // زراير إرسال يدوي للشيكات/المتأخرات — لو التريجر الأوتوماتيكي وقف
+  // (Apps Script trigger توقّف، أو الإشعارات الأوتوماتيك مش شغّالة)،
+  // الأدمن يقدر يبعت الإشعار مباشرة بضغطة زرار من غير ما يعطّل، ومن غير
+  // ما يحتاج يعيد تفعيل الإشعارات على كل موبايل.
+  function runManualPushAction_(action, btn, statusEl, label){
+    if (isEmployeeSession) return;
+    if (!btn || !statusEl) return;
+    if (!ATTENDANCE_SCRIPT_URL) { statusEl.textContent = 'رابط السيرفر مش متظبط.'; statusEl.className = 'status-msg err'; return; }
+    if (!window.confirm('هيتبعت "' + label + '" لكل الأجهزة المسجلة دلوقتي. تأكيد؟')) return;
+    btn.disabled = true;
+    statusEl.textContent = 'جاري الإرسال...'; statusEl.className = 'status-msg';
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=' + action)
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        btn.disabled = false;
+        if (res && res.ok) {
+          var extra = res.count != null ? ' (' + res.count + ')' : '';
+          statusEl.textContent = 'اتبعت ✓' + extra;
+          statusEl.className = 'status-msg';
+          showSavedToast_();
+        } else {
+          statusEl.textContent = (res && res.error) || 'مفيش بيانات تستحق إشعار دلوقتي.';
+          statusEl.className = 'status-msg';
+        }
+      })
+      .catch(function(){
+        btn.disabled = false;
+        statusEl.textContent = 'تعذّر الاتصال بالسيرفر.';
+        statusEl.className = 'status-msg err';
+      });
+  }
+
+  var manualSendChecksBtn = document.getElementById('manualSendChecksBtn');
+  if (manualSendChecksBtn) manualSendChecksBtn.addEventListener('click', function(){
+    runManualPushAction_('manualSendChecks', manualSendChecksBtn,
+      document.getElementById('manualSendChecksStatus'), '🧾 إشعار الشيكات المستحقة');
+  });
+
+  var manualSendOverdueBtn = document.getElementById('manualSendOverdueBtn');
+  if (manualSendOverdueBtn) manualSendOverdueBtn.addEventListener('click', function(){
+    runManualPushAction_('manualSendOverdue', manualSendOverdueBtn,
+      document.getElementById('manualSendOverdueStatus'), '📉 إشعار المتأخرات');
   });
 
   document.getElementById('openAppBtn').addEventListener('click', function(){
