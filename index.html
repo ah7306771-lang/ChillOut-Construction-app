@@ -505,10 +505,12 @@
   .dash-cell-label{font-size:11px;color:var(--ink-soft);font-weight:700;}
   .dash-cell-value{font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;}
   .dash-map-pill{
-    display:inline-flex;align-items:center;gap:4px;align-self:flex-start;
+    display:inline-flex;align-items:center;gap:4px;
     font-size:12px;font-weight:700;color:var(--steel);background:#fff3ea;
     border:1px solid var(--panel-line);padding:5px 11px;border-radius:20px;text-decoration:none;
   }
+  .dash-map-pill.dash-map-in{color:var(--ok);background:#e9f7ef;border-color:#bfe3cd;}
+  .dash-maps{display:flex;flex-wrap:wrap;gap:6px;align-self:flex-start;}
   .dash-req-badge{font-size:11.5px;font-weight:800;padding:4px 11px;border-radius:20px;white-space:nowrap;align-self:flex-start;}
   .dash-req-leave{background:#fff3da;color:#8a5a00;}
   .dash-req-mission{background:#e8eefc;color:#1c4b9c;}
@@ -1277,28 +1279,81 @@
   }
   .settings-divider{height:1px;background:var(--panel-line);margin:26px 0 4px;}
 
-  /* ---------- بيانات الموظفين (واجهة موحّدة بأيقونات) ---------- */
-  .emp-search{position:relative;margin-bottom:10px;}
-  .emp-search input{width:100%;background:#fff;border:1px solid var(--panel-line);border-radius:12px;padding:12px 42px 12px 12px;font-family:'Cairo',sans-serif;font-size:16px;outline:none;color:var(--ink);transition:border-color .15s ease, box-shadow .15s ease;}
-  .emp-search input:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(226,98,31,0.18);}
-  .emp-search svg{position:absolute;top:50%;right:14px;transform:translateY(-50%);width:19px;height:19px;color:var(--ink-soft);pointer-events:none;}
-  .emp-count{font-size:11.5px;color:var(--ink-soft);margin:0 2px 6px;display:flex;justify-content:space-between;}
-  .emp-list{max-height:184px;overflow-y:auto;border:1px solid var(--panel-line);border-radius:12px;background:#fff;padding:4px;margin-bottom:16px;-webkit-overflow-scrolling:touch;}
-  .emp-item{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;padding:8px 10px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:right;}
+  /* ---------- بيانات الموظفين (واجهة احترافية: زرار ماستر + قايمة منسدلة) ---------- */
+
+  /* زرار "إضافة موظف جديد" ماستر ظاهر دايماً فوق، مستقل عن اختيار الموظف */
+  .emp-new-master{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    width:100%;padding:14px 16px;margin:0 0 18px;
+    background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff;
+    border:none;border-radius:14px;
+    font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;
+    cursor:pointer;box-shadow:0 4px 14px rgba(46,204,113,.28);
+    transition:transform .1s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  .emp-new-master:hover{filter:brightness(1.05);box-shadow:0 6px 18px rgba(46,204,113,.36);}
+  .emp-new-master:active{transform:scale(0.98);}
+  .emp-new-master svg{width:22px;height:22px;stroke-width:2.4;}
+  .emp-new-master[disabled]{opacity:.55;cursor:not-allowed;filter:grayscale(.4);}
+
+  /* فاصل نصي بين "إضافة جديد" و"اختيار موظف موجود" */
+  .emp-divider{display:flex;align-items:center;gap:12px;margin:6px 0 12px;color:var(--ink-soft);font-size:12px;font-weight:700;}
+  .emp-divider::before,.emp-divider::after{content:'';flex:1;height:1px;background:var(--panel-line);}
+
+  /* القايمة المنسدلة (Combo) — تشبه Select احترافي */
+  .emp-combo{position:relative;margin-bottom:16px;}
+  .emp-combo-trigger{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    width:100%;padding:12px 14px;background:#fff;
+    border:1px solid var(--panel-line);border-radius:12px;
+    font-family:'Cairo',sans-serif;font-size:14.5px;font-weight:700;color:var(--ink);
+    cursor:pointer;text-align:right;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .emp-combo-trigger:hover{border-color:var(--steel);}
+  .emp-combo-trigger[aria-expanded="true"]{border-color:var(--steel);box-shadow:0 0 0 3px rgba(226,98,31,0.18);}
+  .emp-combo-selected{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+  .emp-combo-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .emp-combo-label.placeholder{color:var(--ink-soft);font-weight:600;}
+  .emp-combo-chevron{width:18px;height:18px;color:var(--ink-soft);flex:none;transition:transform .2s ease;}
+  .emp-combo-trigger[aria-expanded="true"] .emp-combo-chevron{transform:rotate(180deg);}
+  .emp-combo-panel{
+    position:absolute;top:calc(100% + 6px);right:0;left:0;z-index:20;
+    background:#fff;border:1px solid var(--panel-line);border-radius:14px;
+    box-shadow:0 12px 28px rgba(0,0,0,.12);
+    padding:10px;
+    animation:empComboOpen .16s ease;
+  }
+  @keyframes empComboOpen{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+
+  .emp-search{position:relative;margin-bottom:8px;}
+  .emp-search input{width:100%;background:#faf6f1;border:1px solid var(--panel-line);border-radius:10px;padding:10px 38px 10px 12px;font-family:'Cairo',sans-serif;font-size:14.5px;outline:none;color:var(--ink);transition:border-color .15s ease, box-shadow .15s ease;}
+  .emp-search input:focus{border-color:var(--steel);background:#fff;box-shadow:0 0 0 3px rgba(226,98,31,0.15);}
+  .emp-search svg{position:absolute;top:50%;right:12px;transform:translateY(-50%);width:17px;height:17px;color:var(--ink-soft);pointer-events:none;}
+  .emp-count{font-size:11px;color:var(--ink-soft);margin:0 4px 6px;}
+  .emp-list{max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .emp-item{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;padding:9px 10px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:right;}
   .emp-item:hover{background:#fff5ec;}
   .emp-item.active{background:#ffe9d6;box-shadow:inset 0 0 0 1px var(--steel);}
   .emp-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none;}
   .emp-empty{padding:14px;text-align:center;color:var(--ink-soft);font-size:13px;}
-  .emp-card{background:#fff;border:1px solid var(--panel-line);border-radius:14px;padding:14px 14px 4px;}
-  .emp-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-  .emp-badge{font-size:12px;font-weight:800;color:var(--steel);background:#fff0e0;border:1px solid var(--panel-line);border-radius:20px;padding:3px 12px;}
+
+  /* كارت بيانات الموظف */
+  .emp-card{background:#fff;border:1px solid var(--panel-line);border-radius:14px;padding:16px 14px 6px;box-shadow:0 2px 8px rgba(0,0,0,.03);}
+  .emp-card-empty{
+    background:#faf6f1;border:1.5px dashed var(--panel-line);border-radius:14px;
+    padding:32px 20px;text-align:center;color:var(--ink-soft);font-size:13.5px;
+  }
+  .emp-card-empty .emp-empty-icon{font-size:36px;margin-bottom:8px;display:block;opacity:.5;}
+  .emp-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .emp-card-head-title{display:flex;align-items:center;gap:9px;font-weight:800;font-size:14px;}
+  .emp-badge{font-size:11.5px;font-weight:800;color:var(--steel);background:#fff0e0;border:1px solid var(--panel-line);border-radius:20px;padding:3px 12px;}
   .emp-badge.new{color:var(--ok);background:#e9f7ef;border-color:#bfe3cd;}
-  .emp-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .emp-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
   .emp-act{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:10px 2px 8px;border:1px solid var(--panel-line);background:#fff8f2;border-radius:12px;font-family:'Cairo',sans-serif;font-size:11.5px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .1s ease, background .15s ease;}
   .emp-act svg{width:22px;height:22px;}
   .emp-act:hover{background:#ffe9d6;}
   .emp-act:active{transform:scale(0.96);}
-  .emp-act.add{color:var(--ok);}
   .emp-act.edit{color:var(--steel);}
   .emp-act.del{color:#c0392b;}
   .emp-act.notify{color:var(--blue-stamp);}
@@ -1807,23 +1862,51 @@
   <div class="gate-card home-card" style="max-width:560px;">
     <h1 class="gate-title">بيانات الموظفين</h1>
 
-    <div class="emp-search">
-      <input type="search" id="empSearchInput" placeholder="ابحث عن موظف بالاسم..." autocomplete="off">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <!-- زرار "إضافة موظف جديد" ماستر ظاهر دايماً فوق، مستقل عن اختيار موظف -->
+    <button type="button" class="emp-new-master" id="newEmpBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <span>➕ إضافة موظف جديد</span>
+    </button>
+
+    <div class="emp-divider"><span>أو اختر موظف موجود لعرض بياناته</span></div>
+
+    <!-- قايمة منسدلة (Combo) — تبان مغلقة افتراضيًا وتفتح لما تدوس عليها -->
+    <div class="emp-combo" id="empCombo">
+      <button type="button" class="emp-combo-trigger" id="empComboTrigger" aria-haspopup="listbox" aria-expanded="false">
+        <span class="emp-combo-selected">
+          <span class="emp-avatar" id="empComboAvatar" style="display:none;">?</span>
+          <span class="emp-combo-label placeholder" id="empComboLabel">اختر موظف...</span>
+        </span>
+        <svg class="emp-combo-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="emp-combo-panel" id="empComboPanel" style="display:none;">
+        <div class="emp-search">
+          <input type="search" id="empSearchInput" placeholder="ابحث بالاسم..." autocomplete="off">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </div>
+        <div class="emp-count"><span id="empCountLabel">—</span></div>
+        <div class="emp-list" id="empPickerList"></div>
+      </div>
     </div>
-    <div class="emp-count"><span id="empCountLabel">—</span><span>اضغط على الموظف لعرض بياناته</span></div>
-    <div class="emp-list" id="empPickerList"></div>
     <!-- القايمة المنسدلة الأصلية: مخفية، بتفضل هي مصدر الاختيار للكود -->
     <select id="empPassSelect" style="display:none;" tabindex="-1" aria-hidden="true"></select>
 
-    <div class="emp-card">
+    <!-- كارت بيانات الموظف — بيبان بس لما يكون في موظف مختار أو وضع "سجل جديد" -->
+    <div class="emp-card-empty" id="empCardEmpty">
+      <span class="emp-empty-icon">👤</span>
+      <div>مفيش موظف مختار حاليًا.<br>افتح القايمة فوق واختر موظف، أو دوس "إضافة موظف جديد".</div>
+    </div>
+
+    <div class="emp-card" id="empDetailsCard" style="display:none;">
       <div class="emp-card-head">
-        <span style="font-weight:800;font-size:14px;">بيانات الموظف</span>
+        <div class="emp-card-head-title">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>بيانات الموظف</span>
+        </div>
         <span class="emp-badge" id="empModeBadge">عرض</span>
       </div>
 
       <div class="emp-actions">
-        <button type="button" class="emp-act add" id="newEmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>سجل جديد</span></button>
         <button type="button" class="emp-act edit" id="editEmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg><span>تعديل</span></button>
         <button type="button" class="emp-act del" id="deleteEmpBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>حذف</span></button>
         <button type="button" class="emp-act notify" id="salarySendBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span>إشعار الراتب</span></button>
@@ -1846,13 +1929,16 @@
         </div>
         <div class="row2">
           <div class="field">
-            <label for="empOfficialInTime">ميعاد الحضور الرسمي <span style="color:var(--ink-soft);font-size:11px;">(اختياري)</span></label>
+            <label for="empOfficialInTime">ميعاد الحضور الرسمي <span style="color:var(--ink-soft);font-size:11px;">(من لائحة الحضور)</span></label>
             <input type="time" id="empOfficialInTime" placeholder="08:30" disabled>
           </div>
           <div class="field">
-            <label for="empOfficialOutTime">ميعاد الانصراف الرسمي <span style="color:var(--ink-soft);font-size:11px;">(اختياري)</span></label>
+            <label for="empOfficialOutTime">ميعاد الانصراف الرسمي <span style="color:var(--ink-soft);font-size:11px;">(من لائحة الحضور)</span></label>
             <input type="time" id="empOfficialOutTime" placeholder="16:00" disabled>
           </div>
+        </div>
+        <div style="font-size:11.5px;color:var(--ink-soft);margin:-6px 2px 4px;line-height:1.5;">
+          💡 المواعيد بتتقرأ تلقائيًا من "لائحة الحضور والانصراف". أي تعديل هنا أو هناك بيتحفظ في نفس المكان ويبان فوراً في الشاشتين.
         </div>
       </div>
 
@@ -3664,12 +3750,46 @@ window.safeFileName = function(str){
 
   function registerPushToken(token, statusEl, employeeName, topic){
     if (!ATTENDANCE_SCRIPT_URL) { pushStatus_(statusEl, 'رابط السيرفر مش متظبط، كلم المطوّر.', true); return; }
-    var url = ATTENDANCE_SCRIPT_URL + '?action=registerPush&token=' + encodeURIComponent(token);
-    if (employeeName) url += '&employee=' + encodeURIComponent(employeeName);
-    if (topic) url += '&topic=' + encodeURIComponent(topic);
-    fetch(url).then(function(r){ return r.json(); }).then(function(res){
-      if (res && res.ok === false) {
-        pushStatus_(statusEl, 'السيرفر رفض تسجيل الجهاز: ' + (res.error || 'خطأ غير معروف'), true);
+
+    // نكتب مباشرة على Supabase — سريع ومصدر الحقيقة.
+    // ندمج الـ topics القديمة لو الجهاز مسجل قبل كده، عشان مانمسحش اشتراكات
+    // كان مفعّلها (زي "checks" أو "overdue") لما يفعّل نوع تاني.
+    function upsertToSupabase(){
+      var getUrl = SUPABASE_URL + '/rest/v1/push_tokens?select=employee,topics&token=eq.' + encodeURIComponent(token);
+      return fetch(getUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }).then(function(existing){
+        var oldTopics = '', oldEmployee = '';
+        if (existing && existing.length) {
+          oldTopics = existing[0].topics || '';
+          oldEmployee = existing[0].employee || '';
+        }
+        var topicsArr = oldTopics ? oldTopics.split(',').map(function(s){ return s.trim(); }).filter(Boolean) : [];
+        if (topic && topicsArr.indexOf(topic) === -1) topicsArr.push(topic);
+        var row = {
+          token: token,
+          employee: employeeName || oldEmployee || '',
+          topics: topicsArr.join(','),
+          updated_at: new Date().toISOString()
+        };
+        return fetch(SUPABASE_URL + '/rest/v1/push_tokens?on_conflict=token', {
+          method: 'POST',
+          headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+          body: JSON.stringify(row)
+        });
+      });
+    }
+
+    // في نفس الوقت نبعت للـ Apps Script عشان يحدّث الشيت (backup/عرض).
+    var scriptUrl = ATTENDANCE_SCRIPT_URL + '?action=registerPush&token=' + encodeURIComponent(token);
+    if (employeeName) scriptUrl += '&employee=' + encodeURIComponent(employeeName);
+    if (topic) scriptUrl += '&topic=' + encodeURIComponent(topic);
+    var scriptPromise = fetch(scriptUrl).then(function(r){ return r.json(); }).catch(function(){ return { ok: false }; });
+
+    Promise.all([upsertToSupabase().catch(function(){ return null; }), scriptPromise]).then(function(results){
+      var sbRes = results[0], gsRes = results[1];
+      var sbOk = sbRes && sbRes.ok;
+      var gsOk = gsRes && gsRes.ok !== false;
+      if (!sbOk && !gsOk) {
+        pushStatus_(statusEl, 'تعذر تسجيل الجهاز على السيرفر، تأكد من الإنترنت وحاول تاني.', true);
         return;
       }
       try {
@@ -4957,19 +5077,31 @@ window.safeFileName = function(str){
     return cell;
   }
 
-  // زرار "📍 الموقع" واحد بس لكل موظف، بيشاور على آخر لوكيشن معروف ليه
-  // (الانصراف لو موجود، وإلا الحضور) — بدل ما يتكرر مرتين في نفس الكارت.
+  // زراير الموقع: نبيّن الاتنين لو موجودين — موقع الحضور (أخضر) + موقع
+  // الانصراف (برتقالي). لو واحد بس متسجّل، بيبان لوحده.
   function buildDashMapPill(checkIn, checkOut){
-    var fromOut = checkOut && checkOut.map;
-    var record = fromOut ? checkOut : (checkIn && checkIn.map ? checkIn : null);
-    if (!record) return null;
-    var a = document.createElement('a');
-    a.href = record.map;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.className = 'dash-map-pill';
-    a.textContent = '📍 ' + (fromOut ? 'موقع الانصراف' : 'موقع الحضور');
-    return a;
+    var hasIn  = checkIn  && checkIn.map;
+    var hasOut = checkOut && checkOut.map;
+    if (!hasIn && !hasOut) return null;
+    var wrap = document.createElement('div');
+    wrap.className = 'dash-maps';
+    if (hasIn) {
+      var aIn = document.createElement('a');
+      aIn.href = checkIn.map;
+      aIn.target = '_blank'; aIn.rel = 'noopener';
+      aIn.className = 'dash-map-pill dash-map-in';
+      aIn.textContent = '📍 موقع الحضور';
+      wrap.appendChild(aIn);
+    }
+    if (hasOut) {
+      var aOut = document.createElement('a');
+      aOut.href = checkOut.map;
+      aOut.target = '_blank'; aOut.rel = 'noopener';
+      aOut.className = 'dash-map-pill';
+      aOut.textContent = '📍 موقع الانصراف';
+      wrap.appendChild(aOut);
+    }
+    return wrap;
   }
 
   // بيبني بادچ إذن/مأمورية/إجازة بنفس ألوان بادچات شاشة الاعتماد
@@ -5121,23 +5253,55 @@ window.safeFileName = function(str){
           return { rows: rows, fromSupabase: true };
         });
 
-      // Apps Script لطلبات الإذن + المواعيد الرسمية (اللي لسه على الشيت).
-      var appsScriptPromise = fetch(ATTENDANCE_SCRIPT_URL + '?action=dashboardData&date=' + encodeURIComponent(date),
-        controller ? { signal: controller.signal } : undefined)
-        .then(function(r){ return r.json(); })
-        .catch(function(){ return { rows: [], requestRows: [], officialOut: {} }; });
+      // طلبات الإذن/المأمورية/الإجازة من Supabase مباشرة (بدل Apps Script البطيء).
+      // بنجيب الطلبات اللي ليها علاقة بالتاريخ المطلوب: صف تاريخه = date،
+      // أو إجازة الـ date واقع جوه [leave_from, leave_to].
+      var reqUrl = SUPABASE_URL + '/rest/v1/requests'
+        + '?or=(date.eq.' + encodeURIComponent(date)
+        + ',and(leave_from.lte.' + encodeURIComponent(date) + ',leave_to.gte.' + encodeURIComponent(date) + '))'
+        + '&select=id,name,type,status,reason,from_time,to_time,leave_from,leave_to,date,submitted_at';
+      var requestsPromise = fetch(reqUrl, { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          return (rows || []).map(function(r){
+            return {
+              id: r.id, name: r.name, type: r.type, date: r.date,
+              from: r.from_time || '', to: r.to_time || '',
+              reason: r.reason || '', status: r.status || '',
+              submittedAt: r.submitted_at || '',
+              leaveFrom: r.leave_from || '', leaveTo: r.leave_to || ''
+            };
+          });
+        })
+        .catch(function(){ return []; });
 
-      // بنستنى الاتنين — الحضور من Supabase غالبًا هيرجع أول (~150ms)،
-      // وApps Script للطلبات هيرجع بعده. مجموع الوقت = أبطأ نداء (مش المجموع).
-      Promise.all([supabasePromise, appsScriptPromise])
+      // المواعيد الرسمية للانصراف من Supabase (جدول official_times).
+      var officialUrl = SUPABASE_URL + '/rest/v1/official_times?select=name,out_time';
+      var officialPromise = fetch(officialUrl, { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          var out = {};
+          (rows || []).forEach(function(r){
+            if (r.name && r.out_time) {
+              // نطبع الوقت لصيغة HH:MM (يشيل الثواني لو موجودة)
+              var t = String(r.out_time).slice(0, 5);
+              out[r.name] = t;
+            }
+          });
+          return out;
+        })
+        .catch(function(){ return {}; });
+
+      // كل حاجة من Supabase بالتوازي — أبطأ نداء ~150-300ms بدل 2-4 ثواني
+      // من Apps Script. Apps Script بقى مش مطلوب خالص للوحة الحضور.
+      Promise.all([supabasePromise, requestsPromise, officialPromise])
         .then(function(results){
           if (requestId !== loadAttendanceDashboard._reqId) return;
           clearTimeout(slowTimer);
           if (abortTimer) clearTimeout(abortTimer);
           status.textContent = '';
-          var supData = results[0], appData = results[1] || {};
-          // الحضور من Supabase (أساسي)، والطلبات + المواعيد الرسمية من Apps Script
-          updateDashData(supData.rows || [], appData.requestRows || [], employee, date, appData.officialOut || {});
+          var supData = results[0], requestRows = results[1] || [], officialOut = results[2] || {};
+          updateDashData(supData.rows || [], requestRows, employee, date, officialOut);
         })
         .catch(function(err){
           if (requestId !== loadAttendanceDashboard._reqId) return;
@@ -5162,27 +5326,10 @@ window.safeFileName = function(str){
         });
     }
 
-    // لو التاريخ المطلوب هو النهاردة، جرّب أول حاجة الملف الجاهز (JSON) اللي
-    // بيتحدث كل 10 دقايق تلقائي — بيظهر فوراً من غير أي انتظار على جوجل
-    // شيتس. ولو التاريخ قديم، أو الملف مش متاح/مش محدث للنهاردة، ارجع
-    // للطريقة القديمة (نداء مباشر لجوجل شيتس).
-    if (date === attendanceTodayKey()) {
-      status.style.color = 'var(--ink-soft)';
-      status.textContent = 'جاري التحميل...';
-      fetchAppJson_('attendanceStatus')
-        .then(function(data){
-          if (requestId !== loadAttendanceDashboard._reqId) return;
-          if (data && data.ok && data.date === date && isAttendanceStatusFresh_(data.updatedAt)) {
-            status.textContent = '';
-            updateDashData(data.dashboardRows || [], data.dashboardRequestRows || [], employee, date, data.dashboardOfficialOut || {});
-          } else {
-            loadFromLiveSheet_();
-          }
-        })
-        .catch(function(){ loadFromLiveSheet_(); });
-    } else {
-      loadFromLiveSheet_();
-    }
+    // Supabase بقى سريع جدًا (~150ms) لأي تاريخ، فمش محتاجين نستنى ملف
+    // JSON جاهز الأول (اللي كان workaround لبطء Apps Script قبل الانتقال
+    // لـ Supabase). نداء واحد بس على Supabase لأي تاريخ.
+    loadFromLiveSheet_();
   }
   loadAttendanceDashboard._reqId = 0;
 
@@ -5240,11 +5387,15 @@ window.safeFileName = function(str){
     tr.appendChild(tdOut);
 
     var tdMap = document.createElement('td');
-    var mapPill = buildDashMapPill(checkIn, checkOut);
-    if (mapPill) {
-      mapPill.className = 'dash-table-map';
-      mapPill.textContent = '📍 خريطة';
-      tdMap.appendChild(mapPill);
+    // في الجدول: أيقونة واحدة بس (آخر لوكيشن معروف) عشان الصف ما يبقاش مزدحم.
+    var lastRec = (checkOut && checkOut.map) ? checkOut : ((checkIn && checkIn.map) ? checkIn : null);
+    if (lastRec) {
+      var aMap = document.createElement('a');
+      aMap.href = lastRec.map;
+      aMap.target = '_blank'; aMap.rel = 'noopener';
+      aMap.className = 'dash-table-map';
+      aMap.textContent = '📍 خريطة';
+      tdMap.appendChild(aMap);
     } else {
       tdMap.textContent = '—';
       tdMap.className = 'dash-table-empty-cell';
@@ -7271,9 +7422,69 @@ window.safeFileName = function(str){
     b = document.getElementById('editEmpBtn'); if (b) b.disabled = (mode !== 'view' || !hasSel);
     b = document.getElementById('deleteEmpBtn'); if (b) b.disabled = (mode !== 'view' || !hasSel);
     b = document.getElementById('salarySendBtn'); if (b) b.disabled = (mode !== 'view' || !hasSel);
+
+    // كارت البيانات يبان لما يكون في موظف مختار أو المستخدم في وضع "سجل جديد"،
+    // ولو مفيش اختيار وفي وضع "عرض" نبين رسالة فاضية احترافية بدل الكارت الفاضي.
+    var detailsCard = document.getElementById('empDetailsCard');
+    var emptyCard = document.getElementById('empCardEmpty');
+    var showDetails = (mode === 'new') || (mode === 'edit') || (mode === 'view' && hasSel);
+    if (detailsCard) detailsCard.style.display = showDetails ? '' : 'none';
+    if (emptyCard)   emptyCard.style.display   = showDetails ? 'none' : '';
+
+    // تحديث الـ combo (اسم الموظف اللي بيبان جوة الزرار المنسدل)
+    updateEmpCombo_();
+
     if (mode === 'new') { try { nm.focus(); } catch(e){} }
     renderEmpPicker_();
   }
+
+  // تحديث زرار الـ combo عشان يعرض اسم الموظف المختار (وأول حرف كـ avatar)
+  // أو placeholder لو مفيش اختيار.
+  function updateEmpCombo_(){
+    var sel = document.getElementById('empPassSelect');
+    var label = document.getElementById('empComboLabel');
+    var av = document.getElementById('empComboAvatar');
+    if (!label || !av) return;
+    var name = (sel && sel.value) ? sel.value : '';
+    if (name && empMode_ !== 'new') {
+      label.textContent = name;
+      label.classList.remove('placeholder');
+      av.textContent = String(name).trim().charAt(0) || '?';
+      av.style.display = '';
+    } else if (empMode_ === 'new') {
+      label.textContent = '➕ إضافة موظف جديد...';
+      label.classList.add('placeholder');
+      av.style.display = 'none';
+    } else {
+      label.textContent = 'اختر موظف...';
+      label.classList.add('placeholder');
+      av.style.display = 'none';
+    }
+  }
+
+  // فتح/غلق قايمة الـ combo المنسدلة
+  function toggleEmpComboPanel_(open){
+    var trigger = document.getElementById('empComboTrigger');
+    var panel = document.getElementById('empComboPanel');
+    if (!trigger || !panel) return;
+    var willOpen = (typeof open === 'boolean') ? open : (panel.style.display === 'none');
+    panel.style.display = willOpen ? '' : 'none';
+    trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    if (willOpen) {
+      var search = document.getElementById('empSearchInput');
+      // نمسح البحث ونركّز عليه عشان المستخدم يقدر يكتب فوراً
+      if (search) { search.value = ''; renderEmpPicker_(); setTimeout(function(){ try { search.focus(); } catch(e){} }, 40); }
+    }
+  }
+
+  // غلق الـ combo لو المستخدم دوس بره
+  document.addEventListener('click', function(ev){
+    var combo = document.getElementById('empCombo');
+    if (!combo) return;
+    var panel = document.getElementById('empComboPanel');
+    if (!panel || panel.style.display === 'none') return;
+    if (!combo.contains(ev.target)) toggleEmpComboPanel_(false);
+  });
 
   function renderEmpPicker_(){
     var box = document.getElementById('empPickerList');
@@ -7306,6 +7517,7 @@ window.safeFileName = function(str){
       b.addEventListener('click', function(){
         if (!sel) return;
         sel.value = name;
+        toggleEmpComboPanel_(false);  // اقفل القايمة بعد الاختيار
         if (sel.onchange) sel.onchange();
       });
       box.appendChild(b);
@@ -7404,10 +7616,16 @@ window.safeFileName = function(str){
     showScreen('settings-menu');
   });
 
-  // أزرار الواجهة الموحّدة: بحث / سجل جديد / تعديل / إلغاء
+  // أزرار الواجهة الموحّدة: combo / بحث / سجل جديد / تعديل / إلغاء
+  document.getElementById('empComboTrigger').addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleEmpComboPanel_();
+  });
   document.getElementById('empSearchInput').addEventListener('input', renderEmpPicker_);
+  document.getElementById('empSearchInput').addEventListener('click', function(e){ e.stopPropagation(); });
   document.getElementById('newEmpBtn').addEventListener('click', function(){
     setEmployeeManageStatus_('');
+    toggleEmpComboPanel_(false);
     setEmpMode_('new');
   });
   document.getElementById('editEmpBtn').addEventListener('click', function(){
@@ -7485,12 +7703,35 @@ window.safeFileName = function(str){
     showScreen('attendance-schedule');
     setScheduleStatus_('جارِ التحميل...');
     reloadEmployeesFromServer_(function(){
-      fetch(ATTENDANCE_SCRIPT_URL + '?action=scheduleList').then(function(r){ return r.json(); }).then(function(data){
-        SCHEDULE_CACHE_ = (data && data.ok && data.schedule) ? data.schedule : {};
-        setScheduleStatus_((data && data.ok) ? '' : ((data && data.error) || 'تعذّر تحميل اللائحة.'), !(data && data.ok));
+      // نقرأ مباشرة من Supabase (نفس الجدول اللي شاشة بيانات الموظفين
+      // بتقرأ منه) — سريع جداً (~150ms) بدل Apps Script البطيء. الجدولين
+      // بقى ليهم نفس مصدر البيانات، فأي تعديل يبان فوراً في الشاشتين.
+      fetch(SUPABASE_URL + '/rest/v1/official_times?select=name,in_time,out_time', {
+        headers: sbHeaders()
+      }).then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('sb')); }).then(function(rows){
+        SCHEDULE_CACHE_ = {};
+        (rows || []).forEach(function(r){
+          if (r && r.name) {
+            // نطبع الوقت لصيغة HH:MM (يشيل الثواني لو موجودة)
+            SCHEDULE_CACHE_[r.name] = {
+              in:  r.in_time  ? String(r.in_time).slice(0, 5)  : '',
+              out: r.out_time ? String(r.out_time).slice(0, 5) : ''
+            };
+          }
+        });
+        // خزّن نفس البيانات في الكاش العالمي عشان شاشة بيانات الموظفين
+        // تلاقيها جاهزة من غير نداء تاني.
+        window.EMPLOYEE_OFFICIAL_TIMES_ = {};
+        Object.keys(SCHEDULE_CACHE_).forEach(function(n){
+          window.EMPLOYEE_OFFICIAL_TIMES_[n] = {
+            in_time:  SCHEDULE_CACHE_[n].in,
+            out_time: SCHEDULE_CACHE_[n].out
+          };
+        });
+        setScheduleStatus_('');
       }).catch(function(){
         SCHEDULE_CACHE_ = {};
-        setScheduleStatus_('تعذّر الاتصال بالسيرفر.', true);
+        setScheduleStatus_('تعذّر الاتصال بـ Supabase.', true);
       }).then(renderScheduleTable_);
     });
   }
@@ -7511,25 +7752,33 @@ window.safeFileName = function(str){
     var btn = document.getElementById('saveScheduleBtn');
     btn.disabled = true;
     setScheduleStatus_('جارِ الحفظ...');
-    var failed = 0;
-    var chain = Promise.resolve();
-    names.forEach(function(n){
-      chain = chain.then(function(){
-        var url = ATTENDANCE_SCRIPT_URL + '?action=scheduleSave'
-          + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
-          + '&name=' + encodeURIComponent(n)
-          + '&in=' + encodeURIComponent(byEmp[n].in || '')
-          + '&out=' + encodeURIComponent(byEmp[n].out || '');
-        return fetch(url).then(function(r){ return r.json(); }).then(function(d){
-          if (d && d.ok) SCHEDULE_CACHE_[n] = { in: byEmp[n].in || '', out: byEmp[n].out || '' };
-          else failed++;
-        }).catch(function(){ failed++; });
-      });
+
+    // نبعت كل الموظفين دفعة واحدة (batch upsert) لـ Supabase — نداء واحد بس
+    // بدل loop على كل موظف (اللي كان بياخد ثواني على Apps Script).
+    var payload = names.map(function(n){
+      return { name: n, in_time: byEmp[n].in || null, out_time: byEmp[n].out || null };
     });
-    chain.then(function(){
+    fetch(SUPABASE_URL + '/rest/v1/official_times?on_conflict=name', {
+      method: 'POST',
+      headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify(payload)
+    }).then(function(r){
       btn.disabled = false;
-      if (failed) setScheduleStatus_('تعذّر حفظ ' + failed + ' موظف/موظفين.', true);
-      else { setScheduleStatus_('تم حفظ اللائحة ✓'); showSavedToast_(); }
+      if (r.ok) {
+        // حدّث الكاش الاتنين عشان الشاشتين يبانوا محدّثين فوراً
+        names.forEach(function(n){
+          SCHEDULE_CACHE_[n] = { in: byEmp[n].in || '', out: byEmp[n].out || '' };
+          if (!window.EMPLOYEE_OFFICIAL_TIMES_) window.EMPLOYEE_OFFICIAL_TIMES_ = {};
+          window.EMPLOYEE_OFFICIAL_TIMES_[n] = { in_time: byEmp[n].in || '', out_time: byEmp[n].out || '' };
+        });
+        setScheduleStatus_('تم حفظ اللائحة ✓');
+        showSavedToast_();
+      } else {
+        setScheduleStatus_('تعذّر الحفظ على Supabase.', true);
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      setScheduleStatus_('تعذّر الاتصال بـ Supabase.', true);
     });
   });
 
