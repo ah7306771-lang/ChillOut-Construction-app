@@ -2,20 +2,20 @@
   "rows": [
     {
       "client": "فالتور",
-      "count": 5,
-      "amount": 8448007.5,
-      "avgDelay": 18.8
+      "count": 3,
+      "amount": 1798007.5,
+      "avgDelay": 29.666666666666668
     },
     {
       "client": "ويكادي",
       "count": 2,
-      "amount": 5316022,
-      "avgDelay": 9
+      "amount": 4816022,
+      "avgDelay": 10
     }
   ],
   "grandTotal": {
-    "count": 7,
-    "amount": 13764029.5,
-    "avgDelay": 16
+    "count": 5,
+    "amount": 6614029.5,
+    "avgDelay": 21.8
   }
 }
