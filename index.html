@@ -3821,7 +3821,7 @@ window.safeFileName = function(str){
     // الباسورد فيهم قيمة (محفوظة بـ"تذكرني" أو مكتوبة). لو الاتنين فاضيين
     // (null/فاضي) بتتخفي.
     currentScreenName_ = name;
-    if (name === 'attendance') window.__attScreenShownAt_ = Date.now();
+    if (name === 'attendance') { window.__attScreenShownAt_ = Date.now(); warmAttendanceLocation_(); }
     syncLoginFabsVisibility_();
     var homeFabs = document.getElementById('homeFabs');
     if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
@@ -5330,6 +5330,20 @@ window.safeFileName = function(str){
     setTimeout(function(){ f.contentWindow.focus(); f.contentWindow.print(); setTimeout(function(){ f.remove(); }, 60000); }, 400);
   });
 
+  // بنطلب الموقع من أول ما شاشة الحضور تفتح (وبنخزّنه) — فلما الموظف يدوس
+  // حضور/انصراف يكون الموقع جاهز، وإذن الموقع يتطلب قبل لحظة الضغط مش وقتها.
+  var attendanceLastPos_ = null;
+  function warmAttendanceLocation_(){
+    try {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        function(pos){ attendanceLastPos_ = { lat: pos.coords.latitude, lng: pos.coords.longitude, t: Date.now() }; },
+        function(){},
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 }
+      );
+    } catch (e) {}
+  }
+
   function recordAttendance(name, type, inBtn, outBtn, msg){
     if (!ATTENDANCE_SCRIPT_URL) {
       msg.style.color = '#b3261e';
@@ -5369,16 +5383,42 @@ window.safeFileName = function(str){
       // نجرب Supabase أولاً (سريع، ~200ms). لو نجح: (1) نبعت الإشعار مباشرة
       // من الفرونت (2) نبعت نسخة احتياطية للشيت في الخلفية بـ skipNotify=1.
       // لو Supabase فشل: نرجع للشيت زي السلوك القديم (السيرفر هيبعت الإشعار).
-      var supabasePromise = fetch(SUPABASE_URL + '/rest/v1/rpc/record_attendance', {
-        method: 'POST',
-        headers: sbHeaders(),
-        body: JSON.stringify({
-          p_name: name, p_type: type, p_date: dateStr, p_time: timeStr,
-          p_lat: (lat != null ? String(lat) : ''),
-          p_lng: (lng != null ? String(lng) : ''),
-          p_map: mapLink, p_device: deviceLabel
+      // بنسجّل سبب فشل Supabase (لو حصل) عشان ما يفشلش بصمت ونعرف ليه الحضور
+      // راح للشيت بس. ولو الموقع مش موجود، وأول محاولة فشلت، بنعيد مرة بـ null
+      // بدل نص فاضي — لأن دالة الـ SQL لو متوقعة رقم، '' بتعمل خطأ تحويل.
+      var sbErr = '';
+      var usedSheetFallback = false;
+      function callRecordRpc_(pLat, pLng){
+        return fetch(SUPABASE_URL + '/rest/v1/rpc/record_attendance', {
+          method: 'POST',
+          headers: sbHeaders(),
+          body: JSON.stringify({
+            p_name: name, p_type: type, p_date: dateStr, p_time: timeStr,
+            p_lat: pLat, p_lng: pLng,
+            p_map: mapLink, p_device: deviceLabel
+          })
+        }).then(function(r){
+          if (r.ok) return r.json().then(function(d){ return { data: d, err: '' }; });
+          return r.text().then(function(t){ return { data: null, err: r.status + ': ' + String(t || '').slice(0, 160) }; });
+        }).catch(function(e){ return { data: null, err: 'network: ' + ((e && e.message) || e) }; });
+      }
+      var supabasePromise = callRecordRpc_(lat != null ? String(lat) : '', lng != null ? String(lng) : '')
+        .then(function(res){
+          if (res.data && res.data.ok) return res;
+          if (lat == null) {
+            return callRecordRpc_(null, null).then(function(res2){
+              return (res2.data && res2.data.ok) ? res2 : res;
+            });
+          }
+          return res;
         })
-      }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+        .then(function(res){
+          if (!(res.data && res.data.ok)) {
+            sbErr = res.err || 'الرد مش ok';
+            try { console.warn('record_attendance (Supabase) فشل:', sbErr); } catch(e){}
+          }
+          return res.data;
+        });
 
       var dataPromise = supabasePromise.then(function(supabaseData){
         if (supabaseData && supabaseData.ok) {
@@ -5402,6 +5442,7 @@ window.safeFileName = function(str){
           return supabaseData;
         }
         // Supabase فشل — رجع للشيت (السيرفر هيتعامل مع الإشعار زي الأول)
+        usedSheetFallback = true;
         return fetch(sheetUrl).then(function(r){ return r.json(); });
       });
 
@@ -5413,6 +5454,13 @@ window.safeFileName = function(str){
         markAttendanceDone(name, type, finalTime);
         // بيرسم "تم تسجيل الحضور..." بالأخضر و"تم تسجيل الانصراف..." بالأحمر.
         renderAttendanceRowMsg(msg, name);
+        if (usedSheetFallback) {
+          var sbNote = document.createElement('div');
+          sbNote.style.color = '#b3261e';
+          sbNote.style.fontSize = '12px';
+          sbNote.textContent = 'ملحوظة: اتسجّل في الشيت بس — الحفظ في قاعدة البيانات فشل (' + (sbErr || 'سبب غير معروف') + ').';
+          msg.appendChild(sbNote);
+        }
         if (alreadyRecorded || !mapLink) {
           var note = document.createElement('div');
           note.style.color = 'var(--ink-soft)';
@@ -5441,10 +5489,25 @@ window.safeFileName = function(str){
       // فترة طويلة قبل ما نبعت أصلاً. لو ما لقيناش موقع خلال 2 ثانية،
       // بنبعت الحضور بدون إحداثيات، وممكن الإدمن يشوف الموقع من صف تاني
       // للموظف نفسه في يوم آخر.
+      // تعديل: مهلة الـ2 ثانية كانت بتفشل كتير (أول ضغطة في اليوم / أول مرة
+      // الإذن يتطلب) فالحضور كان بيتسجل من غير لوكيشن. دلوقتي:
+      //  1) لو شاشة الحضور سخّنت موقع قريب (آخر 15 دقيقة) نستخدمه فورًا.
+      //  2) غير كده نطلب موقع بدقة عادية (5 ثواني)، ولو فشل نجرب GPS (8 ثواني).
+      //  3) لو الاتنين فشلوا بس نبعت من غير إحداثيات.
+      if (attendanceLastPos_ && (Date.now() - attendanceLastPos_.t) < 15 * 60000) {
+        send(attendanceLastPos_.lat, attendanceLastPos_.lng);
+        return;
+      }
       navigator.geolocation.getCurrentPosition(
         function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
-        function(){ send(null, null); },
-        { enableHighAccuracy: false, timeout: 2000, maximumAge: 3600000 }
+        function(){
+          navigator.geolocation.getCurrentPosition(
+            function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
+            function(){ send(null, null); },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+          );
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 3600000 }
       );
     } else {
       send(null, null);
@@ -5495,6 +5558,7 @@ window.safeFileName = function(str){
   // قايمة الأيقونات المخفية الخاصة بكل موظف لوحده (اسم -> Array من الـ IDs
   // المخفية له تحديدًا)، جايه من عمود "الشاشات المخفية" في تاب Employees.
   var EMPLOYEE_HIDDEN_ICONS_ = {};
+  var HIDDEN_ICONS_CACHE_KEY_ = 'tafweedHiddenIcons_v1';
 
   // تاريخ ميلاد كل موظف (اسم -> "YYYY-MM-DD")، جاي من عمود "تاريخ الميلاد"
   // في تاب Employees — فاضي لو مش متسجل. مستخدمة لاحتفال عيد الميلاد.
@@ -5554,7 +5618,10 @@ window.safeFileName = function(str){
         if (!emp || !emp.name || !emp.pass) return;
         names.push(emp.name);
         pw[emp.name] = emp.pass;
-        hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
+        // لو المصدر (الملف الجاهز) مبعتش حقل hiddenIcons أصلاً، منمسحش القايمة
+        // الموجودة بقايمة فاضية — دي كانت بتخلي كل الأيقونات تظهر تاني.
+        if (emp.hiddenIcons === undefined && EMPLOYEE_HIDDEN_ICONS_[emp.name]) hidden[emp.name] = EMPLOYEE_HIDDEN_ICONS_[emp.name];
+        else hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
         birthdays[emp.name] = emp.birthday || '';
       });
       if (names.length) {
@@ -8540,6 +8607,16 @@ window.safeFileName = function(str){
     // إخفاء أي موظف.
     var effectiveHidden = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName])
       ? EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] : [];
+    // بنحفظ قايمة الإخفاء بتاعة الموظف الحالي على الجهاز، عشان بعد
+    // "تحديث" الصفحة تتطبّق فورًا من غير ما نستنى السيرفر (وقتها الأيقونات
+    // كلها كانت بتظهر لحد ما الرد يوصل، أو تفضل ظاهرة لو فشل).
+    if (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) {
+      try {
+        var cacheMap_ = JSON.parse(localStorage.getItem(HIDDEN_ICONS_CACHE_KEY_) || '{}') || {};
+        cacheMap_[currentSessionEmployeeName] = EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName];
+        localStorage.setItem(HIDDEN_ICONS_CACHE_KEY_, JSON.stringify(cacheMap_));
+      } catch (e) {}
+    }
     TOGGLE_TILES_.forEach(function(t){
       var el = document.getElementById(t.id);
       if (el) el.style.display = (effectiveHidden.indexOf(t.id) > -1) ? 'none' : '';
@@ -8564,6 +8641,18 @@ window.safeFileName = function(str){
     var salarySendAllTile = document.getElementById('salarySendAllBtn');
     if (salarySendAllTile) salarySendAllTile.style.display = isEmployeeSession ? 'none' : '';
   }
+
+  // استعادة فورية (من الجهاز) لقايمة الإخفاء بتاعة الموظف المحفوظ دخوله، أول
+  // ما الصفحة تفتح — قبل أي طلب للسيرفر — وبعدين السيرفر يحدّثها لو اتغيّرت.
+  (function restoreHiddenIconsFromCache_(){
+    try {
+      var m = JSON.parse(localStorage.getItem(HIDDEN_ICONS_CACHE_KEY_) || '{}') || {};
+      Object.keys(m).forEach(function(n){
+        if (!EMPLOYEE_HIDDEN_ICONS_[n] && Array.isArray(m[n])) EMPLOYEE_HIDDEN_ICONS_[n] = m[n];
+      });
+    } catch (e) {}
+    applyIconVisibility_();
+  })();
 
   function setIconManageStatus_(msg, isErr){
     var el = document.getElementById('iconManageStatus');
