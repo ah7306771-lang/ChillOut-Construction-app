@@ -553,6 +553,14 @@
      card and lets the title land under the absolutely-positioned back-bar.
      A fixed top margin keeps it clear on every screen size. */
   #attendanceDashboardScreen .gate-card{margin-top:64px;}
+  /* شاشة الحضور والانصراف: كانت متوسّطة رأسيًا فزراير حضور/انصراف بتيجي
+     في نص الشاشة بالظبط، قصاد زرار "دخول" / تايل الحضور اللي لسه
+     مداس عليه، فالموظف ساعات بيسجّل من غير قصد. بنثبّتها من فوق وننزّل
+     القايمة مسافة معروفة بحيث الزراير تبعد عن مكان اللمسة. لو لسه
+     محتاج تحرّكها: غيّر --att-list-offset (أكبر = أنزل، أصغر = أطلع). */
+  #attendanceScreen{align-items:flex-start;--att-list-offset:110px;}
+  #attendanceScreen .gate-card{margin-top:64px;}
+  #attendanceScreen #attendanceList{margin-top:var(--att-list-offset);}
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
   #mySalaryScreen .gate-card{margin-top:64px;}
 
@@ -3813,6 +3821,7 @@ window.safeFileName = function(str){
     // الباسورد فيهم قيمة (محفوظة بـ"تذكرني" أو مكتوبة). لو الاتنين فاضيين
     // (null/فاضي) بتتخفي.
     currentScreenName_ = name;
+    if (name === 'attendance') window.__attScreenShownAt_ = Date.now();
     syncLoginFabsVisibility_();
     var homeFabs = document.getElementById('homeFabs');
     if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
@@ -4969,12 +4978,24 @@ window.safeFileName = function(str){
       if (attendanceIdentityProven_(name)) { action(); return; }
       showPasswordModal('كلمة السر الخاصة بـ ' + name, ATTENDANCE_PASSWORDS[name], action);
     }
-    inBtn.addEventListener('click', function(){
+    // حماية من التسجيل التلقائي: بنتجاهل (1) أي click مش جاي من لمسة/ضغطة
+    // حقيقية من المستخدم (isTrusted = false يعني اتعمل بالكود)، و(2) أي
+    // ضغطة في أول 800ms بعد ظهور شاشة الحضور — دي غالبًا نفس اللمسة اللي
+    // فتحت الشاشة ووقعت على الزرار اللي ظهر تحت صباعه.
+    function attendanceRealTap_(ev){
+      if (!ev || ev.isTrusted === false) return false;
+      var shownAt = window.__attScreenShownAt_ || 0;
+      if (Date.now() - shownAt < 800) return false;
+      return true;
+    }
+    inBtn.addEventListener('click', function(ev){
+      if (!attendanceRealTap_(ev)) return;
       withAttendancePw_(function(){
         recordAttendance(name, 'حضور', inBtn, outBtn, msg);
       });
     });
-    outBtn.addEventListener('click', function(){
+    outBtn.addEventListener('click', function(ev){
+      if (!attendanceRealTap_(ev)) return;
       withAttendancePw_(function(){
         recordAttendance(name, 'انصراف', inBtn, outBtn, msg);
       });
@@ -5595,12 +5616,37 @@ window.safeFileName = function(str){
       })
       .catch(loadFromLiveSheet_);
   }
+  // قايمة الأيقونات المخفية بتتحفظ في الشيت بس، لكن التحميل العادي بيقرأ
+  // الملف الجاهز attendanceStatus.json (بيتحدث كل 10 دقايق، وساعات بيتأخر
+  // لساعات) — فتعديل صلاحيات موظف كان بيوصل لموبايله متأخر أو مش بيوصل:
+  // أيقونة متفعّلة مابتظهرش، وأيقونة متشالة لسه ظاهرة. الدالة دي بتجيب
+  // الإخفاء حيًّا من الشيت وتطبّقه فورًا (بتحدّث الإخفاء بس، مش باقي
+  // بيانات الموظفين).
+  var hiddenIconsLiveBusy_ = false;
+  function refreshHiddenIconsLive_(){
+    if (!ATTENDANCE_SCRIPT_URL || hiddenIconsLiveBusy_) return;
+    hiddenIconsLiveBusy_ = true;
+    fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList&_=' + Date.now(), { cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.ok || !data.employees || !data.employees.length) return;
+        data.employees.forEach(function(emp){
+          if (!emp || !emp.name) return;
+          EMPLOYEE_HIDDEN_ICONS_[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
+        });
+        applyIconVisibility_();
+      })
+      .catch(function(){})
+      .then(function(){ hiddenIconsLiveBusy_ = false; });
+  }
+
   reloadEmployeesFromServer_(function(){
     // بعد أول تحميل من السيرفر، نعيد رسم القايمة واللستة عشان لو حد ضاف
     // أو شال موظف من شاشة الإدارة قبل كده، الشاشة تظهره فورًا من غير
     // ما نستنى دخول تاني للشاشة.
     renderAttendanceList();
     rebuildAttendanceDashboardEmployeeSelect_();
+    refreshHiddenIconsLive_();
   });
 
   // ---------------- كلمات سر الشاشات من السيرفر (تاب "Settings") ----------------
@@ -6973,6 +7019,7 @@ window.safeFileName = function(str){
         // بصمة الإصبع بتأكد نفس الشخص اللي سجل دخوله قبل كده على الجهاز ده،
         // فبناخد نفس الدور (مسؤول/موظف) اللي كان متسجل وقت آخر دخول عادي.
         applyIconVisibility_();
+        refreshHiddenIconsLive_();
         (function(){
           var n = isEmployeeSession && currentSessionEmployeeName ? currentSessionEmployeeName : APP_USER;
           if (!maybeCelebrateBirthday_(n)) showWelcomeToast_(n);
@@ -7059,6 +7106,7 @@ window.safeFileName = function(str){
       } catch(e){}
       err.textContent = '';
       applyIconVisibility_();
+      refreshHiddenIconsLive_();
       if (!maybeCelebrateBirthday_(currentSessionEmployeeName)) showWelcomeToast_(currentSessionEmployeeName);
       goToHomeOrLinkedAttendance();
     }
