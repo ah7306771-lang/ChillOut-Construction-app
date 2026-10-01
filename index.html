@@ -4634,7 +4634,39 @@ window.safeFileName = function(str){
   // refreshAttendanceRequestsFromServer(). دي معلومة تعرض بس، ومبتقفلش
   // زراير حضور/انصراف — الموظف يقدر يبصم عادي حتى لو عنده إذن/مأمورية،
   // وإنت (الإداري) اللي بتقارن بين الاتنين من شاشة "اعتماد الإذن والمأموريات".
-  var attendanceRequestsToday = {};
+  var attendanceRequestsToday = {};   // name -> [طلبات النهاردة] (إذن / مأمورية / إجازة)
+
+  function attendanceRequestsFor_(name){
+    var v = attendanceRequestsToday[name];
+    return v ? (Array.isArray(v) ? v : [v]) : [];
+  }
+  function attendanceHasLeaveToday_(name){
+    return attendanceRequestsFor_(name).some(function(r){ return r.type === 'إذن'; });
+  }
+  // الطلب اللي الموظف لسه باعته بيتحفظ على جهازه لحد ما يظهر من السيرفر، عشان الحالة تبان
+  // فورًا (وتفضل ظاهرة لو الطلب اتأخر يوصل لـ Supabase) ومايقدرش يبعت إذن تاني.
+  var ATT_LOCAL_REQ_KEY = 'attLocalRequests_v1';
+  function readLocalReqs_(){ try { return JSON.parse(localStorage.getItem(ATT_LOCAL_REQ_KEY) || '[]') || []; } catch(e){ return []; } }
+  function writeLocalReqs_(a){ try { localStorage.setItem(ATT_LOCAL_REQ_KEY, JSON.stringify(a)); } catch(e){} }
+  function rememberLocalRequest_(req){
+    var a = readLocalReqs_().filter(function(r){ return String(r.id) !== String(req.id); });
+    a.push(req); writeLocalReqs_(a);
+    var cur = attendanceRequestsFor_(req.name).filter(function(r){ return String(r.id) !== String(req.id); });
+    attendanceRequestsToday[req.name] = cur.concat([req]);
+    refreshRowUI(req.name);
+  }
+  function mergeLocalRequests_(latest, today){
+    var keep = [];
+    readLocalReqs_().forEach(function(r){
+      var onServer = (latest[r.name] || []).some(function(x){ return String(x.id) === String(r.id); });
+      if (onServer) return;                                                  // السيرفر لقاه → نشيله من المحلي
+      var covers = r.date === today || (r.leaveFrom && r.leaveTo && r.leaveFrom <= today && r.leaveTo >= today);
+      if (!covers && r.date < today) return;                                 // طلب قديم
+      keep.push(r);
+      if (covers) (latest[r.name] = latest[r.name] || []).push(r);
+    });
+    writeLocalReqs_(keep);
+  }
 
   function attendanceRequestTimeRange(req){
     // طلب الإجازة بيستخدم تاريخ بداية/نهاية (leaveFrom/leaveTo) بدل ساعة من/إلى.
@@ -4652,45 +4684,33 @@ window.safeFileName = function(str){
 
   // بادچ احترافي زي بادچات شاشة الاعتماد، بدل النص العادي اللي كان بيلف
   // على أكتر من سطر وصعب يتقرا بسرعة من الموبايل.
+  function hhmm_(t){ t = String(t || ''); return /^\d{2}:\d{2}/.test(t) ? t.slice(0, 5) : t; }
   function renderAttendanceRequestStatus(el, name){
     el.innerHTML = '';
     el.className = 'attendance-request-status';
-    var req = attendanceRequestsToday[name];
-    if (!req) return;
-
-    var timeRange = attendanceRequestTimeRange(req).trim();
-    var badge = document.createElement('span');
-    var detail = null;
-
-    if (req.status === 'موافق') {
-      var cls = req.type === 'مأمورية' ? 'status-mission' : (req.type === 'إجازة' ? 'status-vacation' : 'status-leave');
-      var icon = (req.type === 'مأمورية') ? '🧳' : (req.type === 'إجازة' ? '🏖️' : '📋');
+    attendanceRequestsFor_(name).forEach(function(req){
+      var what;
+      if (req.type === 'إجازة') {
+        what = 'تم عمل إجازة' + (req.leaveFrom ? ' من ' + req.leaveFrom : '') + (req.leaveTo ? ' إلى ' + req.leaveTo : '');
+      } else {
+        what = 'تم عمل ' + req.type + (req.from ? ' من الساعة ' + hhmm_(req.from) : '') + (req.to ? ' إلى ' + hhmm_(req.to) : '');
+      }
+      var st = req.status === 'موافق' ? 'موافق' : (req.status === 'مرفوض' ? 'مرفوض' : 'قيد المراجعة');
+      var cls = st === 'موافق' ? (req.type === 'مأمورية' ? 'status-mission' : (req.type === 'إجازة' ? 'status-vacation' : 'status-leave'))
+                               : (st === 'مرفوض' ? 'status-rejected' : 'status-pending');
+      var icon = st === 'موافق' ? '✅' : (st === 'مرفوض' ? '✘' : '⏳');
+      var badge = document.createElement('span');
       badge.className = 'req-status-badge ' + cls;
-      badge.textContent = icon + ' ' + req.type + ' معتمد اليوم';
-      var detailText = timeRange + (req.reason ? (' — ' + req.reason) : '');
-      if (detailText) {
-        detail = document.createElement('span');
-        detail.className = 'req-status-detail';
-        detail.textContent = detailText;
+      badge.style.whiteSpace = 'normal'; badge.style.borderRadius = '14px';
+      badge.textContent = icon + ' ' + what + ' — ' + st;
+      el.appendChild(badge);
+      if (req.reason) {
+        var d = document.createElement('span');
+        d.className = 'req-status-detail';
+        d.textContent = req.reason;
+        el.appendChild(d);
       }
-    } else if (req.status === 'مرفوض') {
-      badge.className = 'req-status-badge status-rejected';
-      badge.textContent = '✘ تم رفض طلب ' + req.type;
-      detail = document.createElement('span');
-      detail.className = 'req-status-detail';
-      detail.textContent = 'بتاعك النهاردة' + (timeRange ? (' ' + timeRange) : '') + '.';
-    } else {
-      badge.className = 'req-status-badge status-pending';
-      badge.textContent = '⏳ طلب ' + req.type + ' قيد المراجعة';
-      if (timeRange) {
-        detail = document.createElement('span');
-        detail.className = 'req-status-detail';
-        detail.textContent = timeRange;
-      }
-    }
-
-    el.appendChild(badge);
-    if (detail) el.appendChild(detail);
+    });
   }
 
   // بيعيد رسم زراير ورسالة موظف معين حسب أحدث حالة محفوظة له على الجهاز ده.
@@ -4705,6 +4725,8 @@ window.safeFileName = function(str){
     refs.outBtn.disabled = !!doneOutTime;
     renderAttendanceRowMsg(refs.msg, name);
     if (refs.reqStatus) renderAttendanceRequestStatus(refs.reqStatus, name);
+    // إذن واحد بس في اليوم: بعد ما يتعمل، زرار "طلب إذن" بيختفي
+    if (refs.leaveBtn) refs.leaveBtn.style.display = attendanceHasLeaveToday_(name) ? 'none' : '';
   }
 
   function applyAttendanceRecord(name, type, timeStr){
@@ -4784,11 +4806,12 @@ window.safeFileName = function(str){
       .then(function(rows){
         var latest = {};
         (rows || []).forEach(function(r){
-          latest[r.name] = {
-            id: r.id, type: r.type, status: r.status, reason: r.reason,
+          (latest[r.name] = latest[r.name] || []).push({
+            id: r.id, type: r.type, status: r.status, reason: r.reason, date: r.date,
             from: r.from_time, to: r.to_time, leaveFrom: r.leave_from, leaveTo: r.leave_to
-          };
+          });
         });
+        mergeLocalRequests_(latest, today);
         attendanceRequestsToday = latest;
         Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
       })
@@ -4800,12 +4823,13 @@ window.safeFileName = function(str){
           var rows = (data && data.rows) || [];
           var latest = {};
           rows.forEach(function(r){
-            latest[r.name] = {
-              id: r.id, type: r.type, status: r.status, reason: r.reason,
+            (latest[r.name] = latest[r.name] || []).push({
+              id: r.id, type: r.type, status: r.status, reason: r.reason, date: r.date,
               from: r.from, to: r.to, leaveFrom: r.leaveFrom, leaveTo: r.leaveTo
-            };
+            });
           });
-          attendanceRequestsToday = latest;
+          mergeLocalRequests_(latest, today);
+        attendanceRequestsToday = latest;
           Object.keys(attendanceRowRefs).forEach(function(name){ refreshRowUI(name); });
         }).catch(function(){});
       });
@@ -4878,6 +4902,30 @@ window.safeFileName = function(str){
       .catch(loadFromLiveSheet_);
   }
 
+  // ---- مرآة الطلبات في Supabase (جدول requests) ----
+  // الفرونت كان بيبعت الطلب للشيت (Apps Script) بس، واللوحات بتقرا من Supabase،
+  // فأي طلب الـ Apps Script ما نسخهوش كان بيظهر في الشيت وبس. دلوقتي بنتأكد إنه موجود في
+  // Supabase وننسخه لو مش موجود، عن طريق دالة mirror_requests (ملف requests_mirror.sql).
+  // آمنة للتكرار: لو الطلب موجود مش بتكرره، ولو فشلت بتسجل تحذير في الكونسول بس.
+  function reqToDbRow_(r){
+    var d10 = function(v){ v = String(v || '').slice(0, 10); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null; };
+    var ts = new Date(r.submittedAt || Date.now());
+    return {
+      id: String(r.id), name: r.name, type: r.type, status: r.status || 'قيد المراجعة', reason: r.reason || '',
+      from_time: r.from || null, to_time: r.to || null, leave_from: d10(r.leaveFrom), leave_to: d10(r.leaveTo),
+      date: d10(r.date), submitted_at: isNaN(ts) ? new Date().toISOString() : ts.toISOString()
+    };
+  }
+  function mirrorRequestsToSupabase_(rows){
+    rows = (rows || []).filter(function(r){ return r && r.id; });
+    if (!rows.length) return Promise.resolve();
+    return fetch(SUPABASE_URL + '/rest/v1/rpc/mirror_requests', {
+      method: 'POST', headers: sbHeaders(), body: JSON.stringify({ p_rows: rows })
+    }).then(function(r){
+      if (!r.ok) return r.text().then(function(t){ try { console.warn('mirror_requests (Supabase) فشل:', r.status, String(t || '').slice(0, 200)); } catch(e){} });
+    }).catch(function(e){ try { console.warn('mirror_requests network:', e); } catch(_){} });
+  }
+
   // معرّف فريد بسيط لكل طلب — بيتبعت مع الطلب ويترجع في requestsReport،
   // عشان زراير "موافقة/رفض" في شاشة الاعتماد تقدر تحدد الصف الصح بالظبط.
   function generateRequestId(){
@@ -4893,9 +4941,12 @@ window.safeFileName = function(str){
     if (!ATTENDANCE_SCRIPT_URL) return;
     opts = opts || {};
     var dateParam = opts.dateOverride || attendanceTodayKey();
+    var reqId = generateRequestId();
+    var rowRefs_ = attendanceRowRefs[name];
+    if (type === 'إذن' && rowRefs_ && rowRefs_.leaveBtn) rowRefs_.leaveBtn.style.display = 'none';   // يمنع الإرسال المزدوج
     var url = ATTENDANCE_SCRIPT_URL
       + '?action=requestSubmit'
-      + '&id=' + encodeURIComponent(generateRequestId())
+      + '&id=' + encodeURIComponent(reqId)
       + '&name=' + encodeURIComponent(name)
       + '&type=' + encodeURIComponent(type)
       + '&date=' + encodeURIComponent(dateParam)
@@ -4932,9 +4983,20 @@ window.safeFileName = function(str){
         return data;
       });
     }).then(function(){
+      // الشيت قبل الطلب → نتأكد إنه في Supabase كمان (اللوحات بتقرا منه)
+      return mirrorRequestsToSupabase_([reqToDbRow_({
+        id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason,
+        from: from, to: to, date: dateParam, leaveFrom: opts.leaveFrom, leaveTo: opts.leaveTo
+      })]);
+    }).then(function(){
+      rememberLocalRequest_({
+        id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason || '',
+        from: from || '', to: to || '', leaveFrom: opts.leaveFrom || '', leaveTo: opts.leaveTo || '', date: dateParam
+      });
       refreshAttendanceRequestsFromServer();
       refreshPendingRequestsBadge();
     }).catch(function(err){
+      refreshRowUI(name);   // الإرسال فشل → الزرار يرجع لو مفيش إذن فعلًا
       if (statusEl) {
         statusEl.innerHTML = '';
         statusEl.className = 'attendance-request-status';
@@ -5031,7 +5093,9 @@ window.safeFileName = function(str){
       });
     });
     leaveBtn.addEventListener('click', function(){
+      if (attendanceHasLeaveToday_(name)) { refreshRowUI(name); return; }   // إذن واحد في اليوم
       withAttendancePw_(function(){
+        if (attendanceHasLeaveToday_(name)) { refreshRowUI(name); return; }
         showAttendanceRequestModal('طلب إذن — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'إذن', from, to, reason, reqStatus);
         });
@@ -6330,8 +6394,10 @@ window.safeFileName = function(str){
       + '&status=' + encodeURIComponent(status);
     fetch(url).then(function(r){ return r.json(); }).then(function(data){
       if (!data || !data.ok) throw new Error('failed');
-      loadAttendanceApprovals();
-      refreshPendingRequestsBadge();
+      return mirrorRequestsToSupabase_([{ id: id, status: status }]).then(function(){
+        loadAttendanceApprovals();
+        refreshPendingRequestsBadge();
+      });
     }).catch(function(){
       if (approveBtn) approveBtn.disabled = false;
       if (rejectBtn) rejectBtn.disabled = false;
@@ -6474,6 +6540,13 @@ window.safeFileName = function(str){
       status.textContent = '';
       approvalsAllRows = (data && data.rows) || [];
       renderApprovalsList(approvalsAllRows);
+      try {
+        var cd = new Date(); cd.setDate(cd.getDate() - 45);
+        var cutoff = cd.getFullYear() + '-' + String(cd.getMonth() + 1).padStart(2, '0') + '-' + String(cd.getDate()).padStart(2, '0');
+        mirrorRequestsToSupabase_(approvalsAllRows.filter(function(r){
+          return r && r.id && r.name && String(r.date || '').slice(0, 10) >= cutoff;
+        }).slice(-300).map(reqToDbRow_).filter(function(x){ return x.date; }));
+      } catch(e){}
     }).catch(function(){
       status.style.color = '#b3261e';
       status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
