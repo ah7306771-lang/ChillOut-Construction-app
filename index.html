@@ -5836,6 +5836,9 @@ window.safeFileName = function(str){
   // المخفية له تحديدًا)، جايه من عمود "الشاشات المخفية" في تاب Employees.
   var EMPLOYEE_HIDDEN_ICONS_ = {};
   var HIDDEN_ICONS_CACHE_KEY_ = 'tafweedHiddenIcons_v1';
+  // صلاحيات الشاشات المحفوظة في Supabase (جدول employee_icons) — هي المرجع لو الموظف له سجل هناك،
+  // عشان الحفظ مايعتمدش على إن الموظف يكون موجود في شيت Employees بنفس الاسم بالظبط.
+  var SB_ICONS_MAP_ = null;
 
   // تاريخ ميلاد كل موظف (اسم -> "YYYY-MM-DD")، جاي من عمود "تاريخ الميلاد"
   // في تاب Employees — فاضي لو مش متسجل. مستخدمة لاحتفال عيد الميلاد.
@@ -5871,7 +5874,7 @@ window.safeFileName = function(str){
             }
             ATTENDANCE_EMPLOYEES.push(e.name);
             ATTENDANCE_PASSWORDS[e.name] = e.password;
-            EMPLOYEE_HIDDEN_ICONS_[e.name] = NEW_EMPLOYEE_DEFAULT_HIDDEN_.slice();
+            EMPLOYEE_HIDDEN_ICONS_[e.name] = (SB_ICONS_MAP_ && SB_ICONS_MAP_[e.name]) ? SB_ICONS_MAP_[e.name].slice() : NEW_EMPLOYEE_DEFAULT_HIDDEN_.slice();
             EMPLOYEE_BIRTHDAYS_[e.name] = e.birthday || '';
             added = true;
           });
@@ -5899,6 +5902,8 @@ window.safeFileName = function(str){
         // الموجودة بقايمة فاضية — دي كانت بتخلي كل الأيقونات تظهر تاني.
         if (emp.hiddenIcons === undefined && EMPLOYEE_HIDDEN_ICONS_[emp.name]) hidden[emp.name] = EMPLOYEE_HIDDEN_ICONS_[emp.name];
         else hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
+        // الملف الجاهز قديم دايمًا: صلاحيات Supabase (لو اتحمّلت) تغلبه
+        if (SB_ICONS_MAP_ && SB_ICONS_MAP_[emp.name]) hidden[emp.name] = SB_ICONS_MAP_[emp.name].slice();
         birthdays[emp.name] = emp.birthday || '';
       });
       if (names.length) {
@@ -5973,18 +5978,30 @@ window.safeFileName = function(str){
   }
   // بيجيب الإخفاء حيًّا من الشيت لكل الموظفين: cb(map) أو cb(null) لو فشل.
   function fetchHiddenIconsLive_(cb){
-    if (!ATTENDANCE_SCRIPT_URL) { cb(null); return; }
+    var sheetMap = null, sbMap = null, pending = 2;
+    function finish(){
+      if (--pending) return;
+      if (!sheetMap && !sbMap) { cb(null); return; }
+      var map = {};
+      if (sheetMap) Object.keys(sheetMap).forEach(function(n){ map[n] = sheetMap[n]; });
+      if (sbMap) { Object.keys(sbMap).forEach(function(n){ map[n] = sbMap[n]; }); SB_ICONS_MAP_ = sbMap; }
+      cb(map);
+    }
+    fetch(SUPABASE_URL + '/rest/v1/employee_icons?select=name,hidden', { headers: sbHeaders(), cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rows){
+        if (!rows) return;
+        sbMap = {};
+        rows.forEach(function(r){ if (r && r.name) sbMap[r.name] = parseHiddenIcons_(r.hidden); });
+      }).catch(function(){}).then(finish);
+    if (!ATTENDANCE_SCRIPT_URL) { finish(); return; }
     fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList&_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
-        if (!data || !data.ok || !data.employees || !data.employees.length) { cb(null); return; }
-        var map = {};
-        data.employees.forEach(function(emp){
-          if (emp && emp.name) map[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
-        });
-        cb(map);
-      })
-      .catch(function(){ cb(null); });
+        if (!data || !data.ok || !data.employees || !data.employees.length) return;
+        sheetMap = {};
+        data.employees.forEach(function(emp){ if (emp && emp.name) sheetMap[emp.name] = parseHiddenIcons_(emp.hiddenIcons); });
+      }).catch(function(){}).then(finish);
   }
   function refreshHiddenIconsLive_(cb){
     fetchHiddenIconsLive_(function(map){
@@ -9120,13 +9137,18 @@ window.safeFileName = function(str){
 
   function openIconManageFlow_(){
     showScreen('icon-manage');
-    setIconManageStatus_('');
+    var saveBtn = document.getElementById('saveIconVisibilityBtn');
+    saveBtn.disabled = true;
+    setIconManageStatus_('جاري تحميل الصلاحيات الحالية...');
     reloadEmployeesFromServer_(function(){
       rebuildIconManageEmpSelect_();
       loadIconManageList_();
-      // الملف الجاهز ممكن يكون قديم، فنجيب الإخفاء الحقيقي من الشيت ونعيد الرسم
-      // — عشان الحفظ ما يكتبش فوق الصلاحيات بقايمة قديمة.
-      refreshHiddenIconsLive_(function(ok){ if (ok) loadIconManageList_(); });
+      // الملف الجاهز ممكن يكون قديم، فنجيب الصلاحيات الحقيقية (Supabase + الشيت) ونعيد الرسم،
+      // ومانفتحش الحفظ إلا بعدها — عشان الحفظ ما يكتبش فوق الصلاحيات بقايمة قديمة.
+      refreshHiddenIconsLive_(function(ok){
+        if (ok) { loadIconManageList_(); setIconManageStatus_(''); saveBtn.disabled = false; }
+        else setIconManageStatus_('تعذّر تحميل الصلاحيات الحالية من السيرفر — اقفل الشاشة وافتحها تاني قبل ما تحفظ.', true);
+      });
     });
   }
   document.getElementById('openIconManageTileBtn').addEventListener('click', openIconManageFlow_);
@@ -9167,29 +9189,43 @@ window.safeFileName = function(str){
     });
     var btn = document.getElementById('saveIconVisibilityBtn');
     btn.disabled = true;
-    var url = ATTENDANCE_SCRIPT_URL + '?action=employeeIconsSave'
+    setIconManageStatus_('جاري الحفظ...');
+    var joined = hiddenIds.join(',');
+
+    // 1) Supabase = المرجع (بيشتغل حتى لو الموظف مش موجود في شيت Employees بنفس الاسم)
+    var sbSave = fetch(SUPABASE_URL + '/rest/v1/rpc/save_employee_icons', {
+      method: 'POST', headers: sbHeaders(), body: JSON.stringify({ p_name: empName, p_hidden: joined })
+    }).then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('sb ' + r.status)); })
+      .then(function(d){ return !!(d && d.ok); }).catch(function(){ return false; });
+
+    // 2) الشيت (Apps Script) زي الأول
+    var sheetUrl = ATTENDANCE_SCRIPT_URL + '?action=employeeIconsSave'
       + '&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD)
       + '&name=' + encodeURIComponent(empName)
-      + '&hidden=' + encodeURIComponent(hiddenIds.join(','));
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+      + '&hidden=' + encodeURIComponent(joined);
+    var sheetSave = ATTENDANCE_SCRIPT_URL
+      ? fetch(sheetUrl).then(function(r){ return r.json(); }).then(function(d){ return !!(d && d.ok); }).catch(function(){ return false; })
+      : Promise.resolve(false);
+
+    Promise.all([sbSave, sheetSave]).then(function(res){
+      var sbOk = res[0], sheetOk = res[1];
       btn.disabled = false;
-      if (data && data.ok) {
-        EMPLOYEE_HIDDEN_ICONS_[empName] = hiddenIds;
-        applyIconVisibility_();
-        setIconManageStatus_('تم الحفظ، جاري التأكد من الشيت...');
-        // قراءة رجعية: نتأكد إن الشيت فعلاً بقى فيه نفس القايمة اللي بعتناها.
-        fetchHiddenIconsLive_(function(map){
-          if (!map || !map[empName]) { setIconManageStatus_('تم الحفظ ✓ (مقدرتش أتأكد من الشيت)'); return; }
-          var a = hiddenIds.slice().sort().join(','), b = map[empName].slice().sort().join(',');
-          if (a === b) setIconManageStatus_('تم الحفظ ✓ واتأكدت إنه اتسجّل في الشيت');
-          else setIconManageStatus_('⚠ السيرفر قال تم الحفظ لكن الشيت لسه فيه قايمة مختلفة — المشكلة في سكربت الحفظ (employeeIconsSave) على السيرفر.', true);
-        });
-      } else {
-        setIconManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
-      }
-    }).catch(function(){
-      btn.disabled = false;
-      setIconManageStatus_('تعذّر الاتصال بالسيرفر.', true);
+      if (!sbOk && !sheetOk) { setIconManageStatus_('تعذّر الحفظ.', true); return; }
+      EMPLOYEE_HIDDEN_ICONS_[empName] = hiddenIds;
+      if (sbOk) { if (!SB_ICONS_MAP_) SB_ICONS_MAP_ = {}; SB_ICONS_MAP_[empName] = hiddenIds.slice(); }
+      applyIconVisibility_();
+      setIconManageStatus_('تم الحفظ، جاري التأكد...');
+      // قراءة رجعية من المصدر الفعلي (Supabase يغلب الشيت) ومقارنتها بالمحفوظ
+      fetchHiddenIconsLive_(function(map){
+        var back = map && map[empName];
+        var same = !!back && back.slice().sort().join(',') === hiddenIds.slice().sort().join(',');
+        var notes = [];
+        if (!sbOk) notes.push('⚠ قاعدة البيانات ماتحدّثتش (شغّل ملف employee_icons.sql في Supabase)');
+        if (!sheetOk) notes.push('الشيت ماتحدّثش (ممكن الموظف مش موجود في شيت Employees بنفس الاسم)');
+        var tail = notes.length ? ' — ' + notes.join(' — ') : '';
+        if (same) setIconManageStatus_('تم الحفظ ✓ واتأكدت من ' + (sbOk ? 'قاعدة البيانات' : 'الشيت') + tail, !sbOk);
+        else setIconManageStatus_('⚠ اتحفظ لكن لما قرأته تاني لقيته مختلف' + tail, true);
+      });
     });
   });
   // تغيير الرقم السري و/أو تاريخ ميلاد موظف موجود عن طريق القايمة
