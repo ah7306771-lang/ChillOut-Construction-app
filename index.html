@@ -1484,6 +1484,11 @@
 #custodyLedgerScreen .back-bar,#custodyReportScreen .back-bar,#custodyProjectsScreen .back-bar{top:30px !important;padding:6px 12px !important}
 #custodyLedgerScreen .gate-title,#custodyReportScreen .gate-title,#custodyProjectsScreen .gate-title{font-size:17px;margin:0 0 6px}
 #custodyLedgerScreen .gate-card{max-width:560px}
+#custodyLedgerScreen{padding-bottom:64px}
+body.cg-compact .wa-float-btn{width:38px;height:38px;left:10px;bottom:10px}
+body.cg-compact .wa-float-btn svg{width:20px;height:20px}
+body.cg-compact .login-radio-btn{width:42px;height:42px;right:10px;bottom:10px}
+body.cg-compact .login-radio-btn svg{width:18px;height:18px}
 .cg-row{grid-template-columns:1fr auto 22px}
 .cg-viewer{position:fixed;inset:0;background:#555;display:none;flex-direction:column;z-index:10000}
 .cg-vbar{display:flex;gap:6px;align-items:center;padding:8px;background:#222;color:#fff}
@@ -1679,6 +1684,14 @@
   <div class="gate-card home-card" style="max-width:520px;">
     <h1 class="gate-title">الرئيسية</h1>
     <div class="home-grid">
+    <button type="button" class="home-tile" id="openChangePassBtn" style="display:none">
+      <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="#e2621f" stroke-width="1.6"/>
+        <path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="15.2" r="1.3" fill="#3a3f45"/>
+      </svg></span>
+      <span class="home-tile-label">تغيير كلمة السر</span>
+    </button>
     <button type="button" class="home-tile" id="openTafweedMenuBtn">
       <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M4 8.5C4 7.11929 5.11929 6 6.5 6H10L12 8H17.5C18.8807 8 20 9.11929 20 10.5V16.5C20 17.8807 18.8807 19 17.5 19H6.5C5.11929 19 4 17.8807 4 16.5V8.5Z" stroke="#e2621f" stroke-width="1.6" stroke-linejoin="round"/>
@@ -1821,10 +1834,39 @@
   </div>
   <div class="gate-card home-card" style="max-width:560px;">
     <h1 class="gate-title">حضور وانصراف</h1>
+    <div style="display:flex;justify-content:flex-start;margin:0 0 8px"><button type="button" class="cg-rep" id="attRepOpenBtn">📊 تقرير</button></div>
     <div class="attendance-list" id="attendanceList"></div>
     <div class="status-msg" id="attendanceGlobalStatus" style="margin-top:14px;"></div>
   </div>
 </div>
+
+<!-- نافذة تقرير الحضور والانصراف الشهري -->
+<div id="attRepModal" class="cg-modal"><div class="cg-modal-card">
+  <h3><span>📊 تقرير الحضور والانصراف</span><button type="button" id="attRepClose" class="cg-del" style="font-size:18px">✕</button></h3>
+  <div class="cg-filters">
+    <div class="full"><label>الشهر</label><input type="month" id="attRepMonth"></div>
+    <div class="full" id="attRepEmpWrap"><label>الموظف</label><select id="attRepEmp"></select></div>
+  </div>
+  <div class="status-msg" id="attRepStatus"></div>
+  <div class="cg-mbtns" style="grid-template-columns:1fr 1fr 1fr">
+    <button type="button" class="btn btn-primary" id="attRepView">👁 عرض</button>
+    <button type="button" class="btn btn-secondary" id="attRepPdf">⬇ PDF</button>
+    <button type="button" class="btn btn-secondary" id="attRepXls">📊 Excel</button>
+  </div>
+</div></div>
+<div id="attViewer" class="cg-viewer"><div class="cg-vbar"><button type="button" id="attVwClose">✕</button><span id="attVwTitle"></span><button type="button" id="attVwPrint">🖨</button><button type="button" id="attVwDown">⬇ PDF</button></div><div id="attVwBody" style="overflow:auto;flex:1;padding:8px"></div></div>
+
+<!-- نافذة تغيير كلمة سر الموظف -->
+<div id="cpModal" class="cg-modal"><div class="cg-modal-card">
+  <h3><span>🔒 تغيير كلمة السر</span><button type="button" id="cpClose" class="cg-del" style="font-size:18px">✕</button></h3>
+  <div class="cg-filters">
+    <div class="full"><label>كلمة السر القديمة</label><input type="password" id="cpOld" autocomplete="off"></div>
+    <div class="full"><label>كلمة السر الجديدة</label><input type="password" id="cpNew" autocomplete="new-password"></div>
+    <div class="full"><label>تأكيد كلمة السر الجديدة</label><input type="password" id="cpConfirm" autocomplete="new-password"></div>
+  </div>
+  <div class="status-msg" id="cpStatusMsg"></div>
+  <div class="cg-mbtns" style="grid-template-columns:1fr"><button type="button" class="btn btn-primary" id="cpSave">💾 حفظ</button></div>
+</div></div>
 
 <!-- ATTENDANCE DASHBOARD SCREEN -->
 <div id="attendanceDashboardScreen" class="gate-screen shifted-bar-screen" style="display:none;">
@@ -3737,7 +3779,11 @@ window.safeFileName = function(str){
       var e = document.getElementById(p[0]); if (e) e.style.display = (name === p[1]) ? '' : 'none';
     });
     var waBtn = document.getElementById('waFloatBtn');
-    if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
+    if (waBtn) waBtn.style.display = (name === 'login' || name === 'home' || name === 'custody-ledger') ? 'flex' : 'none';
+    // شاشة العهد: أيقونتي الواتساب والراديو أصغر عشان ما يغطوش على القوائم
+    document.body.classList.toggle('cg-compact', name === 'custody-ledger');
+    var cpTile = document.getElementById('openChangePassBtn');
+    if (cpTile) cpTile.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
     var loginTopBar = document.getElementById('loginTopBar');
     if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
     var loginRadioBtn = document.getElementById('loginRadioBtn');
@@ -4981,6 +5027,236 @@ window.safeFileName = function(str){
     refreshAttendanceFromServer();
   }
 
+  // ---------------- تغيير كلمة السر (الموظف نفسه) ----------------
+  // بيتأكد من القديمة، والجديدة + التأكيد، وبيحدّث Supabase (مصدر الحقيقة) وبعدها الشيت.
+  function cpStatus_(m, err){ var el = document.getElementById('cpStatusMsg'); el.textContent = m || ''; el.className = 'status-msg' + (err ? ' err' : ''); }
+  function cpOpen_(){
+    ['cpOld', 'cpNew', 'cpConfirm'].forEach(function(id){ document.getElementById(id).value = ''; });
+    cpStatus_(''); document.getElementById('cpModal').style.display = 'flex';
+    setTimeout(function(){ document.getElementById('cpOld').focus(); }, 50);
+  }
+  function cpClose_(){ document.getElementById('cpModal').style.display = 'none'; }
+  async function cpSave_(){
+    var name = currentSessionEmployeeName;
+    if (!isEmployeeSession || !name) { cpStatus_('سجّل الدخول بحسابك الشخصي الأول', true); return; }
+    var oldP = document.getElementById('cpOld').value.trim(), newP = document.getElementById('cpNew').value.trim(), conf = document.getElementById('cpConfirm').value.trim();
+    if (!oldP || !newP || !conf) { cpStatus_('املأ كل الخانات', true); return; }
+    if (newP.length < 4) { cpStatus_('كلمة السر الجديدة لازم تكون 4 خانات على الأقل', true); return; }
+    if (newP !== conf) { cpStatus_('تأكيد كلمة السر مش مطابق للجديدة', true); return; }
+    if (newP === oldP) { cpStatus_('الجديدة لازم تختلف عن القديمة', true); return; }
+    var btn = document.getElementById('cpSave'); btn.disabled = true; cpStatus_('جارٍ التحقق…');
+    var enc = encodeURIComponent(name), current = ATTENDANCE_PASSWORDS[name];
+    try {
+      var r0 = await fetch(SUPABASE_URL + '/rest/v1/employees?name=eq.' + enc + '&select=password', { headers: sbHeaders() });
+      if (r0.ok) { var rows0 = await r0.json(); if (rows0 && rows0[0] && rows0[0].password) current = rows0[0].password; }
+    } catch (e) {}
+    if (!current || String(current) !== oldP) { cpStatus_('كلمة السر القديمة غير صحيحة', true); btn.disabled = false; return; }
+    var other = findEmployeeByPin_(newP);
+    if (other && other !== name) { cpStatus_('كلمة السر دي مستخدمة، اختار غيرها', true); btn.disabled = false; return; }
+    cpStatus_('جارٍ الحفظ…');
+    var sbOk = false;
+    try {
+      var r1 = await fetch(SUPABASE_URL + '/rest/v1/employees?name=eq.' + enc, { method: 'PATCH', headers: sbHeaders({ 'Prefer': 'return=representation' }), body: JSON.stringify({ password: newP }) });
+      if (r1.ok) { var upd = await r1.json(); sbOk = !!(upd && upd.length); }
+    } catch (e) {}
+    if (!sbOk) { cpStatus_('تعذّر الحفظ في قاعدة البيانات، حاول تاني', true); btn.disabled = false; return; }
+    // نسخة الشيت (القايمة الجاهزة بتتبني منه) — فشلها مش بيلغي التغيير لأن Supabase هو الأساس
+    try {
+      if (ATTENDANCE_SCRIPT_URL) await fetch(ATTENDANCE_SCRIPT_URL + '?action=employeeSave&adminPass=' + encodeURIComponent(EMPLOYEE_MANAGE_PASSWORD) + '&name=' + enc + '&pass=' + encodeURIComponent(newP) + '&birthday=' + encodeURIComponent(EMPLOYEE_BIRTHDAYS_[name] || '')).then(function(r){ return r.json(); }).catch(function(){});
+    } catch (e) {}
+    ATTENDANCE_PASSWORDS[name] = newP;
+    try {
+      if (localStorage.getItem(CREDS_USER_KEY) === oldP) localStorage.setItem(CREDS_USER_KEY, newP);
+      if (localStorage.getItem(CREDS_PASS_KEY) === oldP) localStorage.setItem(CREDS_PASS_KEY, newP);
+    } catch (e) {}
+    btn.disabled = false; cpClose_(); showToast_(document.getElementById('savedToast'), '✓ تم تغيير كلمة السر', 2200);
+  }
+  document.getElementById('openChangePassBtn').addEventListener('click', cpOpen_);
+  document.getElementById('cpClose').addEventListener('click', cpClose_);
+  document.getElementById('cpModal').addEventListener('click', function(e){ if (e.target === this) cpClose_(); });
+  document.getElementById('cpSave').addEventListener('click', cpSave_);
+  ['cpOld', 'cpNew', 'cpConfirm'].forEach(function(id){ document.getElementById(id).addEventListener('keydown', function(e){ if (e.key === 'Enter') cpSave_(); }); });
+
+  // ---------------- تقرير الحضور والانصراف الشهري ----------------
+  // الموظف بيشوف بياناته بس؛ الأدمن يختار موظف أو الكل. التأخير بيتحسب من
+  // لائحة الحضور (official_times) والإذن/المأمورية المعتمدة ('موافق') بتتخصم.
+  var attRepData_ = null;
+  function attEsc_(x){ return String(x == null ? '' : x).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function attMin_(t){ if (!t) return null; var q = String(t).split(':'); var h = parseInt(q[0], 10), m = parseInt(q[1], 10) || 0; return isNaN(h) ? null : h * 60 + m; }
+  function attHM_(t){ return t ? String(t).slice(0, 5) : ''; }
+  function attFmtMin_(m){ if (!m) return '0 د'; var h = Math.floor(m / 60), r = m % 60; return h ? (h + ' س ' + (r ? r + ' د' : '')) : (r + ' د'); }
+  function attRepEmployee_(){
+    return getAttendanceLinkedEmployee() || attendanceSessionUnlockedEmployee || ((isEmployeeSession && currentSessionEmployeeName) ? currentSessionEmployeeName : '') || '';
+  }
+  function attRepStatus_(m, err){ var el = document.getElementById('attRepStatus'); el.textContent = m || ''; el.className = 'status-msg' + (err ? ' err' : ''); }
+  function attFetchAll_(url){
+    var out = [];
+    function go(o){
+      return fetch(url, { headers: sbHeaders({ 'Range-Unit': 'items', Range: o + '-' + (o + 999) }) })
+        .then(function(r){ if (!r.ok) throw new Error('sb'); return r.json(); })
+        .then(function(d){ out = out.concat(d); return d.length === 1000 ? go(o + 1000) : out; });
+    }
+    return go(0);
+  }
+  function attBuildReport_(month, empFilter){
+    var pr = month.split('-'), last = new Date(+pr[0], +pr[1], 0).getDate();
+    var S = month + '-01', E = month + '-' + attendancePad(last), todayK = attendanceTodayKey();
+    var names = empFilter ? [empFilter] : ATTENDANCE_EMPLOYEES.slice();
+    var nameQ = empFilter ? '&name=eq.' + encodeURIComponent(empFilter) : '';
+    var attUrl = SUPABASE_URL + '/rest/v1/attendance?date=gte.' + S + '&date=lte.' + E + nameQ + '&select=name,date,in_time,out_time&order=date.asc';
+    var reqUrl = SUPABASE_URL + '/rest/v1/requests?or=(and(date.gte.' + S + ',date.lte.' + E + '),and(leave_from.lte.' + E + ',leave_to.gte.' + S + '))' + nameQ + '&select=name,type,status,reason,from_time,to_time,leave_from,leave_to,date';
+    var reqFail = false;
+    return Promise.all([
+      attFetchAll_(attUrl),
+      attFetchAll_(reqUrl).catch(function(){ reqFail = true; return []; }),
+      fetch(SUPABASE_URL + '/rest/v1/official_times?select=name,in_time,out_time', { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; })
+    ]).then(function(res){
+      var att = res[0] || [], reqs = res[1] || [], offMap = {};
+      (res[2] || []).forEach(function(o){ if (o && o.name) offMap[o.name] = { i: attHM_(o.in_time), o: attHM_(o.out_time) }; });
+      var emps = [];
+      names.forEach(function(n){
+        var off = offMap[n] || { i: '', o: '' }, offI = attMin_(off.i), byDate = {};
+        att.forEach(function(r){
+          if (r.name !== n) return;
+          var b = byDate[r.date] || (byDate[r.date] = { i: '', o: '' }), i = attHM_(r.in_time), o = attHM_(r.out_time);
+          if (i && (!b.i || i < b.i)) b.i = i;
+          if (o && (!b.o || o > b.o)) b.o = o;
+        });
+        var rq = reqs.filter(function(r){ return r.name === n; }), dates = Object.keys(byDate);
+        rq.forEach(function(r){
+          if (r.type === 'إجازة' && r.status === 'موافق' && r.leave_from && r.leave_to) {
+            for (var d = 1; d <= last; d++) { var k = month + '-' + attendancePad(d); if (k >= r.leave_from && k <= r.leave_to && k <= todayK && dates.indexOf(k) < 0) dates.push(k); }
+          }
+        });
+        dates.sort();
+        var days = [], tLate = 0, lateDays = 0, present = 0;
+        dates.forEach(function(k){
+          var b = byDate[k] || { i: '', o: '' }, notes = [], start = offI, full = false;
+          rq.forEach(function(r){
+            var onDay = (r.type === 'إجازة') ? (r.leave_from && r.leave_to && k >= r.leave_from && k <= r.leave_to) : (r.date === k);
+            if (!onDay) return;
+            var ok = r.status === 'موافق', st = ok ? '' : (r.status === 'مرفوض' ? ' (مرفوض)' : ' (قيد المراجعة)');
+            if (r.type === 'إجازة') { notes.push('إجازة' + st); if (ok) full = true; return; }
+            var f = attMin_(r.from_time), t = attMin_(r.to_time);
+            notes.push(r.type + (f != null && t != null ? ' ' + attHM_(r.from_time) + '–' + attHM_(r.to_time) : '') + st);
+            if (!ok) return;
+            if (f == null || t == null) { full = true; return; }
+            if (offI != null && f <= offI && t > start) start = t;
+          });
+          var inM = attMin_(b.i), late = (!full && inM != null && start != null) ? Math.max(0, inM - start) : 0;
+          if (b.i) present++;
+          if (late > 0) { lateDays++; tLate += late; }
+          var dt = new Date(+pr[0], +pr[1] - 1, +k.slice(8));
+          days.push({ d: k, day: dt.toLocaleDateString('ar-EG', { weekday: 'long' }), i: b.i, o: b.o, late: late, note: notes.join('، ') });
+        });
+        if (days.length || empFilter) emps.push({ name: n, off: off, days: days, present: present, lateDays: lateDays, tLate: tLate });
+      });
+      return { month: month, emps: emps, reqFail: reqFail };
+    });
+  }
+  var ATT_TD = 'border:1px solid #ccc;padding:4px;text-align:center', ATT_TH = 'border:1px solid #bbb;padding:4px;background:#f3ece4';
+  function attPages_(rep){
+    var pages = [];
+    rep.emps.forEach(function(e){
+      var th = '<tr><th style="' + ATT_TH + '">التاريخ</th><th style="' + ATT_TH + '">اليوم</th><th style="' + ATT_TH + '">حضور</th><th style="' + ATT_TH + '">انصراف</th><th style="' + ATT_TH + '">التأخير</th><th style="' + ATT_TH + '">ملاحظات</th></tr>';
+      var rows = e.days.map(function(r){
+        return '<tr><td style="' + ATT_TD + '">' + r.d + '</td><td style="' + ATT_TD + '">' + attEsc_(r.day) + '</td><td style="' + ATT_TD + '">' + (r.i || '—') + '</td><td style="' + ATT_TD + '">' + (r.o || '—') + '</td><td style="' + ATT_TD + ';color:' + (r.late ? '#c0392b' : '#1f7a4c') + ';font-weight:700">' + (r.late ? attFmtMin_(r.late) : '—') + '</td><td style="' + ATT_TD + ';text-align:right;font-size:11px">' + attEsc_(r.note) + '</td></tr>';
+      });
+      if (!rows.length) rows.push('<tr><td style="' + ATT_TD + '" colspan="6">لا توجد حركات في هذا الشهر</td></tr>');
+      var head = '<h2 style="text-align:center;margin:0 0 4px">تقرير الحضور والانصراف</h2><div style="text-align:center;margin-bottom:10px">الموظف: <b>' + attEsc_(e.name) + '</b> — الشهر: ' + rep.month + '</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-bottom:10px"><tr><td style="' + ATT_TD + '">ميعاد الحضور (اللائحة)<br><b>' + (e.off.i || '—') + '</b></td><td style="' + ATT_TD + '">ميعاد الانصراف (اللائحة)<br><b>' + (e.off.o || '—') + '</b></td><td style="' + ATT_TD + '">أيام الحضور<br><b>' + e.present + '</b></td><td style="' + ATT_TD + '">أيام التأخير<br><b>' + e.lateDays + '</b></td><td style="' + ATT_TD + '">إجمالي التأخير<br><b style="color:#c0392b">' + attFmtMin_(e.tLate) + '</b></td></tr></table>';
+      var chunks = [], cap = 22, i = 0;
+      while (i < rows.length) { chunks.push(rows.slice(i, i + cap).join('')); i += cap; cap = 32; }
+      chunks.forEach(function(c, idx){
+        pages.push('<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:12px;overflow:hidden">' +
+          (idx === 0 ? head : '<div style="margin-bottom:8px;color:#666">' + attEsc_(e.name) + ' — تابع التقرير</div>') +
+          '<table style="width:100%;border-collapse:collapse">' + th + c + '</table>' +
+          '<div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#888;font-size:11px">' + attEsc_(e.name) + ' — ' + rep.month + ' — صفحة ' + (idx + 1) + ' من ' + chunks.length + '</div></div>');
+      });
+    });
+    return pages;
+  }
+  async function attRenderImgs_(pages){
+    var host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-10000px;top:0';
+    host.innerHTML = pages.join(''); document.body.appendChild(host);
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      var imgs = [];
+      for (var i = 0; i < host.children.length; i++) {
+        var cv = await html2canvas(host.children[i], { scale: 2, backgroundColor: '#fff' });
+        imgs.push(cv.toDataURL('image/jpeg', .92));
+      }
+      return imgs;
+    } finally { host.remove(); }
+  }
+  function attPdfBlob_(imgs){
+    var doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
+    imgs.forEach(function(u, i){ if (i) doc.addPage(); doc.addImage(u, 'JPEG', 0, 0, 210, 297); });
+    return doc.output('blob');
+  }
+  function attDownload_(blob, name){
+    var u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function attRepFile_(ext){ return 'Attendance-' + (window.safeFileName ? window.safeFileName(attRepData_.label) : 'Report') + '-' + attRepData_.month + '.' + ext; }
+  function attRepOpen_(){
+    var fixed = attRepEmployee_(), sel = document.getElementById('attRepEmp');
+    document.getElementById('attRepEmpWrap').style.display = fixed ? 'none' : '';
+    sel.innerHTML = '<option value="">كل الموظفين</option>' + ATTENDANCE_EMPLOYEES.map(function(n){ return '<option>' + attEsc_(n) + '</option>'; }).join('');
+    document.getElementById('attRepMonth').value = attendanceTodayKey().slice(0, 7);
+    attRepStatus_('');
+    document.getElementById('attRepModal').style.display = 'flex';
+  }
+  function attRepClose_(){ document.getElementById('attRepModal').style.display = 'none'; }
+  async function attRepRun_(mode){
+    var month = document.getElementById('attRepMonth').value;
+    if (!month) { attRepStatus_('اختار الشهر الأول', true); return; }
+    var fixed = attRepEmployee_(), emp = fixed || document.getElementById('attRepEmp').value;
+    var bs = document.getElementById('attRepModal').querySelectorAll('button'); bs.forEach(function(b){ b.disabled = true; });
+    attRepStatus_('جارٍ إعداد التقرير…');
+    try {
+      var rep = await attBuildReport_(month, emp);
+      if (!rep.emps.length || !rep.emps.some(function(e){ return e.days.length; })) { attRepStatus_('مفيش حضور أو انصراف مسجل في الشهر ده', true); }
+      else {
+        attRepData_ = { month: month, label: emp || 'All' };
+        if (mode === 'xls') {
+          var aoa = [['الموظف', 'التاريخ', 'اليوم', 'الحضور الرسمي', 'الانصراف الرسمي', 'حضور', 'انصراف', 'التأخير (دقيقة)', 'ملاحظات']];
+          rep.emps.forEach(function(e){
+            e.days.forEach(function(r){ aoa.push([e.name, r.d, r.day, e.off.i, e.off.o, r.i, r.o, r.late, r.note]); });
+            aoa.push([e.name, 'الإجمالي', '', '', '', 'أيام الحضور: ' + e.present, 'أيام التأخير: ' + e.lateDays, e.tLate, '']);
+          });
+          var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'الحضور');
+          wb.Workbook = { Views: [{ RTL: true }] }; XLSX.writeFile(wb, attRepFile_('xlsx'));
+          attRepStatus_(rep.reqFail ? 'تم ✓ — تعذّر تحميل الأذونات، التأخير بدون خصم إذن' : 'تم ✓');
+        } else {
+          var imgs = await attRenderImgs_(attPages_(rep));
+          if (mode === 'view') {
+            attRepData_.imgs = imgs;
+            document.getElementById('attVwTitle').textContent = attRepFile_('pdf');
+            document.getElementById('attVwBody').innerHTML = imgs.map(function(u){ return '<img src="' + u + '" style="display:block;width:100%;max-width:760px;margin:0 auto 8px;background:#fff">'; }).join('');
+            attRepClose_(); document.getElementById('attViewer').style.display = 'flex';
+          } else { attDownload_(attPdfBlob_(imgs), attRepFile_('pdf')); }
+          attRepStatus_(rep.reqFail ? 'تم ✓ — تعذّر تحميل الأذونات، التأخير بدون خصم إذن' : 'تم ✓');
+        }
+      }
+    } catch (e) { attRepStatus_('تعذّر إنشاء التقرير — تأكد من الاتصال', true); }
+    bs.forEach(function(b){ b.disabled = false; });
+  }
+  document.getElementById('attRepOpenBtn').addEventListener('click', attRepOpen_);
+  document.getElementById('attRepClose').addEventListener('click', attRepClose_);
+  document.getElementById('attRepModal').addEventListener('click', function(e){ if (e.target === this) attRepClose_(); });
+  document.getElementById('attRepView').addEventListener('click', function(){ attRepRun_('view'); });
+  document.getElementById('attRepPdf').addEventListener('click', function(){ attRepRun_('pdf'); });
+  document.getElementById('attRepXls').addEventListener('click', function(){ attRepRun_('xls'); });
+  document.getElementById('attVwClose').addEventListener('click', function(){ document.getElementById('attViewer').style.display = 'none'; document.getElementById('attVwBody').innerHTML = ''; });
+  document.getElementById('attVwDown').addEventListener('click', function(){ if (attRepData_ && attRepData_.imgs) attDownload_(attPdfBlob_(attRepData_.imgs), attRepFile_('pdf')); });
+  document.getElementById('attVwPrint').addEventListener('click', function(){
+    if (!attRepData_ || !attRepData_.imgs) return;
+    var f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0'; document.body.appendChild(f);
+    var d = f.contentWindow.document; d.open();
+    d.write('<html><head><style>@page{size:A4;margin:0}body{margin:0}img{display:block;width:210mm;height:297mm;page-break-after:always}</style></head><body>' + attRepData_.imgs.map(function(u){ return '<img src="' + u + '">'; }).join('') + '</body></html>'); d.close();
+    setTimeout(function(){ f.contentWindow.focus(); f.contentWindow.print(); setTimeout(function(){ f.remove(); }, 60000); }, 400);
+  });
+
   function recordAttendance(name, type, inBtn, outBtn, msg){
     if (!ATTENDANCE_SCRIPT_URL) {
       msg.style.color = '#b3261e';
@@ -5174,7 +5450,11 @@ window.safeFileName = function(str){
           var added = false;
           (rows || []).forEach(function(e){
             if (!e || !e.name || !e.password) return;
-            if (ATTENDANCE_EMPLOYEES.indexOf(e.name) > -1) return;
+            if (ATTENDANCE_EMPLOYEES.indexOf(e.name) > -1) {
+              // الملف الجاهز ممكن يكون قديم: كلمة السر الأحدث من Supabase
+              if (String(ATTENDANCE_PASSWORDS[e.name]) !== String(e.password)) ATTENDANCE_PASSWORDS[e.name] = String(e.password);
+              return;
+            }
             ATTENDANCE_EMPLOYEES.push(e.name);
             ATTENDANCE_PASSWORDS[e.name] = e.password;
             EMPLOYEE_HIDDEN_ICONS_[e.name] = NEW_EMPLOYEE_DEFAULT_HIDDEN_.slice();
