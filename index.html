@@ -5554,7 +5554,7 @@ window.safeFileName = function(str){
         if (!emp || !emp.name || !emp.pass) return;
         names.push(emp.name);
         pw[emp.name] = emp.pass;
-        hidden[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
+        hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
         birthdays[emp.name] = emp.birthday || '';
       });
       if (names.length) {
@@ -5622,22 +5622,34 @@ window.safeFileName = function(str){
   // أيقونة متفعّلة مابتظهرش، وأيقونة متشالة لسه ظاهرة. الدالة دي بتجيب
   // الإخفاء حيًّا من الشيت وتطبّقه فورًا (بتحدّث الإخفاء بس، مش باقي
   // بيانات الموظفين).
-  var hiddenIconsLiveBusy_ = false;
-  function refreshHiddenIconsLive_(){
-    if (!ATTENDANCE_SCRIPT_URL || hiddenIconsLiveBusy_) return;
-    hiddenIconsLiveBusy_ = true;
+  // بيحوّل نص الإخفاء المحفوظ في الشيت لـ Array من الـ IDs — مع قص المسافات
+  // حوالين كل ID ("a, b" كان بيطلع " b" وماكانش بيتطابق مع أي أيقونة).
+  function parseHiddenIcons_(v){
+    return v ? String(v).split(',').map(function(x){ return x.trim(); }).filter(Boolean) : [];
+  }
+  // بيجيب الإخفاء حيًّا من الشيت لكل الموظفين: cb(map) أو cb(null) لو فشل.
+  function fetchHiddenIconsLive_(cb){
+    if (!ATTENDANCE_SCRIPT_URL) { cb(null); return; }
     fetch(ATTENDANCE_SCRIPT_URL + '?action=employeesList&_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
-        if (!data || !data.ok || !data.employees || !data.employees.length) return;
+        if (!data || !data.ok || !data.employees || !data.employees.length) { cb(null); return; }
+        var map = {};
         data.employees.forEach(function(emp){
-          if (!emp || !emp.name) return;
-          EMPLOYEE_HIDDEN_ICONS_[emp.name] = emp.hiddenIcons ? String(emp.hiddenIcons).split(',').filter(Boolean) : [];
+          if (emp && emp.name) map[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
         });
-        applyIconVisibility_();
+        cb(map);
       })
-      .catch(function(){})
-      .then(function(){ hiddenIconsLiveBusy_ = false; });
+      .catch(function(){ cb(null); });
+  }
+  function refreshHiddenIconsLive_(cb){
+    fetchHiddenIconsLive_(function(map){
+      if (map) {
+        Object.keys(map).forEach(function(n){ EMPLOYEE_HIDDEN_ICONS_[n] = map[n]; });
+        applyIconVisibility_();
+      }
+      if (cb) cb(!!map);
+    });
   }
 
   reloadEmployeesFromServer_(function(){
@@ -8626,6 +8638,9 @@ window.safeFileName = function(str){
     reloadEmployeesFromServer_(function(){
       rebuildIconManageEmpSelect_();
       loadIconManageList_();
+      // الملف الجاهز ممكن يكون قديم، فنجيب الإخفاء الحقيقي من الشيت ونعيد الرسم
+      // — عشان الحفظ ما يكتبش فوق الصلاحيات بقايمة قديمة.
+      refreshHiddenIconsLive_(function(ok){ if (ok) loadIconManageList_(); });
     });
   }
   document.getElementById('openIconManageTileBtn').addEventListener('click', openIconManageFlow_);
@@ -8668,7 +8683,14 @@ window.safeFileName = function(str){
       if (data && data.ok) {
         EMPLOYEE_HIDDEN_ICONS_[empName] = hiddenIds;
         applyIconVisibility_();
-        setIconManageStatus_('تم الحفظ ✓');
+        setIconManageStatus_('تم الحفظ، جاري التأكد من الشيت...');
+        // قراءة رجعية: نتأكد إن الشيت فعلاً بقى فيه نفس القايمة اللي بعتناها.
+        fetchHiddenIconsLive_(function(map){
+          if (!map || !map[empName]) { setIconManageStatus_('تم الحفظ ✓ (مقدرتش أتأكد من الشيت)'); return; }
+          var a = hiddenIds.slice().sort().join(','), b = map[empName].slice().sort().join(',');
+          if (a === b) setIconManageStatus_('تم الحفظ ✓ واتأكدت إنه اتسجّل في الشيت');
+          else setIconManageStatus_('⚠ السيرفر قال تم الحفظ لكن الشيت لسه فيه قايمة مختلفة — المشكلة في سكربت الحفظ (employeeIconsSave) على السيرفر.', true);
+        });
       } else {
         setIconManageStatus_((data && data.error) || 'تعذّر الحفظ.', true);
       }
