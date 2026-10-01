@@ -1460,6 +1460,24 @@
 .cg-actions{display:flex;gap:8px;margin-top:6px}.cg-actions .btn{flex:1}
 .cp-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-bottom:6px;background:#fff;border:1px solid var(--panel-line);border-radius:8px}
 </style>
+<style>
+.cg-back{padding:4px 14px !important;font-size:20px !important;line-height:1.1 !important;min-width:0 !important;width:auto !important}
+.cg-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}
+.cg-who{margin:0;font-size:13px;text-align:right}
+.cg-rep{border:0;background:var(--steel);color:#fff;border-radius:8px;padding:7px 14px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.cg-cards{gap:6px;margin-bottom:8px}.cg-card{padding:5px 3px;font-size:11px;font-weight:800}.cg-card b{font-size:14px;margin-top:0}
+.cg-sec{margin:8px 0}.cg-add{padding:8px 12px;font-size:14px}.cg-add span{font-size:12px;font-weight:800}
+.cg-row{grid-template-columns:34px 1fr auto 22px;gap:5px;padding:4px 8px;font-size:12px;font-weight:700;line-height:1.3}
+.cg-row i{display:inline;font-size:10px;font-weight:700;color:var(--ink-soft);margin-right:4px}
+.cg-del{font-size:13px}.cg-empty{padding:6px;font-size:11.5px;font-weight:700}
+.cg-draft{gap:4px;padding:6px}.cg-draft input,.cg-draft select{padding:6px;font-size:13px;font-weight:700}
+.d-btns button{padding:6px}
+.cp-item{padding:7px 10px;margin-bottom:4px;font-size:13px;font-weight:700}
+.cg-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:9999}
+.cg-modal-card{width:100%;max-width:480px;background:#fff;border-radius:16px 16px 0 0;padding:14px 14px 18px}
+.cg-modal-card h3{margin:0 0 10px;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+.cg-mbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+</style>
 </head>
 <body>
 <a id="waFloatBtn" class="wa-float-btn" href="https://wa.me/201005833218" target="_blank" rel="noopener" aria-label="تواصل معنا عبر واتساب">
@@ -1507,6 +1525,9 @@
       <button type="button" id="loginLastPricesBtn" class="login-fab-btn" aria-label="اخر سعر شراء وبيع">
         🏷️<span class="fab-label" aria-hidden="true">آخر الأسعار</span>
         <span class="login-bell-badge" id="loginLastPricesBadge">0</span>
+      </button>
+      <button type="button" id="loginCustodyBtn" class="login-fab-btn" aria-label="العهد">
+        💼<span class="fab-label" aria-hidden="true">العهد</span>
       </button>
     </div>
   </div>
@@ -1702,35 +1723,67 @@
 <div id="custodyLedgerScreen" class="gate-screen shifted-bar-screen" style="display:none;">
   <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
   <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
-    <button type="button" id="backHomeBtnCustodyLedger" class="back-btn">→ رجوع للرئيسية</button>
+    <button type="button" id="backHomeBtnCustodyLedger" class="back-btn cg-back" aria-label="رجوع">→</button>
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card" style="max-width:640px;">
     <h1 class="gate-title">العهد</h1>
     <div class="field" id="cgEmpWrap" style="display:none;"><label for="cgEmp">اختر الموظف</label><select id="cgEmp"></select></div>
-    <div class="cg-who" id="cgWho"></div>
+    <div class="cg-top"><div class="cg-who" id="cgWho"></div><button type="button" class="cg-rep" id="cgRepBtn">📄 تقرير</button></div>
     <div class="cg-cards">
       <div class="cg-card in">وارد<b id="cgTin">0</b></div>
       <div class="cg-card out">منصرف<b id="cgTout">0</b></div>
-      <div class="cg-card" id="cgBalCard">الرصيد<b id="cgBal">0</b><small id="cgOpen"></small></div>
-    </div>
-    <div class="cg-filters">
-      <div><label>من تاريخ</label><input type="date" id="cgFrom"></div>
-      <div><label>إلى تاريخ</label><input type="date" id="cgTo"></div>
-      <div class="full"><label>المشروع</label><select id="cgProj"></select></div>
+      <div class="cg-card" id="cgBalCard">الرصيد<b id="cgBal">0</b></div>
     </div>
     <div class="status-msg" id="cgStatus"></div>
     <section class="cg-sec in"><button type="button" class="cg-add" id="cgAddIn">＋ وارد <span id="cgSumIn"></span></button><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
     <section class="cg-sec out"><button type="button" class="cg-add" id="cgAddOut">－ منصرف <span id="cgSumOut"></span></button><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
-    <div class="cg-actions"><button type="button" class="btn btn-primary" id="cgPdf">📄 تقرير العهدة PDF</button><button type="button" class="btn btn-secondary" id="cgXls">📊 Excel</button></div>
   </div>
 </div>
+
+<!-- CUSTODY REPORT (للأدمن): اختيار خزنة + من تاريخ لتاريخ + طباعة -->
+<div id="custodyReportScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backSettingsBtnCustodyReport" class="back-btn cg-back" aria-label="رجوع">→</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:560px;">
+    <h1 class="gate-title">تقرير العهد</h1>
+    <div class="cg-filters">
+      <div><label>من تاريخ</label><input type="date" id="crFrom"></div>
+      <div><label>إلى تاريخ</label><input type="date" id="crTo"></div>
+      <div class="full"><label>المشروع</label><select id="crProj"></select></div>
+    </div>
+    <div class="section-tag">اختر الخزنة</div>
+    <div id="crList"></div>
+    <div class="status-msg" id="crStatus"></div>
+    <div class="cg-actions"><button type="button" class="btn btn-primary" id="crPdf">⬇ تحميل PDF</button><button type="button" class="btn btn-secondary" id="crOpen">🖨 عرض / طباعة</button><button type="button" class="btn btn-secondary" id="crShare">↗ مشاركة</button></div>
+  </div>
+</div>
+
+<!-- نافذة تقرير العهدة: التواريخ والمشروع + عرض / مشاركة / تحميل / Excel -->
+<div id="cgRepModal" class="cg-modal"><div class="cg-modal-card">
+  <h3><span>📄 تقرير العهدة</span><button type="button" id="rpClose" class="cg-del" style="font-size:18px">✕</button></h3>
+  <div class="cg-filters">
+    <div><label>من تاريخ</label><input type="date" id="rpFrom"></div>
+    <div><label>إلى تاريخ</label><input type="date" id="rpTo"></div>
+    <div class="full"><label>المشروع</label><select id="rpProj"></select></div>
+  </div>
+  <div class="status-msg" id="rpStatus"></div>
+  <div class="cg-mbtns">
+    <button type="button" class="btn btn-primary" id="rpView">👁 عرض</button>
+    <button type="button" class="btn btn-primary" id="rpShare">↗ مشاركة</button>
+    <button type="button" class="btn btn-secondary" id="rpDown">⬇ تحميل PDF</button>
+    <button type="button" class="btn btn-secondary" id="rpXls">📊 Excel</button>
+  </div>
+</div></div>
 
 <!-- CUSTODY PROJECTS: قايمة المشاريع اللي بتظهر في قايمة العهد -->
 <div id="custodyProjectsScreen" class="gate-screen shifted-bar-screen" style="display:none;">
   <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
   <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
-    <button type="button" id="backSettingsBtnCustodyProjects" class="back-btn">→ رجوع للإعدادات</button>
+    <button type="button" id="backSettingsBtnCustodyProjects" class="back-btn cg-back" aria-label="رجوع">→</button>
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card" style="max-width:520px;">
@@ -1899,6 +1952,10 @@
       <button type="button" class="home-tile" id="openCustodyProjectsTileBtn">
         <span class="home-tile-icon" style="font-size:26px;">🏗️</span>
         <span class="home-tile-label">مشاريع العهد</span>
+      </button>
+      <button type="button" class="home-tile" id="openCustodyReportTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🧾</span>
+        <span class="home-tile-label">تقرير العهد</span>
       </button>
       <button type="button" class="home-tile" id="openNotifTestTileBtn" style="display:none;">
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
@@ -3659,7 +3716,7 @@ window.safeFileName = function(str){
     appScreenPermission.style.display = (name === 'permission')   ? '' : 'none';
     appScreenAdvance.style.display    = (name === 'advance')      ? '' : 'none';
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
-    [['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects']].forEach(function(p){
+    [['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects'],['custodyReportScreen','custody-report']].forEach(function(p){
       var e = document.getElementById(p[0]); if (e) e.style.display = (name === p[1]) ? '' : 'none';
     });
     var waBtn = document.getElementById('waFloatBtn');
@@ -8015,6 +8072,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginOverdueBtn', label: 'اجمالي المتأخرات 📉' },
      { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginInstallmentsBtn', label: 'الأقساط 💳' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLastPricesBtn', label: 'اخر سعر شراء وبيع 🏷️' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginCustodyBtn', label: 'العهد 💼' },
     { group: 'الرئيسية', id: 'openTafweedMenuBtn', label: 'تفويضات' },
     { group: 'الرئيسية', id: 'openFormsMenuBtn', label: 'نماذج' },
     { group: 'الرئيسية', id: 'openAttendanceBtn', label: 'حضور وانصراف' },
@@ -8060,6 +8118,8 @@ window.safeFileName = function(str){
     if (screenPassTile) screenPassTile.style.display = isEmployeeSession ? 'none' : '';
     var cpTile = document.getElementById('openCustodyProjectsTileBtn');
     if (cpTile) cpTile.style.display = isEmployeeSession ? 'none' : '';
+    var crTile = document.getElementById('openCustodyReportTileBtn');
+    if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
@@ -11308,9 +11368,8 @@ window.safeFileName = function(str){
   $('openCustodyLedgerBtn').addEventListener('click', function(){
     var c = ctx();
     if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
-    window.showScreen_('custody-ledger');
+    window.showScreen_('custody-ledger'); closeRep();
     $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = '';
-    $('cgFrom').value = $('cgTo').value = '';
     $('cgEmpWrap').style.display = c.isEmp ? 'none' : '';
     if (!c.isEmp) {
       var sel = $('cgEmp'), cur = sel.value;
@@ -11318,32 +11377,22 @@ window.safeFileName = function(str){
       if (cur) sel.value = cur; S.emp = sel.value;
     }
     $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
-    loadProjects().then(function(){ fillProjFilter(); return loadRows(); });
+    loadProjects().then(loadRows);
   });
   $('backHomeBtnCustodyLedger').addEventListener('click', function(){ window.showScreen_('home'); });
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
-  ['cgFrom','cgTo','cgProj'].forEach(function(id){ $(id).addEventListener('change', render); });
 
-  function fillProjFilter(){
-    var known = {}; S.projects.forEach(function(p){ known[p] = 1; });
-    var extra = []; S.rows.forEach(function(r){ if (r.project && !known[r.project] && extra.indexOf(r.project) < 0) extra.push(r.project); });
-    var cur = $('cgProj').value || '*';
-    $('cgProj').innerHTML = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>' +
-      S.projects.concat(extra).map(function(p){ return '<option>' + esc(p) + '</option>'; }).join('');
-    $('cgProj').value = cur; if ($('cgProj').value !== cur) $('cgProj').value = '*';
-  }
   function loadRows(){
     var e = who(); if (!e) { S.rows = []; render(); return Promise.resolve(); }
     st('cgStatus', 'جارٍ التحميل…');
-    return fetch(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc', { headers: H() })
-      .then(function(r){ if (!r.ok) throw 0; return r.json(); })
-      .then(function(d){ S.rows = d; st('cgStatus', ''); fillProjFilter(); render(); })
+    return fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc')
+      .then(function(d){ S.rows = d; st('cgStatus', ''); render(); })
       .catch(function(){ S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
   }
-  // الصفوف بعد الفلترة + الرصيد السابق قبل "من تاريخ"
-  function view(){
-    var f = $('cgFrom').value, t = $('cgTo').value, p = $('cgProj').value, op = 0, list = [];
-    S.rows.forEach(function(r){
+  // فلترة بالتاريخ والمشروع + الرصيد السابق قبل "من تاريخ" (بتستخدم للتقارير بس)
+  function viewOf(rows, f, t, p){
+    var op = 0, list = [];
+    rows.forEach(function(r){
       if (p !== '*' && (r.project || '') !== p) return;
       var a = (r.entry_type === 'in' ? 1 : -1) * (+r.amount);
       if (f && r.entry_date < f) { op += a; return; }
@@ -11352,9 +11401,11 @@ window.safeFileName = function(str){
     });
     return { op: op, list: list, f: f, t: t };
   }
+  function view(){ return viewOf(S.rows, $('rpFrom').value, $('rpTo').value, $('rpProj').value); }
+  // الشاشة بتعرض كل حركات الخزنة (الأحدث فوق)؛ الفلترة في نافذة التقرير بس
   function render(){
-    var v = view(), tin = 0, tout = 0, hin = '', hout = '';
-    v.list.forEach(function(r){
+    var tin = 0, tout = 0, hin = '', hout = '';
+    S.rows.slice().reverse().forEach(function(r){
       var inn = r.entry_type === 'in', a = +r.amount; if (inn) tin += a; else tout += a;
       var row = '<div class="cg-row"><span>' + r.entry_date.slice(8) + '/' + r.entry_date.slice(5,7) + '</span><span>' + esc(r.description) +
         '<i>' + esc(r.project || 'عام') + '</i></span><b>' + fmt(a) + '</b><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
@@ -11363,17 +11414,17 @@ window.safeFileName = function(str){
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
     $('cgListOut').innerHTML = hout || '<div class="cg-empty">لا توجد سطور منصرف</div>';
     $('cgSumIn').textContent = fmt(tin); $('cgSumOut').textContent = fmt(tout);
-    var bal = v.op + tin - tout;
-    $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(bal);
-    $('cgBalCard').classList.toggle('neg', bal < 0);
-    $('cgOpen').textContent = v.f ? 'رصيد سابق: ' + fmt(v.op) : '';
+    $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(tin - tout);
+    $('cgBalCard').classList.toggle('neg', tin - tout < 0);
   }
 
   // ---------- تسجيل سطر ----------
   function draft(type){
     var box = $(type === 'in' ? 'cgDraftIn' : 'cgDraftOut');
     if (box.firstChild) { box.querySelector('.d-bayan').focus(); return; }
-    var cur = $('cgProj').value, opts = '<option value="">عام (بدون مشروع)</option>' + S.projects.map(function(p){ return '<option' + (p === cur ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
+    // المنصرف: المشروع إجباري (مفيش "عام")؛ الوارد: اختياري
+    var opts = (type === 'out' ? '<option value="">— اختر المشروع * —</option>' : '<option value="">عام (بدون مشروع)</option>') +
+      S.projects.map(function(p){ return '<option>' + esc(p) + '</option>'; }).join('');
     box.innerHTML = '<div class="cg-draft"><input class="d-bayan" placeholder="البيان" maxlength="200"><input class="d-amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="القيمة">' +
       '<select class="d-proj">' + opts + '</select><input class="d-date" type="date" value="' + today() + '"><div class="d-btns" style="grid-column:1/-1"><button type="button" class="d-ok">✔ حفظ</button><button type="button" class="d-no">إلغاء</button></div></div>';
     box.querySelector('.d-bayan').focus();
@@ -11381,15 +11432,16 @@ window.safeFileName = function(str){
   $('cgAddIn').addEventListener('click', function(){ draft('in'); });
   $('cgAddOut').addEventListener('click', function(){ draft('out'); });
   function saveDraft(type, box){
-    var d = box.querySelector('.cg-draft'), b = d.querySelector('.d-bayan').value.trim(), a = parseFloat(d.querySelector('.d-amt').value);
+    var d = box.querySelector('.cg-draft'), b = d.querySelector('.d-bayan').value.trim(), a = parseFloat(d.querySelector('.d-amt').value), pr = d.querySelector('.d-proj').value;
     if (!b || !(a > 0)) { st('cgStatus', 'اكتب البيان وقيمة أكبر من صفر', true); return; }
+    if (type === 'out' && !pr) { st('cgStatus', 'اختار المشروع — إجباري في المنصرف', true); d.querySelector('.d-proj').focus(); return; }
     var c = ctx(), ok = d.querySelector('.d-ok'); ok.disabled = true;
-    var body = { employee: who(), entry_type: type, entry_date: d.querySelector('.d-date').value || today(), description: b, amount: a, project: d.querySelector('.d-proj').value, created_by: c.isEmp ? c.name : 'الأدمن' };
+    var body = { employee: who(), entry_type: type, entry_date: d.querySelector('.d-date').value || today(), description: b, amount: a, project: pr, created_by: c.isEmp ? c.name : 'الأدمن' };
     fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) })
       .then(function(r){ if (!r.ok) throw 0; return r.json(); })
       .then(function(rows){
         S.rows.push(rows[0]); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
-        box.innerHTML = ''; st('cgStatus', 'تم تسجيل السطر ✓'); fillProjFilter(); render();
+        box.innerHTML = ''; st('cgStatus', 'تم تسجيل السطر ✓'); render();
       }).catch(function(){ ok.disabled = false; st('cgStatus', 'تعذّر الحفظ، حاول تاني', true); });
   }
   ['In','Out'].forEach(function(k){
@@ -11397,7 +11449,7 @@ window.safeFileName = function(str){
     box.addEventListener('click', function(e){ if (e.target.closest('.d-ok')) saveDraft(type, box); else if (e.target.closest('.d-no')) box.innerHTML = ''; });
     box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); saveDraft(type, box); } });
   });
-  // حذف ناعم: السطر بيتخفي من الخزنة لكن بيفضل في قاعدة البيانات (مع اسم اللي حذفه ووقته)
+  // حذف ناعم: السطر بيتخفي لكن بيفضل في قاعدة البيانات (مع اسم اللي حذفه ووقته)
   $('custodyLedgerScreen').addEventListener('click', function(e){
     var b = e.target.closest('[data-del]'); if (!b) return;
     if (!confirm('حذف السطر ده؟')) return;
@@ -11408,9 +11460,9 @@ window.safeFileName = function(str){
       .catch(function(){ st('cgStatus', 'تعذّر الحذف', true); });
   });
 
-  // ---------- التقرير ----------
-  function statement(){
-    var v = view(), bal = v.op, pj = {}, ti = 0, to = 0;
+  // ---------- التقرير (صفحات A4 بتتقسم على حدود الصفوف) ----------
+  function statement(v){
+    var bal = v.op, pj = {}, ti = 0, to = 0;
     var lines = v.list.map(function(r){
       var inn = r.entry_type === 'in', a = +r.amount, k = r.project || 'عام';
       bal += inn ? a : -a; if (inn) ti += a; else to += a;
@@ -11419,42 +11471,177 @@ window.safeFileName = function(str){
     });
     return { v: v, lines: lines, pj: pj, ti: ti, to: to, end: v.op + ti - to };
   }
-  function fname(ext){ return 'Custody-' + (window.safeFileName ? window.safeFileName(who()) : 'Employee') + '-' + today() + '.' + ext; }
-  $('cgPdf').addEventListener('click', async function(){
-    var s = statement(), btn = this; if (!s.lines.length) { st('cgStatus', 'مفيش سطور في الفترة دي', true); return; }
-    var th = 'style="border:1px solid #bbb;padding:5px;background:#f3ece4"', td = 'style="border:1px solid #ccc;padding:5px;text-align:center"';
-    var rows = (s.v.f ? '<tr><td ' + td.slice(0,-1) + ';background:#fafafa" colspan="5">رصيد سابق</td><td ' + td + '>' + fmt(s.v.op) + '</td></tr>' : '') +
-      s.lines.map(function(l){ return '<tr><td ' + td + '>' + l.d + '</td><td ' + td.slice(0,-1) + ';text-align:right">' + esc(l.t) + '</td><td ' + td + '>' + esc(l.p) + '</td><td ' + td.slice(0,-1) + ';color:#1f7a4c">' + (l.i === '' ? '' : fmt(l.i)) + '</td><td ' + td.slice(0,-1) + ';color:#c0392b">' + (l.o === '' ? '' : fmt(l.o)) + '</td><td ' + td + '><b>' + fmt(l.b) + '</b></td></tr>'; }).join('');
-    var pjr = Object.keys(s.pj).map(function(k){ return '<tr><td ' + td + '>' + esc(k) + '</td><td ' + td + '>' + fmt(s.pj[k].i) + '</td><td ' + td + '>' + fmt(s.pj[k].o) + '</td><td ' + td + '><b>' + fmt(s.pj[k].i - s.pj[k].o) + '</b></td></tr>'; }).join('');
-    var el = document.createElement('div');
-    el.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px';
-    el.innerHTML = '<h2 style="text-align:center;margin:0 0 4px">كشف حساب العهدة</h2><div style="text-align:center;margin-bottom:14px">الموظف: <b>' + esc(who()) + '</b> — الفترة: ' + (s.v.f || 'البداية') + ' إلى ' + (s.v.t || today()) + '</div>' +
-      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><tr><td ' + td + '>إجمالي الوارد<br><b style="color:#1f7a4c">' + fmt(s.ti) + '</b></td><td ' + td + '>إجمالي المنصرف<br><b style="color:#c0392b">' + fmt(s.to) + '</b></td><td ' + td + '>الرصيد<br><b>' + fmt(s.end) + '</b></td></tr></table>' +
-      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><tr><th ' + th + '>المشروع</th><th ' + th + '>وارد</th><th ' + th + '>منصرف</th><th ' + th + '>الرصيد</th></tr>' + pjr + '</table>' +
-      '<table style="width:100%;border-collapse:collapse"><tr><th ' + th + '>التاريخ</th><th ' + th + '>البيان</th><th ' + th + '>المشروع</th><th ' + th + '>وارد</th><th ' + th + '>منصرف</th><th ' + th + '>الرصيد</th></tr>' + rows + '</table>' +
-      '<div style="display:flex;justify-content:space-around;margin-top:40px"><div>توقيع الموظف: ................</div><div>اعتماد المحاسب: ................</div></div>';
-    document.body.appendChild(el); btn.disabled = true; st('cgStatus', 'جارٍ إنشاء التقرير…');
+  var TD = 'border:1px solid #ccc;padding:5px;text-align:center', TH = 'border:1px solid #bbb;padding:5px;background:#f3ece4';
+  function pagesFor(emp, v){
+    var s = statement(v), pjk = Object.keys(s.pj);
+    var head = '<h2 style="text-align:center;margin:0 0 4px">كشف حساب العهدة</h2><div style="text-align:center;margin-bottom:12px">الموظف: <b>' + esc(emp) + '</b> — الفترة: ' + (v.f || 'البداية') + ' إلى ' + (v.t || today()) + '</div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr><td style="' + TD + '">إجمالي الوارد<br><b style="color:#1f7a4c">' + fmt(s.ti) + '</b></td><td style="' + TD + '">إجمالي المنصرف<br><b style="color:#c0392b">' + fmt(s.to) + '</b></td><td style="' + TD + '">الرصيد<br><b>' + fmt(s.end) + '</b></td></tr></table>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr><th style="' + TH + '">المشروع</th><th style="' + TH + '">وارد</th><th style="' + TH + '">منصرف</th><th style="' + TH + '">الرصيد</th></tr>' +
+      pjk.map(function(k){ return '<tr><td style="' + TD + '">' + esc(k) + '</td><td style="' + TD + '">' + fmt(s.pj[k].i) + '</td><td style="' + TD + '">' + fmt(s.pj[k].o) + '</td><td style="' + TD + '"><b>' + fmt(s.pj[k].i - s.pj[k].o) + '</b></td></tr>'; }).join('') + '</table>';
+    var items = [];
+    if (v.f) items.push({ w: 1, h: '<tr><td style="' + TD + ';background:#fafafa" colspan="5">رصيد سابق</td><td style="' + TD + '">' + fmt(v.op) + '</td></tr>' });
+    s.lines.forEach(function(l){
+      items.push({ w: 1 + Math.floor(l.t.length / 45), h: '<tr><td style="' + TD + '">' + l.d + '</td><td style="' + TD + ';text-align:right">' + esc(l.t) + '</td><td style="' + TD + '">' + esc(l.p) + '</td><td style="' + TD + ';color:#1f7a4c">' + (l.i === '' ? '' : fmt(l.i)) + '</td><td style="' + TD + ';color:#c0392b">' + (l.o === '' ? '' : fmt(l.o)) + '</td><td style="' + TD + '"><b>' + fmt(l.b) + '</b></td></tr>' });
+    });
+    items.push({ w: 1, h: '<tr style="font-weight:700;background:#f7f3ee"><td style="' + TD + '" colspan="3">الإجمالي</td><td style="' + TD + ';color:#1f7a4c">' + fmt(s.ti) + '</td><td style="' + TD + ';color:#c0392b">' + fmt(s.to) + '</td><td style="' + TD + '">' + fmt(s.end) + '</td></tr>' });
+    var chunks = [], cur = '', w = 0, cap = Math.max(3, 8 - Math.max(0, pjk.length - 3));
+    items.forEach(function(it){ if (cur && w + it.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 22; } cur += it.h; w += it.w; });
+    chunks.push(cur);
+    var sign = '<div style="display:flex;justify-content:space-around;margin-top:36px"><div>توقيع الموظف: ................</div><div>اعتماد المحاسب: ................</div></div>';
+    var signOwn = w + 4 > cap; if (signOwn) chunks.push('');
+    var th = '<tr><th style="' + TH + '">التاريخ</th><th style="' + TH + '">البيان</th><th style="' + TH + '">المشروع</th><th style="' + TH + '">وارد</th><th style="' + TH + '">منصرف</th><th style="' + TH + '">الرصيد</th></tr>';
+    return chunks.map(function(rows, i){
+      return '<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;overflow:hidden">' +
+        (i === 0 ? head : '<div style="margin-bottom:8px;color:#666">' + esc(emp) + ' — تابع كشف العهدة</div>') +
+        (rows ? '<table style="width:100%;border-collapse:collapse">' + th + rows + '</table>' : '') +
+        (i === chunks.length - 1 ? sign : '') +
+        '<div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#888;font-size:11px">' + esc(emp) + ' — صفحة ' + (i + 1) + ' من ' + chunks.length + '</div></div>';
+    });
+  }
+  async function buildPdf(pages){
+    var host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-10000px;top:0';
+    host.innerHTML = pages.join(''); document.body.appendChild(host);
     try {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      var cv = await html2canvas(el, { scale: 2, backgroundColor: '#fff' }), J = window.jspdf.jsPDF, doc = new J('p', 'mm', 'a4');
-      var ph = Math.floor(cv.width * 297 / 210), n = Math.ceil(cv.height / ph);
-      for (var i = 0; i < n; i++) {
-        var c = document.createElement('canvas'); c.width = cv.width; c.height = Math.min(ph, cv.height - i * ph);
-        c.getContext('2d').drawImage(cv, 0, i * ph, cv.width, c.height, 0, 0, cv.width, c.height);
-        if (i) doc.addPage(); doc.addImage(c.toDataURL('image/jpeg', .95), 'JPEG', 0, 0, 210, c.height * 210 / cv.width);
+      var J = window.jspdf.jsPDF, doc = new J('p', 'mm', 'a4');
+      for (var i = 0; i < host.children.length; i++) {
+        var cv = await html2canvas(host.children[i], { scale: 2, backgroundColor: '#fff' });
+        if (i) doc.addPage(); doc.addImage(cv.toDataURL('image/jpeg', .95), 'JPEG', 0, 0, 210, 297);
       }
-      doc.save(fname('pdf')); st('cgStatus', 'تم تحميل التقرير ✓');
-    } catch(err) { st('cgStatus', 'تعذّر إنشاء التقرير', true); }
-    el.remove(); btn.disabled = false;
-  });
-  $('cgXls').addEventListener('click', function(){
-    var s = statement(); if (!s.lines.length) { st('cgStatus', 'مفيش سطور في الفترة دي', true); return; }
+      return doc.output('blob');
+    } finally { host.remove(); }
+  }
+  // win = تبويب اتفتح قبل الإنشاء (للعرض)؛ من غيره بينزّل الملف
+  function deliver(blob, name, win){
+    var u = URL.createObjectURL(blob);
+    if (win) { win.location.href = u; return; }
+    var a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function shareBlob(blob, name){
+    var f = new File([blob], name, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], title: name });
+    deliver(blob, name); return Promise.resolve();
+  }
+  function fname(emp, ext){ return 'Custody-' + (window.safeFileName ? window.safeFileName(emp) : 'Employee') + '-' + today() + '.' + ext; }
+
+  // ---------- نافذة التقرير (عرض / مشاركة / تحميل / Excel) ----------
+  function openRep(){
+    var known = {}, o = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
+    S.cc.forEach(function(c){ known[c.name] = 1; o += '<option>' + esc(c.name) + '</option>'; });
+    S.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; o += '<option>' + esc(r.project) + '</option>'; } });
+    $('rpProj').innerHTML = o; $('rpFrom').value = $('rpTo').value = ''; st('rpStatus', '');
+    $('cgRepModal').style.display = 'flex';
+  }
+  function closeRep(){ $('cgRepModal').style.display = 'none'; }
+  $('cgRepBtn').addEventListener('click', openRep);
+  $('rpClose').addEventListener('click', closeRep);
+  $('cgRepModal').addEventListener('click', function(e){ if (e.target === this) closeRep(); });
+  async function repPdf(mode){
+    var v = view(); if (!v.list.length) { st('rpStatus', 'مفيش سطور في الفترة دي', true); return; }
+    var win = mode === 'view' ? window.open('', '_blank') : null, bs = $('cgRepModal').querySelectorAll('button');
+    bs.forEach(function(b){ b.disabled = true; }); st('rpStatus', 'جارٍ إنشاء التقرير…');
+    try {
+      var blob = await buildPdf(pagesFor(who(), v)), name = fname(who(), 'pdf');
+      if (mode === 'share') await shareBlob(blob, name); else deliver(blob, name, win);
+      st('rpStatus', 'تم ✓');
+    } catch(e) { if (win) win.close(); st('rpStatus', e && e.name === 'AbortError' ? '' : 'تعذّر إنشاء التقرير', true); }
+    bs.forEach(function(b){ b.disabled = false; });
+  }
+  $('rpView').addEventListener('click', function(){ repPdf('view'); });
+  $('rpShare').addEventListener('click', function(){ repPdf('share'); });
+  $('rpDown').addEventListener('click', function(){ repPdf('down'); });
+  $('rpXls').addEventListener('click', function(){
+    var s = statement(view()); if (!s.lines.length) { st('rpStatus', 'مفيش سطور في الفترة دي', true); return; }
     var aoa = [['الموظف', who()], [], ['التاريخ', 'البيان', 'المشروع', 'وارد', 'منصرف', 'الرصيد']];
     if (s.v.f) aoa.push(['', 'رصيد سابق', '', '', '', s.v.op]);
     s.lines.forEach(function(l){ aoa.push([l.d, l.t, l.p, l.i, l.o, l.b]); });
     aoa.push(['', 'الإجمالي', '', s.ti, s.to, s.end]);
     var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'العهدة');
-    wb.Workbook = { Views: [{ RTL: true }] }; XLSX.writeFile(wb, fname('xlsx'));
+    wb.Workbook = { Views: [{ RTL: true }] }; XLSX.writeFile(wb, fname(who(), 'xlsx')); st('rpStatus', 'تم ✓');
+  });
+
+  // ---------- تقرير الأدمن: اختيار الخزنة + من تاريخ لتاريخ ----------
+  var R = { rows: [], sel: '' };
+  function fetchAll(url){
+    var out = [];
+    function go(o){
+      return fetch(url, { headers: H({ 'Range-Unit': 'items', Range: o + '-' + (o + 999) }) })
+        .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+        .then(function(d){ out = out.concat(d); return d.length === 1000 ? go(o + 1000) : out; });
+    }
+    return go(0);
+  }
+  function vaultNames(){
+    var n = ctx().employees.slice();
+    R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
+    return n;
+  }
+  function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
+  function renderVaults(){
+    var h = '<label class="cp-item"><span><input type="radio" name="crEmp" value="*"' + (R.sel === '*' ? ' checked' : '') + '> &nbsp;<b>كل الخزن</b> (كل خزنة في صفحات منفصلة)</span></label>';
+    vaultNames().forEach(function(n){
+      var v = rview(n), bal = v.op; v.list.forEach(function(r){ bal += (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
+      h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) +
+        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span><b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>';
+    });
+    $('crList').innerHTML = h;
+  }
+  $('openCustodyReportTileBtn').addEventListener('click', function(){
+    if (ctx().isEmp) return;
+    window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…');
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc')]).then(function(res){
+      R.rows = res[1]; st('crStatus', '');
+      var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
+      S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
+      R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
+      $('crProj').innerHTML = opts; renderVaults();
+    }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
+  });
+  $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_('settings-menu'); });
+  ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
+  $('crList').addEventListener('change', function(e){ if (e.target.name === 'crEmp') R.sel = e.target.value; });
+  async function runReport(mode){
+    if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
+    var names = R.sel === '*' ? vaultNames() : [R.sel], pages = [];
+    names.forEach(function(n){ var v = rview(n); if (v.list.length || (R.sel !== '*' && v.op)) pages = pages.concat(pagesFor(n, v)); });
+    if (!pages.length) { st('crStatus', 'مفيش حركات في الفترة دي', true); return; }
+    var win = mode === 'view' ? window.open('', '_blank') : null, bs = $('custodyReportScreen').querySelectorAll('.cg-actions button');
+    bs.forEach(function(b){ b.disabled = true; }); st('crStatus', 'جارٍ إنشاء التقرير…');
+    try {
+      var blob = await buildPdf(pages), name = fname(R.sel === '*' ? 'All' : R.sel, 'pdf');
+      if (mode === 'share') await shareBlob(blob, name); else deliver(blob, name, win);
+      st('crStatus', 'تم ✓');
+    } catch(e) { if (win) win.close(); st('crStatus', e && e.name === 'AbortError' ? '' : 'تعذّر إنشاء التقرير', true); }
+    bs.forEach(function(b){ b.disabled = false; });
+  }
+  $('crPdf').addEventListener('click', function(){ runReport('down'); });
+  $('crShare').addEventListener('click', function(){ runReport('share'); });
+  $('crOpen').addEventListener('click', function(){ runReport('view'); });
+
+
+  // ---------- أيقونة "العهد" في إشعارات صفحة الدخول: متبقي العهدة لكل موظف (اللي عليه رصيد بس) ----------
+  function faNum(n){ return n.toLocaleString('ar-EG', { maximumFractionDigits: 2 }); }
+  $('loginCustodyBtn').addEventListener('click', function(){
+    var wrap = $('quickStatusListWrap'), m = document.querySelector('.quick-status-modal');
+    if (m) m.classList.remove('qsm-wide', 'installments-modal');
+    $('quickStatusTitle').textContent = '💼 العهد';
+    $('quickStatusSubtitle').textContent = today();
+    wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    $('quickStatusOverlay').style.display = 'flex';
+    fetchAll(T + '?deleted_at=is.null&select=employee,entry_type,amount&order=created_at.asc,id.asc').then(function(rows){
+      var bal = {};
+      rows.forEach(function(r){ bal[r.employee] = (bal[r.employee] || 0) + (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
+      var list = Object.keys(bal).map(function(n){ return { n: n, b: Math.round(bal[n] * 100) / 100 }; })
+        .filter(function(x){ return x.b !== 0; }).sort(function(a, b){ return b.b - a.b; });
+      if (!list.length) { wrap.innerHTML = '<div class="empty-note">مفيش أرصدة عهدة حاليًا ✓</div>'; return; }
+      var net = 0;
+      var body = list.map(function(x, i){
+        net += x.b;
+        return '<tr><td>' + (i + 1) + '</td><td>' + esc(x.n) + '</td><td style="font-weight:800;color:' + (x.b > 0 ? '#1f7a4c' : '#c0392b') + '" dir="ltr">' + faNum(x.b) + '</td></tr>';
+      }).join('');
+      wrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>اسم الموظف</th><th>متبقي العهدة</th></tr></thead><tbody>' + body +
+        '</tbody><tfoot><tr class="qs-net-row"><td colspan="2">الإجمالي</td><td style="font-weight:800;color:' + (net >= 0 ? '#1f7a4c' : '#c0392b') + '" dir="ltr">' + faNum(Math.round(net * 100) / 100) + '</td></tr></tfoot></table></div>';
+    }).catch(function(){ wrap.innerHTML = '<div class="empty-note">تعذّر تحميل العهد.</div>'; });
   });
 })();
 </script>
