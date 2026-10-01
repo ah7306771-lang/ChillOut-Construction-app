@@ -4691,9 +4691,9 @@ window.safeFileName = function(str){
     attendanceRequestsFor_(name).forEach(function(req){
       var what;
       if (req.type === 'إجازة') {
-        what = 'تم عمل إجازة' + (req.leaveFrom ? ' من ' + req.leaveFrom : '') + (req.leaveTo ? ' إلى ' + req.leaveTo : '');
+        what = 'تم تسجيل الإجازة' + (req.leaveFrom ? ' من ' + req.leaveFrom : '') + (req.leaveTo ? ' إلى ' + req.leaveTo : '');
       } else {
-        what = 'تم عمل ' + req.type + (req.from ? ' من الساعة ' + hhmm_(req.from) : '') + (req.to ? ' إلى ' + hhmm_(req.to) : '');
+        what = 'تم تسجيل ' + (req.type === 'إذن' ? 'الإذن' : (req.type === 'مأمورية' ? 'المأمورية' : req.type)) + (req.from ? ' من الساعة ' + hhmm_(req.from) : '') + (req.to ? ' إلى ' + hhmm_(req.to) : '');
       }
       var st = req.status === 'موافق' ? 'موافق' : (req.status === 'مرفوض' ? 'مرفوض' : 'قيد المراجعة');
       var cls = st === 'موافق' ? (req.type === 'مأمورية' ? 'status-mission' : (req.type === 'إجازة' ? 'status-vacation' : 'status-leave'))
@@ -4709,6 +4709,13 @@ window.safeFileName = function(str){
         d.className = 'req-status-detail';
         d.textContent = req.reason;
         el.appendChild(d);
+      }
+      if (req.unsynced) {
+        var w = document.createElement('span');
+        w.className = 'req-status-detail';
+        w.style.color = '#b3261e';
+        w.textContent = '⚠ اتسجل في الشيت بس لسه ما وصلش قاعدة البيانات (Supabase) — هيتحاول تاني تلقائي' + (req.syncDetail ? ' [' + req.syncDetail + ']' : '');
+        el.appendChild(w);
       }
     });
   }
@@ -4794,6 +4801,7 @@ window.safeFileName = function(str){
   // يلاقي زراير حضور/انصراف بتاعته اتقفلت تلقائياً ويبان سبب الغياب.
   function refreshAttendanceRequestsFromServer(){
     var today = attendanceTodayKey();
+    retryUnsyncedRequests_();
 
     // نجرب Supabase الأول — أسرع بكتير. بنجيب الطلبات اللي ليها علاقة
     // بالنهاردة (date = today، أو إجازة النهاردة داخل leave_from/leave_to).
@@ -4971,6 +4979,75 @@ window.safeFileName = function(str){
     });
   }
 
+  // بيتأكد إن الطلب موجود فعلًا في جدول requests (true / false / null = مقدرناش نتأكد).
+  function verifyRequestInSupabase_(id){
+    return fetch(SUPABASE_URL + '/rest/v1/requests?id=eq.' + encodeURIComponent(id) + '&select=id', { headers: sbHeaders(), cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('verify ' + r.status)); })
+      .then(function(rows){ return !!(rows && rows.length); })
+      .catch(function(){ return null; });
+  }
+  // حفظ الطلب في Supabase مع التأكد إنه اتسجل فعلًا (مش بس إن الاستدعاء رجّع 200).
+  // لو الدالة mirror_requests ردّت OK والصف مش موجود، بنكتب مباشرة على الجدول ونتأكد تاني.
+  // بيرجّع { ok, detail } وفيه تفاصيل الخطأ الحقيقية لو فشل.
+  function saveRequestVerified_(row){
+    function direct_(){
+      return fetch(SUPABASE_URL + '/rest/v1/requests?on_conflict=id', {
+        method: 'POST',
+        headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify([row])
+      }).then(function(r){
+        if (r.ok) return { ok: true, detail: '' };
+        return r.text().then(function(t){ return { ok: false, detail: r.status + ' ' + String(t || '').slice(0, 200) }; });
+      }).catch(function(){ return { ok: false, detail: 'network' }; });
+    }
+    return mirrorRequestsToSupabase_([row]).then(function(res){
+      if (!res || !res.ok) return { ok: false, detail: (res && res.detail) || '' };
+      return verifyRequestInSupabase_(row.id).then(function(found){
+        if (found !== false) return { ok: true, detail: '' };   // موجود، أو مقدرناش نتأكد
+        return direct_().then(function(dres){
+          return verifyRequestInSupabase_(row.id).then(function(found2){
+            if (found2 === true || (found2 === null && dres.ok)) return { ok: true, detail: '' };
+            return { ok: false, detail: dres.ok ? 'الطلب مش ظاهر في جدول requests بعد الحفظ' : dres.detail };
+          });
+        });
+      });
+    });
+  }
+  // طلبات اتحفظت في الشيت بس ولسه ما وصلتش Supabase: بنكرر المحاولة كل ما الشاشة تتحدث.
+  var ATT_SYNC_QUEUE_KEY = 'attSyncQueue_v1';
+  function readSyncQueue_(){ try { return JSON.parse(localStorage.getItem(ATT_SYNC_QUEUE_KEY) || '[]') || []; } catch(e){ return []; } }
+  function writeSyncQueue_(a){ try { localStorage.setItem(ATT_SYNC_QUEUE_KEY, JSON.stringify(a)); } catch(e){} }
+  function queueRequestSync_(row){
+    var a = readSyncQueue_().filter(function(r){ return String(r.id) !== String(row.id); });
+    a.push(row); writeSyncQueue_(a);
+  }
+  function markLocalRequestSynced_(id){
+    var a = readLocalReqs_(), nm = null;
+    a.forEach(function(r){ if (String(r.id) === String(id)) { r.unsynced = false; r.syncDetail = ''; nm = r.name; } });
+    writeLocalReqs_(a);
+    Object.keys(attendanceRequestsToday).forEach(function(n){
+      attendanceRequestsFor_(n).forEach(function(r){ if (String(r.id) === String(id)) { r.unsynced = false; r.syncDetail = ''; } });
+    });
+    if (nm) refreshRowUI(nm);
+  }
+  var syncRetrying_ = false;
+  function retryUnsyncedRequests_(){
+    if (syncRetrying_) return;
+    var q = readSyncQueue_();
+    if (!q.length) return;
+    syncRetrying_ = true;
+    Promise.all(q.map(function(row){
+      return saveRequestVerified_(row).then(function(res){ return { row: row, ok: !!(res && res.ok) }; });
+    })).then(function(results){
+      var still = {};
+      results.forEach(function(x){ if (!x.ok) still[String(x.row.id)] = 1; });
+      writeSyncQueue_(readSyncQueue_().filter(function(r){ return still[String(r.id)]; }));
+      var any = false;
+      results.forEach(function(x){ if (x.ok) { markLocalRequestSynced_(x.row.id); any = true; } });
+      if (any) refreshPendingRequestsBadge();
+    }).catch(function(){}).then(function(){ syncRetrying_ = false; });
+  }
+
   // معرّف فريد بسيط لكل طلب — بيتبعت مع الطلب ويترجع في requestsReport،
   // عشان زراير "موافقة/رفض" في شاشة الاعتماد تقدر تحدد الصف الصح بالظبط.
   function generateRequestId(){
@@ -5019,12 +5096,12 @@ window.safeFileName = function(str){
         return d;
       }).catch(function(){ return null; });
     }
-    mirrorRequestsToSupabase_([dbRow_]).then(function(res){
+    saveRequestVerified_(dbRow_).then(function(res){
       if (res && res.ok) {
         sendToSheet_();   // نسخة احتياطية في الشيت، مش بنستناها
-        return;
+        return { synced: true, detail: '' };
       }
-      // Supabase فشل → نجرب الشيت زي زمان، وبعدها نحاول Supabase تاني
+      // Supabase فشل (أو الصف مش موجود بعد الحفظ) → نجرب الشيت زي زمان
       return sendToSheet_().then(function(data){
         if (!data || data.ok !== true) {
           var rejectErr = new Error((data && data.error) || (res && res.detail) || 'rejected');
@@ -5033,12 +5110,15 @@ window.safeFileName = function(str){
           rejectErr.dbDetail = (res && res.detail) || '';
           throw rejectErr;
         }
-        return mirrorRequestsToSupabase_([dbRow_]);
+        // الشيت حفظ بس Supabase لأ: ما نخبيش ده، ونكرر المحاولة تلقائي بعدين
+        queueRequestSync_(dbRow_);
+        return { synced: false, detail: (res && res.detail) || '' };
       });
-    }).then(function(){
+    }).then(function(out){
       rememberLocalRequest_({
         id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason || '',
-        from: from || '', to: to || '', leaveFrom: opts.leaveFrom || '', leaveTo: opts.leaveTo || '', date: dateParam
+        from: from || '', to: to || '', leaveFrom: opts.leaveFrom || '', leaveTo: opts.leaveTo || '', date: dateParam,
+        unsynced: !out.synced, syncDetail: out.detail || ''
       });
       refreshAttendanceRequestsFromServer();
       refreshPendingRequestsBadge();
