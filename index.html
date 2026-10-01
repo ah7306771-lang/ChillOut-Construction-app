@@ -1741,6 +1741,10 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
       <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="6" width="17" height="13" rx="2" stroke="#e2621f" stroke-width="1.6"/><path d="M3.5 10h17" stroke="#3a3f45" stroke-width="1.6"/><circle cx="16.5" cy="14.5" r="1.3" stroke="#3a3f45" stroke-width="1.5"/></svg></span>
       <span class="home-tile-label">العهد</span>
     </button>
+    <button type="button" class="home-tile" id="openCustodyReportHomeBtn" style="display:none;">
+      <span class="home-tile-icon" style="font-size:26px;">🧾</span>
+      <span class="home-tile-label">تقرير العهد</span>
+    </button>
 
     </div>
     <div style="text-align:center;margin:20px 0 0;">
@@ -3860,7 +3864,8 @@ window.safeFileName = function(str){
   // الخارجية (تحت في آخر الصفحة) يقدر يعرض شاشة الدخول تاني لما نرجع
   // بالـ history، من غير ما نكرر منطق إظهار/إخفاء الشاشات هناك.
   window.showScreen_ = showScreen;
-  window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []) }; };
+  window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
+    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
 
   // Clone the brand logo (defined once in the app header) into the
   // login/home screens instead of duplicating the embedded image data.
@@ -8964,8 +8969,15 @@ window.safeFileName = function(str){
     { id: 'notifOrders',   label: 'إشعارات أوامر الشراء 🛒',     defaultOn: false, rowId: 'empNotifRow_notifOrders' },
     { id: 'notifOverdue',  label: 'إشعارات المتأخرات 📉',        defaultOn: false, rowId: 'empNotifRow_notifOverdue' }
   ];
+  // صلاحيات خاصة (غير الإشعارات): بتتحفظ في نفس القايمة بنفس الأسلوب.
+  //  - defaultOn:false → مخفي عن الموظفين تلقائي، ولما المسؤول يعلّم عليه بيتسجل allow_ + الاسم.
+  var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
+  var EXTRA_PERMS_ = [
+    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false }
+  ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
+    for (var j = 0; j < EXTRA_PERMS_.length; j++) if (EXTRA_PERMS_[j].id === id) return EXTRA_PERMS_[j];
     return null;
   }
   function notifPermGranted_(p, list){
@@ -9019,6 +9031,11 @@ window.safeFileName = function(str){
     if (screenPassTile) screenPassTile.style.display = isEmployeeSession ? 'none' : '';
     var cpTile = document.getElementById('openCustodyProjectsTileBtn');
     if (cpTile) cpTile.style.display = isEmployeeSession ? 'none' : '';
+    var crHome = document.getElementById('openCustodyReportHomeBtn');
+    if (crHome) {
+      var crList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
+      crHome.style.display = (!isEmployeeSession || crList_.indexOf('allow_custodyReport') > -1) ? '' : 'none';
+    }
     var crTile = document.getElementById('openCustodyReportTileBtn');
     if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
@@ -9116,6 +9133,30 @@ window.safeFileName = function(str){
       nrow.appendChild(ncb);
       nrow.appendChild(nspan);
       list.appendChild(nrow);
+    });
+
+    // ---- صلاحيات خاصة (مخفية عن الموظفين تلقائي لحد ما تعلّم عليها) ----
+    var xtag = document.createElement('div');
+    xtag.className = 'section-tag';
+    xtag.style.margin = '14px 0 6px';
+    xtag.textContent = EXTRA_PERMS_GROUP_;
+    list.appendChild(xtag);
+    var xhint = document.createElement('div');
+    xhint.style.cssText = 'font-size:12px;opacity:.75;margin:0 0 6px;line-height:1.6;';
+    xhint.textContent = 'مخفية عن الموظفين تلقائي. علّم عليها عشان تظهر للموظف ده أيقونة "تقرير العهد" في الصفحة الرئيسية.';
+    list.appendChild(xhint);
+    EXTRA_PERMS_.forEach(function(p){
+      var xrow = document.createElement('label');
+      xrow.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 2px;cursor:pointer;';
+      var xcb = document.createElement('input');
+      xcb.type = 'checkbox';
+      xcb.checked = notifPermGranted_(p, hiddenForEmp);
+      xcb.dataset.permId = p.id;
+      var xspan = document.createElement('span');
+      xspan.textContent = p.label;
+      xrow.appendChild(xcb);
+      xrow.appendChild(xspan);
+      list.appendChild(xrow);
     });
   }
 
@@ -12641,8 +12682,10 @@ window.safeFileName = function(str){
     });
     $('crList').innerHTML = h;
   }
-  $('openCustodyReportTileBtn').addEventListener('click', function(){
-    if (ctx().isEmp) return;
+  var reportBack_ = 'settings-menu';
+  function openReport_(from){
+    if (!ctx().canReport) return;
+    reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = $('crTo').value = today();
     Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc')]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
@@ -12651,8 +12694,10 @@ window.safeFileName = function(str){
       R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
       $('crProj').innerHTML = opts; renderVaults();
     }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
-  });
-  $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_('settings-menu'); });
+  }
+  $('openCustodyReportTileBtn').addEventListener('click', function(){ openReport_('settings-menu'); });
+  $('openCustodyReportHomeBtn').addEventListener('click', function(){ openReport_('home'); });
+  $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
   ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
   $('crList').addEventListener('change', function(e){ if (e.target.name === 'crEmp') R.sel = e.target.value; });
   async function runReport(mode){
