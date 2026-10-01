@@ -3743,6 +3743,32 @@ window.safeFileName = function(str){
   var appScreenAdvance    = document.getElementById('appScreenAdvance');
   var appScreenCustody    = document.getElementById('appScreenCustody');
 
+  var currentScreenName_ = null;
+  function loginCredsEmpty_(){
+    var u = document.getElementById('loginUser'), p = document.getElementById('loginPass');
+    var hasUser = !!(u && String(u.value || '').trim());
+    var hasPass = !!(p && String(p.value || ''));
+    return !hasUser && !hasPass;
+  }
+  function syncLoginFabsVisibility_(){
+    var loginFabs = document.getElementById('loginFabs');
+    if (!loginFabs) return;
+    var show = (currentScreenName_ === 'login') && !loginCredsEmpty_();
+    var next = show ? 'flex' : 'none';
+    if (loginFabs.style.display === next) return;
+    if (!show && window.resetLoginFabs_) window.resetLoginFabs_();   // اقفل القوايم والخلفية المظلّلة قبل الإخفاء
+    loginFabs.style.display = next;
+  }
+  (function(){
+    ['loginUser','loginPass'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      ['input','change','keyup','blur'].forEach(function(ev){ el.addEventListener(ev, syncLoginFabsVisibility_); });
+    });
+    // الملء التلقائي من المتصفح (autofill) ساعات مابيطلعش event، فبنراجع كل نص ثانية
+    setInterval(function(){ if (currentScreenName_ === 'login') syncLoginFabsVisibility_(); }, 500);
+  })();
+
   function showScreen(name){
     // بتتقفل قوايم إشعارات صفحة الدخول (والخلفية السمراء المظلّلة اللي
     // وراها) عند أي تنقل بين الشاشات، مش بس لما نرجع لصفحة الدخول —
@@ -3783,8 +3809,11 @@ window.safeFileName = function(str){
     if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
     var loginRadioBtn = document.getElementById('loginRadioBtn');
     if (loginRadioBtn) loginRadioBtn.style.display = 'flex';
-    var loginFabs = document.getElementById('loginFabs');
-    if (loginFabs) loginFabs.style.display = (name === 'login') ? 'flex' : 'none';
+    // قوايم الإشعارات يمين/شمال: بتظهر في صفحة الدخول بس لو اليوزر أو
+    // الباسورد فيهم قيمة (محفوظة بـ"تذكرني" أو مكتوبة). لو الاتنين فاضيين
+    // (null/فاضي) بتتخفي.
+    currentScreenName_ = name;
+    syncLoginFabsVisibility_();
     var homeFabs = document.getElementById('homeFabs');
     if (homeFabs) homeFabs.style.display = (name === 'home') ? 'flex' : 'none';
     if (name !== 'login') {
