@@ -2234,8 +2234,33 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
     <div class="section-tag" id="mySalaryPushTag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
     <button type="button" class="btn btn-secondary" id="enableMyPushBtn" style="width:100%;">🔔 فعّل إشعاراتي الشخصية</button>
     <div class="status-msg" id="myPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+    <div id="mySalaryTestRow">
     <button type="button" class="btn btn-secondary" id="testMyPushBtn" style="width:100%;margin-top:8px;">🧪 اختبر الإشعار دلوقتي</button>
     <div class="status-msg" id="myPushTestStatus" style="margin:6px 0 0;font-size:13px;"></div>
+    </div>
+    </div>
+
+    <!-- إشعارات إضافية للموظف: كل نوع بيظهر بس لو المسؤول علّم له صلاحية التفعيل
+         من "إدارة الشاشات" (قسم الإشعارات). الافتراضي: مش متعلّم لأي حد. -->
+    <div id="mySalaryEmpNotifBox" style="display:none;">
+      <div class="settings-divider"></div>
+      <div class="section-tag" style="margin:20px 0 8px;">إشعارات إضافية</div>
+      <div id="empNotifRow_notifRequests" style="display:none;margin-bottom:10px;">
+        <button type="button" class="btn btn-secondary" id="empEnableRequestsPushBtn" style="width:100%;">🔔 فعّل إشعارات الجوال للطلبات الجديدة</button>
+        <div class="status-msg" id="empRequestsPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      </div>
+      <div id="empNotifRow_notifChecks" style="display:none;margin-bottom:10px;">
+        <button type="button" class="btn btn-secondary" id="empEnableChecksPushBtn" style="width:100%;">🔔 فعّل إشعارات الشيكات على الجهاز ده</button>
+        <div class="status-msg" id="empChecksPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      </div>
+      <div id="empNotifRow_notifOrders" style="display:none;margin-bottom:10px;">
+        <button type="button" class="btn btn-secondary" id="empEnableOrderPushBtn" style="width:100%;">🛒 فعّل إشعارات أوامر الشراء على الجهاز ده</button>
+        <div class="status-msg" id="empOrderPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      </div>
+      <div id="empNotifRow_notifOverdue" style="display:none;margin-bottom:10px;">
+        <button type="button" class="btn btn-secondary" id="empEnableOverduePushBtn" style="width:100%;">📉 فعّل إشعارات المتأخرات على الجهاز ده</button>
+        <div class="status-msg" id="empOverduePushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      </div>
     </div>
 
     <!-- إشعارات طلبات الاعتماد وإشعارات الشيكات: كانت شغالة من شاشتين
@@ -4109,6 +4134,7 @@ window.safeFileName = function(str){
         if (topic === 'checks')  localStorage.setItem('fcmChecksTokenRegistered', token);
         if (topic === 'order')   localStorage.setItem('fcmOrderTokenRegistered', token);
         if (topic === 'overdue') localStorage.setItem('fcmOverdueTokenRegistered', token);
+        if (statusEl && statusEl.dataset && statusEl.dataset.regKey) localStorage.setItem(statusEl.dataset.regKey, token);
       } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
     }).catch(function(err){
@@ -4124,7 +4150,11 @@ window.safeFileName = function(str){
   function refreshPushButtonState(statusEl, btnEl, employeeMode){
     // employeeMode ممكن يبقى: true (شخصي)، 'checks'، 'order'، 'overdue'، أو null/undefined (أدمن عام).
     var storageKey, defaultLabel, reenableLabel;
-    if (employeeMode === 'checks') {
+    if (employeeMode === 'empRequests') {
+      storageKey    = 'fcmEmpRequestsRegistered';
+      defaultLabel  = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
+      reenableLabel = '🔔 إعادة تفعيل إشعارات طلبات الاعتماد';
+    } else if (employeeMode === 'checks') {
       storageKey    = 'fcmChecksTokenRegistered';
       defaultLabel  = '🔔 فعّل إشعارات الشيكات على الجهاز ده';
       reenableLabel = '🔔 إعادة تفعيل إشعارات الشيكات';
@@ -7461,6 +7491,12 @@ window.safeFileName = function(str){
     // الموظف بس: حالة تفعيل إشعاراته الشخصية (الأدمن مالوش زرار هنا، شايف
     // "إشعارات طلبات الاعتماد" تحت بدل منه).
     if (showPush) refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
+    // صلاحيات الإشعارات للموظف: نطبّق اللي عندنا فورًا، وبعدين نجيب الأحدث من الشيت.
+    applyNotifPermsUI_();
+    if (showPush) {
+      refreshEmpNotifButtons_();
+      refreshHiddenIconsLive_(function(ok){ if (ok) { applyNotifPermsUI_(); refreshEmpNotifButtons_(); } });
+    }
   }
   function openMySalaryFlow_(){
     if (isEmployeeSession) {
@@ -7612,6 +7648,33 @@ window.safeFileName = function(str){
   }
   var testMyPushBtn = document.getElementById('testMyPushBtn');
   if (testMyPushBtn) testMyPushBtn.addEventListener('click', runMyPushDiagnostics_);
+
+  // أزرار تفعيل الإشعارات الإضافية للموظف (بتظهر حسب الصلاحية). التسجيل بنفس
+  // طريقة أزرار الأدمن بالظبط (نفس الـ topics)، بس الزرار بيتأكد من الصلاحية الأول.
+  var EMP_NOTIF_BTNS_ = [
+    { perm: 'notifRequests', btn: 'empEnableRequestsPushBtn', status: 'empRequestsPushStatus', topic: undefined, mode: 'empRequests' },
+    { perm: 'notifChecks',   btn: 'empEnableChecksPushBtn',   status: 'empChecksPushStatus',   topic: 'checks',  mode: 'checks' },
+    { perm: 'notifOrders',   btn: 'empEnableOrderPushBtn',    status: 'empOrderPushStatus',    topic: 'order',   mode: 'order' },
+    { perm: 'notifOverdue',  btn: 'empEnableOverduePushBtn',  status: 'empOverduePushStatus',  topic: 'overdue', mode: 'overdue' }
+  ];
+  function refreshEmpNotifButtons_(){
+    EMP_NOTIF_BTNS_.forEach(function(b){
+      refreshPushButtonState(document.getElementById(b.status), document.getElementById(b.btn), b.mode);
+    });
+  }
+  EMP_NOTIF_BTNS_.forEach(function(b){
+    var btn = document.getElementById(b.btn);
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      var st = document.getElementById(b.status);
+      if (!isEmployeeSession) return;
+      var p = notifPermById_(b.perm);
+      var list = (currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
+      if (!p || !notifPermGranted_(p, list)) { pushStatus_(st, 'مفيش عندك صلاحية لتفعيل النوع ده.', true); return; }
+      if (b.mode === 'empRequests' && st) st.dataset.regKey = 'fcmEmpRequestsRegistered';
+      enablePushNotifications(st, '', b.topic);
+    });
+  });
 
   // زرار اختبار الإشعار للأدمن — بيبعت إشعار تجريبي على كل التوكنات
   // المسجلة (زي زرار إرسال الشيكات اليدوي، بس بنص عام).
@@ -8601,6 +8664,43 @@ window.safeFileName = function(str){
     { group: 'الإعدادات', id: 'openIconManageTileBtn', label: 'إدارة الشاشات' }
   ];
 
+  // ---------------- صلاحيات تفعيل الإشعارات (لكل موظف لوحده) ----------------
+  // بتتحفظ جوّه نفس عمود "الشاشات المخفية" في الشيت:
+  //  - defaultOn:true  (اختبار الإشعار): ظاهر للكل تلقائي، والمخفي بيتسجل باسمه (notifTest).
+  //  - defaultOn:false (باقي الأنواع): مخفي عن الكل تلقائي، ولما المسؤول يعلّم عليه
+  //    بيتسجل "allow_" + الاسم (مثلاً allow_notifChecks). يعني أي نوع جديد يتضاف
+  //    بيطلع من غير علامة لكل الموظفين لحد ما تفعّله لموظف بعينه.
+  var NOTIF_PERMS_GROUP_ = 'الإشعارات (صلاحية التفعيل)';
+  var NOTIF_PERMS_ = [
+    { id: 'notifTest',     label: 'اختبار الإشعار دلوقتي 🧪',   defaultOn: true,  rowId: 'mySalaryTestRow' },
+    { id: 'notifRequests', label: 'إشعارات طلبات الاعتماد 🔔',  defaultOn: false, rowId: 'empNotifRow_notifRequests' },
+    { id: 'notifChecks',   label: 'إشعارات الشيكات 🧾',          defaultOn: false, rowId: 'empNotifRow_notifChecks' },
+    { id: 'notifOrders',   label: 'إشعارات أوامر الشراء 🛒',     defaultOn: false, rowId: 'empNotifRow_notifOrders' },
+    { id: 'notifOverdue',  label: 'إشعارات المتأخرات 📉',        defaultOn: false, rowId: 'empNotifRow_notifOverdue' }
+  ];
+  function notifPermById_(id){
+    for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
+    return null;
+  }
+  function notifPermGranted_(p, list){
+    list = list || [];
+    return p.defaultOn ? list.indexOf(p.id) === -1 : list.indexOf('allow_' + p.id) > -1;
+  }
+  // بيظبط اللي يظهر للموظف في شاشة "راتبي" حسب صلاحياته. الأدمن مش بيتأثر.
+  function applyNotifPermsUI_(){
+    if (!NOTIF_PERMS_) return;
+    var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
+    var anyExtra = false;
+    NOTIF_PERMS_.forEach(function(p){
+      var on = isEmployeeSession ? notifPermGranted_(p, list) : true;
+      var el = document.getElementById(p.rowId);
+      if (el) el.style.display = on ? '' : 'none';
+      if (on && p.id !== 'notifTest') anyExtra = true;
+    });
+    var box = document.getElementById('mySalaryEmpNotifBox');
+    if (box) box.style.display = (isEmployeeSession && anyExtra) ? '' : 'none';
+  }
+
   function applyIconVisibility_(){
     // الإخفاء بقى خاص بكل موظف لوحده؛ دخول المسؤول (APP_USER/APP_PASS)
     // بيشوف كل الأيقونات دايمًا (وفيها أيقونة الإعدادات) مهما كانت قايمة
@@ -8640,6 +8740,7 @@ window.safeFileName = function(str){
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
     var salarySendAllTile = document.getElementById('salarySendAllBtn');
     if (salarySendAllTile) salarySendAllTile.style.display = isEmployeeSession ? 'none' : '';
+    applyNotifPermsUI_();
   }
 
   // استعادة فورية (من الجهاز) لقايمة الإخفاء بتاعة الموظف المحفوظ دخوله، أول
@@ -8703,6 +8804,33 @@ window.safeFileName = function(str){
         list.appendChild(row);
       });
     });
+    // ---- الإشعارات: صلاحية تفعيل كل نوع للموظف ده ----
+    var ntag = document.createElement('div');
+    ntag.className = 'section-tag';
+    ntag.style.margin = '14px 0 6px';
+    ntag.textContent = NOTIF_PERMS_GROUP_;
+    list.appendChild(ntag);
+    var nhint = document.createElement('div');
+    nhint.style.cssText = 'font-size:12px;opacity:.75;margin:0 0 6px;line-height:1.6;';
+    nhint.textContent = 'علّم على النوع عشان الموظف يقدر يفعّله من شاشة "راتبي". اختبار الإشعار متعلّم للكل تلقائي، والباقي مش متعلّم لحد ما تفعّله له.';
+    list.appendChild(nhint);
+    NOTIF_PERMS_.forEach(function(p){
+      var nrow = document.createElement('label');
+      nrow.style.display = 'flex';
+      nrow.style.alignItems = 'center';
+      nrow.style.gap = '8px';
+      nrow.style.padding = '6px 2px';
+      nrow.style.cursor = 'pointer';
+      var ncb = document.createElement('input');
+      ncb.type = 'checkbox';
+      ncb.checked = notifPermGranted_(p, hiddenForEmp);
+      ncb.dataset.permId = p.id;
+      var nspan = document.createElement('span');
+      nspan.textContent = p.label;
+      nrow.appendChild(ncb);
+      nrow.appendChild(nspan);
+      list.appendChild(nrow);
+    });
   }
 
   // بيملى قايمة الموظفين المنسدلة في شاشة "إدارة الشاشات"، محافظًا على
@@ -8759,6 +8887,13 @@ window.safeFileName = function(str){
     var checkboxes = document.querySelectorAll('#iconManageList input[type="checkbox"]');
     var hiddenIds = [];
     checkboxes.forEach(function(cb){
+      if (cb.dataset.permId) {
+        var np = notifPermById_(cb.dataset.permId);
+        if (!np) return;
+        if (np.defaultOn) { if (!cb.checked) hiddenIds.push(np.id); }
+        else if (cb.checked) hiddenIds.push('allow_' + np.id);
+        return;
+      }
       if (!cb.checked) hiddenIds.push(cb.dataset.tileId);
     });
     var btn = document.getElementById('saveIconVisibilityBtn');
