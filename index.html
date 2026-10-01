@@ -1432,6 +1432,34 @@
     100%{transform:translateY(115vh) rotate(540deg);opacity:.9;}
   }
 </style>
+<style>
+.cg-who{text-align:center;font-weight:800;margin:2px 0 12px;color:var(--steel-dark)}
+.cg-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.cg-card{border-radius:10px;padding:8px 4px;text-align:center;font-size:12px;font-weight:700;background:#fff;border:1px solid var(--panel-line)}
+.cg-card b{display:block;font-size:16px;margin-top:2px}
+.cg-card.in{color:#1f7a4c;background:#eaf6ef}.cg-card.out{color:#c0392b;background:#fdecea}.cg-card.neg b{color:#c0392b}
+.cg-card small{display:block;font-weight:600;font-size:10.5px;color:var(--ink-soft)}
+.cg-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.cg-filters label{font-size:11.5px;color:var(--ink-soft);display:block;margin-bottom:3px}
+.cg-filters .full{grid-column:1/-1}
+.cg-filters input,.cg-filters select,.cg-draft input,.cg-draft select{width:100%;padding:9px 8px;border:1px solid var(--panel-line);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink)}
+.cg-sec{margin:14px 0;border-radius:12px;overflow:hidden;border:1.5px solid}
+.cg-sec.in{border-color:#1f7a4c}.cg-sec.out{border-color:#c0392b}
+.cg-add{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;color:#fff;font-family:inherit;font-weight:800;font-size:16px;padding:12px 14px;cursor:pointer}
+.in .cg-add{background:#1f7a4c}.out .cg-add{background:#c0392b}
+.cg-add span{font-size:13px;font-weight:600;opacity:.95}
+.cg-row{display:grid;grid-template-columns:42px 1fr auto 26px;gap:6px;align-items:center;padding:8px 10px;border-top:1px solid #f3e6d6;font-size:13px;background:#fff}
+.cg-row i{font-style:normal;display:block;font-size:11px;color:var(--ink-soft)}
+.cg-row b{white-space:nowrap}.in .cg-row b{color:#1f7a4c}.out .cg-row b{color:#c0392b}
+.cg-del{border:0;background:none;color:#b00;font-size:15px;cursor:pointer}
+.cg-draft{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;background:#fffaf4}
+.cg-draft .d-bayan{grid-column:1/-1}
+.d-btns{display:flex;gap:6px}.d-btns button{flex:1;border:0;border-radius:8px;font-family:inherit;font-weight:700;padding:9px;cursor:pointer;background:#eee}
+.d-btns .d-ok{background:#1f7a4c;color:#fff;flex:2}.out .d-btns .d-ok{background:#c0392b}
+.cg-empty{padding:12px;text-align:center;color:var(--ink-soft);font-size:12.5px;background:#fff}
+.cg-actions{display:flex;gap:8px;margin-top:6px}.cg-actions .btn{flex:1}
+.cp-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-bottom:6px;background:#fff;border:1px solid var(--panel-line);border-radius:8px}
+</style>
 </head>
 <body>
 <a id="waFloatBtn" class="wa-float-btn" href="https://wa.me/201005833218" target="_blank" rel="noopener" aria-label="تواصل معنا عبر واتساب">
@@ -1658,11 +1686,59 @@
       <span class="home-tile-icon" style="font-size:26px;">💰</span>
       <span class="home-tile-label">راتبي</span>
     </button>
+    <button type="button" class="home-tile" id="openCustodyLedgerBtn">
+      <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="6" width="17" height="13" rx="2" stroke="#e2621f" stroke-width="1.6"/><path d="M3.5 10h17" stroke="#3a3f45" stroke-width="1.6"/><circle cx="16.5" cy="14.5" r="1.3" stroke="#3a3f45" stroke-width="1.5"/></svg></span>
+      <span class="home-tile-label">العهد</span>
+    </button>
 
     </div>
     <div style="text-align:center;margin:26px 0 0;">
       <button type="button" id="signOutBtn" class="forgot-link" style="display:inline;margin:0;">تسجيل الخروج (Sign out)</button>
     </div>
+  </div>
+</div>
+
+<!-- CUSTODY LEDGER (العهد): خزنة لكل موظف -->
+<div id="custodyLedgerScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnCustodyLedger" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:640px;">
+    <h1 class="gate-title">العهد</h1>
+    <div class="field" id="cgEmpWrap" style="display:none;"><label for="cgEmp">اختر الموظف</label><select id="cgEmp"></select></div>
+    <div class="cg-who" id="cgWho"></div>
+    <div class="cg-cards">
+      <div class="cg-card in">وارد<b id="cgTin">0</b></div>
+      <div class="cg-card out">منصرف<b id="cgTout">0</b></div>
+      <div class="cg-card" id="cgBalCard">الرصيد<b id="cgBal">0</b><small id="cgOpen"></small></div>
+    </div>
+    <div class="cg-filters">
+      <div><label>من تاريخ</label><input type="date" id="cgFrom"></div>
+      <div><label>إلى تاريخ</label><input type="date" id="cgTo"></div>
+      <div class="full"><label>المشروع</label><select id="cgProj"></select></div>
+    </div>
+    <div class="status-msg" id="cgStatus"></div>
+    <section class="cg-sec in"><button type="button" class="cg-add" id="cgAddIn">＋ وارد <span id="cgSumIn"></span></button><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
+    <section class="cg-sec out"><button type="button" class="cg-add" id="cgAddOut">－ منصرف <span id="cgSumOut"></span></button><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
+    <div class="cg-actions"><button type="button" class="btn btn-primary" id="cgPdf">📄 تقرير العهدة PDF</button><button type="button" class="btn btn-secondary" id="cgXls">📊 Excel</button></div>
+  </div>
+</div>
+
+<!-- CUSTODY PROJECTS: قايمة المشاريع اللي بتظهر في قايمة العهد -->
+<div id="custodyProjectsScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backSettingsBtnCustodyProjects" class="back-btn">→ رجوع للإعدادات</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">مشاريع العهد</h1>
+    <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;"><div class="field"><label for="cpCode">الرقم</label><input type="number" id="cpCode" min="1"></div><div class="field"><label for="cpName">اسم مشروع جديد</label><input type="text" id="cpName" placeholder="مثال: مشروع التجمع"></div></div>
+    <button type="button" class="btn btn-primary" id="cpAdd" style="width:100%;margin-bottom:12px;">＋ إضافة</button>
+    <div class="status-msg" id="cpStatus"></div>
+    <div id="cpList"></div>
   </div>
 </div>
 
@@ -1819,6 +1895,10 @@
       <button type="button" class="home-tile" id="openScreenPassTileBtn">
         <span class="home-tile-icon" style="font-size:26px;">🔐</span>
         <span class="home-tile-label">كلمات سر الشاشات</span>
+      </button>
+      <button type="button" class="home-tile" id="openCustodyProjectsTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🏗️</span>
+        <span class="home-tile-label">مشاريع العهد</span>
       </button>
       <button type="button" class="home-tile" id="openNotifTestTileBtn" style="display:none;">
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
@@ -3579,6 +3659,9 @@ window.safeFileName = function(str){
     appScreenPermission.style.display = (name === 'permission')   ? '' : 'none';
     appScreenAdvance.style.display    = (name === 'advance')      ? '' : 'none';
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
+    [['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects']].forEach(function(p){
+      var e = document.getElementById(p[0]); if (e) e.style.display = (name === p[1]) ? '' : 'none';
+    });
     var waBtn = document.getElementById('waFloatBtn');
     if (waBtn) waBtn.style.display = (name === 'login' || name === 'home') ? 'flex' : 'none';
     var loginTopBar = document.getElementById('loginTopBar');
@@ -3599,6 +3682,7 @@ window.safeFileName = function(str){
   // الخارجية (تحت في آخر الصفحة) يقدر يعرض شاشة الدخول تاني لما نرجع
   // بالـ history، من غير ما نكرر منطق إظهار/إخفاء الشاشات هناك.
   window.showScreen_ = showScreen;
+  window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []) }; };
 
   // Clone the brand logo (defined once in the app header) into the
   // login/home screens instead of duplicating the embedded image data.
@@ -7936,6 +8020,7 @@ window.safeFileName = function(str){
     { group: 'الرئيسية', id: 'openAttendanceBtn', label: 'حضور وانصراف' },
     { group: 'الرئيسية', id: 'openAttendanceDashboardBtn', label: 'لوحة الحضور' },
     { group: 'الرئيسية', id: 'openAttendanceApprovalsBtn', label: 'اعتماد الأذون' },
+    { group: 'الرئيسية', id: 'openCustodyLedgerBtn', label: 'العهد' },
     { group: 'تفويضات', id: 'openAppBtn', label: 'تفويض المصريين' },
     { group: 'تفويضات', id: 'openGeneralBtn', label: 'تفويض عام' },
     { group: 'تفويضات', id: 'openChecksBtn', label: 'تفويض شيكات' },
@@ -7973,6 +8058,8 @@ window.safeFileName = function(str){
     // ظاهرة له، عشان ما يقدرش يشوف رواتب غيره.
     var screenPassTile = document.getElementById('openScreenPassTileBtn');
     if (screenPassTile) screenPassTile.style.display = isEmployeeSession ? 'none' : '';
+    var cpTile = document.getElementById('openCustodyProjectsTileBtn');
+    if (cpTile) cpTile.style.display = isEmployeeSession ? 'none' : '';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
@@ -11165,6 +11252,210 @@ window.safeFileName = function(str){
   window.resetLoginFabs_ = function(){
     closers.forEach(function(c){ c.close(); });
   };
+})();
+</script>
+<script>
+(function(){
+  var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
+  var T = SB + '/rest/v1/custody_entries', $ = function(id){ return document.getElementById(id); };
+  var S = { rows: [], projects: [], emp: '' };
+  function H(x){ var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }; for (var k in (x||{})) h[k] = x[k]; return h; }
+  function ctx(){ return window.custodyCtx_ ? window.custodyCtx_() : { isEmp: false, name: '', employees: [] }; }
+  function who(){ var c = ctx(); return c.isEmp ? c.name : S.emp; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function fmt(n){ return (+n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function today(){ var d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+  function st(id, m, e){ var el = $(id); el.textContent = m || ''; el.className = 'status-msg' + (e ? ' err' : ''); }
+
+  // ---------- المشاريع (جدول cost_center: رقم + اسم + فلاج إيقاف) ----------
+  var CC = SB + '/rest/v1/cost_center';
+  S.cc = [];
+  function loadProjects(){
+    return fetch(CC + '?select=*&order=code.asc', { headers: H() })
+      .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+      .then(function(d){ S.cc = d; S.ccErr = false; })
+      .catch(function(){ S.cc = []; S.ccErr = true; })
+      .then(function(){ S.projects = S.cc.filter(function(c){ return !c.is_stopped; }).map(function(c){ return c.name; }); });
+  }
+  function renderProjects(){
+    var max = S.cc.reduce(function(m, c){ return Math.max(m, c.code); }, 0); $('cpCode').value = max + 1;
+    if (S.ccErr) st('cpStatus', 'تعذّر تحميل المشاريع — شغّل ملف cost_center.sql في Supabase', true);
+    $('cpList').innerHTML = S.cc.length ? S.cc.map(function(c){
+      return '<div class="cp-item" style="' + (c.is_stopped ? 'opacity:.55;background:#f1f1f1' : '') + '"><span><b style="color:var(--steel)">' + c.code + '</b> &nbsp;' + esc(c.name) +
+        '</span><label style="font-size:12.5px;white-space:nowrap"><input type="checkbox" data-id="' + c.id + '"' + (c.is_stopped ? ' checked' : '') + '> 🚫 إيقاف</label></div>'; }).join('')
+      : '<div class="cg-empty">مفيش مشاريع لسه</div>';
+  }
+  $('openCustodyProjectsTileBtn').addEventListener('click', function(){ window.showScreen_('custody-projects'); st('cpStatus', ''); loadProjects().then(renderProjects); });
+  $('backSettingsBtnCustodyProjects').addEventListener('click', function(){ window.showScreen_('settings-menu'); });
+  $('cpAdd').addEventListener('click', function(){
+    var v = $('cpName').value.trim(), code = parseInt($('cpCode').value, 10);
+    if (!v || !(code > 0)) { st('cpStatus', 'اكتب رقم واسم المشروع', true); return; }
+    if (S.cc.some(function(c){ return c.code === code; })) { st('cpStatus', 'الرقم ده مستخدم لمشروع تاني', true); return; }
+    if (S.cc.some(function(c){ return c.name === v; })) { st('cpStatus', 'الاسم ده موجود بالفعل', true); return; }
+    fetch(CC, { method: 'POST', headers: H({ Prefer: 'return=minimal' }), body: JSON.stringify({ code: code, name: v }) })
+      .then(function(r){ if (!r.ok) throw 0; $('cpName').value = ''; st('cpStatus', 'تمت الإضافة ✓'); return loadProjects(); })
+      .then(renderProjects).catch(function(){ st('cpStatus', 'تعذّر الحفظ', true); });
+  });
+  // فلاج الإيقاف: متعلّم = المشروع مش بيظهر للموظفين في قايمة العهد
+  $('cpList').addEventListener('change', function(e){
+    var cb = e.target.closest('[data-id]'); if (!cb) return;
+    fetch(CC + '?id=eq.' + cb.dataset.id, { method: 'PATCH', headers: H({ Prefer: 'return=minimal' }), body: JSON.stringify({ is_stopped: cb.checked }) })
+      .then(function(r){ if (!r.ok) throw 0; st('cpStatus', cb.checked ? 'تم إيقاف المشروع ✓' : 'تم تفعيل المشروع ✓'); return loadProjects(); })
+      .then(renderProjects).catch(function(){ cb.checked = !cb.checked; st('cpStatus', 'تعذّر التحديث', true); });
+  });
+
+  // ---------- الخزنة ----------
+  $('openCustodyLedgerBtn').addEventListener('click', function(){
+    var c = ctx();
+    if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
+    window.showScreen_('custody-ledger');
+    $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = '';
+    $('cgFrom').value = $('cgTo').value = '';
+    $('cgEmpWrap').style.display = c.isEmp ? 'none' : '';
+    if (!c.isEmp) {
+      var sel = $('cgEmp'), cur = sel.value;
+      sel.innerHTML = c.employees.map(function(n){ return '<option>' + esc(n) + '</option>'; }).join('');
+      if (cur) sel.value = cur; S.emp = sel.value;
+    }
+    $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
+    loadProjects().then(function(){ fillProjFilter(); return loadRows(); });
+  });
+  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ window.showScreen_('home'); });
+  $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
+  ['cgFrom','cgTo','cgProj'].forEach(function(id){ $(id).addEventListener('change', render); });
+
+  function fillProjFilter(){
+    var known = {}; S.projects.forEach(function(p){ known[p] = 1; });
+    var extra = []; S.rows.forEach(function(r){ if (r.project && !known[r.project] && extra.indexOf(r.project) < 0) extra.push(r.project); });
+    var cur = $('cgProj').value || '*';
+    $('cgProj').innerHTML = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>' +
+      S.projects.concat(extra).map(function(p){ return '<option>' + esc(p) + '</option>'; }).join('');
+    $('cgProj').value = cur; if ($('cgProj').value !== cur) $('cgProj').value = '*';
+  }
+  function loadRows(){
+    var e = who(); if (!e) { S.rows = []; render(); return Promise.resolve(); }
+    st('cgStatus', 'جارٍ التحميل…');
+    return fetch(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc', { headers: H() })
+      .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+      .then(function(d){ S.rows = d; st('cgStatus', ''); fillProjFilter(); render(); })
+      .catch(function(){ S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
+  }
+  // الصفوف بعد الفلترة + الرصيد السابق قبل "من تاريخ"
+  function view(){
+    var f = $('cgFrom').value, t = $('cgTo').value, p = $('cgProj').value, op = 0, list = [];
+    S.rows.forEach(function(r){
+      if (p !== '*' && (r.project || '') !== p) return;
+      var a = (r.entry_type === 'in' ? 1 : -1) * (+r.amount);
+      if (f && r.entry_date < f) { op += a; return; }
+      if (t && r.entry_date > t) return;
+      list.push(r);
+    });
+    return { op: op, list: list, f: f, t: t };
+  }
+  function render(){
+    var v = view(), tin = 0, tout = 0, hin = '', hout = '';
+    v.list.forEach(function(r){
+      var inn = r.entry_type === 'in', a = +r.amount; if (inn) tin += a; else tout += a;
+      var row = '<div class="cg-row"><span>' + r.entry_date.slice(8) + '/' + r.entry_date.slice(5,7) + '</span><span>' + esc(r.description) +
+        '<i>' + esc(r.project || 'عام') + '</i></span><b>' + fmt(a) + '</b><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
+      if (inn) hin += row; else hout += row;
+    });
+    $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
+    $('cgListOut').innerHTML = hout || '<div class="cg-empty">لا توجد سطور منصرف</div>';
+    $('cgSumIn').textContent = fmt(tin); $('cgSumOut').textContent = fmt(tout);
+    var bal = v.op + tin - tout;
+    $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(bal);
+    $('cgBalCard').classList.toggle('neg', bal < 0);
+    $('cgOpen').textContent = v.f ? 'رصيد سابق: ' + fmt(v.op) : '';
+  }
+
+  // ---------- تسجيل سطر ----------
+  function draft(type){
+    var box = $(type === 'in' ? 'cgDraftIn' : 'cgDraftOut');
+    if (box.firstChild) { box.querySelector('.d-bayan').focus(); return; }
+    var cur = $('cgProj').value, opts = '<option value="">عام (بدون مشروع)</option>' + S.projects.map(function(p){ return '<option' + (p === cur ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('');
+    box.innerHTML = '<div class="cg-draft"><input class="d-bayan" placeholder="البيان" maxlength="200"><input class="d-amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="القيمة">' +
+      '<select class="d-proj">' + opts + '</select><input class="d-date" type="date" value="' + today() + '"><div class="d-btns" style="grid-column:1/-1"><button type="button" class="d-ok">✔ حفظ</button><button type="button" class="d-no">إلغاء</button></div></div>';
+    box.querySelector('.d-bayan').focus();
+  }
+  $('cgAddIn').addEventListener('click', function(){ draft('in'); });
+  $('cgAddOut').addEventListener('click', function(){ draft('out'); });
+  function saveDraft(type, box){
+    var d = box.querySelector('.cg-draft'), b = d.querySelector('.d-bayan').value.trim(), a = parseFloat(d.querySelector('.d-amt').value);
+    if (!b || !(a > 0)) { st('cgStatus', 'اكتب البيان وقيمة أكبر من صفر', true); return; }
+    var c = ctx(), ok = d.querySelector('.d-ok'); ok.disabled = true;
+    var body = { employee: who(), entry_type: type, entry_date: d.querySelector('.d-date').value || today(), description: b, amount: a, project: d.querySelector('.d-proj').value, created_by: c.isEmp ? c.name : 'الأدمن' };
+    fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) })
+      .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+      .then(function(rows){
+        S.rows.push(rows[0]); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
+        box.innerHTML = ''; st('cgStatus', 'تم تسجيل السطر ✓'); fillProjFilter(); render();
+      }).catch(function(){ ok.disabled = false; st('cgStatus', 'تعذّر الحفظ، حاول تاني', true); });
+  }
+  ['In','Out'].forEach(function(k){
+    var type = k === 'In' ? 'in' : 'out', box = $('cgDraft' + k);
+    box.addEventListener('click', function(e){ if (e.target.closest('.d-ok')) saveDraft(type, box); else if (e.target.closest('.d-no')) box.innerHTML = ''; });
+    box.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); saveDraft(type, box); } });
+  });
+  // حذف ناعم: السطر بيتخفي من الخزنة لكن بيفضل في قاعدة البيانات (مع اسم اللي حذفه ووقته)
+  $('custodyLedgerScreen').addEventListener('click', function(e){
+    var b = e.target.closest('[data-del]'); if (!b) return;
+    if (!confirm('حذف السطر ده؟')) return;
+    var c = ctx();
+    fetch(T + '?id=eq.' + b.dataset.del, { method: 'PATCH', headers: H({ Prefer: 'return=minimal' }),
+      body: JSON.stringify({ deleted_at: new Date().toISOString(), deleted_by: c.isEmp ? c.name : 'الأدمن' }) })
+      .then(function(r){ if (!r.ok) throw 0; S.rows = S.rows.filter(function(x){ return String(x.id) !== b.dataset.del; }); render(); })
+      .catch(function(){ st('cgStatus', 'تعذّر الحذف', true); });
+  });
+
+  // ---------- التقرير ----------
+  function statement(){
+    var v = view(), bal = v.op, pj = {}, ti = 0, to = 0;
+    var lines = v.list.map(function(r){
+      var inn = r.entry_type === 'in', a = +r.amount, k = r.project || 'عام';
+      bal += inn ? a : -a; if (inn) ti += a; else to += a;
+      pj[k] = pj[k] || { i: 0, o: 0 }; pj[k][inn ? 'i' : 'o'] += a;
+      return { d: r.entry_date, t: r.description, p: k, i: inn ? a : '', o: inn ? '' : a, b: bal };
+    });
+    return { v: v, lines: lines, pj: pj, ti: ti, to: to, end: v.op + ti - to };
+  }
+  function fname(ext){ return 'Custody-' + (window.safeFileName ? window.safeFileName(who()) : 'Employee') + '-' + today() + '.' + ext; }
+  $('cgPdf').addEventListener('click', async function(){
+    var s = statement(), btn = this; if (!s.lines.length) { st('cgStatus', 'مفيش سطور في الفترة دي', true); return; }
+    var th = 'style="border:1px solid #bbb;padding:5px;background:#f3ece4"', td = 'style="border:1px solid #ccc;padding:5px;text-align:center"';
+    var rows = (s.v.f ? '<tr><td ' + td.slice(0,-1) + ';background:#fafafa" colspan="5">رصيد سابق</td><td ' + td + '>' + fmt(s.v.op) + '</td></tr>' : '') +
+      s.lines.map(function(l){ return '<tr><td ' + td + '>' + l.d + '</td><td ' + td.slice(0,-1) + ';text-align:right">' + esc(l.t) + '</td><td ' + td + '>' + esc(l.p) + '</td><td ' + td.slice(0,-1) + ';color:#1f7a4c">' + (l.i === '' ? '' : fmt(l.i)) + '</td><td ' + td.slice(0,-1) + ';color:#c0392b">' + (l.o === '' ? '' : fmt(l.o)) + '</td><td ' + td + '><b>' + fmt(l.b) + '</b></td></tr>'; }).join('');
+    var pjr = Object.keys(s.pj).map(function(k){ return '<tr><td ' + td + '>' + esc(k) + '</td><td ' + td + '>' + fmt(s.pj[k].i) + '</td><td ' + td + '>' + fmt(s.pj[k].o) + '</td><td ' + td + '><b>' + fmt(s.pj[k].i - s.pj[k].o) + '</b></td></tr>'; }).join('');
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px';
+    el.innerHTML = '<h2 style="text-align:center;margin:0 0 4px">كشف حساب العهدة</h2><div style="text-align:center;margin-bottom:14px">الموظف: <b>' + esc(who()) + '</b> — الفترة: ' + (s.v.f || 'البداية') + ' إلى ' + (s.v.t || today()) + '</div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><tr><td ' + td + '>إجمالي الوارد<br><b style="color:#1f7a4c">' + fmt(s.ti) + '</b></td><td ' + td + '>إجمالي المنصرف<br><b style="color:#c0392b">' + fmt(s.to) + '</b></td><td ' + td + '>الرصيد<br><b>' + fmt(s.end) + '</b></td></tr></table>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><tr><th ' + th + '>المشروع</th><th ' + th + '>وارد</th><th ' + th + '>منصرف</th><th ' + th + '>الرصيد</th></tr>' + pjr + '</table>' +
+      '<table style="width:100%;border-collapse:collapse"><tr><th ' + th + '>التاريخ</th><th ' + th + '>البيان</th><th ' + th + '>المشروع</th><th ' + th + '>وارد</th><th ' + th + '>منصرف</th><th ' + th + '>الرصيد</th></tr>' + rows + '</table>' +
+      '<div style="display:flex;justify-content:space-around;margin-top:40px"><div>توقيع الموظف: ................</div><div>اعتماد المحاسب: ................</div></div>';
+    document.body.appendChild(el); btn.disabled = true; st('cgStatus', 'جارٍ إنشاء التقرير…');
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      var cv = await html2canvas(el, { scale: 2, backgroundColor: '#fff' }), J = window.jspdf.jsPDF, doc = new J('p', 'mm', 'a4');
+      var ph = Math.floor(cv.width * 297 / 210), n = Math.ceil(cv.height / ph);
+      for (var i = 0; i < n; i++) {
+        var c = document.createElement('canvas'); c.width = cv.width; c.height = Math.min(ph, cv.height - i * ph);
+        c.getContext('2d').drawImage(cv, 0, i * ph, cv.width, c.height, 0, 0, cv.width, c.height);
+        if (i) doc.addPage(); doc.addImage(c.toDataURL('image/jpeg', .95), 'JPEG', 0, 0, 210, c.height * 210 / cv.width);
+      }
+      doc.save(fname('pdf')); st('cgStatus', 'تم تحميل التقرير ✓');
+    } catch(err) { st('cgStatus', 'تعذّر إنشاء التقرير', true); }
+    el.remove(); btn.disabled = false;
+  });
+  $('cgXls').addEventListener('click', function(){
+    var s = statement(); if (!s.lines.length) { st('cgStatus', 'مفيش سطور في الفترة دي', true); return; }
+    var aoa = [['الموظف', who()], [], ['التاريخ', 'البيان', 'المشروع', 'وارد', 'منصرف', 'الرصيد']];
+    if (s.v.f) aoa.push(['', 'رصيد سابق', '', '', '', s.v.op]);
+    s.lines.forEach(function(l){ aoa.push([l.d, l.t, l.p, l.i, l.o, l.b]); });
+    aoa.push(['', 'الإجمالي', '', s.ti, s.to, s.end]);
+    var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'العهدة');
+    wb.Workbook = { Views: [{ RTL: true }] }; XLSX.writeFile(wb, fname('xlsx'));
+  });
 })();
 </script>
 </body>
