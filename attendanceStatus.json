@@ -1,14 +1,14 @@
 {
   "ok": true,
   "date": "2026-10-01",
-  "updatedAt": "2026-10-01T16:19:57.889955+00:00",
+  "updatedAt": "2026-10-01T21:07:31.784665+00:00",
   "absent": [
     "أحمد مفرح",
     "مني محمد",
     "شهد خالد",
     "سيد كارم",
-    "صبري يحي",
-    "بكر"
+    "بكر",
+    "عماد"
   ],
   "late": [
     {
@@ -22,6 +22,12 @@
       "time": "12:23:46",
       "official": "08:30",
       "minutes": 233
+    },
+    {
+      "name": "صبري يحي",
+      "time": "20:21:54",
+      "official": "08:30",
+      "minutes": 711
     }
   ],
   "dashboardRows": [
@@ -47,6 +53,16 @@
     },
     {
       "name": "صبري يحي",
+      "type": "حضور",
+      "date": "2026-10-01",
+      "time": "20:21:54",
+      "lat": "29.7605834",
+      "lng": "31.2624158",
+      "map": "https://maps.google.com/?q=29.7605834,31.2624158",
+      "device": ""
+    },
+    {
+      "name": "صبري يحي",
       "type": "انصراف",
       "date": "2026-10-01",
       "time": "17:46:26",
@@ -56,7 +72,21 @@
       "device": ""
     }
   ],
-  "dashboardRequestRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mupudf62-5u487h",
+      "name": "محمود كارم",
+      "type": "إذن",
+      "date": "2026-10-01",
+      "from": "13:00:00",
+      "to": "17:00:00",
+      "reason": "",
+      "status": "موافق",
+      "submittedAt": "2026-10-01T18:02:29.000Z",
+      "leaveFrom": "",
+      "leaveTo": ""
+    }
+  ],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
     "بكر": "16:00",
@@ -114,7 +144,13 @@
     {
       "name": "بكر",
       "pass": "18",
-      "hiddenIcons": "",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginRadioBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,loginCustodyBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openAdvanceBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "عماد",
+      "pass": "19",
+      "hiddenIcons": "loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openAdvanceBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": "2026-10-01"
     }
   ]
