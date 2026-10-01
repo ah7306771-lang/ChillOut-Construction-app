@@ -1,7 +1,7 @@
 {
   "ok": true,
   "date": "2026-10-01",
-  "updatedAt": "2026-10-01T02:10:13.016550+00:00",
+  "updatedAt": "2026-10-01T08:59:26.836778+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -9,13 +9,15 @@
     "شهد خالد",
     "سيد كارم",
     "محمود رجب",
-    "صبري يحي"
+    "صبري يحي",
+    "بكر"
   ],
   "late": [],
   "dashboardRows": [],
   "dashboardRequestRows": [],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
+    "بكر": "16:00",
     "سيد كارم": "17:00",
     "شهد خالد": "17:00",
     "صبري يحي": "16:00",
@@ -58,7 +60,7 @@
     {
       "name": "محمود رجب",
       "pass": "16",
-      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,loginCustodyBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
     },
     {
@@ -66,6 +68,12 @@
       "pass": "17",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
+    },
+    {
+      "name": "بكر",
+      "pass": "18",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
     }
   ]
 }
