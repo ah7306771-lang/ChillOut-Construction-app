@@ -5160,7 +5160,36 @@ window.safeFileName = function(str){
     return null;
   }
 
-  function reloadEmployeesFromServer_(onDone, forceLive){
+  // الملف الجاهز (attendanceStatus.json) وشيت جوجل ممكن يتأخروا عن Supabase؛ فأي موظف
+  // مضاف جديد (متسجل في Supabase) ومش لاقيينه في القايمة المحمّلة، بنضيفه هنا عشان يظهر
+  // فورًا في بيانات الموظفين ولائحة الحضور. الإضافة بس — مفيش حد بيتشال. وأيقونات الإعدادات
+  // مخفية عنه افتراضيًا لحد ما القايمة الأصلية توصل بإعداداته الفعلية.
+  var NEW_EMPLOYEE_DEFAULT_HIDDEN_ = ['homeSettingsBtn', 'openEmployeeManageTileBtn', 'openIconManageTileBtn'];
+  function mergeEmployeesFromSupabase_(cb){
+    var done = function(){ if (cb) cb(); };
+    try {
+      fetch(SUPABASE_URL + '/rest/v1/employees?active=eq.true&select=name,password,birthday', { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          var added = false;
+          (rows || []).forEach(function(e){
+            if (!e || !e.name || !e.password) return;
+            if (ATTENDANCE_EMPLOYEES.indexOf(e.name) > -1) return;
+            ATTENDANCE_EMPLOYEES.push(e.name);
+            ATTENDANCE_PASSWORDS[e.name] = e.password;
+            EMPLOYEE_HIDDEN_ICONS_[e.name] = NEW_EMPLOYEE_DEFAULT_HIDDEN_.slice();
+            EMPLOYEE_BIRTHDAYS_[e.name] = e.birthday || '';
+            added = true;
+          });
+          if (added) applyIconVisibility_();
+        })
+        .catch(function(){})
+        .then(done);
+    } catch (e) { done(); }
+  }
+
+  function reloadEmployeesFromServer_(onDoneOrig, forceLive){
+    var onDone = function(){ mergeEmployeesFromSupabase_(onDoneOrig); };
     if (!ATTENDANCE_SCRIPT_URL) { if (onDone) onDone(); return; }
 
     function applyEmployeesList_(list){
