@@ -4643,6 +4643,41 @@ window.safeFileName = function(str){
   function attendanceHasLeaveToday_(name){
     return attendanceRequestsFor_(name).some(function(r){ return r.type === 'إذن'; });
   }
+
+  // منع الحضور/الانصراف أثناء إذن أو مأمورية: لو الوقت الحالي واقع بين "من" و"إلى"
+  // بتوع إذن أو مأمورية النهاردة (قيد المراجعة أو موافق عليها — المرفوضة مابتمنعش)
+  // التسجيل بيتمنع. بداية الفترة مشمولة ونهايتها لأ (الإذن 10:00–12:00 يقدر
+  // يسجّل الساعة 12:00). لو عايز المرفوض/قيد المراجعة يتعاملوا غير كده، عدّل
+  // السطر اللي فيه status === 'مرفوض' تحت.
+  function reqTimeToMin_(t){
+    var m = /^(\d{1,2}):(\d{2})/.exec(String(t || '').trim());
+    return m ? (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) : null;
+  }
+  function attendanceBlockingRequest_(name){
+    var d = new Date();
+    var cur = d.getHours() * 60 + d.getMinutes();
+    var list = attendanceRequestsFor_(name);
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i];
+      if (!r || (r.type !== 'إذن' && r.type !== 'مأمورية')) continue;
+      if (r.status === 'مرفوض') continue;
+      var f = reqTimeToMin_(r.from), t = reqTimeToMin_(r.to);
+      if (f === null || t === null || f >= t) continue;
+      if (cur >= f && cur < t) return r;
+    }
+    return null;
+  }
+  // بيعرض رسالة المنع ويرجّع true لو التسجيل ممنوع دلوقتي.
+  function attendanceBlockedNow_(name, type, msg){
+    var r = attendanceBlockingRequest_(name);
+    if (!r) return false;
+    if (msg) {
+      msg.style.color = '#b3261e';
+      msg.textContent = '⛔ مينفعش تسجّل ' + type + ' دلوقتي — عندك ' + r.type + ' من ' + hhmm_(r.from) + ' إلى ' + hhmm_(r.to)
+        + (r.status === 'موافق' ? ' (موافق عليه)' : ' (قيد المراجعة)') + '.';
+    }
+    return true;
+  }
   // الطلب اللي الموظف لسه باعته بيتحفظ على جهازه لحد ما يظهر من السيرفر، عشان الحالة تبان
   // فورًا (وتفضل ظاهرة لو الطلب اتأخر يوصل لـ Supabase) ومايقدرش يبعت إذن تاني.
   var ATT_LOCAL_REQ_KEY = 'attLocalRequests_v1';
@@ -4726,14 +4761,17 @@ window.safeFileName = function(str){
     if (!refs) return;
     var doneInTime = getAttendanceDoneTime(name, 'حضور');
     var doneOutTime = getAttendanceDoneTime(name, 'انصراف');
-    // الإذن/المأمورية بتبان كمعلومة بس، ومش بتقفل زراير حضور/انصراف —
-    // الموظف يقدر يبصم عادي، والمقارنة بينهم بتتم من شاشة الاعتماد.
+    // الإذن/المأمورية بتبان كحالة، وكمان بتمنع حضور/انصراف طول الفترة اللي
+    // بين "من" و"إلى" (شوف attendanceBlockedNow_). الزراير نفسها مابتتعطلش
+    // هنا عشان المنع بيتحدد بالوقت الحالي وقت الضغط.
     refs.inBtn.disabled = !!doneInTime;
     refs.outBtn.disabled = !!doneOutTime;
     renderAttendanceRowMsg(refs.msg, name);
     if (refs.reqStatus) renderAttendanceRequestStatus(refs.reqStatus, name);
-    // إذن واحد بس في اليوم: بعد ما يتعمل، زرار "طلب إذن" بيختفي
-    if (refs.leaveBtn) refs.leaveBtn.style.display = attendanceHasLeaveToday_(name) ? 'none' : '';
+    // زرار "طلب إذن" بيفضل ظاهر دايمًا (كان بيختفي بعد أول إذن في اليوم).
+    // قاعدة "إذن واحد في اليوم" لسه شغالة: لو دوس عليه وفيه إذن النهاردة
+    // بيطلع له تنبيه بدل ما الزرار يختفي.
+    if (refs.leaveBtn) refs.leaveBtn.style.display = '';
   }
 
   function applyAttendanceRecord(name, type, timeStr){
@@ -5064,7 +5102,9 @@ window.safeFileName = function(str){
     var dateParam = opts.dateOverride || attendanceTodayKey();
     var reqId = generateRequestId();
     var rowRefs_ = attendanceRowRefs[name];
-    if (type === 'إذن' && rowRefs_ && rowRefs_.leaveBtn) rowRefs_.leaveBtn.style.display = 'none';   // يمنع الإرسال المزدوج
+    // يمنع الإرسال المزدوج: بنعطّل الزرار أثناء الإرسال بس (من غير ما نخفيه) ونرجّعه بعد ما الطلب يخلص.
+    var guardBtn_ = (type === 'إذن' && rowRefs_) ? rowRefs_.leaveBtn : null;
+    if (guardBtn_) guardBtn_.disabled = true;
     var url = ATTENDANCE_SCRIPT_URL
       + '?action=requestSubmit'
       + '&id=' + encodeURIComponent(reqId)
@@ -5141,6 +5181,8 @@ window.safeFileName = function(str){
         statusEl.appendChild(failBadge);
         statusEl.appendChild(failDetail);
       }
+    }).then(function(){
+      if (guardBtn_) guardBtn_.disabled = false;
     });
   }
 
@@ -5209,20 +5251,33 @@ window.safeFileName = function(str){
     }
     inBtn.addEventListener('click', function(ev){
       if (!attendanceRealTap_(ev)) return;
+      if (attendanceBlockedNow_(name, 'حضور', msg)) return;
       withAttendancePw_(function(){
         recordAttendance(name, 'حضور', inBtn, outBtn, msg);
       });
     });
     outBtn.addEventListener('click', function(ev){
       if (!attendanceRealTap_(ev)) return;
+      if (attendanceBlockedNow_(name, 'انصراف', msg)) return;
       withAttendancePw_(function(){
         recordAttendance(name, 'انصراف', inBtn, outBtn, msg);
       });
     });
+    function leaveAlreadyNote_(){
+      refreshRowUI(name);
+      var old = reqStatus.querySelector('.leave-once-note');
+      if (old) return;
+      var note = document.createElement('span');
+      note.className = 'req-status-detail leave-once-note';
+      note.style.color = '#8a5a00';
+      note.textContent = 'ℹ️ سجّلت إذن النهاردة بالفعل — المسموح إذن واحد في اليوم.';
+      reqStatus.appendChild(note);
+      setTimeout(function(){ if (note.parentNode) note.parentNode.removeChild(note); }, 5000);
+    }
     leaveBtn.addEventListener('click', function(){
-      if (attendanceHasLeaveToday_(name)) { refreshRowUI(name); return; }   // إذن واحد في اليوم
+      if (attendanceHasLeaveToday_(name)) { leaveAlreadyNote_(); return; }   // إذن واحد في اليوم
       withAttendancePw_(function(){
-        if (attendanceHasLeaveToday_(name)) { refreshRowUI(name); return; }
+        if (attendanceHasLeaveToday_(name)) { leaveAlreadyNote_(); return; }
         showAttendanceRequestModal('طلب إذن — ' + name, 'time', function(from, to, reason){
           submitAttendanceRequest(name, 'إذن', from, to, reason, reqStatus);
         });
@@ -5572,6 +5627,7 @@ window.safeFileName = function(str){
       return;
     }
     if (getAttendanceDoneTime(name, type)) return; // already recorded today
+    if (attendanceBlockedNow_(name, type, msg)) return;   // وقت إذن/مأمورية → ممنوع
 
     var targetBtn = (type === 'حضور') ? inBtn : outBtn;
     var otherBtn   = (type === 'حضور') ? outBtn : inBtn;
