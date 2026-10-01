@@ -4844,7 +4844,7 @@ window.safeFileName = function(str){
     var banner = document.getElementById('dashPendingBanner');
     var bannerCount = document.getElementById('dashPendingCount');
     var bellBadge = document.getElementById('loginBellBadge');
-    if ((!badge && !banner && !bellBadge) || !ATTENDANCE_SCRIPT_URL) return;
+    if (!badge && !banner && !bellBadge) return;
 
     function applyPendingCount_(pending){
       if (badge) {
@@ -4891,7 +4891,13 @@ window.safeFileName = function(str){
     // دلوقتي بيجرب الملف الجاهز اللي بيتحدث كل 10 دقايق تلقائي الأول،
     // وبيظهر فوراً من غيره أي انتظار. لو الملف مش متاح لأي سبب، يرجع
     // للطريقة القديمة.
-    fetchAppJson_('attendanceStatus')
+    var pendUrl = SUPABASE_URL + '/rest/v1/requests?select=id&status=not.in.(' + encodeURIComponent('"موافق","مرفوض"') + ')';
+    fetch(pendUrl, { headers: sbHeaders() })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('sb')); })
+      .then(function(rows){ applyPendingCount_((rows || []).length); })
+      .catch(function(){
+        if (!ATTENDANCE_SCRIPT_URL) return;
+        fetchAppJson_('attendanceStatus')
       .then(function(data){
         if (data && data.ok && typeof data.pendingRequestsCount === 'number' && isAttendanceStatusFresh_(data.updatedAt)) {
           applyPendingCount_(data.pendingRequestsCount);
@@ -4900,6 +4906,7 @@ window.safeFileName = function(str){
         }
       })
       .catch(loadFromLiveSheet_);
+      });
   }
 
   // ---- مرآة الطلبات في Supabase (جدول requests) ----
@@ -4916,14 +4923,52 @@ window.safeFileName = function(str){
       date: d10(r.date), submitted_at: isNaN(ts) ? new Date().toISOString() : ts.toISOString()
     };
   }
+  // بيحفظ/يحدّث الطلبات في Supabase. بيجرب دالة mirror_requests الأول، ولو فشلت
+  // بيجرب كتابة مباشرة على جدول requests (upsert). بيرجّع Promise فيها
+  // { ok: true/false, detail } عشان اللي بينادي يعرف الحفظ نجح فعلًا ولا لأ.
   function mirrorRequestsToSupabase_(rows){
     rows = (rows || []).filter(function(r){ return r && r.id; });
-    if (!rows.length) return Promise.resolve();
+    if (!rows.length) return Promise.resolve({ ok: true, detail: '' });
+    function readErr_(r){
+      return r.text().then(function(t){
+        var msg = r.status + ' ' + String(t || '').slice(0, 200);
+        try { console.warn('Supabase requests فشل:', msg); } catch(e){}
+        return msg;
+      });
+    }
     return fetch(SUPABASE_URL + '/rest/v1/rpc/mirror_requests', {
       method: 'POST', headers: sbHeaders(), body: JSON.stringify({ p_rows: rows })
     }).then(function(r){
-      if (!r.ok) return r.text().then(function(t){ try { console.warn('mirror_requests (Supabase) فشل:', r.status, String(t || '').slice(0, 200)); } catch(e){} });
-    }).catch(function(e){ try { console.warn('mirror_requests network:', e); } catch(_){} });
+      if (r.ok) return { ok: true, detail: '' };
+      return readErr_(r).then(function(rpcMsg){
+        // الدالة فشلت (مش موجودة أو اتحجبت) → نكتب مباشرة على الجدول
+        var full = rows.filter(function(x){ return x.name && x.type; });
+        var statusOnly = rows.filter(function(x){ return !(x.name && x.type); });
+        var jobs = [];
+        if (full.length) {
+          jobs.push(fetch(SUPABASE_URL + '/rest/v1/requests?on_conflict=id', {
+            method: 'POST',
+            headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+            body: JSON.stringify(full)
+          }));
+        }
+        statusOnly.forEach(function(x){
+          jobs.push(fetch(SUPABASE_URL + '/rest/v1/requests?id=eq.' + encodeURIComponent(x.id), {
+            method: 'PATCH',
+            headers: sbHeaders({ 'Prefer': 'return=minimal' }),
+            body: JSON.stringify({ status: x.status })
+          }));
+        });
+        return Promise.all(jobs).then(function(resps){
+          var bad = resps.filter(function(x){ return !x.ok; })[0];
+          if (!bad) return { ok: true, detail: '' };
+          return readErr_(bad).then(function(directMsg){ return { ok: false, detail: directMsg || rpcMsg }; });
+        });
+      });
+    }).catch(function(e){
+      try { console.warn('Supabase requests network:', e); } catch(_){}
+      return { ok: false, detail: 'network' };
+    });
   }
 
   // معرّف فريد بسيط لكل طلب — بيتبعت مع الطلب ويترجع في requestsReport،
@@ -4938,7 +4983,6 @@ window.safeFileName = function(str){
   // الإجازة بس (بتاريخ بداية/نهاية فعلي بدل تاريخ النهاردة، وبدون ساعة
   // من/إلى). لطلب الإذن/المأمورية العاديين متبعتش، والسلوك زي ما هو بالظبط.
   function submitAttendanceRequest(name, type, from, to, reason, statusEl, opts){
-    if (!ATTENDANCE_SCRIPT_URL) return;
     opts = opts || {};
     var dateParam = opts.dateOverride || attendanceTodayKey();
     var reqId = generateRequestId();
@@ -4963,31 +5007,34 @@ window.safeFileName = function(str){
       sendingBadge.textContent = '⏳ جاري إرسال الطلب...';
       statusEl.appendChild(sendingBadge);
     }
-    // بنقرا الرد كنص الأول عشان لو السكريبت رجّع صفحة خطأ (HTML) بدل JSON
-    // (زي حالة الديبلوي القديم/الغير محدّث)، نقدر نميّز المشكلة ونوريها
-    // بدل ما الطلب يفشل بصمت من غير ما حد يلاحظ إنه معملش تسجيل في الشيت.
-    // ولو الباك إند رفض الطلب عمدًا (زي إجازة ليوم فيه حضور، أو تكرار
-    // إذن/مأمورية لنفس اليوم)، بيرجّع سبب الرفض بالظبط في data.error،
-    // وبنعرضه للموظف بدل رسالة "تعذر الإرسال" العامة.
-    fetch(url).then(function(r){
-      return r.text().then(function(text){
-        var data = null;
-        try { data = JSON.parse(text); } catch (e) {}
-        if (!data) { throw new Error('bad-response'); }
-        if (data.ok !== true) {
-          var rejectErr = new Error(data.error || 'rejected');
-          rejectErr.isRejection = !!data.error;
-          rejectErr.serverMessage = data.error || '';
+    // الحفظ الأساسي في Supabase مباشرة (سريع ومصدر الحقيقة)، ونسخة الشيت
+    // (Apps Script) بتتبعت في الخلفية كنسخة احتياطية من غير ما نستناها.
+    var dbRow_ = reqToDbRow_({
+      id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason,
+      from: from, to: to, date: dateParam, leaveFrom: opts.leaveFrom, leaveTo: opts.leaveTo
+    });
+    function sendToSheet_(){
+      return fetch(url).then(function(r){ return r.text(); }).then(function(text){
+        var d = null; try { d = JSON.parse(text); } catch (e) {}
+        return d;
+      }).catch(function(){ return null; });
+    }
+    mirrorRequestsToSupabase_([dbRow_]).then(function(res){
+      if (res && res.ok) {
+        sendToSheet_();   // نسخة احتياطية في الشيت، مش بنستناها
+        return;
+      }
+      // Supabase فشل → نجرب الشيت زي زمان، وبعدها نحاول Supabase تاني
+      return sendToSheet_().then(function(data){
+        if (!data || data.ok !== true) {
+          var rejectErr = new Error((data && data.error) || (res && res.detail) || 'rejected');
+          rejectErr.isRejection = !!(data && data.error);
+          rejectErr.serverMessage = (data && data.error) || '';
+          rejectErr.dbDetail = (res && res.detail) || '';
           throw rejectErr;
         }
-        return data;
+        return mirrorRequestsToSupabase_([dbRow_]);
       });
-    }).then(function(){
-      // الشيت قبل الطلب → نتأكد إنه في Supabase كمان (اللوحات بتقرا منه)
-      return mirrorRequestsToSupabase_([reqToDbRow_({
-        id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason,
-        from: from, to: to, date: dateParam, leaveFrom: opts.leaveFrom, leaveTo: opts.leaveTo
-      })]);
     }).then(function(){
       rememberLocalRequest_({
         id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason || '',
@@ -5009,7 +5056,7 @@ window.safeFileName = function(str){
           failDetail.textContent = err.serverMessage;
         } else {
           failBadge.textContent = '✘ تعذر إرسال الطلب';
-          failDetail.textContent = 'تأكد إن كود جوجل شيت (Apps Script) محدّث ومنشور (New version) وإن فيه اتصال بالإنترنت، وحاول تاني.';
+          failDetail.textContent = 'مش قادر يحفظ الطلب في قاعدة البيانات، تأكد من الإنترنت وحاول تاني.' + (err && err.dbDetail ? ' (' + err.dbDetail + ')' : '');
         }
         statusEl.appendChild(failBadge);
         statusEl.appendChild(failDetail);
@@ -6380,7 +6427,7 @@ window.safeFileName = function(str){
   // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
   // الحالة في تاب Requests مباشرة من التطبيق — من غير ما تفتح الشيت أصلاً.
   function setRequestStatus(id, status, row){
-    if (!ATTENDANCE_SCRIPT_URL || !id) return;
+    if (!id) return;
     var approveBtn = row.querySelector('.btn-approve');
     var rejectBtn = row.querySelector('.btn-reject');
     var badge = row.querySelector('.approval-status-badge');
@@ -6389,15 +6436,13 @@ window.safeFileName = function(str){
     if (badge) { badge.className = 'approval-status-badge approval-status-pending'; badge.textContent = 'جاري الحفظ...'; }
 
     var url = ATTENDANCE_SCRIPT_URL
-      + '?action=requestSetStatus'
-      + '&id=' + encodeURIComponent(id)
-      + '&status=' + encodeURIComponent(status);
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      if (!data || !data.ok) throw new Error('failed');
-      return mirrorRequestsToSupabase_([{ id: id, status: status }]).then(function(){
-        loadAttendanceApprovals();
-        refreshPendingRequestsBadge();
-      });
+      ? ATTENDANCE_SCRIPT_URL + '?action=requestSetStatus' + '&id=' + encodeURIComponent(id) + '&status=' + encodeURIComponent(status)
+      : '';
+    mirrorRequestsToSupabase_([{ id: id, status: status }]).then(function(res){
+      if (!res || !res.ok) throw new Error('failed');
+      if (url) { fetch(url).then(function(r){ return r.json(); }).catch(function(){}); }   // نسخة الشيت في الخلفية
+      loadAttendanceApprovals();
+      refreshPendingRequestsBadge();
     }).catch(function(){
       if (approveBtn) approveBtn.disabled = false;
       if (rejectBtn) rejectBtn.disabled = false;
@@ -6524,35 +6569,50 @@ window.safeFileName = function(str){
     var status = document.getElementById('approvalsStatus');
     if (!status) return;
 
-    if (!ATTENDANCE_SCRIPT_URL) {
-      status.style.color = '#b3261e';
-      status.textContent = 'لم يتم ربط شيت جوجل شيتس بعد.';
-      approvalsAllRows = [];
-      renderApprovalsList([]);
-      return;
-    }
-
     status.style.color = 'var(--ink-soft)';
     status.textContent = 'جاري التحميل...';
 
-    var url = ATTENDANCE_SCRIPT_URL + '?action=requestsReport';
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      status.textContent = '';
-      approvalsAllRows = (data && data.rows) || [];
-      renderApprovalsList(approvalsAllRows);
-      try {
-        var cd = new Date(); cd.setDate(cd.getDate() - 45);
-        var cutoff = cd.getFullYear() + '-' + String(cd.getMonth() + 1).padStart(2, '0') + '-' + String(cd.getDate()).padStart(2, '0');
-        mirrorRequestsToSupabase_(approvalsAllRows.filter(function(r){
-          return r && r.id && r.name && String(r.date || '').slice(0, 10) >= cutoff;
-        }).slice(-300).map(reqToDbRow_).filter(function(x){ return x.date; }));
-      } catch(e){}
-    }).catch(function(){
-      status.style.color = '#b3261e';
-      status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
-      approvalsAllRows = [];
-      renderApprovalsList([]);
-    });
+    function fromSheet_(){
+      if (!ATTENDANCE_SCRIPT_URL) { throw new Error('no-script'); }
+      return fetch(ATTENDANCE_SCRIPT_URL + '?action=requestsReport').then(function(r){ return r.json(); }).then(function(data){
+        var rows = (data && data.rows) || [];
+        try {
+          var cd = new Date(); cd.setDate(cd.getDate() - 45);
+          var cutoff = cd.getFullYear() + '-' + String(cd.getMonth() + 1).padStart(2, '0') + '-' + String(cd.getDate()).padStart(2, '0');
+          mirrorRequestsToSupabase_(rows.filter(function(r){
+            return r && r.id && r.name && String(r.date || '').slice(0, 10) >= cutoff;
+          }).slice(-300).map(reqToDbRow_).filter(function(x){ return x.date; }));
+        } catch(e){}
+        return rows;
+      });
+    }
+
+    var sbUrl = SUPABASE_URL + '/rest/v1/requests?select=id,name,type,status,reason,from_time,to_time,leave_from,leave_to,date,submitted_at&order=submitted_at.desc&limit=500';
+    fetch(sbUrl, { headers: sbHeaders() })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('sb')); })
+      .then(function(rows){
+        return (rows || []).map(function(r){
+          return {
+            id: r.id, name: r.name, type: r.type, date: r.date,
+            from: r.from_time || '', to: r.to_time || '',
+            reason: r.reason || '', status: r.status || '',
+            submittedAt: r.submitted_at || '',
+            leaveFrom: r.leave_from || '', leaveTo: r.leave_to || ''
+          };
+        });
+      })
+      .catch(function(){ return fromSheet_(); })
+      .then(function(rows){
+        status.textContent = '';
+        approvalsAllRows = rows || [];
+        renderApprovalsList(approvalsAllRows);
+      })
+      .catch(function(){
+        status.style.color = '#b3261e';
+        status.textContent = 'تعذر تحميل البيانات، تأكد من الإنترنت وحاول تاني.';
+        approvalsAllRows = [];
+        renderApprovalsList([]);
+      });
   }
 
   // Live date/time shown either side of the home screen logo.
