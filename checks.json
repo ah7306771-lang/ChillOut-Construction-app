@@ -151,5 +151,14 @@
     "bank": "CIB",
     "notes": "",
     "type": "أ.ق"
+  },
+  {
+    "client": "الامين",
+    "number": 74668,
+    "value": 1400000,
+    "dueDate": "30/10/2026",
+    "bank": "",
+    "notes": "",
+    "type": "أ.ق"
   }
 ]
