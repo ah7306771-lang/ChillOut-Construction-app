@@ -1,14 +1,14 @@
 [
   {
-    "date": "01/10/2026",
+    "date": "02/10/2026",
     "orderNo": 52,
     "client": "الامين",
-    "buyPrice": 0,
+    "buyPrice": 38000,
     "sellPrice": 40000,
     "buyPrice2": 0,
     "sellPrice2": 0,
-    "buyTotal": 158000.0,
-    "sellTotal": 2819200.0,
+    "buyTotal": 5115560.0,
+    "sellTotal": 5384800.0,
     "paymentMethod": "كاش 50% - 50 % شيك اجل 30 يوم"
   },
   {
