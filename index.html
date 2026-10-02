@@ -870,6 +870,31 @@
   .tfg-footer{margin-top:10px;font-size:0.8em;color:#333;border-top:1px solid #ccc;padding-top:8px;}
   .tfg-footer .note{margin-top:6px;}
 
+  /* ---------- CUSTODY REQUEST (طلب عهدة نقدية) ----------
+     الورقة دي ماكانش لها ستايل خالص (من غير حواف، ونص صفحة بس). دلوقتي:
+     - مفيش مسافة فوق اللوجو والعنوان: الهيدر بيبدأ من أعلى الصفحة.
+     - مربعات الجدول (الكلمات) أصغر: padding قليل وسطر مضغوط.
+     - الخط العام أكبر عشان المحتوى ياخد مساحة أكبر من الصفحة. */
+  #paperCustody{
+    width:794px;max-width:none;background:var(--paper,#fff);
+    box-shadow:none;padding:8px 34px 14px;position:relative;box-sizing:border-box;
+    font-family:'Calibri','Segoe UI',Tahoma,'Cairo',sans-serif;color:var(--ink,#111);
+    font-size:27px;
+  }
+  #paperCustody .doc-header{gap:8px;}
+  #paperCustody .doc-header .hleft,#paperCustody .doc-header .hright{font-size:16px;line-height:1.7;}
+  #paperCustody .doc-header .logo-wrap{flex:0 0 150px;}
+  #paperCustody .doc-header .logo-wrap img{width:140px;}
+  #paperCustody .headbar{margin:4px 0 10px;}
+  #paperCustody .tf-line-date{font-size:.78em;margin-bottom:2px;}
+  #paperCustody .tf-line-title{font-size:1.45em;margin-bottom:10px;}
+  #paperCustody .legal-para{font-size:.92em;line-height:1.7;margin-bottom:8px;}
+  #paperCustody table.dtable{margin-bottom:10px;}
+  #paperCustody table.dtable th,#paperCustody table.dtable td{padding:2px 8px;font-size:.78em;line-height:1.2;word-break:normal;}
+  #paperCustody table.dtable th{white-space:nowrap;font-size:.76em;}
+  #paperCustody .closing{font-size:.95em;margin:6px 0 4px;}
+  #paperCustody .sign-row{height:78px;margin-top:2px;}
+
   /* ---------- QUOTE (عرض سعر) ADDITIONS ---------- */
   #paperQuote{
     width:794px;max-width:none;background:var(--paper);
@@ -2230,13 +2255,6 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
             <label for="empOfficialOutTime">ميعاد الانصراف الرسمي <span style="color:var(--ink-soft);font-size:11px;">(من لائحة الحضور)</span></label>
             <input type="time" id="empOfficialOutTime" placeholder="16:00" disabled>
           </div>
-        </div>
-        <div class="field">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <input type="checkbox" id="empExemptValue" disabled style="width:auto;height:auto;margin:0;">
-            <span>غير ملزم بالحضور (مفيش بصمة)</span>
-          </label>
-          <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;">لو متفعّل، الموظف مش هيظهر في الغياب ولا التأخير ولا لوحة الحضور ولا تقرير الحضور.</div>
         </div>
         <div style="font-size:11.5px;color:var(--ink-soft);margin:-6px 2px 4px;line-height:1.5;">
           💡 المواعيد بتتقرأ تلقائيًا من "لائحة الحضور والانصراف". أي تعديل هنا أو هناك بيتحفظ في نفس المكان ويبان فوراً في الشاشتين.
@@ -3736,12 +3754,12 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
       </div>
 
       <table class="dtable">
-        <tr><th style="width:28%;">اسم الطالب</th><td id="pvCustodyName2" style="text-align:right;padding:6px 10px;">—</td></tr>
-        <tr><th>القسم</th><td id="pvCustodyDept2" style="text-align:right;padding:6px 10px;">—</td></tr>
-        <tr><th>الوظيفة</th><td id="pvCustodyJob2" style="text-align:right;padding:6px 10px;">—</td></tr>
-        <tr><th>المبلغ المطلوب</th><td id="pvCustodyAmount2" style="text-align:right;padding:6px 10px;">—</td></tr>
-        <tr><th>التاريخ</th><td id="pvCustodyDate2" style="text-align:right;padding:6px 10px;">—</td></tr>
-        <tr><th>الغرض من الطلب</th><td id="pvCustodyReason2" style="text-align:right;padding:6px 10px;">—</td></tr>
+        <tr><th style="width:28%;">اسم الطالب</th><td id="pvCustodyName2" style="text-align:right;padding:2px 8px;">—</td></tr>
+        <tr><th>القسم</th><td id="pvCustodyDept2" style="text-align:right;padding:2px 8px;">—</td></tr>
+        <tr><th>الوظيفة</th><td id="pvCustodyJob2" style="text-align:right;padding:2px 8px;">—</td></tr>
+        <tr><th>المبلغ المطلوب</th><td id="pvCustodyAmount2" style="text-align:right;padding:2px 8px;">—</td></tr>
+        <tr><th>التاريخ</th><td id="pvCustodyDate2" style="text-align:right;padding:2px 8px;">—</td></tr>
+        <tr><th>الغرض من الطلب</th><td id="pvCustodyReason2" style="text-align:right;padding:2px 8px;">—</td></tr>
       </table>
 
       <div class="closing">وتفضلوا بقبول فائق الاحترام ,,</div>
@@ -5544,7 +5562,7 @@ window.safeFileName = function(str){
   function attBuildReport_(month, empFilter){
     var pr = month.split('-'), last = new Date(+pr[0], +pr[1], 0).getDate();
     var S = month + '-01', E = month + '-' + attendancePad(last), todayK = attendanceTodayKey();
-    var names = empFilter ? [empFilter] : ATTENDANCE_EMPLOYEES.filter(function(n){ return !attIsExempt_(n); });
+    var names = empFilter ? [empFilter] : ATTENDANCE_EMPLOYEES.slice();
     var nameQ = empFilter ? '&name=eq.' + encodeURIComponent(empFilter) : '';
     var attUrl = SUPABASE_URL + '/rest/v1/attendance?date=gte.' + S + '&date=lte.' + E + nameQ + '&select=*&order=date.asc,name.asc';
     var reqUrl = SUPABASE_URL + '/rest/v1/requests?or=(and(date.gte.' + S + ',date.lte.' + E + '),and(leave_from.lte.' + E + ',leave_to.gte.' + S + '))' + nameQ + '&select=*';
@@ -6023,57 +6041,6 @@ window.safeFileName = function(str){
   // في تاب Employees — فاضي لو مش متسجل. مستخدمة لاحتفال عيد الميلاد.
   var EMPLOYEE_BIRTHDAYS_ = {};
 
-  // فلاج "غير ملزم بالحضور": الموظفين دول مش بيظهروا في الغياب ولا التأخير ولا لوحة الحضور
-  // ولا تقرير الحضور. محفوظ في جدول app_settings (key = attendanceExempt) كقايمة أسماء JSON،
-  // ومتخزن نسخة على الجهاز عشان يشتغل فورًا أول ما الصفحة تفتح.
-  var ATT_EXEMPT_CACHE_ = 'attExemptCache_v1';
-  var ATTENDANCE_EXEMPT_ = (function(){
-    var m = {};
-    try { (JSON.parse(localStorage.getItem(ATT_EXEMPT_CACHE_) || '[]') || []).forEach(function(n){ m[n] = true; }); } catch(e){}
-    return m;
-  })();
-  function attIsExempt_(name){ return !!ATTENDANCE_EXEMPT_[name]; }
-  function attCacheExempt_(){
-    try { localStorage.setItem(ATT_EXEMPT_CACHE_, JSON.stringify(Object.keys(ATTENDANCE_EXEMPT_))); } catch(e){}
-  }
-  function attSetExemptFromValue_(v){
-    var list = [];
-    try { list = JSON.parse(v || '[]') || []; } catch(e){ return; }
-    var m = {}; list.forEach(function(n){ m[n] = true; });
-    ATTENDANCE_EXEMPT_ = m;
-    attCacheExempt_();
-  }
-  function loadAttendanceExempt_(cb){
-    var done = function(){ if (cb) cb(); };
-    try {
-      fetch(SUPABASE_URL + '/rest/v1/app_settings?key=eq.attendanceExempt&select=value', { headers: sbHeaders() })
-        .then(function(r){ return r.ok ? r.json() : []; })
-        .then(function(rows){ if (rows && rows[0]) attSetExemptFromValue_(rows[0].value); })
-        .catch(function(){})
-        .then(done);
-    } catch(e){ done(); }
-  }
-  // بيقرا القايمة الحالية من Supabase ويعدّل الاسم ده بس (عشان ما نمسحش تعديلات جهاز تاني).
-  function saveAttendanceExempt_(name, flag){
-    if (flag) ATTENDANCE_EXEMPT_[name] = true; else delete ATTENDANCE_EXEMPT_[name];
-    attCacheExempt_();
-    return fetch(SUPABASE_URL + '/rest/v1/app_settings?key=eq.attendanceExempt&select=value', { headers: sbHeaders() })
-      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('read')); })
-      .then(function(rows){
-        var list = [];
-        try { list = JSON.parse((rows && rows[0] && rows[0].value) || '[]') || []; } catch(e){}
-        list = list.filter(function(n){ return n !== name; });
-        if (flag) list.push(name);
-        return fetch(SUPABASE_URL + '/rest/v1/app_settings?on_conflict=key', {
-          method: 'POST',
-          headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
-          body: JSON.stringify([{ key: 'attendanceExempt', value: JSON.stringify(list) }])
-        });
-      })
-      .then(function(r){ return !!(r && r.ok); })
-      .catch(function(){ return false; });
-  }
-
   // بيدور على اسم الموظف اللي رقمه السري (PIN) بتاعه هو ده بالظبط —
   // مستخدمة في تسجيل دخول الموظف على الشاشة الرئيسية.
   function findEmployeeByPin_(pin){
@@ -6268,7 +6235,6 @@ window.safeFileName = function(str){
         if (s.appLoginPass) APP_PASS = s.appLoginPass;
         if (s.dashboardPassword) ATTENDANCE_DASHBOARD_PASSWORD = s.dashboardPassword;
         if (s.employeeManagePassword) EMPLOYEE_MANAGE_PASSWORD = s.employeeManagePassword;
-        if (s.attendanceExempt !== undefined) attSetExemptFromValue_(s.attendanceExempt);
         if (onDone) onDone();
       })
       .catch(function(){
@@ -6387,7 +6353,7 @@ window.safeFileName = function(str){
     var container = document.getElementById('attendanceDashboardList');
     if (!container) return;
     container.innerHTML = '';
-    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES.filter(function(n){ return !attIsExempt_(n); });
+    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES;
     names.forEach(function(name){
       var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
       var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
@@ -6690,7 +6656,7 @@ window.safeFileName = function(str){
     if (paperSub) {
       paperSub.textContent = (employeeFilter ? (employeeFilter + ' — ') : '') + 'بيانات يوم ' + (date || attendanceTodayKey());
     }
-    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES.filter(function(n){ return !attIsExempt_(n); });
+    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES;
     names.forEach(function(name){
       var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
       var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
@@ -8369,7 +8335,7 @@ window.safeFileName = function(str){
     function renderQuickStatus_(data){
       if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
       if (kind === 'absent') {
-        var absent = (data.absent || []).filter(function(n){ return !attIsExempt_(n); });
+        var absent = data.absent || [];
         if (!absent.length) {
           listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
           return;
@@ -8379,7 +8345,7 @@ window.safeFileName = function(str){
         }).join('');
         listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
       } else {
-        var late = (data.late || []).filter(function(it){ return !attIsExempt_(it.name); });
+        var late = data.late || [];
         if (!late.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
           return;
@@ -8443,14 +8409,12 @@ window.safeFileName = function(str){
     // Supabase أولاً — بنجيب المواعيد الرسمية من الكاش (لو موجود) عشان
     // نحسب "التأخير" بالظبط. لو مافيش كاش، بنحسب الغياب بس (اللي مالوش
     // ميعاد رسمي مش هيبان في قايمة التأخير).
-    loadAttendanceExempt_(function(){
-      fetchAppJson_('attendanceStatus')
-        .then(function(cached){
-          var officialIn = (cached && cached.officialIn) || {};
-          loadFromSupabase_(officialIn);
-        })
-        .catch(function(){ loadFromSupabase_({}); });
-    });
+    fetchAppJson_('attendanceStatus')
+      .then(function(cached){
+        var officialIn = (cached && cached.officialIn) || {};
+        loadFromSupabase_(officialIn);
+      })
+      .catch(function(){ loadFromSupabase_({}); });
   }
   function openQuickStatusFromLoginFlow_(kind){
     loadQuickStatus_(kind);
@@ -8709,8 +8673,6 @@ window.safeFileName = function(str){
       var t = (window.EMPLOYEE_OFFICIAL_TIMES_ || {})[sel.value] || {};
       if (offIn)  offIn.value  = t.in_time  || '';
       if (offOut) offOut.value = t.out_time || '';
-      var exEl_ = document.getElementById('empExemptValue');
-      if (exEl_) exEl_.checked = attIsExempt_(sel.value);
       setEmpMode_('view');
       renderEmpPicker_();
     }
@@ -8751,13 +8713,10 @@ window.safeFileName = function(str){
     bday.disabled = (mode === 'view');
     if (offIn)  offIn.disabled  = (mode === 'view');
     if (offOut) offOut.disabled = (mode === 'view');
-    var exCb_ = document.getElementById('empExemptValue');
-    if (exCb_) exCb_.disabled = (mode === 'view');
     if (mode === 'new') {
       nm.value = ''; pass.value = ''; bday.value = '';
       if (offIn)  offIn.value = '';
       if (offOut) offOut.value = '';
-      if (exCb_) exCb_.checked = false;
       nm.placeholder = 'مثال: محمد علي';
       pass.placeholder = 'مثال: 18';
     } else {
@@ -9543,10 +9502,6 @@ window.safeFileName = function(str){
       } catch (e) {}
     }
 
-    var exCbSave_ = document.getElementById('empExemptValue');
-    var exemptPromise = (exCbSave_ && !!exCbSave_.checked !== attIsExempt_(name))
-      ? saveAttendanceExempt_(name, !!exCbSave_.checked) : Promise.resolve(true);
-
     // نكتب على Supabase مباشرة (سريع + مصدر الحقيقة).
     // نداء الـ Apps Script بيمشي في نفس الوقت — للـ Sheet mirror (نسخة عرض).
     var sbPayload = {
@@ -9568,15 +9523,9 @@ window.safeFileName = function(str){
       + '&birthday=' + encodeURIComponent(newBirthday);
     var scriptPromise = fetch(scriptUrl).then(function(r){ return r.json(); }).catch(function(){ return { ok: false }; });
 
-    Promise.all([supabasePromise, scriptPromise, exemptPromise]).then(function(results){
+    Promise.all([supabasePromise, scriptPromise]).then(function(results){
       btn.disabled = false;
       var sbOk = results[0], gsOk = results[1] && results[1].ok !== false;
-      if ((sbOk || gsOk) && results[2] === false) {
-        setEmployeeManageStatus_('اتحفظت البيانات لكن فلاج "غير ملزم بالحضور" ماتحفظش في قاعدة البيانات، حاول تاني.', true);
-        empPendingSelect_ = name;
-        refreshEverythingAfterEmployeeChange_();
-        return;
-      }
       if (sbOk || gsOk) {
         setEmployeeManageStatus_(isNew ? ('تمت إضافة ' + name + ' ✓') : ('تم تحديث بيانات ' + name + ' ✓'));
         showSavedToast_();
@@ -12587,6 +12536,8 @@ window.safeFileName = function(str){
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
   function fmt(n){ return (+n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   function today(){ var d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+  // أول يوم في الشهر الحالي (YYYY-MM-01): الفلتر بيبدأ منه تلقائيًا كل شهر
+  function monthStart(){ return today().slice(0, 8) + '01'; }
   function st(id, m, e){ var el = $(id); el.textContent = m || ''; el.className = 'status-msg' + (e ? ' err' : ''); }
 
   // ---------- المشاريع (جدول cost_center: رقم + اسم + فلاج إيقاف) ----------
@@ -12661,7 +12612,7 @@ window.safeFileName = function(str){
       if (t && r.entry_date > t) return;
       list.push(r);
     });
-    return { op: Math.round(op * 100) / 100, list: list, f: f, t: t, p: p };
+    return { op: Math.round(op * 100) / 100, list: list, f: f, t: t };
   }
   function view(){ return viewOf(S.rows, $('rpFrom').value, $('rpTo').value, $('rpProj').value); }
   // الشاشة بتعرض كل حركات الأيام (بتاريخها) من الأحدث للأقدم؛ كروت اليوم والرصيد إجمالي الخزنة، ومعاه رصيد أول اليوم
@@ -12786,106 +12737,29 @@ window.safeFileName = function(str){
     });
     return { v: v, lines: lines, ti: ti, to: to, end: v.op + ti - to };
   }
-  // ---------- شكل كشف العهدة (A4): ترويسة الشركة + كروت ملخص + جدول واضح + توقيعات ----------
-  var INK = '#1d2733', ORG = '#e2621f', GRN = '#17753f', RED = '#b3261e', LINE = '#7b838c';
-  var PG_INNER_H = 1123 - 30 - 64;     // ارتفاع المحتوى المتاح (بعد الهوامش ومكان الفوتر)
-  var PG_INNER_W = 794 - 68;
-  function fmt2(n){ return (+n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-  function stamp(){
-    var d = new Date();
-    return d.toLocaleDateString('en-GB') + '  ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-  }
-  var CELL = 'border:1.5px solid ' + LINE + ';padding:8px 6px;font-size:14px;font-weight:700;line-height:1.55;color:#111;vertical-align:middle;text-align:center;';
-  var HCELL = 'border:1.5px solid ' + INK + ';padding:9px 6px;background:' + INK + ';color:#fff;font-size:14px;font-weight:800;text-align:center;';
-  var COLS = '<colgroup><col style="width:13%"><col style="width:33%"><col style="width:16%"><col style="width:12.5%"><col style="width:12.5%"><col style="width:13%"></colgroup>';
-  var THEAD = '<thead><tr><th style="' + HCELL + '">التاريخ</th><th style="' + HCELL + '">البيان</th><th style="' + HCELL + '">المشروع</th><th style="' + HCELL + '">وارد</th><th style="' + HCELL + '">منصرف</th><th style="' + HCELL + '">الرصيد</th></tr></thead>';
-  var TABLE_OPEN = '<table style="width:100%;border-collapse:collapse;table-layout:fixed">';
-  function balColor(b){ return b < 0 ? RED : '#111'; }
-  function infoBox(label, value){
-    return '<div style="flex:1;border:1.5px solid ' + LINE + ';border-radius:8px;padding:6px 10px;background:#fbfaf8"><div style="font-size:11.5px;font-weight:700;color:#666">' + label + '</div><div style="font-size:16px;font-weight:800;color:' + INK + ';line-height:1.5">' + value + '</div></div>';
-  }
-  function card(label, value, color, dark){
-    return '<div style="flex:1;border:1.5px solid ' + (dark ? INK : LINE) + ';border-top:5px solid ' + color + ';border-radius:8px;padding:8px 6px;text-align:center;background:' + (dark ? INK : '#fff') + '">' +
-      '<div style="font-size:12px;font-weight:700;color:' + (dark ? '#d5dbe2' : '#555') + '">' + label + '</div>' +
-      '<div style="font-size:' + (dark ? 21 : 19) + 'px;font-weight:800;color:' + (dark ? '#fff' : color) + ';margin-top:2px;white-space:nowrap">' + value + '</div></div>';
-  }
+  var TD = 'border:1px solid #ccc;padding:5px;text-align:center', TH = 'border:1px solid #bbb;padding:5px;background:#f3ece4';
   function pagesFor(emp, v){
     var s = statement(v);
-    var logo = (document.getElementById('companyLogoSrc') || {}).src || '';
-    var period = 'من ' + (v.f || 'البداية') + ' إلى ' + (v.t || today());
-    var projLine = (v.p != null && v.p !== '*') ? (v.p === '' ? 'عام (بدون مشروع)' : esc(v.p)) : '';
-    var head =
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:4px solid ' + ORG + ';margin-bottom:14px">' +
-        '<div style="line-height:1.65"><div style="font-size:20px;font-weight:800;color:' + INK + '">شركة شيل اوت للمقاولات العامة</div>' +
-        '<div style="font-size:12px;font-weight:700;color:#555">فيلا 11 – غرب سوميد – السادس من اكتوبر — 01070949521</div></div>' +
-        (logo ? '<img src="' + logo + '" style="height:60px;width:auto;display:block">' : '') +
-      '</div>' +
-      '<div style="text-align:center;margin-bottom:12px"><span style="display:inline-block;background:' + INK + ';color:#fff;font-size:22px;font-weight:800;padding:6px 34px;border-radius:30px">كشف حساب العهدة</span></div>' +
-      '<div style="display:flex;gap:8px;margin-bottom:10px">' + infoBox('صاحب العهدة', esc(emp)) + infoBox('الفترة', period) + (projLine ? infoBox('المشروع', projLine) : '') + '</div>' +
-      '<div style="display:flex;gap:8px;margin-bottom:14px">' +
-        card('رصيد أول المدة', fmt2(v.op), '#5b6b7c') + card('إجمالي الوارد', fmt2(s.ti), GRN) + card('إجمالي المنصرف', fmt2(s.to), RED) + card('الرصيد النهائي', fmt2(s.end), ORG, true) +
-      '</div>';
-    var cont = '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid ' + ORG + ';padding-bottom:6px;margin-bottom:10px;font-size:14px;font-weight:800;color:' + INK + '"><span>كشف حساب العهدة — ' + esc(emp) + ' (تابع)</span><span style="font-size:12px;color:#555">' + period + '</span></div>';
-    var sign =
-      '<div style="display:flex;gap:40px;padding:0 14px">' +
-        ['توقيع الموظف', 'اعتماد المحاسب'].map(function(t){
-          return '<div style="flex:1;text-align:center"><div style="font-size:14px;font-weight:800;color:' + INK + ';margin-bottom:44px">' + t + '</div><div style="border-top:2px solid #111"></div></div>';
-        }).join('') +
-      '</div>';
-
-    var rows = [];
-    if (v.f) rows.push('<tr style="background:#e8eef5"><td colspan="5" style="' + CELL + 'text-align:right;font-weight:800">رصيد أول المدة (مُرحَّل قبل ' + esc(v.f) + ')</td><td style="' + CELL + 'font-weight:800;color:' + balColor(v.op) + '">' + fmt2(v.op) + '</td></tr>');
-    s.lines.forEach(function(l, i){
-      rows.push('<tr style="background:' + (i % 2 ? '#f6f2ec' : '#fff') + '">' +
-        '<td style="' + CELL + 'white-space:nowrap">' + esc(l.d) + '</td>' +
-        '<td style="' + CELL + 'text-align:right;word-break:break-word">' + esc(l.t) + '</td>' +
-        '<td style="' + CELL + '">' + esc(l.p) + '</td>' +
-        '<td style="' + CELL + 'color:' + GRN + ';font-weight:800;white-space:nowrap">' + (l.i === '' ? '' : fmt2(l.i)) + '</td>' +
-        '<td style="' + CELL + 'color:' + RED + ';font-weight:800;white-space:nowrap">' + (l.o === '' ? '' : fmt2(l.o)) + '</td>' +
-        '<td style="' + CELL + 'font-weight:800;white-space:nowrap;color:' + balColor(l.b) + '">' + fmt2(l.b) + '</td></tr>');
+    var head = '<h2 style="text-align:center;margin:0 0 4px">كشف حساب العهدة</h2><div style="text-align:center;margin-bottom:12px">الموظف: <b>' + esc(emp) + '</b> — الفترة: ' + (v.f || 'البداية') + ' إلى ' + (v.t || today()) + '</div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr><td style="' + TD + '">رصيد أول المدة<br><b>' + fmt(v.op) + '</b></td><td style="' + TD + '">إجمالي الوارد<br><b style="color:#1f7a4c">' + fmt(s.ti) + '</b></td><td style="' + TD + '">إجمالي المنصرف<br><b style="color:#c0392b">' + fmt(s.to) + '</b></td><td style="' + TD + '">الرصيد النهائي<br><b>' + fmt(s.end) + '</b></td></tr></table>';
+    var items = [];
+    if (v.f) items.push({ w: 1, h: '<tr><td style="' + TD + ';background:#fafafa" colspan="5">رصيد أول المدة</td><td style="' + TD + '">' + fmt(v.op) + '</td></tr>' });
+    s.lines.forEach(function(l){
+      items.push({ w: 1 + Math.floor(l.t.length / 45), h: '<tr><td style="' + TD + '">' + l.d + '</td><td style="' + TD + ';text-align:right">' + esc(l.t) + '</td><td style="' + TD + '">' + esc(l.p) + '</td><td style="' + TD + ';color:#1f7a4c">' + (l.i === '' ? '' : fmt(l.i)) + '</td><td style="' + TD + ';color:#c0392b">' + (l.o === '' ? '' : fmt(l.o)) + '</td><td style="' + TD + '"><b>' + fmt(l.b) + '</b></td></tr>' });
     });
-    var TOT = 'border:1.5px solid ' + INK + ';border-top:3px solid ' + INK + ';padding:9px 6px;background:#efe4d3;font-size:15px;font-weight:800;text-align:center;';
-    rows.push('<tr><td colspan="3" style="' + TOT + '">الإجمالي</td><td style="' + TOT + 'color:' + GRN + '">' + fmt2(s.ti) + '</td><td style="' + TOT + 'color:' + RED + '">' + fmt2(s.to) + '</td><td style="' + TOT + 'color:' + balColor(s.end) + '">' + fmt2(s.end) + '</td></tr>');
-
-    // تقسيم الصفحات بناءً على الارتفاع الفعلي لكل صف (مش تقدير)، عشان البيان الطويل ما يقصّش
-    var chunks = [], cur = [], used = 0;
-    var hH = 0, cH = 0, thH = 40, sH = 130, rH = null;
-    var host = document.createElement('div');
-    host.style.cssText = 'position:fixed;left:-10000px;top:0;visibility:hidden;width:' + PG_INNER_W + 'px;direction:rtl;font-family:Cairo,sans-serif;color:#111';
-    try {
-      host.innerHTML = '<div id="mh" style="padding-bottom:12px">' + head + '</div><div id="mc" style="padding-bottom:10px">' + cont + '</div>' +
-        TABLE_OPEN + COLS + THEAD + '<tbody>' + rows.join('') + '</tbody></table><div id="ms" style="padding-top:34px">' + sign + '</div>';
-      document.body.appendChild(host);
-      hH = host.querySelector('#mh').offsetHeight; cH = host.querySelector('#mc').offsetHeight;
-      thH = host.querySelector('thead tr').offsetHeight; sH = host.querySelector('#ms').offsetHeight;
-      rH = Array.prototype.map.call(host.querySelectorAll('tbody tr'), function(tr){ return tr.offsetHeight + 1; });
-    } catch (e) { rH = null; }
-    finally { if (host.parentNode) host.remove(); }
-    var SLACK = 16, avail = PG_INNER_H - hH - thH - SLACK, contAvail = PG_INNER_H - cH - thH - SLACK;
-    if (!rH || rH.length !== rows.length || rH.some(function(h){ return h < 20; })) {   // احتياطي: لو القياس فشل نقسم بعدد صفوف محافظ
-      rH = rows.map(function(){ return 44; }); sH = 130; avail = PG_INNER_H - 330 - 40 - SLACK; contAvail = PG_INNER_H - 50 - 40 - SLACK;
-    }
-    rows.forEach(function(h, i){
-      if (cur.length && used + rH[i] > avail) { chunks.push(cur); cur = []; used = 0; avail = contAvail; }
-      cur.push(h); used += rH[i];
-    });
+    items.push({ w: 1, h: '<tr style="font-weight:700;background:#f7f3ee"><td style="' + TD + '" colspan="3">الإجمالي</td><td style="' + TD + ';color:#1f7a4c">' + fmt(s.ti) + '</td><td style="' + TD + ';color:#c0392b">' + fmt(s.to) + '</td><td style="' + TD + '">' + fmt(s.end) + '</td></tr>' });
+    var chunks = [], cur = '', w = 0, cap = 11;
+    items.forEach(function(it){ if (cur && w + it.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 22; } cur += it.h; w += it.w; });
     chunks.push(cur);
-    if (used + sH > avail) {
-      // التوقيع مش داخل في الصفحة: ننقل آخر صفّين (ومنهم الإجمالي) معاه لصفحة جديدة بدل صفحة توقيع فاضية
-      var lastRows = chunks[chunks.length - 1];
-      chunks.push(lastRows.length > 3 ? lastRows.splice(lastRows.length - 2, 2) : []);
-    }
-
-    var n = chunks.length, st_ = stamp();
-    return chunks.map(function(rs, i){
-      var last = i === n - 1;
-      return '<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:30px 34px 64px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;overflow:hidden">' +
-        '<div style="position:absolute;top:0;right:0;width:70%;height:9px;background:' + ORG + '"></div><div style="position:absolute;top:0;left:0;width:30%;height:9px;background:' + INK + '"></div>' +
-        (i === 0 ? head : cont) +
-        (rs.length ? TABLE_OPEN + COLS + THEAD + '<tbody>' + rs.join('') + '</tbody></table>' : '') +
-        (last ? '<div style="padding-top:34px">' + sign + '</div>' : '') +
-        '<div style="position:absolute;bottom:16px;left:34px;right:34px;border-top:1.5px solid #bbb;padding-top:6px;display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#555">' +
-          '<span>' + esc(emp) + ' — كشف العهدة</span><span>صفحة ' + (i + 1) + ' من ' + n + '</span><span style="direction:ltr">' + st_ + '</span></div></div>';
+    var sign = '<div style="display:flex;justify-content:space-around;margin-top:36px"><div>توقيع الموظف: ................</div><div>اعتماد المحاسب: ................</div></div>';
+    var signOwn = w + 4 > cap; if (signOwn) chunks.push('');
+    var th = '<tr><th style="' + TH + '">التاريخ</th><th style="' + TH + '">البيان</th><th style="' + TH + '">المشروع</th><th style="' + TH + '">وارد</th><th style="' + TH + '">منصرف</th><th style="' + TH + '">الرصيد</th></tr>';
+    return chunks.map(function(rows, i){
+      return '<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;overflow:hidden">' +
+        (i === 0 ? head : '<div style="margin-bottom:8px;color:#666">' + esc(emp) + ' — تابع كشف العهدة</div>') +
+        (rows ? '<table style="width:100%;border-collapse:collapse">' + th + rows + '</table>' : '') +
+        (i === chunks.length - 1 ? sign : '') +
+        '<div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#888;font-size:11px">' + esc(emp) + ' — صفحة ' + (i + 1) + ' من ' + chunks.length + '</div></div>';
     });
   }
   async function renderPages(pages){
@@ -12895,7 +12769,7 @@ window.safeFileName = function(str){
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
       var imgs = [];
       for (var i = 0; i < host.children.length; i++) {
-        var cv = await html2canvas(host.children[i], { scale: 2.5, backgroundColor: '#fff' });
+        var cv = await html2canvas(host.children[i], { scale: 2, backgroundColor: '#fff' });
         imgs.push(cv.toDataURL('image/jpeg', .92));
       }
       return imgs;
@@ -12946,7 +12820,7 @@ window.safeFileName = function(str){
     var known = {}, o = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
     S.cc.forEach(function(c){ known[c.name] = 1; o += '<option>' + esc(c.name) + '</option>'; });
     S.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; o += '<option>' + esc(r.project) + '</option>'; } });
-    $('rpProj').innerHTML = o; $('rpFrom').value = $('rpTo').value = today(); st('rpStatus', '');
+    $('rpProj').innerHTML = o; $('rpFrom').value = monthStart(); $('rpTo').value = today(); st('rpStatus', '');
     $('cgRepModal').style.display = 'flex';
   }
   function closeRep(){ $('cgRepModal').style.display = 'none'; }
@@ -12957,7 +12831,6 @@ window.safeFileName = function(str){
     var v = view(); if (!(v.list.length || v.op)) { st('rpStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
     var bs = $('cgRepModal').querySelectorAll('button'); bs.forEach(function(b){ b.disabled = true; }); st('rpStatus', 'جارٍ إنشاء التقرير…');
     try {
-      if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(_){} }
       var imgs = await renderPages(pagesFor(who(), v)), name = fname(who(), 'pdf');
       if (mode === 'view') { closeRep(); showViewer(imgs, name, fnameAr(who(), 'pdf')); }
       else { var blob = pdfFromImages(imgs); if (mode === 'share') await shareBlob(blob, name); else deliver(blob, fnameAr(who(), 'pdf')); }
@@ -13008,7 +12881,7 @@ window.safeFileName = function(str){
   function openReport_(from){
     if (!ctx().canReport) return;
     reportBack_ = from;
-    window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = $('crTo').value = today();
+    window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
     Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc')]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
@@ -13025,7 +12898,6 @@ window.safeFileName = function(str){
   async function runReport(mode){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
     var names = R.sel === '*' ? vaultNames() : [R.sel], pages = [];
-    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(_){} }
     names.forEach(function(n){ var v = rview(n); if (v.list.length || v.op) pages = pages.concat(pagesFor(n, v)); });
     if (!pages.length) { st('crStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
     var bs = $('custodyReportScreen').querySelectorAll('.cg-actions button'); bs.forEach(function(b){ b.disabled = true; }); st('crStatus', 'جارٍ إنشاء التقرير…');
