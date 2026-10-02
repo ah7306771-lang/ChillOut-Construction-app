@@ -3,7 +3,7 @@
     {
       "client": "الامين",
       "count": 1,
-      "amount": 1692400,
+      "amount": 2784800.000000001,
       "avgDelay": 1
     },
     {
@@ -21,7 +21,7 @@
   ],
   "grandTotal": {
     "count": 6,
-    "amount": 8306429.5,
+    "amount": 9398829.5,
     "avgDelay": 20
   }
 }
