@@ -1,0 +1,155 @@
+[
+  {
+    "client": "فالتور",
+    "number": 307385,
+    "value": 2388000,
+    "dueDate": "20/08/2026",
+    "bank": "NBE",
+    "notes": "متبقي منه 380,021",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307379,
+    "value": 2388000,
+    "dueDate": "20/09/2026",
+    "bank": "NBE",
+    "notes": "متبقي كامل",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307383,
+    "value": 13300000,
+    "dueDate": "26/09/2026",
+    "bank": "NBE",
+    "notes": "متبقي منه 5,700,000",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307380,
+    "value": 7857894,
+    "dueDate": "06/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "خالد صبري",
+    "number": 532937100,
+    "value": 5043144,
+    "dueDate": "10/10/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "خالد صبري",
+    "number": 9165752,
+    "value": 3979312.84,
+    "dueDate": "17/10/2026",
+    "bank": "BM",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307381,
+    "value": 2388000,
+    "dueDate": "20/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "الشركة المتحده",
+    "number": 2798976,
+    "value": 17745354,
+    "dueDate": "22/10/2026",
+    "bank": "aib",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "فالتور",
+    "number": 307384,
+    "value": 13300000,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "سامكريت مصر",
+    "number": 13249953,
+    "value": 7167694.63,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 551298792,
+    "value": 3433000,
+    "dueDate": "20/10/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 552585548,
+    "value": 805700,
+    "dueDate": "24/10/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 67491042,
+    "value": 304550,
+    "dueDate": "25/10/2026",
+    "bank": "QNB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 532070,
+    "value": 1500000,
+    "dueDate": "28/10/2026",
+    "bank": "WAFA",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 552585549,
+    "value": 805700,
+    "dueDate": "24/11/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 67491043,
+    "value": 304550,
+    "dueDate": "25/11/2026",
+    "bank": "QNB",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "ويكادي",
+    "number": 551695622,
+    "value": 855540,
+    "dueDate": "28/11/2026",
+    "bank": "CIB",
+    "notes": "",
+    "type": "أ.ق"
+  }
+]
