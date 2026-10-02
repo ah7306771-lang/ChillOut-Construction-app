@@ -5432,7 +5432,7 @@ window.safeFileName = function(str){
     // كلمة سره الشخصية على بوابة الشاشة؛ غير كده (أو لو دوس "#") بيشوف
     // كل الموظفين زي المعتاد.
     var linkedEmployee = getAttendanceLinkedEmployee() || attendanceSessionUnlockedEmployee;
-    var employeesToShow = linkedEmployee ? [linkedEmployee] : ATTENDANCE_EMPLOYEES;
+    var employeesToShow = linkedEmployee ? [linkedEmployee] : attPunchEmployees_();
     employeesToShow.forEach(function(name){
       buildAttendanceRow(list, name);
     });
@@ -5665,17 +5665,17 @@ window.safeFileName = function(str){
       });
       if (!rows.length) rows.push({ w: 1, h: '<tr><td style="' + ATT_TD + '" colspan="7">لا توجد حركات في هذا الشهر</td></tr>' });
       var netColor = e.net > 0 ? ATT_RED : (e.net < 0 ? ATT_GREEN : '');
-      var head = '<h2 style="text-align:center;margin:0 0 2px;font-size:25px">تقرير الحضور والانصراف</h2><div style="text-align:center;margin-bottom:6px;font-size:15px">الموظف: <b>' + attEsc_(e.name) + '</b> — الشهر: ' + rep.month + '</div>' +
-        '<table style="width:100%;border-collapse:collapse;margin-bottom:3px;font-size:13px;line-height:1.25"><tr>' +
+      var head = '<h2 style="text-align:center;margin:0 0 1px;font-size:25px;font-weight:800;line-height:1.2">تقرير الحضور والانصراف</h2><div style="text-align:center;margin-bottom:3px;font-size:15px">الموظف: <b>' + attEsc_(e.name) + '</b> — الشهر: ' + rep.month + '</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-bottom:2px;font-size:13px;line-height:1.25"><tr>' +
           attBoxPdf_('ميعاد الحضور (اللائحة)', e.off.i || '—') + attBoxPdf_('ميعاد الانصراف (اللائحة)', e.off.o || '—') + attBoxPdf_('أيام الحضور', e.present) + attBoxPdf_('أيام التأخير / الانصراف المبكر', e.lateDays + ' / ' + e.earlyDays) + '</tr><tr>' +
           attBoxPdf_('إجمالي تأخير الحضور', attSigned_(e.tLate), e.tLate ? ATT_RED : '') + attBoxPdf_('إجمالي الانصراف المبكر', attSigned_(e.tEarly), e.tEarly ? ATT_RED : '') +
           attBoxPdf_('زيادة (حضر بدري / مشي متأخر)', e.tExtra ? attSigned_(-e.tExtra) : '0:00', e.tExtra ? ATT_GREEN : '') + attBoxPdf_('الصافي (موجب = عليه / سالب = له)', attSigned_(e.net), netColor) + '</tr></table>' +
-        '<div style="font-size:11.5px;color:#666;margin-bottom:5px;line-height:1.3">الأرقام بالساعات:الدقائق. <span style="color:' + ATT_RED + '">الأحمر</span> = تأخير أو انصراف مبكر (بعد خصم الأذونات والمأموريات والإجازات المعتمدة)، <span style="color:' + ATT_GREEN + '">الأخضر بالسالب</span> = حضر قبل ميعاده أو انصرف بعد ميعاده.</div>';
-      var chunks = [], cur = '', w = 0, cap = 37;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
+        '';
+      var chunks = [], cur = '', w = 0, cap = 38;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
       rows.forEach(function(r){ if (cur && w + r.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 38; } cur += r.h; w += r.w; });
       chunks.push(cur);
       chunks.forEach(function(c, idx){
-        pages.push('<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:10px 26px 40px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:15px;overflow:hidden">' +
+        pages.push('<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:4px 26px 40px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:15px;font-weight:700;overflow:hidden">' +
           (idx === 0 ? head : '<div style="margin-bottom:4px;color:#666;font-size:13px">' + attEsc_(e.name) + ' — تابع التقرير</div>') +
           '<table style="width:100%;border-collapse:collapse">' + th + c + '</table>' +
           '<div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#888;font-size:11px">' + attEsc_(e.name) + ' — ' + rep.month + ' — صفحة ' + (idx + 1) + ' من ' + chunks.length + '</div></div>');
@@ -6003,6 +6003,15 @@ window.safeFileName = function(str){
   // اتحولت من IIFE بتتنفذ مرة واحدة بس لدالة قابلة لإعادة الاستدعاء —
   // محتاجينها تتكرر كل ما قايمة الموظفين تتغيّر (بعد التحميل من السيرفر،
   // أو بعد إضافة/حذف موظف من شاشة الإدارة) عشان الليستة تفضل مطابقة.
+  // الموظفين اللي بيبصموا: أي موظف أيقونة "حضور وانصراف" مش متعلّمة له في إدارة الشاشات
+  // (يعني مالوش بصمة) بيختفي من لوحة الحضور ومن شاشة الحضور والانصراف.
+  function attPunchEmployees_(){
+    var map_ = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_) || {};
+    return (ATTENDANCE_EMPLOYEES || []).filter(function(n){
+      var h = map_[n];
+      return !(h && h.indexOf('openAttendanceBtn') > -1);
+    });
+  }
   function rebuildAttendanceDashboardEmployeeSelect_(){
     var empSelect = document.getElementById('dashEmployeeSelect');
     if (!empSelect) return;
@@ -6012,13 +6021,14 @@ window.safeFileName = function(str){
     allOpt.value = '';
     allOpt.textContent = 'كل الموظفين';
     empSelect.appendChild(allOpt);
-    ATTENDANCE_EMPLOYEES.forEach(function(name){
+    var punchNames_ = attPunchEmployees_();
+    punchNames_.forEach(function(name){
       var opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
       empSelect.appendChild(opt);
     });
-    if (ATTENDANCE_EMPLOYEES.indexOf(currentVal) > -1) empSelect.value = currentVal;
+    if (punchNames_.indexOf(currentVal) > -1) empSelect.value = currentVal;
   }
   (function initAttendanceDashboard(){
     var dateInput = document.getElementById('dashDateInput');
@@ -6356,7 +6366,7 @@ window.safeFileName = function(str){
     var container = document.getElementById('attendanceDashboardList');
     if (!container) return;
     container.innerHTML = '';
-    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES;
+    var names = employeeFilter ? [employeeFilter] : attPunchEmployees_();
     names.forEach(function(name){
       var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
       var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
@@ -6659,7 +6669,7 @@ window.safeFileName = function(str){
     if (paperSub) {
       paperSub.textContent = (employeeFilter ? (employeeFilter + ' — ') : '') + 'بيانات يوم ' + (date || attendanceTodayKey());
     }
-    var names = employeeFilter ? [employeeFilter] : ATTENDANCE_EMPLOYEES;
+    var names = employeeFilter ? [employeeFilter] : attPunchEmployees_();
     names.forEach(function(name){
       var checkIn = rows.filter(function(r){ return r.name === name && r.type === 'حضور'; }).pop();
       var checkOut = rows.filter(function(r){ return r.name === name && r.type === 'انصراف'; }).pop();
@@ -9240,6 +9250,7 @@ window.safeFileName = function(str){
     var salarySendAllTile = document.getElementById('salarySendAllBtn');
     if (salarySendAllTile) salarySendAllTile.style.display = isEmployeeSession ? 'none' : '';
     applyNotifPermsUI_();
+    try { if (typeof rebuildAttendanceDashboardEmployeeSelect_ === 'function') rebuildAttendanceDashboardEmployeeSelect_(); } catch (e) {}
   }
 
   // استعادة فورية (من الجهاز) لقايمة الإخفاء بتاعة الموظف المحفوظ دخوله، أول
@@ -12750,8 +12761,8 @@ window.safeFileName = function(str){
   var TD = 'border:1px solid #ccc;padding:5px;text-align:center', TH = 'border:1px solid #bbb;padding:5px;background:#f3ece4';
   function pagesFor(emp, v){
     var s = statement(v);
-    var head = '<h2 style="text-align:center;margin:0 0 4px">كشف حساب العهدة</h2><div style="text-align:center;margin-bottom:12px">الموظف: <b>' + esc(emp) + '</b> — الفترة: ' + (v.f || 'البداية') + ' إلى ' + (v.t || today()) + '</div>' +
-      '<table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr><td style="' + TD + '">رصيد أول المدة<br><b>' + fmt(v.op) + '</b></td><td style="' + TD + '">إجمالي الوارد<br><b style="color:#1f7a4c">' + fmt(s.ti) + '</b></td><td style="' + TD + '">إجمالي المنصرف<br><b style="color:#c0392b">' + fmt(s.to) + '</b></td><td style="' + TD + '">الرصيد النهائي<br><b>' + fmt(s.end) + '</b></td></tr></table>';
+    var head = '<h2 style="text-align:center;margin:0 0 4px;font-weight:800">كشف حساب العهدة</h2><div style="text-align:center;margin-bottom:12px">الموظف: <b>' + esc(emp) + '</b> — الفترة: ' + (v.f || 'البداية') + ' إلى ' + (v.t || today()) + '</div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr><td style="' + TD + ';background:#f3ece4">رصيد أول المدة<br><b>' + fmt(v.op) + '</b></td><td style="' + TD + ';background:#eaf6ef">إجمالي الوارد<br><b style="color:#1f7a4c">' + fmt(s.ti) + '</b></td><td style="' + TD + ';background:#fdecea">إجمالي المنصرف<br><b style="color:#c0392b">' + fmt(s.to) + '</b></td><td style="' + TD + ';background:#f3ece4">الرصيد النهائي<br><b>' + fmt(s.end) + '</b></td></tr></table>';
     var items = [];
     if (v.f) items.push({ w: 1, h: '<tr><td style="' + TD + ';background:#fafafa" colspan="5">رصيد أول المدة</td><td style="' + TD + '">' + fmt(v.op) + '</td></tr>' });
     s.lines.forEach(function(l){
@@ -12765,7 +12776,7 @@ window.safeFileName = function(str){
     chunks.push(cur);
     var th = '<tr><th style="' + TH + '">التاريخ</th><th style="' + TH + '">البيان</th><th style="' + TH + '">المشروع</th><th style="' + TH + '">وارد</th><th style="' + TH + '">منصرف</th><th style="' + TH + '">الرصيد</th></tr>';
     return chunks.map(function(rows, i){
-      return '<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;overflow:hidden">' +
+      return '<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:32px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;font-weight:700;overflow:hidden">' +
         (i === 0 ? head : '<div style="margin-bottom:8px;color:#666">' + esc(emp) + ' — تابع كشف العهدة</div>') +
         (rows ? '<table style="width:100%;border-collapse:collapse">' + th + rows + '</table>' : '') +
         '<div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#888;font-size:11px">' + esc(emp) + ' — صفحة ' + (i + 1) + ' من ' + chunks.length + '</div></div>';
