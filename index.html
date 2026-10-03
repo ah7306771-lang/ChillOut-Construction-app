@@ -13418,7 +13418,7 @@ window.safeFileName = function(str){
       if (u.indexOf('action=notifyEvent') > -1 && u.indexOf('/rest/v1/') < 0) {
         var q = new URL(u, location.href).searchParams, body = q.get('body') || '';
         if (q.get('qty') && body.indexOf(q.get('qty')) === -1) body += (body ? ' — ' : '') + q.get('qty') + (q.get('unit') ? ' ' + q.get('unit') : '');
-        logNotif({ title: q.get('title'), body: body, topic: q.get('topic'), dedupId: q.get('dedupId') });
+        logNotif({ title: q.get('title'), body: body, topic: q.get('topic'), target: q.get('target'), dedupId: q.get('dedupId') });
       }
     } catch (e) {}
     return _fetch.apply(null, arguments);
