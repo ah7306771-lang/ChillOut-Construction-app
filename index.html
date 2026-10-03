@@ -563,6 +563,7 @@
   #attendanceScreen #attendanceList{margin-top:var(--att-list-offset);}
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
   #mySalaryScreen .gate-card{margin-top:64px;}
+  #notifSettingsScreen .gate-card{margin-top:64px;}
 
   /* لوحة الحضور والانصراف بس: تصغير الخط شوية عموماً، وتصغير مربعات
      التاريخ والفلتر (الموظف) ومربعات حضور/انصراف اللي كانت حجمها زيادة
@@ -1843,6 +1844,10 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
       <span class="home-tile-icon" style="font-size:26px;">💰</span>
       <span class="home-tile-label">راتبي</span>
     </button>
+    <button type="button" class="home-tile" id="openNotifSettingsHomeBtn" style="display:none;">
+      <span class="home-tile-icon" style="font-size:26px;">⚙️</span>
+      <span class="home-tile-label">إعدادات الإشعارات</span>
+    </button>
     <button type="button" class="home-tile" id="openCustodyLedgerBtn">
       <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="6" width="17" height="13" rx="2" stroke="#e2621f" stroke-width="1.6"/><path d="M3.5 10h17" stroke="#3a3f45" stroke-width="1.6"/><circle cx="16.5" cy="14.5" r="1.3" stroke="#3a3f45" stroke-width="1.5"/></svg></span>
       <span class="home-tile-label">العهد</span>
@@ -2352,9 +2357,8 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
   </div>
 </div>
 
-<!-- شاشة "راتبي": الموظف بيشوف فيها راتبه الحالي (من تاب "الرواتب")
-     ويقدر يفعّل إشعاراته الشخصية (نزول الراتب / اعتماد طلباته هو بس) —
-     منفصل تمامًا عن زرار "فعّل إشعارات الجوال" اللي في شاشة اعتماد الأذون. -->
+<!-- شاشة "راتبي": الموظف بيشوف فيها راتبه الحالي (من تاب "الرواتب") بس.
+     كل إعدادات الإشعارات اتنقلت لشاشة "إعدادات الإشعارات" (notifSettingsScreen). -->
 <div id="mySalaryScreen" class="gate-screen shifted-bar-screen" style="display:none;">
   <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
   <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
@@ -2366,7 +2370,20 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
     <button type="button" class="btn btn-secondary" id="viewEmployeeSalaryBtn" style="width:100%;margin-bottom:12px;display:none;">💰 عرض راتب موظف</button>
     <div id="mySalaryContent"><div class="empty-note">جاري التحميل...</div></div>
 
-    <div class="settings-divider" id="mySalaryDivider"></div>
+  </div>
+</div>
+
+<!-- شاشة "إعدادات الإشعارات": كل إعدادات تفعيل/اختبار/إرسال الإشعارات في مكان واحد.
+     الموظف: إشعاراته الشخصية + الأنواع اللي المسؤول فعّل له صلاحيتها من "إدارة الشاشات".
+     الأدمن: كل أنواع الإشعارات + الإرسال اليدوي. (اتشالت من شاشة "راتبي") -->
+<div id="notifSettingsScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnNotifSettings" class="back-btn">→ رجوع للرئيسية</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">إعدادات الإشعارات</h1>
     <div id="mySalaryPushBox">
     <div class="section-tag" id="mySalaryPushTag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
     <button type="button" class="btn btn-secondary" id="enableMyPushBtn" style="width:100%;">🔔 فعّل إشعاراتي الشخصية</button>
@@ -3967,6 +3984,8 @@ window.safeFileName = function(str){
     if (screenPassScreen) screenPassScreen.style.display = (name === 'screen-pass') ? '' : 'none';
     attendanceScheduleScreen.style.display = (name === 'attendance-schedule') ? '' : 'none';
     if (mySalaryScreen) mySalaryScreen.style.display = (name === 'my-salary') ? '' : 'none';
+    var notifSettingsScreen_ = document.getElementById('notifSettingsScreen');
+    if (notifSettingsScreen_) notifSettingsScreen_.style.display = (name === 'notif-settings') ? '' : 'none';
     appScreen.style.display         = (name === 'app')           ? '' : 'none';
     orderScreen.style.display       = (name === 'order')         ? '' : 'none';
     quoteScreen.style.display       = (name === 'quote')         ? '' : 'none';
@@ -8110,60 +8129,47 @@ window.safeFileName = function(str){
       if (wrap) wrap.innerHTML = '<div class="empty-note">تعذر تحميل الراتب، تأكد من الإنترنت وحاول تاني.</div>';
     });
   }
-  // بيفتح الشاشة ويظبطها حسب مين فاتحها:
-  //  - الموظف: راتبه هو + إشعاراته الشخصية.
-  //  - الأدمن (من الإعدادات ← إعدادات الإشعارات): شاشة اختبار إشعارات الجهاز
-  //    من غير ما يتسأل يختار موظف. لو عايز يشوف راتب موظف بيدوس "عرض راتب موظف"
-  //    (اختيار اختياري، مش بيتطلب منه).
-  // الأدمن ممكن يوصل للشاشة دي من الرئيسية (تايل "راتبي" ← اختيار موظف) أو من
-  // الإعدادات (إعدادات الإشعارات) — بنفتكر جه منين عشان زرار الرجوع يرجّعه صح.
-  var mySalaryAdminOrigin_ = 'settings';
+  // شاشة "راتبي": الراتب بس. الأدمن بيوصلها من الرئيسية وبيختار موظف.
   function showMySalaryScreen_(){
     var admin = !isEmployeeSession;
     var viewingSalary = !admin || !!currentSessionEmployeeName;
     var titleEl = document.getElementById('mySalaryTitle');
-    if (titleEl) titleEl.textContent = !admin ? 'راتبي' : (currentSessionEmployeeName ? ('راتب ' + currentSessionEmployeeName) : 'إعدادات الإشعارات');
+    if (titleEl) titleEl.textContent = !admin ? 'راتبي' : (currentSessionEmployeeName ? ('راتب ' + currentSessionEmployeeName) : 'راتبي');
     var backBtn = document.getElementById('backHomeBtnMySalary');
-    if (backBtn) backBtn.textContent = (admin && mySalaryAdminOrigin_ === 'settings') ? '→ رجوع للإعدادات' : '→ رجوع للرئيسية';
+    if (backBtn) backBtn.textContent = '→ رجوع للرئيسية';
     var viewBtn = document.getElementById('viewEmployeeSalaryBtn');
     if (viewBtn) {
-      // زرار اختيار موظف يظهر بس لما الأدمن جاي من تايل "راتبي" في الرئيسية.
-      // في شاشة "إعدادات الإشعارات" (من الإعدادات) مالوش لازمة — عرض الراتب برّه.
-      viewBtn.style.display = (admin && mySalaryAdminOrigin_ === 'home') ? '' : 'none';
+      viewBtn.style.display = admin ? '' : 'none';
       viewBtn.textContent = currentSessionEmployeeName ? '💰 اختيار موظف آخر' : '💰 عرض راتب موظف';
     }
     var contentEl = document.getElementById('mySalaryContent');
     if (contentEl) contentEl.style.display = viewingSalary ? '' : 'none';
-    // قسم الإشعارات: للموظف بس (إشعاراته الشخصية). لما الأدمن بيفتح الشاشة —
-    // سواء وهو بيشوف راتب موظف أو في "إعدادات الإشعارات" العامة — بيتخفي هنا
-    // لأنه نفس تفعيل "إشعارات طلبات الاعتماد" تحت بالظبط (نفس الزرار ونفس
-    // التسجيل)، وكان ظاهر مرتين بنفس الاسم في وضع "إعدادات الإشعارات".
+    showScreen('my-salary');
+    if (viewingSalary) loadMySalary_();
+  }
+  // شاشة "إعدادات الإشعارات" (مكان واحد لكل الإشعارات):
+  //  - الموظف: إشعاراته الشخصية + الأنواع اللي صلاحيتها متفعّلة له.
+  //  - الأدمن: كل الأنواع + الإرسال اليدوي.
+  var notifSettingsOrigin_ = 'home';
+  function showNotifSettingsScreen_(){
+    var admin = !isEmployeeSession;
+    var backBtn = document.getElementById('backHomeBtnNotifSettings');
+    if (backBtn) backBtn.textContent = (admin && notifSettingsOrigin_ === 'settings') ? '→ رجوع للإعدادات' : '→ رجوع للرئيسية';
     var showPush = !admin;
     var pushBoxEl = document.getElementById('mySalaryPushBox');
     if (pushBoxEl) pushBoxEl.style.display = showPush ? '' : 'none';
-    var dividerEl = document.getElementById('mySalaryDivider');
-    if (dividerEl) dividerEl.style.display = (!admin) ? '' : 'none';
-    var tagEl = document.getElementById('mySalaryPushTag');
-    if (tagEl) tagEl.textContent = 'إشعاراتي الشخصية';
     var testStatus = document.getElementById('myPushTestStatus');
     if (testStatus) testStatus.innerHTML = '';
-    // إشعارات طلبات الاعتماد + إشعارات الشيكات: أدمن بس، وبس وهو في وضع
-    // "إعدادات الإشعارات" العام (مش وهو بيشوف راتب موظف بعينه).
-    var showAdminPush = admin && !currentSessionEmployeeName;
     var adminPushBoxEl = document.getElementById('mySalaryAdminPushBox');
-    if (adminPushBoxEl) adminPushBoxEl.style.display = showAdminPush ? '' : 'none';
-    if (showAdminPush) {
+    if (adminPushBoxEl) adminPushBoxEl.style.display = admin ? '' : 'none';
+    if (admin) {
       refreshPushButtonState(document.getElementById('pushStatus'), document.getElementById('enablePushBtn'));
       refreshPushButtonState(document.getElementById('checksPushStatus'), document.getElementById('enableChecksPushBtn'), 'checks');
       refreshPushButtonState(document.getElementById('orderPushStatus'), document.getElementById('enableOrderPushBtn'), 'order');
       refreshPushButtonState(document.getElementById('overduePushStatus'), document.getElementById('enableOverduePushBtn'), 'overdue');
     }
-    showScreen('my-salary');
-    if (viewingSalary) loadMySalary_();
-    // الموظف بس: حالة تفعيل إشعاراته الشخصية (الأدمن مالوش زرار هنا، شايف
-    // "إشعارات طلبات الاعتماد" تحت بدل منه).
+    showScreen('notif-settings');
     if (showPush) refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
-    // صلاحيات الإشعارات للموظف: نطبّق اللي عندنا فورًا، وبعدين نجيب الأحدث من الشيت.
     applyNotifPermsUI_();
     if (showPush) {
       refreshEmpNotifButtons_();
@@ -8176,8 +8182,7 @@ window.safeFileName = function(str){
       showMySalaryScreen_();
       return;
     }
-    // الأدمن (من الإعدادات ← إعدادات الإشعارات): يدخل على طول من غير سؤال.
-    mySalaryAdminOrigin_ = 'settings';
+    mySalaryAdminOrigin_ = 'home';
     currentSessionEmployeeName = null;
     showMySalaryScreen_();
   }
@@ -8231,17 +8236,31 @@ window.safeFileName = function(str){
   }
   var openMySalaryTileBtn = document.getElementById('openMySalaryTileBtn');
   if (openMySalaryTileBtn) openMySalaryTileBtn.addEventListener('click', openMySalaryTile_);
+  // تايل "إعدادات الإشعارات" في الإعدادات (أدمن) + تايل في الرئيسية (موظف)
   var openNotifTestTileBtn = document.getElementById('openNotifTestTileBtn');
   if (openNotifTestTileBtn) openNotifTestTileBtn.addEventListener('click', function(){
     if (isEmployeeSession) return; // للأدمن بس
-    openMySalaryFlow_();
+    notifSettingsOrigin_ = 'settings';
+    currentSessionEmployeeName = null;
+    showNotifSettingsScreen_();
+  });
+  var openNotifSettingsHomeBtn = document.getElementById('openNotifSettingsHomeBtn');
+  if (openNotifSettingsHomeBtn) openNotifSettingsHomeBtn.addEventListener('click', function(){
+    if (!isEmployeeSession || !currentSessionEmployeeName) return;
+    notifSettingsOrigin_ = 'home';
+    showNotifSettingsScreen_();
+  });
+  var backHomeBtnNotifSettings = document.getElementById('backHomeBtnNotifSettings');
+  if (backHomeBtnNotifSettings) backHomeBtnNotifSettings.addEventListener('click', function(){
+    if (isEmployeeSession) { showScreen('home'); return; }
+    showScreen(notifSettingsOrigin_ === 'home' ? 'home' : 'settings-menu');
   });
   var backHomeBtnMySalary = document.getElementById('backHomeBtnMySalary');
   if (backHomeBtnMySalary) backHomeBtnMySalary.addEventListener('click', function(){
     if (isEmployeeSession) { showScreen('home'); return; }
-    // الأدمن: ننسى الموظف اللي كان مختاره ونرجع للمكان اللي جه منه.
+    // الأدمن: ننسى الموظف اللي كان مختاره ونرجع للرئيسية.
     currentSessionEmployeeName = null;
-    showScreen(mySalaryAdminOrigin_ === 'home' ? 'home' : 'settings-menu');
+    showScreen('home');
   });
   var enableMyPushBtn = document.getElementById('enableMyPushBtn');
   if (enableMyPushBtn) enableMyPushBtn.addEventListener('click', function(){
@@ -9390,7 +9409,7 @@ window.safeFileName = function(str){
     list = list || [];
     return p.defaultOn ? list.indexOf(p.id) === -1 : list.indexOf('allow_' + p.id) > -1;
   }
-  // بيظبط اللي يظهر للموظف في شاشة "راتبي" حسب صلاحياته. الأدمن مش بيتأثر.
+  // بيظبط اللي يظهر للموظف في شاشة "إعدادات الإشعارات" حسب صلاحياته. الأدمن مش بيتأثر.
   function applyNotifPermsUI_(){
     if (!NOTIF_PERMS_) return;
     var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
@@ -9444,6 +9463,8 @@ window.safeFileName = function(str){
     }
     var crTile = document.getElementById('openCustodyReportTileBtn');
     if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
+    var notifSetHome = document.getElementById('openNotifSettingsHomeBtn');
+    if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
