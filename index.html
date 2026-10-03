@@ -1830,6 +1830,7 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
       <div class="cg-card" id="cgBalCard">الرصيد<b id="cgBal">0</b><small id="cgOpen"></small></div>
     </div>
     <div class="status-msg" id="cgStatus"></div>
+    <div id="cgLockMsg" style="display:none;background:#eaf6ef;color:#1f7a4c;border:1px solid #b7e0c8;border-radius:10px;padding:8px 10px;margin:6px 0;text-align:center;font-weight:800;font-size:13px"></div>
     <section class="cg-sec in"><button type="button" class="cg-add" id="cgAddIn">＋ وارد <span id="cgSumIn"></span></button><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
     <section class="cg-sec out"><button type="button" class="cg-add" id="cgAddOut">－ منصرف <span id="cgSumOut"></span></button><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
   </div>
@@ -12598,6 +12599,23 @@ window.safeFileName = function(str){
       .then(renderProjects).catch(function(){ cb.checked = !cb.checked; st('cpStatus', 'تعذّر التحديث', true); });
   });
 
+  // ---------- تقفيل العهدة (تاريخ لكل خزنة، متخزن في app_settings بمفتاح custodyLock:<الاسم>) ----------
+  // أي حركة تاريخها <= تاريخ التقفيل: ممنوع إدخال/تعديل/حذف. فك الفلاج بيرجع كل حاجة عادي.
+  var L = {};
+  function loadLocks(){
+    return fetch(SB + '/rest/v1/app_settings?select=key,value&key=like.' + encodeURIComponent('custodyLock:*'), { headers: H() })
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .then(function(rows){ var m = {}; (rows || []).forEach(function(x){ if (x && x.key && x.value) m[x.key.slice(12)] = x.value; }); L = m; })
+      .catch(function(){});
+  }
+  function saveLock(n, v){
+    return fetch(SB + '/rest/v1/app_settings?on_conflict=key', { method: 'POST', headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify([{ key: 'custodyLock:' + n, value: v }]) })
+      .then(function(r){ if (!r.ok) throw 0; });
+  }
+  function lockedFor(n, d){ var l = L[n]; return !!(l && d && d <= l); }
+  function lockText(n){ return 'تم تقفيل العهدة بتاريخ ' + L[n] + ' — لا يمكن إدخال أو تعديل أو حذف أي حركة بهذا التاريخ أو قبله'; }
+  function freshLock(){ return loadLocks(); }
+
   // ---------- الخزنة ----------
   $('openCustodyLedgerBtn').addEventListener('click', function(){
     var c = ctx();
@@ -12619,8 +12637,8 @@ window.safeFileName = function(str){
   function loadRows(){
     var e = who(); if (!e) { S.rows = []; render(); return Promise.resolve(); }
     st('cgStatus', 'جارٍ التحميل…');
-    return fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc')
-      .then(function(d){ S.rows = d; st('cgStatus', ''); render(); })
+    return Promise.all([fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()])
+      .then(function(res){ S.rows = res[0]; st('cgStatus', ''); render(); })
       .catch(function(){ S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
   }
   // فلترة بالتاريخ والمشروع + الرصيد السابق قبل "من تاريخ" (بتستخدم للتقارير بس)
@@ -12648,6 +12666,7 @@ window.safeFileName = function(str){
     S.rows.slice().reverse().forEach(function(r){
       var inn = r.entry_type === 'in', a = +r.amount;
       var row = '<div class="cg-row" data-row="' + r.id + '"><span><i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
+      if (lockedFor(who(), r.entry_date)) row = row.replace(/<button type="button" class="cg-edit"[\s\S]*$/, '<span title="مقفلة" style="grid-column:span 2;text-align:center">🔒</span></div>');
       if (inn) hin += row; else hout += row;
     });
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
@@ -12656,6 +12675,8 @@ window.safeFileName = function(str){
     $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(total);
     $('cgOpen').textContent = 'أول اليوم: ' + fmt(before);
     $('cgBalCard').classList.toggle('neg', total < 0);
+    var lb = $('cgLockMsg'), lk = L[who()];
+    if (lb) { if (lk) { lb.style.display = ''; lb.textContent = '✅ تم تقفيل العهدة بتاريخ ' + lk; } else lb.style.display = 'none'; }
   }
 
   // ---------- تسجيل سطر ----------
@@ -12677,12 +12698,12 @@ window.safeFileName = function(str){
     if (type === 'out' && !pr) { st('cgStatus', 'اختار المشروع — إجباري في المنصرف', true); d.querySelector('.d-proj').focus(); return; }
     var c = ctx(), ok = d.querySelector('.d-ok'); ok.disabled = true;
     var body = { employee: who(), entry_type: type, entry_date: d.querySelector('.d-date').value || today(), description: b, amount: a, project: pr, created_by: c.isEmp ? c.name : 'الأدمن' };
-    fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) })
+    freshLock().then(function(){ if (lockedFor(body.employee, body.entry_date)) throw 'lock'; return fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) }); })
       .then(function(r){ if (!r.ok) throw 0; return r.json(); })
       .then(function(rows){
         S.rows.push(rows[0]); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
         box.innerHTML = ''; st('cgStatus', 'تم تسجيل السطر ✓'); render();
-      }).catch(function(){ ok.disabled = false; st('cgStatus', 'تعذّر الحفظ، حاول تاني', true); });
+      }).catch(function(er){ ok.disabled = false; if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(body.employee) : 'تعذّر الحفظ، حاول تاني', true); });
   }
   ['In','Out'].forEach(function(k){
     var type = k === 'In' ? 'in' : 'out', box = $('cgDraft' + k);
@@ -12713,7 +12734,7 @@ window.safeFileName = function(str){
     var c = ctx(), editor = c.isEmp ? c.name : 'الأدمن', ok = box.querySelector('.e-ok'); ok.disabled = true;
     var body = { employee: r.employee, entry_type: r.entry_type, entry_date: dt, description: b, amount: a, project: pr, created_by: r.created_by || editor, created_at: r.created_at };
     var newRow = null;
-    fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) })
+    freshLock().then(function(){ if (lockedFor(r.employee, r.entry_date) || lockedFor(r.employee, dt)) throw 'lock'; return fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) }); })
       .then(function(x){ if (!x.ok) throw 0; return x.json(); })
       .then(function(rows){
         newRow = rows[0];
@@ -12728,7 +12749,7 @@ window.safeFileName = function(str){
         S.rows = S.rows.filter(function(x){ return String(x.id) !== String(r.id); }); S.rows.push(newRow);
         S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
         st('cgStatus', 'تم تعديل السطر ✓'); render();
-      }).catch(function(){ ok.disabled = false; st('cgStatus', 'تعذّر تعديل السطر، حاول تاني', true); });
+      }).catch(function(er){ ok.disabled = false; if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(r.employee) : 'تعذّر تعديل السطر، حاول تاني', true); });
   }
   $('custodyLedgerScreen').addEventListener('click', function(e){
     var eb = e.target.closest('[data-edit]');
@@ -12740,12 +12761,14 @@ window.safeFileName = function(str){
   // حذف ناعم: السطر بيتخفي لكن بيفضل في قاعدة البيانات (مع اسم اللي حذفه ووقته)
   $('custodyLedgerScreen').addEventListener('click', function(e){
     var b = e.target.closest('[data-del]'); if (!b) return;
+    var dr = findRow(b.dataset.del); if (!dr) return;
+    if (lockedFor(dr.employee, dr.entry_date)) { st('cgStatus', lockText(dr.employee), true); return; }
     if (!confirm('حذف السطر ده؟')) return;
     var c = ctx();
-    fetch(T + '?id=eq.' + b.dataset.del, { method: 'PATCH', headers: H({ Prefer: 'return=minimal' }),
-      body: JSON.stringify({ deleted_at: new Date().toISOString(), deleted_by: c.isEmp ? c.name : 'الأدمن' }) })
+    freshLock().then(function(){ if (lockedFor(dr.employee, dr.entry_date)) throw 'lock'; return fetch(T + '?id=eq.' + b.dataset.del, { method: 'PATCH', headers: H({ Prefer: 'return=minimal' }),
+      body: JSON.stringify({ deleted_at: new Date().toISOString(), deleted_by: c.isEmp ? c.name : 'الأدمن' }) }); })
       .then(function(r){ if (!r.ok) throw 0; S.rows = S.rows.filter(function(x){ return String(x.id) !== b.dataset.del; }); render(); })
-      .catch(function(){ st('cgStatus', 'تعذّر الحذف', true); });
+      .catch(function(er){ if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(dr.employee) : 'تعذّر الحذف', true); });
   });
 
   // ---------- التقرير (صفحات A4 بتتقسم على حدود الصفوف) ----------
@@ -12888,12 +12911,17 @@ window.safeFileName = function(str){
     return n;
   }
   function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
+  function lockLine(n){
+    var d = L[n] || '';
+    return '<div class="cr-lock" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 10px 10px;font-size:12.5px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" data-lk="' + esc(n) + '"' + (d ? ' checked' : '') + '> 🔒 تقفيل العهدة حتى</label>' +
+      '<input type="date" data-lkd="' + esc(n) + '" value="' + esc(d) + '" style="padding:3px 6px"><span class="cr-lk-msg" style="font-weight:800;color:#1f7a4c">' + (d ? 'تم التقفيل ✓' : '') + '</span></div>';
+  }
   function renderVaults(){
     var h = '<label class="cp-item"><span><input type="radio" name="crEmp" value="*"' + (R.sel === '*' ? ' checked' : '') + '> &nbsp;<b>كل الخزن</b> (كل خزنة في صفحات منفصلة)</span></label>';
     vaultNames().forEach(function(n){
       var v = rview(n), bal = v.op; v.list.forEach(function(r){ bal += (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
       h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) +
-        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span><b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>';
+        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span><b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
     });
     $('crList').innerHTML = h;
   }
@@ -12902,7 +12930,7 @@ window.safeFileName = function(str){
     if (!ctx().canReport) return;
     reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc')]).then(function(res){
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
       S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
@@ -12915,6 +12943,17 @@ window.safeFileName = function(str){
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
   ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
   $('crList').addEventListener('change', function(e){ if (e.target.name === 'crEmp') R.sel = e.target.value; });
+  // تقفيل/فك تقفيل خزنة: شيك بوكس + تاريخ (بيتحفظ فورًا)
+  $('crList').addEventListener('change', function(e){
+    var t = e.target, n = t.dataset && (t.dataset.lk || t.dataset.lkd); if (!n) return;
+    var row = t.closest('.cr-lock'), cb = row.querySelector('[data-lk]'), di = row.querySelector('[data-lkd]'), msg = row.querySelector('.cr-lk-msg'), d = di.value;
+    if (cb.checked && !d) { msg.style.color = '#c0392b'; msg.textContent = 'اختار التاريخ'; return; }
+    if (!cb.checked && !L[n]) { msg.textContent = ''; return; }
+    var val = cb.checked ? d : '';
+    msg.style.color = '#6b7280'; msg.textContent = 'جارٍ الحفظ…';
+    saveLock(n, val).then(function(){ L[n] = val; msg.style.color = '#1f7a4c'; msg.textContent = val ? 'تم التقفيل ✓' : 'تم فك التقفيل'; })
+      .catch(function(){ cb.checked = !!L[n]; msg.style.color = '#c0392b'; msg.textContent = 'تعذّر الحفظ'; });
+  });
   async function runReport(mode){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
     var names = R.sel === '*' ? vaultNames() : [R.sel], pages = [];
