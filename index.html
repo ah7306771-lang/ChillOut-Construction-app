@@ -2452,6 +2452,11 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
         <button type="button" class="btn btn-secondary ns-btn" id="empEnableVaultPushBtn">فعّل</button>
         <div class="status-msg ns-status" id="empVaultPushStatus"></div>
       </div>
+      <div class="ns-card" id="empNotifRow_notifAllEvents" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">👁️</span><div class="ns-txt"><div class="ns-title">كل إشعارات الأحداث (مراقب)</div><div class="ns-sub">حضور/انصراف/إجازات/مأموريات/أذون كل الموظفين — زي الأدمن</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableAllEventsPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empAllEventsPushStatus"></div>
+      </div>
     </div>
 
     <!-- ===== الأدمن: كل الأنواع (التفعيل + الإرسال اليدوي في نفس الكارت) ===== -->
@@ -4354,8 +4359,9 @@ window.safeFileName = function(str){
         if (topic === 'checks')   localStorage.setItem('fcmChecksTokenRegistered',   token);
         if (topic === 'order')    localStorage.setItem('fcmOrderTokenRegistered',    token);
         if (topic === 'overdue')  localStorage.setItem('fcmOverdueTokenRegistered',  token);
-        if (topic === 'approval') localStorage.setItem('fcmApprovalTokenRegistered', token);
-        if (topic === 'vault')    localStorage.setItem('fcmVaultTokenRegistered',    token);
+        if (topic === 'approval')   localStorage.setItem('fcmApprovalTokenRegistered',   token);
+        if (topic === 'vault')      localStorage.setItem('fcmVaultTokenRegistered',      token);
+        if (topic === 'all_events') localStorage.setItem('fcmAllEventsTokenRegistered',  token);
         if (statusEl && statusEl.dataset && statusEl.dataset.regKey) localStorage.setItem(statusEl.dataset.regKey, token);
       } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
@@ -4396,6 +4402,10 @@ window.safeFileName = function(str){
       storageKey    = 'fcmVaultTokenRegistered';
       defaultLabel  = '💼 فعّل إشعار تقفيل الخزنة';
       reenableLabel = '💼 إعادة تفعيل إشعار تقفيل الخزنة';
+    } else if (employeeMode === 'allEvents') {
+      storageKey    = 'fcmAllEventsTokenRegistered';
+      defaultLabel  = '👁️ فعّل استلام كل الإشعارات (مراقب)';
+      reenableLabel = '👁️ إعادة تفعيل استلام كل الإشعارات';
     } else if (employeeMode) {
       storageKey    = 'fcmEmployeeTokenRegistered';
       defaultLabel  = '🔔 فعّل إشعاراتي الشخصية';
@@ -8397,7 +8407,8 @@ window.safeFileName = function(str){
     { perm: 'notifOrders',    btn: 'empEnableOrderPushBtn',     status: 'empOrderPushStatus',     topic: 'order',    mode: 'order' },
     { perm: 'notifOverdue',   btn: 'empEnableOverduePushBtn',   status: 'empOverduePushStatus',   topic: 'overdue',  mode: 'overdue' },
     { perm: 'notifApprovals', btn: 'empEnableApprovalsPushBtn', status: 'empApprovalsPushStatus', topic: 'approval', mode: 'approval' },
-    { perm: 'notifVault',     btn: 'empEnableVaultPushBtn',     status: 'empVaultPushStatus',     topic: 'vault',    mode: 'vault' }
+    { perm: 'notifVault',     btn: 'empEnableVaultPushBtn',     status: 'empVaultPushStatus',     topic: 'vault',    mode: 'vault' },
+    { perm: 'notifAllEvents', btn: 'empEnableAllEventsPushBtn', status: 'empAllEventsPushStatus', topic: 'all_events', mode: 'allEvents' }
   ];
   function refreshEmpNotifButtons_(){
     EMP_NOTIF_BTNS_.forEach(function(b){
@@ -9459,7 +9470,8 @@ window.safeFileName = function(str){
     { id: 'notifOrders',    label: 'إشعارات أوامر الشراء 🛒',               defaultOn: false, rowId: 'empNotifRow_notifOrders' },
     { id: 'notifOverdue',   label: 'إشعارات المتأخرات 📉',                  defaultOn: false, rowId: 'empNotifRow_notifOverdue' },
     { id: 'notifApprovals', label: 'اعتماد الإجازات والمأموريات والأذون 📝', defaultOn: false, rowId: 'empNotifRow_notifApprovals' },
-    { id: 'notifVault',     label: 'إشعار تقفيل الخزنة 💼',                 defaultOn: false, rowId: 'empNotifRow_notifVault' }
+    { id: 'notifVault',     label: 'إشعار تقفيل الخزنة 💼',                 defaultOn: false, rowId: 'empNotifRow_notifVault' },
+    { id: 'notifAllEvents', label: 'كل إشعارات الأحداث (مراقب — زي الأدمن) 👁️', defaultOn: false, rowId: 'empNotifRow_notifAllEvents' }
   ];
   // صلاحيات خاصة (غير الإشعارات): بتتحفظ في نفس القايمة بنفس الأسلوب.
   //  - defaultOn:false → مخفي عن الموظفين تلقائي، ولما المسؤول يعلّم عليه بيتسجل allow_ + الاسم.
