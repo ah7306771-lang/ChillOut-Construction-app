@@ -1594,17 +1594,17 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
 .nc-tabs{display:flex;gap:6px;margin:6px 0 8px}
 .nc-tab{flex:1;border:1px solid var(--panel-line);background:#fff;border-radius:20px;padding:7px;font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer;color:var(--ink)}
 .nc-tab.active{background:var(--steel);color:#fff;border-color:var(--steel)}
-.nc-day{font-size:12px;font-weight:800;color:var(--ink-soft);margin:12px 4px 6px;text-align:right}
-.nc-item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:12px;margin-bottom:6px;background:#fff;border:1px solid var(--panel-line);cursor:pointer;text-align:right;position:relative}
+.nc-day{font-size:11px;font-weight:800;color:var(--ink-soft);margin:10px 4px 4px;text-align:right}
+.nc-item{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:10px;margin-bottom:5px;background:#fff;border:1px solid var(--panel-line);cursor:pointer;text-align:right;position:relative}
 .nc-item.unread{background:#fff4ea;border-color:#f3c9a5}
-.nc-ico{flex:0 0 40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px}
-.nc-main{flex:1;min-width:0;padding-left:14px}
-.nc-title{font-weight:800;font-size:13.5px;line-height:1.5;color:var(--ink)}
-.nc-body{font-size:12.5px;color:var(--ink-soft);margin-top:2px;line-height:1.55;word-break:break-word}
-.nc-time{font-size:11px;color:var(--ink-soft);margin-top:3px;font-weight:700}
+.nc-ico{flex:0 0 32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px}
+.nc-main{flex:1;min-width:0;padding-left:12px}
+.nc-title{font-weight:700;font-size:12px;line-height:1.4;color:var(--ink)}
+.nc-body{font-size:11px;color:var(--ink-soft);margin-top:2px;line-height:1.45;word-break:break-word}
+.nc-time{font-size:10px;color:var(--ink-soft);margin-top:2px;font-weight:700}
 .nc-item.unread .nc-time{color:#e2621f}
-.nc-dot{position:absolute;top:14px;left:12px;width:10px;height:10px;border-radius:50%;background:#e2621f}
-.nc-empty{padding:26px 10px;text-align:center;color:var(--ink-soft);font-weight:700;font-size:13px}
+.nc-dot{position:absolute;top:12px;left:10px;width:8px;height:8px;border-radius:50%;background:#e2621f}
+.nc-empty{padding:22px 10px;text-align:center;color:var(--ink-soft);font-weight:700;font-size:12px}
 </style>
 </head>
 <body>
@@ -4288,9 +4288,11 @@ window.safeFileName = function(str){
       try {
         localStorage.setItem('fcmTokenRegistered', token);
         if (employeeName) localStorage.setItem('fcmEmployeeTokenRegistered', token);
-        if (topic === 'checks')  localStorage.setItem('fcmChecksTokenRegistered', token);
-        if (topic === 'order')   localStorage.setItem('fcmOrderTokenRegistered', token);
-        if (topic === 'overdue') localStorage.setItem('fcmOverdueTokenRegistered', token);
+        if (topic === 'checks')   localStorage.setItem('fcmChecksTokenRegistered',   token);
+        if (topic === 'order')    localStorage.setItem('fcmOrderTokenRegistered',    token);
+        if (topic === 'overdue')  localStorage.setItem('fcmOverdueTokenRegistered',  token);
+        if (topic === 'approval') localStorage.setItem('fcmApprovalTokenRegistered', token);
+        if (topic === 'vault')    localStorage.setItem('fcmVaultTokenRegistered',    token);
         if (statusEl && statusEl.dataset && statusEl.dataset.regKey) localStorage.setItem(statusEl.dataset.regKey, token);
       } catch (e) {}
       if (statusEl) { statusEl.textContent = 'الإشعارات مفعّلة على الجهاز ده ✅'; statusEl.style.color = 'var(--ok)'; }
@@ -4323,6 +4325,14 @@ window.safeFileName = function(str){
       storageKey    = 'fcmOverdueTokenRegistered';
       defaultLabel  = '📉 فعّل إشعارات المتأخرات على الجهاز ده';
       reenableLabel = '📉 إعادة تفعيل إشعارات المتأخرات';
+    } else if (employeeMode === 'approval') {
+      storageKey    = 'fcmApprovalTokenRegistered';
+      defaultLabel  = '📝 فعّل اعتماد الإجازات والمأموريات والأذون';
+      reenableLabel = '📝 إعادة تفعيل اعتماد الإجازات والمأموريات والأذون';
+    } else if (employeeMode === 'vault') {
+      storageKey    = 'fcmVaultTokenRegistered';
+      defaultLabel  = '💼 فعّل إشعار تقفيل الخزنة';
+      reenableLabel = '💼 إعادة تفعيل إشعار تقفيل الخزنة';
     } else if (employeeMode) {
       storageKey    = 'fcmEmployeeTokenRegistered';
       defaultLabel  = '🔔 فعّل إشعاراتي الشخصية';
@@ -5997,10 +6007,15 @@ window.safeFileName = function(str){
               var notifTitle = name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف');
               // العنوان فيه الاسم ونوع الحركة، فالنص بقى الساعة بس.
               var notifBody  = timeStr;
+              // topic=presence/departure + target=<اسم الموظف>: الإشعار بيروح
+              // للأدمن + للموظف نفسه بس، مش لباقي الموظفين. مركز الإشعارات
+              // بيفلتر على target عشان كل موظف يشوف حضور/انصرافه هو بس.
               var notifParams = new URLSearchParams({
                 action: 'notifyEvent',
                 title: notifTitle,
                 body: notifBody,
+                topic: (type === 'حضور' ? 'presence' : 'departure'),
+                target: name,
                 dedupId: 'attendance-' + name + '-' + type + '-' + dateStr
               });
               fetch(ATTENDANCE_SCRIPT_URL + '?' + notifParams.toString()).catch(function(){});
@@ -13279,6 +13294,8 @@ window.safeFileName = function(str){
   function logNotif(n){
     if (!n || !n.title) return;
     var topic = topicOf(n.topic, n.dedupId, n.title);
+    // تجاهل إشعارات الاختبار — مش بتبقى حدث حقيقي يستاهل يبان في مركز الإشعارات.
+    if (topic === 'test') return;
     rpc('notif_log', { p_title: n.title, p_body: n.body || '', p_topic: topic, p_target: n.target || null, p_dedup: dedupKey(n.title, n.body || '', n.dedupId) })
       .then(function(){ setTimeout(refreshBadge, 700); }).catch(function(){});
   }
