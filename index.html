@@ -5262,7 +5262,10 @@ window.safeFileName = function(str){
     // يمنع الإرسال المزدوج: بنعطّل الزرار أثناء الإرسال بس (من غير ما نخفيه) ونرجّعه بعد ما الطلب يخلص.
     var guardBtn_ = (type === 'إذن' && rowRefs_) ? rowRefs_.leaveBtn : null;
     if (guardBtn_) guardBtn_.disabled = true;
-    var url = ATTENDANCE_SCRIPT_URL
+    // URL أساسي للـ Apps Script (بدون skipNotify) — بيتستخدم في الـ fallback
+    // لو Supabase فشل، عشان الـ Apps Script يبعت الإشعار بنفسه. لما Supabase
+    // ينجح، بنضيف skipNotify=1 عشان ما نكررش الإشعار.
+    var urlBase = ATTENDANCE_SCRIPT_URL
       + '?action=requestSubmit'
       + '&id=' + encodeURIComponent(reqId)
       + '&name=' + encodeURIComponent(name)
@@ -5273,6 +5276,7 @@ window.safeFileName = function(str){
       + '&reason=' + encodeURIComponent(reason || '')
       + '&leaveFrom=' + encodeURIComponent(opts.leaveFrom || '')
       + '&leaveTo=' + encodeURIComponent(opts.leaveTo || '');
+    var url = urlBase;
     if (statusEl) {
       statusEl.innerHTML = '';
       statusEl.className = 'attendance-request-status';
@@ -5287,19 +5291,42 @@ window.safeFileName = function(str){
       id: reqId, name: name, type: type, status: 'قيد المراجعة', reason: reason,
       from: from, to: to, date: dateParam, leaveFrom: opts.leaveFrom, leaveTo: opts.leaveTo
     });
-    function sendToSheet_(){
-      return fetch(url).then(function(r){ return r.text(); }).then(function(text){
+    // skipNotif=true لما Supabase نجح والفرونت بعت الإشعار (ما نكررش).
+    // skipNotif=false (default) للـ fallback لما Supabase فشل.
+    function sendToSheet_(skipNotif){
+      var finalUrl = urlBase + (skipNotif ? '&skipNotify=1' : '');
+      return fetch(finalUrl).then(function(r){ return r.text(); }).then(function(text){
         var d = null; try { d = JSON.parse(text); } catch (e) {}
         return d;
       }).catch(function(){ return null; });
     }
     saveRequestVerified_(dbRow_).then(function(res){
       if (res && res.ok) {
-        sendToSheet_();   // نسخة احتياطية في الشيت، مش بنستناها
+        // إشعار الأدمن بالطلب الجديد — بيتبعت فور ما Supabase ينجح، من غير ما
+        // نستنى الشيت. لو الشيت نجح برضه، server dedup (60 ثانية على نفس
+        // الـ dedupId) هيمنع التكرار. كده الإشعار مضمون يوصل للأدمن حتى لو
+        // الشيت فشل أو validation رفض.
+        try {
+          if (ATTENDANCE_SCRIPT_URL) {
+            var title = 'طلب ' + type + ' جديد';
+            var body  = name + ' طلب ' + type
+              + (from ? (' من ' + from) : '')
+              + (to   ? (' إلى ' + to)   : '')
+              + (reason ? (' — ' + reason) : '');
+            var notifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+              + '&title=' + encodeURIComponent(title)
+              + '&body=' + encodeURIComponent(body)
+              + '&action2=pendingRequests'
+              + '&dedupId=' + encodeURIComponent('newreq-' + reqId);
+            fetch(notifUrl).catch(function(){});
+          }
+        } catch (er) {}
+        sendToSheet_(true);   // نسخة احتياطية في الشيت + skipNotify (الإشعار اتبعت فوق)
         return { synced: true, detail: '' };
       }
       // Supabase فشل (أو الصف مش موجود بعد الحفظ) → نجرب الشيت زي زمان
-      return sendToSheet_().then(function(data){
+      // (بدون skipNotify عشان الـ Apps Script يبعت الإشعار بنفسه كـ fallback)
+      return sendToSheet_(false).then(function(data){
         if (!data || data.ok !== true) {
           var rejectErr = new Error((data && data.error) || (res && res.detail) || 'rejected');
           rejectErr.isRejection = !!(data && data.error);
@@ -6901,7 +6928,7 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ----------------
   // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
   // الحالة في تاب Requests مباشرة من التطبيق — من غير ما تفتح الشيت أصلاً.
-  function setRequestStatus(id, status, row){
+  function setRequestStatus(id, status, row, empName, reqType){
     if (!id) return;
     var approveBtn = row.querySelector('.btn-approve');
     var rejectBtn = row.querySelector('.btn-reject');
@@ -6911,11 +6938,33 @@ window.safeFileName = function(str){
     if (badge) { badge.className = 'approval-status-badge approval-status-pending'; badge.textContent = 'جاري الحفظ...'; }
 
     var url = ATTENDANCE_SCRIPT_URL
-      ? ATTENDANCE_SCRIPT_URL + '?action=requestSetStatus' + '&id=' + encodeURIComponent(id) + '&status=' + encodeURIComponent(status)
+      ? ATTENDANCE_SCRIPT_URL + '?action=requestSetStatus' + '&id=' + encodeURIComponent(id) + '&status=' + encodeURIComponent(status) + '&skipNotify=1'
       : '';
     mirrorRequestsToSupabase_([{ id: id, status: status }]).then(function(res){
       if (!res || !res.ok) throw new Error('failed');
-      if (url) { fetch(url).then(function(r){ return r.json(); }).catch(function(){}); }   // نسخة الشيت في الخلفية
+      // الشيت backup (في الخلفية). الـ Apps Script هو كمان بيبعت إشعار من
+      // تلقاء نفسه لو لقى الطلب في الشيت، لكن ممكن لسه ما يكونش اتزامن.
+      // عشان كده بنبعت الإشعار من الفرونت كمان ضمانًا — الـ dedup السيرفري
+      // (60 ثانية على نفس الـ dedupId) هيضمن إنه مش يتكرر.
+      if (url) { fetch(url).then(function(r){ return r.json(); }).catch(function(){}); }
+      // إشعار صاحب الطلب مباشرة — topic=approval + target=<اسمه> عشان يروح
+      // لتوكناته هو بس (مش broadcast). الدلفب الفريد = request id + status
+      // عشان نفس القرار ما يتبعتش مرتين.
+      if (empName && ATTENDANCE_SCRIPT_URL) {
+        try {
+          var isOk = (status === 'موافق');
+          var title = isOk ? '✅ تم اعتماد طلبك' : '❌ تم رفض طلبك';
+          var typeTxt = reqType || 'طلب';
+          var body = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك.';
+          var notifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+            + '&title=' + encodeURIComponent(title)
+            + '&body=' + encodeURIComponent(body)
+            + '&topic=approval'
+            + '&target=' + encodeURIComponent(empName)
+            + '&dedupId=' + encodeURIComponent('req-' + id + '-' + status);
+          fetch(notifUrl).catch(function(){});
+        } catch (er) {}
+      }
       loadAttendanceApprovals();
       refreshPendingRequestsBadge();
     }).catch(function(){
@@ -6985,8 +7034,8 @@ window.safeFileName = function(str){
     rejectBtn.className = 'btn-reject';
     rejectBtn.textContent = '✘ رفض';
 
-    approveBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'موافق', row); });
-    rejectBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'مرفوض', row); });
+    approveBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'موافق', row, req.name, req.type); });
+    rejectBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'مرفوض', row, req.name, req.type); });
 
     actions.appendChild(approveBtn);
     actions.appendChild(rejectBtn);
