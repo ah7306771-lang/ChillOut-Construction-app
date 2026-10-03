@@ -563,7 +563,7 @@
   #attendanceScreen #attendanceList{margin-top:var(--att-list-offset);}
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
   #mySalaryScreen .gate-card{margin-top:64px;}
-  #notifSettingsScreen .gate-card{margin-top:64px;}
+  #notifSettingsScreen .gate-card{margin-top:64px;margin-bottom:64px;}
   /* ---------- شاشة إعدادات الإشعارات ---------- */
   #notifSettingsScreen .ns-intro{font-size:12.5px;color:var(--ink-soft);text-align:center;margin:-2px 0 4px;line-height:1.7;}
   #notifSettingsScreen .ns-group{font-size:12px;font-weight:700;color:var(--steel);margin:20px 2px 10px;display:flex;align-items:center;gap:8px;}
@@ -576,8 +576,8 @@
   #notifSettingsScreen .ns-title{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.4;}
   #notifSettingsScreen .ns-sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;line-height:1.5;}
   #notifSettingsScreen .ns-btn{width:100%;padding:11px 14px;font-size:13.5px;}
-  #notifSettingsScreen .ns-status{margin:6px 0 0;font-size:12.5px;min-height:0;}
-  #notifSettingsScreen .ns-status:empty{display:none;}
+  #notifSettingsScreen .status-msg{margin:6px 0 0;font-size:12.5px;min-height:0;}
+  #notifSettingsScreen .status-msg:empty{display:none;}
   #notifSettingsScreen .ns-test{margin-top:10px;padding-top:10px;border-top:1px dashed var(--panel-line);}
   #notifSettingsScreen .ns-btn-ghost{width:100%;padding:9px 12px;font-size:12.5px;background:transparent;color:var(--blue-stamp);border:1px solid #c9d3ec;}
   #notifSettingsScreen .ns-btn-ghost:hover{background:#f3f6fd;}
@@ -2489,6 +2489,16 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
           <div class="status-msg ns-status" id="manualSendOverdueStatus"></div>
         </div>
       </div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">📝</span><div class="ns-txt"><div class="ns-title">اعتماد الإجازات والمأموريات والأذون</div><div class="ns-sub">نتيجة اعتماد أو رفض الإجازات والمأموريات والأذون</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enableApprovalsPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="approvalsPushStatus"></div>
+      </div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">💼</span><div class="ns-txt"><div class="ns-title">تقفيل الخزنة</div><div class="ns-sub">تقفيل العهدة أو تحديث تاريخ التقفيل</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enableVaultPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="vaultPushStatus"></div>
+      </div>
 
       <div class="ns-group">إرسال للموظفين</div>
       <div class="ns-card">
@@ -4034,7 +4044,7 @@ window.safeFileName = function(str){
     var waBtn = document.getElementById('waFloatBtn');
     if (waBtn) waBtn.style.display = (name === 'login' || name === 'home' || name === 'custody-ledger') ? 'flex' : 'none';
     // شاشة العهد: أيقونتي الواتساب والراديو أصغر عشان ما يغطوش على القوائم
-    document.body.classList.toggle('cg-compact', name === 'custody-ledger');
+    document.body.classList.toggle('cg-compact', name === 'custody-ledger' || name === 'notif-settings');
     var loginTopBar = document.getElementById('loginTopBar');
     if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
     var loginRadioBtn = document.getElementById('loginRadioBtn');
@@ -8201,6 +8211,8 @@ window.safeFileName = function(str){
       refreshPushButtonState(document.getElementById('checksPushStatus'), document.getElementById('enableChecksPushBtn'), 'checks');
       refreshPushButtonState(document.getElementById('orderPushStatus'), document.getElementById('enableOrderPushBtn'), 'order');
       refreshPushButtonState(document.getElementById('overduePushStatus'), document.getElementById('enableOverduePushBtn'), 'overdue');
+      refreshPushButtonState(document.getElementById('approvalsPushStatus'), document.getElementById('enableApprovalsPushBtn'), 'approval');
+      refreshPushButtonState(document.getElementById('vaultPushStatus'), document.getElementById('enableVaultPushBtn'), 'vault');
     }
     showScreen('notif-settings');
     if (showPush) refreshPushButtonState(document.getElementById('myPushStatus'), document.getElementById('enableMyPushBtn'), true);
@@ -9666,6 +9678,14 @@ window.safeFileName = function(str){
   var enableOverduePushBtn = document.getElementById('enableOverduePushBtn');
   if (enableOverduePushBtn) enableOverduePushBtn.addEventListener('click', function(){
     enablePushNotifications(document.getElementById('overduePushStatus'), '', 'overdue');
+  });
+  var enableApprovalsPushBtn = document.getElementById('enableApprovalsPushBtn');
+  if (enableApprovalsPushBtn) enableApprovalsPushBtn.addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('approvalsPushStatus'), '', 'approval');
+  });
+  var enableVaultPushBtn = document.getElementById('enableVaultPushBtn');
+  if (enableVaultPushBtn) enableVaultPushBtn.addEventListener('click', function(){
+    enablePushNotifications(document.getElementById('vaultPushStatus'), '', 'vault');
   });
   document.getElementById('backSettingsBtnIcons').addEventListener('click', function(){
     showScreen('settings-menu');
