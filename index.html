@@ -9406,6 +9406,7 @@ window.safeFileName = function(str){
     { group: 'الرئيسية', id: 'openAttendanceDashboardBtn', label: 'لوحة الحضور' },
     { group: 'الرئيسية', id: 'openAttendanceApprovalsBtn', label: 'اعتماد الأذون' },
     { group: 'الرئيسية', id: 'openNotifCenterBtn', label: 'الإشعارات 🔔' },
+    { group: 'الرئيسية', id: 'openNotifSettingsHomeBtn', label: 'إعدادات الإشعارات ⚙️' },
     { group: 'الرئيسية', id: 'openCustodyLedgerBtn', label: 'العهد' },
     { group: 'تفويضات', id: 'openAppBtn', label: 'تفويض المصريين' },
     { group: 'تفويضات', id: 'openGeneralBtn', label: 'تفويض عام' },
@@ -9510,7 +9511,8 @@ window.safeFileName = function(str){
     var crTile = document.getElementById('openCustodyReportTileBtn');
     if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
     var notifSetHome = document.getElementById('openNotifSettingsHomeBtn');
-    if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName) ? '' : 'none';
+    // للموظف: ظاهرة تلقائي، والمسؤول يقدر يخفيها له من "إدارة الشاشات". الأدمن بيدخلها من الإعدادات.
+    if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName && effectiveHidden.indexOf('openNotifSettingsHomeBtn') === -1) ? '' : 'none';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
@@ -9589,7 +9591,7 @@ window.safeFileName = function(str){
     list.appendChild(ntag);
     var nhint = document.createElement('div');
     nhint.style.cssText = 'font-size:12px;opacity:.75;margin:0 0 6px;line-height:1.6;';
-    nhint.textContent = 'علّم على النوع عشان الموظف يقدر يفعّله من شاشة "راتبي". اختبار الإشعار متعلّم للكل تلقائي، والباقي مش متعلّم لحد ما تفعّله له.';
+    nhint.textContent = 'علّم على النوع عشان الموظف يقدر يفعّله من شاشة "إعدادات الإشعارات" (أيقونتها في مجموعة "الرئيسية" فوق). اختبار الإشعار متعلّم للكل تلقائي، والباقي مش متعلّم لحد ما تفعّله له.';
     list.appendChild(nhint);
     NOTIF_PERMS_.forEach(function(p){
       var nrow = document.createElement('label');
