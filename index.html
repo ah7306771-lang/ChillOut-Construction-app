@@ -8603,46 +8603,62 @@ window.safeFileName = function(str){
       } else {
         var late = (data.late || []).filter(function(it){ return !attIsExempt_(it.name); });
         if (!late.length) {
-          listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
+          listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر أو مشي بدري النهاردة ✓</div>';
           return;
         }
+        // الصافي = تأخير الحضور + الانصراف المبكر − الإضافي (حضر بدري / مشي بعد ميعاده). موجب = تأخير (أحمر) | سالب = إضافي (أخضر)
+        function fmtNet_(m){ var a = Math.abs(m), h = Math.floor(a / 60), r = a % 60; return (m < 0 ? '-' : '') + h + ':' + (r < 10 ? '0' : '') + r; }
+        function minCell_(m){ return m > 0 ? '<b dir="ltr" style="color:#c0392b">' + fmtNet_(m) + '</b>' : '—'; }
         var rowsHtml2 = late.map(function(it, i){
-          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td><td dir="ltr">' + escQuick_(it.time) + '</td><td>' + escQuick_(it.minutes) + ' د</td></tr>';
+          var net = (it.net != null) ? it.net : (+it.minutes || 0);
+          var netCell = net === 0 ? '—' : '<b dir="ltr" style="color:' + (net > 0 ? '#c0392b' : '#1f7a4c') + '">' + fmtNet_(net) + '</b>';
+          return '<tr><td>' + (i + 1) + '</td><td>' + escQuick_(it.name) + '</td>'
+            + '<td dir="ltr" style="color:#1f7a4c;font-weight:700">' + escQuick_(it.time) + '</td>'
+            + '<td dir="ltr" style="color:#c0392b;font-weight:700">' + (it.out ? escQuick_(String(it.out).slice(0, 5)) : '—') + '</td>'
+            + '<td>' + minCell_(+it.minutes || 0) + '</td><td>' + minCell_(+it.early || 0) + '</td><td>' + netCell + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>وقت الحضور</th><th>التأخير</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>';
+        listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th><th>حضور</th><th>انصراف</th><th>تأخير حضور</th><th>انصراف مبكر</th><th>الصافي</th></tr></thead><tbody>' + rowsHtml2 + '</tbody></table>'
+          + '<div style="font-size:11px;color:#7a6a5a;margin-top:6px;line-height:1.7;">الصافي (س:د) = تأخير الحضور + الانصراف المبكر − الإضافي. <span style="color:#c0392b;font-weight:700">أحمر = تأخير</span> — <span style="color:#1f7a4c;font-weight:700">أخضر = إضافي</span><br>بيتحدّث حسب اليوم: الانصراف بيتحسب أول ما الموظف يسجّله.</div>';
       }
     }
     // نجرب Supabase الأول (سريع، ~200ms): بنجيب قائمة الموظفين + حضور
     // اليوم، وبنحسب الغياب/التأخير محلياً. المواعيد الرسمية لسه في الشيت
     // فبنجيبها من كاش Apps Script (attendanceStatus) لو موجود.
-    function loadFromSupabase_(cachedOfficialIn){
+    function loadFromSupabase_(cachedOfficialIn, officialOutMap){
       var empsUrl = SUPABASE_URL + '/rest/v1/employees?active=eq.true&select=name';
       var attUrl  = SUPABASE_URL + '/rest/v1/attendance?date=eq.' + encodeURIComponent(date)
-        + '&select=name,in_time&limit=2000';
+        + '&select=name,in_time,out_time&limit=2000';
       Promise.all([
         fetch(empsUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }),
         fetch(attUrl,  { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; })
       ]).then(function(res){
         var emps = res[0] || [];
         var att  = res[1] || [];
-        var checkedIn = {};
+        var checkedIn = {}, checkedOut = {};
         att.forEach(function(r){
           if (r.name && r.in_time) {
             if (!checkedIn[r.name] || r.in_time < checkedIn[r.name]) checkedIn[r.name] = r.in_time;
           }
+          if (r.name && r.out_time) {
+            if (!checkedOut[r.name] || r.out_time > checkedOut[r.name]) checkedOut[r.name] = r.out_time;
+          }
         });
         var absent = [], late = [];
         var officialIn = cachedOfficialIn || {};
+        function toMin_(t){ var q = String(t || '').match(/(\d{1,2}):(\d{2})/); return q ? (+q[1]) * 60 + (+q[2]) : null; }
         emps.forEach(function(e){
           var name = e.name;
           var tIn = checkedIn[name];
           if (!tIn) { absent.push(name); return; }
-          var official = officialIn[name];
-          if (official) {
-            // فرق الدقايق بين الرسمي والفعلي
-            var a = official.split(':'), b = tIn.split(':');
-            var diff = ((+b[0]) * 60 + (+b[1])) - ((+a[0]) * 60 + (+a[1]));
-            if (diff > 0) late.push({ name: name, time: tIn, official: official, minutes: diff });
+          // بالإشارة: موجب = تأخير / انصراف مبكر | سالب = حضر بدري / مشي بعد ميعاده
+          var official = officialIn[name], offOut = (officialOutMap || {})[name], tOut = checkedOut[name];
+          var inM = toMin_(tIn), offI = toMin_(official), outM = toMin_(tOut), offO = toMin_(offOut);
+          var lateIn = (inM != null && offI != null) ? (inM - offI) : 0;
+          var early = (outM != null && offO != null) ? (offO - outM) : 0;
+          // بيدخل القايمة اللي اتأخر في الحضور أو مشي بدري (حتى لو حضر في ميعاده)
+          if (lateIn > 0 || early > 0) {
+            late.push({ name: name, time: String(tIn).slice(0, 5), out: tOut ? String(tOut).slice(0, 5) : '', official: official || '', officialOut: offOut || '',
+              minutes: Math.max(lateIn, 0), early: Math.max(early, 0), net: lateIn + early });
           }
         });
         renderQuickStatus_({ ok: true, absent: absent, late: late });
@@ -8667,17 +8683,18 @@ window.safeFileName = function(str){
     // يتسجل من "لائحة الحضور" أو "بيانات الموظفين" يبان فوراً في حساب
     // التأخير بدون انتظار كاش.
     loadAttendanceExempt_(function(){
-      fetch(SUPABASE_URL + '/rest/v1/official_times?select=name,in_time', { headers: sbHeaders() })
+      fetch(SUPABASE_URL + '/rest/v1/official_times?select=name,in_time,out_time', { headers: sbHeaders() })
         .then(function(r){ return r.ok ? r.json() : []; })
         .then(function(rows){
-          var officialIn = {};
+          var officialIn = {}, officialOut = {};
           (rows || []).forEach(function(r){
             if (r && r.name && r.in_time) {
               // نطبع لصيغة HH:MM (نشيل الثواني لو موجودة)
               officialIn[r.name] = String(r.in_time).slice(0, 5);
             }
+            if (r && r.name && r.out_time) officialOut[r.name] = String(r.out_time).slice(0, 5);
           });
-          loadFromSupabase_(officialIn);
+          loadFromSupabase_(officialIn, officialOut);
         })
         .catch(function(){
           // Fallback على الكاش القديم (ملف JSON) لو Supabase وقع
