@@ -8523,16 +8523,29 @@ window.safeFileName = function(str){
           listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
         });
     }
-    // Supabase أولاً — بنجيب المواعيد الرسمية من الكاش (لو موجود) عشان
-    // نحسب "التأخير" بالظبط. لو مافيش كاش، بنحسب الغياب بس (اللي مالوش
-    // ميعاد رسمي مش هيبان في قايمة التأخير).
+    // Supabase أولاً — المواعيد الرسمية بقت في جدول official_times على
+    // Supabase نفسه (مش في ملف JSON قديم زي الأول). كده أي ميعاد جديد
+    // يتسجل من "لائحة الحضور" أو "بيانات الموظفين" يبان فوراً في حساب
+    // التأخير بدون انتظار كاش.
     loadAttendanceExempt_(function(){
-      fetchAppJson_('attendanceStatus')
-        .then(function(cached){
-          var officialIn = (cached && cached.officialIn) || {};
+      fetch(SUPABASE_URL + '/rest/v1/official_times?select=name,in_time', { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          var officialIn = {};
+          (rows || []).forEach(function(r){
+            if (r && r.name && r.in_time) {
+              // نطبع لصيغة HH:MM (نشيل الثواني لو موجودة)
+              officialIn[r.name] = String(r.in_time).slice(0, 5);
+            }
+          });
           loadFromSupabase_(officialIn);
         })
-        .catch(function(){ loadFromSupabase_({}); });
+        .catch(function(){
+          // Fallback على الكاش القديم (ملف JSON) لو Supabase وقع
+          fetchAppJson_('attendanceStatus')
+            .then(function(cached){ loadFromSupabase_((cached && cached.officialIn) || {}); })
+            .catch(function(){ loadFromSupabase_({}); });
+        });
     });
   }
   function openQuickStatusFromLoginFlow_(kind){
