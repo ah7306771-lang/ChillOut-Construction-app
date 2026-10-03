@@ -1464,6 +1464,36 @@
     0%{transform:translateY(0) rotate(0deg);opacity:1;}
     100%{transform:translateY(115vh) rotate(540deg);opacity:.9;}
   }
+
+  /* لوحة الحضور: تنسيق مضغوط — عرض أكبر، موظفين أكتر في الشاشة، والمحتوى أعلى */
+  #attendanceDashboardScreen .back-bar{top:18px !important;padding:4px 14px !important;}
+  #attendanceDashboardScreen .gate-card{margin-top:42px !important;max-width:min(96vw,980px) !important;width:100%;padding:8px 10px 12px !important;}
+  #attendanceDashboardScreen .gate-title{font-size:15px !important;margin:0 0 4px !important;line-height:1.2;}
+  #attendanceDashboardScreen .dash-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;margin-bottom:0;}
+  #attendanceDashboardScreen .dash-controls .field label{font-size:10px;margin-bottom:1px;}
+  #attendanceDashboardScreen .dash-controls .field input[type=date],
+  #attendanceDashboardScreen .dash-controls .field select{padding:4px 8px;font-size:12px;height:28px;}
+  #attendanceDashboardScreen .dash-controls-buttons{margin:0;flex-wrap:nowrap;}
+  #attendanceDashboardScreen .dash-btn-compact{padding:4px 9px;font-size:11px;white-space:nowrap;height:28px;}
+  #attendanceDashboardScreen #dashStatus{margin:3px 0 !important;min-height:0;}
+  #attendanceDashboardScreen .dash-list-date{margin:4px 2px 0;font-size:11.5px;}
+  #attendanceDashboardScreen .dash-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:6px;margin-top:4px;}
+  #attendanceDashboardScreen .dash-row{padding:7px 9px;gap:5px;border-radius:10px;}
+  #attendanceDashboardScreen .dash-grid{gap:4px;}
+  #attendanceDashboardScreen .dash-cell{padding:4px 7px;gap:1px;border-radius:8px;}
+  #attendanceDashboardScreen .dash-name{font-size:13px;}
+  #attendanceDashboardScreen .dash-table-section{margin-top:6px;}
+  #attendanceDashboardScreen .dash-table-actions{margin-bottom:5px;}
+  #attendanceDashboardScreen .dash-table-actions .btn{padding:5px 8px;font-size:12px;}
+  #attendanceDashboardScreen #dashTable{min-width:0;font-size:11px;}
+  #attendanceDashboardScreen #dashTable th,#attendanceDashboardScreen #dashTable td{padding:4px 6px;}
+  #attendanceDashboardScreen #dashTable thead th{font-size:10px;}
+  #attendanceDashboardScreen #dashTable .dash-table-map{font-size:10.5px;}
+  @media (max-width:520px){
+    #attendanceDashboardScreen .dash-controls{grid-template-columns:1fr 1fr;}
+    #attendanceDashboardScreen .dash-controls-buttons{grid-column:1/-1;justify-content:center;}
+    #attendanceDashboardScreen .dash-list{grid-template-columns:1fr;}
+  }
 </style>
 <style>
 .cg-who{text-align:center;font-weight:800;margin:2px 0 12px;color:var(--steel-dark)}
@@ -1534,6 +1564,25 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
 .cg-vbar #vwClose{background:#444}
 #vwBody{overflow:auto;flex:1;padding:8px}
 #vwBody img{display:block;width:100%;max-width:760px;margin:0 auto 8px;background:#fff}
+</style>
+<style>
+/* شاشة العهد: رفع المحتوى لفوق + مساحة أكبر للبيانات */
+#custodyLedgerScreen{padding-top:50px !important;padding-bottom:40px !important}
+#custodyLedgerScreen .back-bar{top:20px !important;padding:4px 12px !important}
+#custodyLedgerScreen .gate-card{padding-top:6px !important;padding-bottom:8px !important}
+#custodyLedgerScreen .gate-title{font-size:15px !important;margin:0 0 3px !important;line-height:1.2}
+#cgEmpWrap{margin:0 0 4px !important}
+#cgEmpWrap label{font-size:11px !important;margin:0 0 1px !important;display:block}
+#cgEmpWrap select{padding:2px 8px !important;font-size:13px !important;height:28px !important;border-radius:8px !important;max-width:230px}
+#custodyLedgerScreen .cg-top{margin:0 0 4px}
+#custodyLedgerScreen .cg-cards{margin-bottom:4px}
+#custodyLedgerScreen .status-msg{margin:2px 0;min-height:0}
+#custodyLedgerScreen .cg-sec{margin:5px 0}
+#custodyLedgerScreen .cg-add{padding:6px 12px}
+#custodyLedgerScreen .cg-row.cg-locked{grid-template-columns:1fr auto}
+#custodyLedgerScreen .out .cg-row.cg-locked{grid-template-columns:1fr auto 22px}
+#cgLockMsg{margin:3px 0 !important;padding:4px 8px !important;font-size:12px !important}
+#cgListIn,#cgListOut{max-height:max(150px, calc((100vh - 330px) / 2)) !important}
 </style>
 <style>
 #notifCenterScreen{align-items:flex-start;padding:76px 10px 20px}
@@ -1831,8 +1880,8 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
     </div>
     <div class="status-msg" id="cgStatus"></div>
     <div id="cgLockMsg" style="display:none;background:#eaf6ef;color:#1f7a4c;border:1px solid #b7e0c8;border-radius:10px;padding:8px 10px;margin:6px 0;text-align:center;font-weight:800;font-size:13px"></div>
-    <section class="cg-sec in"><button type="button" class="cg-add" id="cgAddIn">＋ وارد <span id="cgSumIn"></span></button><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
-    <section class="cg-sec out"><button type="button" class="cg-add" id="cgAddOut">－ منصرف <span id="cgSumOut"></span></button><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
+    <section class="cg-sec in"><button type="button" class="cg-add" id="cgAddIn">＋ وارد<span id="cgLkIn" style="display:none;margin-inline-start:4px;font-size:14px">🔒</span> <span id="cgSumIn"></span></button><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
+    <section class="cg-sec out"><button type="button" class="cg-add" id="cgAddOut">－ منصرف<span id="cgLkOut" style="display:none;margin-inline-start:4px;font-size:14px">🔒</span> <span id="cgSumOut"></span></button><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
   </div>
 </div>
 
@@ -2258,6 +2307,13 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
             <label for="empOfficialOutTime">ميعاد الانصراف الرسمي <span style="color:var(--ink-soft);font-size:11px;">(من لائحة الحضور)</span></label>
             <input type="time" id="empOfficialOutTime" placeholder="16:00" disabled>
           </div>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="empExemptValue" disabled style="width:auto;height:auto;margin:0;">
+            <span>غير ملزم بالحضور (مفيش بصمة)</span>
+          </label>
+          <div style="font-size:11.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;">لو متفعّل، الموظف مش هيظهر في الغياب ولا التأخير ولا لوحة الحضور ولا تقرير الحضور.</div>
         </div>
         <div style="font-size:11.5px;color:var(--ink-soft);margin:-6px 2px 4px;line-height:1.5;">
           💡 المواعيد بتتقرأ تلقائيًا من "لائحة الحضور والانصراف". أي تعديل هنا أو هناك بيتحفظ في نفس المكان ويبان فوراً في الشاشتين.
@@ -5433,7 +5489,7 @@ window.safeFileName = function(str){
     // كلمة سره الشخصية على بوابة الشاشة؛ غير كده (أو لو دوس "#") بيشوف
     // كل الموظفين زي المعتاد.
     var linkedEmployee = getAttendanceLinkedEmployee() || attendanceSessionUnlockedEmployee;
-    var employeesToShow = linkedEmployee ? [linkedEmployee] : attPunchEmployees_();
+    var employeesToShow = linkedEmployee ? [linkedEmployee] : ATTENDANCE_EMPLOYEES.filter(function(n){ return !attIsExempt_(n); });
     employeesToShow.forEach(function(name){
       buildAttendanceRow(list, name);
     });
@@ -5565,7 +5621,7 @@ window.safeFileName = function(str){
   function attBuildReport_(month, empFilter){
     var pr = month.split('-'), last = new Date(+pr[0], +pr[1], 0).getDate();
     var S = month + '-01', E = month + '-' + attendancePad(last), todayK = attendanceTodayKey();
-    var names = empFilter ? [empFilter] : ATTENDANCE_EMPLOYEES.slice();
+    var names = empFilter ? [empFilter] : ATTENDANCE_EMPLOYEES.filter(function(n){ return !attIsExempt_(n); });
     var nameQ = empFilter ? '&name=eq.' + encodeURIComponent(empFilter) : '';
     var attUrl = SUPABASE_URL + '/rest/v1/attendance?date=gte.' + S + '&date=lte.' + E + nameQ + '&select=*&order=date.asc,name.asc';
     var reqUrl = SUPABASE_URL + '/rest/v1/requests?or=(and(date.gte.' + S + ',date.lte.' + E + '),and(leave_from.lte.' + E + ',leave_to.gte.' + S + '))' + nameQ + '&select=*';
@@ -6004,14 +6060,60 @@ window.safeFileName = function(str){
   // اتحولت من IIFE بتتنفذ مرة واحدة بس لدالة قابلة لإعادة الاستدعاء —
   // محتاجينها تتكرر كل ما قايمة الموظفين تتغيّر (بعد التحميل من السيرفر،
   // أو بعد إضافة/حذف موظف من شاشة الإدارة) عشان الليستة تفضل مطابقة.
-  // الموظفين اللي بيبصموا: أي موظف أيقونة "حضور وانصراف" مش متعلّمة له في إدارة الشاشات
-  // (يعني مالوش بصمة) بيختفي من لوحة الحضور ومن شاشة الحضور والانصراف.
+  // فلاج "غير ملزم بالحضور": الموظفين دول مش بيظهروا في الغياب ولا التأخير ولا لوحة الحضور
+  // ولا تقرير الحضور. محفوظ في جدول app_settings (key = attendanceExempt) كقايمة أسماء JSON،
+  // ومتخزن نسخة على الجهاز عشان يشتغل فورًا أول ما الصفحة تفتح.
+  var ATT_EXEMPT_CACHE_ = 'attExemptCache_v1';
+  var ATTENDANCE_EXEMPT_ = (function(){
+    var m = {};
+    try { (JSON.parse(localStorage.getItem(ATT_EXEMPT_CACHE_) || '[]') || []).forEach(function(n){ m[n] = true; }); } catch(e){}
+    return m;
+  })();
+  function attIsExempt_(name){ return !!(ATTENDANCE_EXEMPT_ && ATTENDANCE_EXEMPT_[name]); }
+  function attCacheExempt_(){
+    try { localStorage.setItem(ATT_EXEMPT_CACHE_, JSON.stringify(Object.keys(ATTENDANCE_EXEMPT_))); } catch(e){}
+  }
+  function attSetExemptFromValue_(v){
+    var list = [];
+    try { list = JSON.parse(v || '[]') || []; } catch(e){ return; }
+    var m = {}; list.forEach(function(n){ m[n] = true; });
+    ATTENDANCE_EXEMPT_ = m;
+    attCacheExempt_();
+  }
+  function loadAttendanceExempt_(cb){
+    var done = function(){ if (cb) cb(); };
+    try {
+      fetch(SUPABASE_URL + '/rest/v1/app_settings?key=eq.attendanceExempt&select=value', { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){ if (rows && rows[0]) attSetExemptFromValue_(rows[0].value); })
+        .catch(function(){})
+        .then(done);
+    } catch(e){ done(); }
+  }
+  // بيقرا القايمة الحالية من Supabase ويعدّل الاسم ده بس (عشان ما نمسحش تعديلات جهاز تاني).
+  function saveAttendanceExempt_(name, flag){
+    if (flag) ATTENDANCE_EXEMPT_[name] = true; else delete ATTENDANCE_EXEMPT_[name];
+    attCacheExempt_();
+    return fetch(SUPABASE_URL + '/rest/v1/app_settings?key=eq.attendanceExempt&select=value', { headers: sbHeaders() })
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('read')); })
+      .then(function(rows){
+        var list = [];
+        try { list = JSON.parse((rows && rows[0] && rows[0].value) || '[]') || []; } catch(e){}
+        list = list.filter(function(n){ return n !== name; });
+        if (flag) list.push(name);
+        return fetch(SUPABASE_URL + '/rest/v1/app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+          body: JSON.stringify([{ key: 'attendanceExempt', value: JSON.stringify(list) }])
+        });
+      })
+      .then(function(r){ return !!(r && r.ok); })
+      .catch(function(){ return false; });
+  }
+
+  // الموظفين الملزمين بالحضور: بنستثني اللي معلّم عليهم "غير ملزم بالحضور (مفيش بصمة)"
   function attPunchEmployees_(){
-    var map_ = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_) || {};
-    return (ATTENDANCE_EMPLOYEES || []).filter(function(n){
-      var h = map_[n];
-      return !(h && h.indexOf('openAttendanceBtn') > -1);
-    });
+    return (ATTENDANCE_EMPLOYEES || []).filter(function(n){ return !attIsExempt_(n); });
   }
   function rebuildAttendanceDashboardEmployeeSelect_(){
     var empSelect = document.getElementById('dashEmployeeSelect');
@@ -6249,6 +6351,7 @@ window.safeFileName = function(str){
         if (s.appLoginPass) APP_PASS = s.appLoginPass;
         if (s.dashboardPassword) ATTENDANCE_DASHBOARD_PASSWORD = s.dashboardPassword;
         if (s.employeeManagePassword) EMPLOYEE_MANAGE_PASSWORD = s.employeeManagePassword;
+        if (s.attendanceExempt !== undefined) attSetExemptFromValue_(s.attendanceExempt);
         if (onDone) onDone();
       })
       .catch(function(){
@@ -8349,7 +8452,7 @@ window.safeFileName = function(str){
     function renderQuickStatus_(data){
       if (!data || !data.ok) { listWrap.innerHTML = '<div class="empty-note">تعذّر التحميل، حاول تاني.</div>'; return; }
       if (kind === 'absent') {
-        var absent = data.absent || [];
+        var absent = (data.absent || []).filter(function(n){ return !attIsExempt_(n); });
         if (!absent.length) {
           listWrap.innerHTML = '<div class="empty-note">الحمدلله، كل الموظفين حضروا النهاردة ✓</div>';
           return;
@@ -8359,7 +8462,7 @@ window.safeFileName = function(str){
         }).join('');
         listWrap.innerHTML = '<table class="dtable"><thead><tr><th>#</th><th>الاسم</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>';
       } else {
-        var late = data.late || [];
+        var late = (data.late || []).filter(function(it){ return !attIsExempt_(it.name); });
         if (!late.length) {
           listWrap.innerHTML = '<div class="empty-note">مفيش حد اتأخر النهاردة ✓</div>';
           return;
@@ -8423,12 +8526,14 @@ window.safeFileName = function(str){
     // Supabase أولاً — بنجيب المواعيد الرسمية من الكاش (لو موجود) عشان
     // نحسب "التأخير" بالظبط. لو مافيش كاش، بنحسب الغياب بس (اللي مالوش
     // ميعاد رسمي مش هيبان في قايمة التأخير).
-    fetchAppJson_('attendanceStatus')
-      .then(function(cached){
-        var officialIn = (cached && cached.officialIn) || {};
-        loadFromSupabase_(officialIn);
-      })
-      .catch(function(){ loadFromSupabase_({}); });
+    loadAttendanceExempt_(function(){
+      fetchAppJson_('attendanceStatus')
+        .then(function(cached){
+          var officialIn = (cached && cached.officialIn) || {};
+          loadFromSupabase_(officialIn);
+        })
+        .catch(function(){ loadFromSupabase_({}); });
+    });
   }
   function openQuickStatusFromLoginFlow_(kind){
     loadQuickStatus_(kind);
@@ -8687,6 +8792,8 @@ window.safeFileName = function(str){
       var t = (window.EMPLOYEE_OFFICIAL_TIMES_ || {})[sel.value] || {};
       if (offIn)  offIn.value  = t.in_time  || '';
       if (offOut) offOut.value = t.out_time || '';
+      var exEl_ = document.getElementById('empExemptValue');
+      if (exEl_) exEl_.checked = attIsExempt_(sel.value);
       setEmpMode_('view');
       renderEmpPicker_();
     }
@@ -8727,10 +8834,13 @@ window.safeFileName = function(str){
     bday.disabled = (mode === 'view');
     if (offIn)  offIn.disabled  = (mode === 'view');
     if (offOut) offOut.disabled = (mode === 'view');
+    var exCb_ = document.getElementById('empExemptValue');
+    if (exCb_) exCb_.disabled = (mode === 'view');
     if (mode === 'new') {
       nm.value = ''; pass.value = ''; bday.value = '';
       if (offIn)  offIn.value = '';
       if (offOut) offOut.value = '';
+      if (exCb_) exCb_.checked = false;
       nm.placeholder = 'مثال: محمد علي';
       pass.placeholder = 'مثال: 18';
     } else {
@@ -9517,6 +9627,10 @@ window.safeFileName = function(str){
       } catch (e) {}
     }
 
+    var exCbSave_ = document.getElementById('empExemptValue');
+    var exemptPromise = (exCbSave_ && !!exCbSave_.checked !== attIsExempt_(name))
+      ? saveAttendanceExempt_(name, !!exCbSave_.checked) : Promise.resolve(true);
+
     // نكتب على Supabase مباشرة (سريع + مصدر الحقيقة).
     // نداء الـ Apps Script بيمشي في نفس الوقت — للـ Sheet mirror (نسخة عرض).
     var sbPayload = {
@@ -9538,9 +9652,15 @@ window.safeFileName = function(str){
       + '&birthday=' + encodeURIComponent(newBirthday);
     var scriptPromise = fetch(scriptUrl).then(function(r){ return r.json(); }).catch(function(){ return { ok: false }; });
 
-    Promise.all([supabasePromise, scriptPromise]).then(function(results){
+    Promise.all([supabasePromise, scriptPromise, exemptPromise]).then(function(results){
       btn.disabled = false;
       var sbOk = results[0], gsOk = results[1] && results[1].ok !== false;
+      if ((sbOk || gsOk) && results[2] === false) {
+        setEmployeeManageStatus_('اتحفظت البيانات لكن فلاج "غير ملزم بالحضور" ماتحفظش في قاعدة البيانات، حاول تاني.', true);
+        empPendingSelect_ = name;
+        refreshEverythingAfterEmployeeChange_();
+        return;
+      }
       if (sbOk || gsOk) {
         setEmployeeManageStatus_(isNew ? ('تمت إضافة ' + name + ' ✓') : ('تم تحديث بيانات ' + name + ' ✓'));
         showSavedToast_();
@@ -12666,7 +12786,7 @@ window.safeFileName = function(str){
     S.rows.slice().reverse().forEach(function(r){
       var inn = r.entry_type === 'in', a = +r.amount;
       var row = '<div class="cg-row" data-row="' + r.id + '"><span><i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
-      if (lockedFor(who(), r.entry_date)) row = row.replace(/<button type="button" class="cg-edit"[\s\S]*$/, '<span title="مقفلة" style="grid-column:span 2;text-align:center">🔒</span></div>');
+      if (lockedFor(who(), r.entry_date)) row = row.replace('class="cg-row"', 'class="cg-row cg-locked"').replace(/<button type="button" class="cg-edit"[^>]*>[^<]*<\/button><button type="button" class="cg-del"[^>]*>[^<]*<\/button>/, '');
       if (inn) hin += row; else hout += row;
     });
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
@@ -12677,6 +12797,7 @@ window.safeFileName = function(str){
     $('cgBalCard').classList.toggle('neg', total < 0);
     var lb = $('cgLockMsg'), lk = L[who()];
     if (lb) { if (lk) { lb.style.display = ''; lb.textContent = '✅ تم تقفيل العهدة بتاريخ ' + lk; } else lb.style.display = 'none'; }
+    ['In','Out'].forEach(function(k){ var e = $('cgLk' + k); if (e) { e.style.display = lk ? '' : 'none'; e.title = lk ? ('مقفلة حتى ' + lk) : ''; } });
   }
 
   // ---------- تسجيل سطر ----------
