@@ -2398,6 +2398,14 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
         <button type="button" class="btn btn-secondary" id="empEnableOverduePushBtn" style="width:100%;">📉 فعّل إشعارات المتأخرات على الجهاز ده</button>
         <div class="status-msg" id="empOverduePushStatus" style="margin:6px 0 0;font-size:13px;"></div>
       </div>
+      <div id="empNotifRow_notifApprovals" style="display:none;margin-bottom:10px;">
+        <button type="button" class="btn btn-secondary" id="empEnableApprovalsPushBtn" style="width:100%;">📝 فعّل اعتماد الإجازات والمأموريات والأذون</button>
+        <div class="status-msg" id="empApprovalsPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      </div>
+      <div id="empNotifRow_notifVault" style="display:none;margin-bottom:10px;">
+        <button type="button" class="btn btn-secondary" id="empEnableVaultPushBtn" style="width:100%;">💼 فعّل إشعار تقفيل الخزنة</button>
+        <div class="status-msg" id="empVaultPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      </div>
     </div>
 
     <!-- إشعارات طلبات الاعتماد وإشعارات الشيكات: كانت شغالة من شاشتين
@@ -8252,10 +8260,12 @@ window.safeFileName = function(str){
   // أزرار تفعيل الإشعارات الإضافية للموظف (بتظهر حسب الصلاحية). التسجيل بنفس
   // طريقة أزرار الأدمن بالظبط (نفس الـ topics)، بس الزرار بيتأكد من الصلاحية الأول.
   var EMP_NOTIF_BTNS_ = [
-    { perm: 'notifRequests', btn: 'empEnableRequestsPushBtn', status: 'empRequestsPushStatus', topic: undefined, mode: 'empRequests' },
-    { perm: 'notifChecks',   btn: 'empEnableChecksPushBtn',   status: 'empChecksPushStatus',   topic: 'checks',  mode: 'checks' },
-    { perm: 'notifOrders',   btn: 'empEnableOrderPushBtn',    status: 'empOrderPushStatus',    topic: 'order',   mode: 'order' },
-    { perm: 'notifOverdue',  btn: 'empEnableOverduePushBtn',  status: 'empOverduePushStatus',  topic: 'overdue', mode: 'overdue' }
+    { perm: 'notifRequests',  btn: 'empEnableRequestsPushBtn',  status: 'empRequestsPushStatus',  topic: undefined,  mode: 'empRequests' },
+    { perm: 'notifChecks',    btn: 'empEnableChecksPushBtn',    status: 'empChecksPushStatus',    topic: 'checks',   mode: 'checks' },
+    { perm: 'notifOrders',    btn: 'empEnableOrderPushBtn',     status: 'empOrderPushStatus',     topic: 'order',    mode: 'order' },
+    { perm: 'notifOverdue',   btn: 'empEnableOverduePushBtn',   status: 'empOverduePushStatus',   topic: 'overdue',  mode: 'overdue' },
+    { perm: 'notifApprovals', btn: 'empEnableApprovalsPushBtn', status: 'empApprovalsPushStatus', topic: 'approval', mode: 'approval' },
+    { perm: 'notifVault',     btn: 'empEnableVaultPushBtn',     status: 'empVaultPushStatus',     topic: 'vault',    mode: 'vault' }
   ];
   function refreshEmpNotifButtons_(){
     EMP_NOTIF_BTNS_.forEach(function(b){
@@ -9293,11 +9303,13 @@ window.safeFileName = function(str){
   //    بيطلع من غير علامة لكل الموظفين لحد ما تفعّله لموظف بعينه.
   var NOTIF_PERMS_GROUP_ = 'الإشعارات (صلاحية التفعيل)';
   var NOTIF_PERMS_ = [
-    { id: 'notifTest',     label: 'اختبار الإشعار دلوقتي 🧪',   defaultOn: true,  rowId: 'mySalaryTestRow' },
-    { id: 'notifRequests', label: 'إشعارات طلبات الاعتماد 🔔',  defaultOn: false, rowId: 'empNotifRow_notifRequests' },
-    { id: 'notifChecks',   label: 'إشعارات الشيكات 🧾',          defaultOn: false, rowId: 'empNotifRow_notifChecks' },
-    { id: 'notifOrders',   label: 'إشعارات أوامر الشراء 🛒',     defaultOn: false, rowId: 'empNotifRow_notifOrders' },
-    { id: 'notifOverdue',  label: 'إشعارات المتأخرات 📉',        defaultOn: false, rowId: 'empNotifRow_notifOverdue' }
+    { id: 'notifTest',      label: 'اختبار الإشعار دلوقتي 🧪',             defaultOn: true,  rowId: 'mySalaryTestRow' },
+    { id: 'notifRequests',  label: 'إشعارات طلبات الاعتماد 🔔',            defaultOn: false, rowId: 'empNotifRow_notifRequests' },
+    { id: 'notifChecks',    label: 'إشعارات الشيكات 🧾',                    defaultOn: false, rowId: 'empNotifRow_notifChecks' },
+    { id: 'notifOrders',    label: 'إشعارات أوامر الشراء 🛒',               defaultOn: false, rowId: 'empNotifRow_notifOrders' },
+    { id: 'notifOverdue',   label: 'إشعارات المتأخرات 📉',                  defaultOn: false, rowId: 'empNotifRow_notifOverdue' },
+    { id: 'notifApprovals', label: 'اعتماد الإجازات والمأموريات والأذون 📝', defaultOn: false, rowId: 'empNotifRow_notifApprovals' },
+    { id: 'notifVault',     label: 'إشعار تقفيل الخزنة 💼',                 defaultOn: false, rowId: 'empNotifRow_notifVault' }
   ];
   // صلاحيات خاصة (غير الإشعارات): بتتحفظ في نفس القايمة بنفس الأسلوب.
   //  - defaultOn:false → مخفي عن الموظفين تلقائي، ولما المسؤول يعلّم عليه بيتسجل allow_ + الاسم.
@@ -13084,8 +13096,33 @@ window.safeFileName = function(str){
     if (cb.checked && !d) { msg.style.color = '#c0392b'; msg.textContent = 'اختار التاريخ'; return; }
     if (!cb.checked && !L[n]) { msg.textContent = ''; return; }
     var val = cb.checked ? d : '';
+    var prev = L[n] || '';
     msg.style.color = '#6b7280'; msg.textContent = 'جارٍ الحفظ…';
-    saveLock(n, val).then(function(){ L[n] = val; msg.style.color = '#1f7a4c'; msg.textContent = val ? 'تم التقفيل ✓' : 'تم فك التقفيل'; })
+    saveLock(n, val).then(function(){
+      L[n] = val;
+      msg.style.color = '#1f7a4c';
+      msg.textContent = val ? 'تم التقفيل ✓' : 'تم فك التقفيل';
+      // إشعار صاحب الخزنة: بيتبعت في الحالتين — أول تقفيل، وأي تحديث للتاريخ
+      // لاحقاً حتى لو الفلاج فضل مرفوع (prev بيبقى فيه التاريخ القديم، val
+      // التاريخ الجديد، فالشرط val !== prev بيعدي). مش بيتبعت عند فك
+      // التقفيل (val='') ولا لما نفس التاريخ ينضغط عليه تاني بالغلط.
+      if (val && val !== prev && window.ATTENDANCE_SCRIPT_URL) {
+        try {
+          var isUpdate = !!prev;
+          var title = isUpdate ? '💼 تم تحديث تاريخ تقفيل العهدة' : '💼 تم تقفيل العهدة';
+          var body  = isUpdate
+            ? (n + ' — تاريخ تقفيل عهدتك اتحدّث لـ ' + val + ' (كان ' + prev + ')')
+            : (n + ' — تم تقفيل عهدتك بتاريخ ' + val);
+          var url = window.ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+            + '&title=' + encodeURIComponent(title)
+            + '&body=' + encodeURIComponent(body)
+            + '&topic=vault'
+            + '&target=' + encodeURIComponent(n)
+            + '&dedupId=' + encodeURIComponent('vault-lock-' + n + '-' + val);
+          fetch(url).catch(function(){});
+        } catch (er) {}
+      }
+    })
       .catch(function(){ cb.checked = !!L[n]; msg.style.color = '#c0392b'; msg.textContent = 'تعذّر الحفظ'; });
   });
   async function runReport(mode){
@@ -13160,7 +13197,8 @@ window.safeFileName = function(str){
   var TOPIC = {   // أيقونة + لون لكل نوع
     order:     { i: '🛒', c: '#0284c7' }, checks:    { i: '🧾', c: '#059669' }, overdue:   { i: '📉', c: '#dc2626' },
     salary:    { i: '💰', c: '#7c3aed' }, request:   { i: '📝', c: '#e2621f' }, presence:  { i: '✅', c: '#16a34a' },
-    departure: { i: '🚪', c: '#dc2626' }, auth:      { i: '📄', c: '#6b7280' }, test:      { i: '🧪', c: '#6b7280' }, general: { i: '🔔', c: '#e2621f' }
+    departure: { i: '🚪', c: '#dc2626' }, auth:      { i: '📄', c: '#6b7280' }, test:      { i: '🧪', c: '#6b7280' },
+    approval:  { i: '📝', c: '#16a34a' }, vault:     { i: '💼', c: '#7c3aed' }, general:   { i: '🔔', c: '#e2621f' }
   };
   function ctx(){ return window.notifCtx_ ? window.notifCtx_() : { isAdmin: true, name: '', topics: [] }; }
   function me(c){ return c.isAdmin ? '__admin__' : c.name; }
