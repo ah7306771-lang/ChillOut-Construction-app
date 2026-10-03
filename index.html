@@ -564,6 +564,25 @@
   #attendanceApprovalsScreen .gate-card{margin-top:64px;}
   #mySalaryScreen .gate-card{margin-top:64px;}
   #notifSettingsScreen .gate-card{margin-top:64px;}
+  /* ---------- شاشة إعدادات الإشعارات ---------- */
+  #notifSettingsScreen .ns-intro{font-size:12.5px;color:var(--ink-soft);text-align:center;margin:-2px 0 4px;line-height:1.7;}
+  #notifSettingsScreen .ns-group{font-size:12px;font-weight:700;color:var(--steel);margin:20px 2px 10px;display:flex;align-items:center;gap:8px;}
+  #notifSettingsScreen .ns-group::after{content:"";flex:1;height:1px;background:var(--panel-line);}
+  #notifSettingsScreen .ns-group small{font-weight:600;color:var(--ink-soft);font-size:11px;}
+  #notifSettingsScreen .ns-card{background:#fff;border:1px solid var(--panel-line);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(120,70,20,.07);}
+  #notifSettingsScreen .ns-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  #notifSettingsScreen .ns-ico{flex:0 0 42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fff0e0,#ffe0c2);border:1px solid var(--panel-line);display:flex;align-items:center;justify-content:center;font-size:21px;}
+  #notifSettingsScreen .ns-txt{min-width:0;text-align:right;}
+  #notifSettingsScreen .ns-title{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.4;}
+  #notifSettingsScreen .ns-sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;line-height:1.5;}
+  #notifSettingsScreen .ns-btn{width:100%;padding:11px 14px;font-size:13.5px;}
+  #notifSettingsScreen .ns-status{margin:6px 0 0;font-size:12.5px;min-height:0;}
+  #notifSettingsScreen .ns-status:empty{display:none;}
+  #notifSettingsScreen .ns-test{margin-top:10px;padding-top:10px;border-top:1px dashed var(--panel-line);}
+  #notifSettingsScreen .ns-btn-ghost{width:100%;padding:9px 12px;font-size:12.5px;background:transparent;color:var(--blue-stamp);border:1px solid #c9d3ec;}
+  #notifSettingsScreen .ns-btn-ghost:hover{background:#f3f6fd;}
+  #notifSettingsScreen .ns-hint{font-size:11.5px;color:var(--ink-soft);text-align:center;margin:4px 0 6px;line-height:1.7;}
+
 
   /* لوحة الحضور والانصراف بس: تصغير الخط شوية عموماً، وتصغير مربعات
      التاريخ والفلتر (الموظف) ومربعات حضور/انصراف اللي كانت حجمها زيادة
@@ -2384,88 +2403,100 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
   </div>
   <div class="gate-card home-card" style="max-width:520px;">
     <h1 class="gate-title">إعدادات الإشعارات</h1>
+    <div class="ns-intro">فعّل الأنواع اللي عايز توصلك على الجهاز ده. التفعيل بيتم مرة واحدة لكل جهاز.</div>
+
+    <!-- ===== الموظف: إشعاراته الشخصية ===== -->
     <div id="mySalaryPushBox">
-    <div class="section-tag" id="mySalaryPushTag" style="margin:20px 0 8px;">إشعاراتي الشخصية</div>
-    <button type="button" class="btn btn-secondary" id="enableMyPushBtn" style="width:100%;">🔔 فعّل إشعاراتي الشخصية</button>
-    <div class="status-msg" id="myPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
-    <div id="mySalaryTestRow">
-    <button type="button" class="btn btn-secondary" id="testMyPushBtn" style="width:100%;margin-top:8px;">🧪 اختبر الإشعار دلوقتي</button>
-    <div class="status-msg" id="myPushTestStatus" style="margin:6px 0 0;font-size:13px;"></div>
-    </div>
+      <div class="ns-group">إشعاراتي الشخصية</div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">🔔</span><div class="ns-txt"><div class="ns-title">إشعاراتي الشخصية</div><div class="ns-sub">نزول الراتب واعتماد طلباتك أنت بس</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enableMyPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="myPushStatus"></div>
+        <div id="mySalaryTestRow" class="ns-test">
+          <button type="button" class="btn ns-btn-ghost" id="testMyPushBtn">🧪 اختبر الإشعار دلوقتي</button>
+          <div class="status-msg ns-status" id="myPushTestStatus"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- إشعارات إضافية للموظف: كل نوع بيظهر بس لو المسؤول علّم له صلاحية التفعيل
-         من "إدارة الشاشات" (قسم الإشعارات). الافتراضي: مش متعلّم لأي حد. -->
+    <!-- ===== الموظف: أنواع إضافية بصلاحية من المسؤول ===== -->
     <div id="mySalaryEmpNotifBox" style="display:none;">
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إشعارات إضافية</div>
-      <div id="empNotifRow_notifRequests" style="display:none;margin-bottom:10px;">
-        <button type="button" class="btn btn-secondary" id="empEnableRequestsPushBtn" style="width:100%;">🔔 فعّل إشعارات الجوال للطلبات الجديدة</button>
-        <div class="status-msg" id="empRequestsPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-group">أنواع إضافية <small>(بصلاحية من المسؤول)</small></div>
+      <div class="ns-card" id="empNotifRow_notifRequests" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">📋</span><div class="ns-txt"><div class="ns-title">طلبات الاعتماد</div><div class="ns-sub">تنبيه بأي طلب جديد محتاج اعتماد</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableRequestsPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empRequestsPushStatus"></div>
       </div>
-      <div id="empNotifRow_notifChecks" style="display:none;margin-bottom:10px;">
-        <button type="button" class="btn btn-secondary" id="empEnableChecksPushBtn" style="width:100%;">🔔 فعّل إشعارات الشيكات على الجهاز ده</button>
-        <div class="status-msg" id="empChecksPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-card" id="empNotifRow_notifChecks" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">🧾</span><div class="ns-txt"><div class="ns-title">الشيكات</div><div class="ns-sub">الشيكات المستحقة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableChecksPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empChecksPushStatus"></div>
       </div>
-      <div id="empNotifRow_notifOrders" style="display:none;margin-bottom:10px;">
-        <button type="button" class="btn btn-secondary" id="empEnableOrderPushBtn" style="width:100%;">🛒 فعّل إشعارات أوامر الشراء على الجهاز ده</button>
-        <div class="status-msg" id="empOrderPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-card" id="empNotifRow_notifOrders" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">🛒</span><div class="ns-txt"><div class="ns-title">أوامر الشراء</div><div class="ns-sub">أوامر الشراء الجديدة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableOrderPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empOrderPushStatus"></div>
       </div>
-      <div id="empNotifRow_notifOverdue" style="display:none;margin-bottom:10px;">
-        <button type="button" class="btn btn-secondary" id="empEnableOverduePushBtn" style="width:100%;">📉 فعّل إشعارات المتأخرات على الجهاز ده</button>
-        <div class="status-msg" id="empOverduePushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-card" id="empNotifRow_notifOverdue" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">📉</span><div class="ns-txt"><div class="ns-title">المتأخرات</div><div class="ns-sub">المتأخرات المستحقة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableOverduePushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empOverduePushStatus"></div>
       </div>
-      <div id="empNotifRow_notifApprovals" style="display:none;margin-bottom:10px;">
-        <button type="button" class="btn btn-secondary" id="empEnableApprovalsPushBtn" style="width:100%;">📝 فعّل اعتماد الإجازات والمأموريات والأذون</button>
-        <div class="status-msg" id="empApprovalsPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-card" id="empNotifRow_notifApprovals" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">📝</span><div class="ns-txt"><div class="ns-title">اعتماد الإجازات والمأموريات والأذون</div><div class="ns-sub">نتيجة اعتماد الطلبات</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableApprovalsPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empApprovalsPushStatus"></div>
       </div>
-      <div id="empNotifRow_notifVault" style="display:none;margin-bottom:10px;">
-        <button type="button" class="btn btn-secondary" id="empEnableVaultPushBtn" style="width:100%;">💼 فعّل إشعار تقفيل الخزنة</button>
-        <div class="status-msg" id="empVaultPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-card" id="empNotifRow_notifVault" style="display:none;">
+        <div class="ns-head"><span class="ns-ico">💼</span><div class="ns-txt"><div class="ns-title">تقفيل الخزنة</div><div class="ns-sub">إشعار تقفيل الخزنة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="empEnableVaultPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="empVaultPushStatus"></div>
       </div>
     </div>
 
-    <!-- إشعارات طلبات الاعتماد وإشعارات الشيكات: كانت شغالة من شاشتين
-         تانيين (اعتماد الأذون / إدارة الشاشات)، اتنقلوا هنا عشان كل إعدادات
-         الإشعارات تبقى مكان واحد. بتظهر للأدمن بس، وبس وهو في وضع
-         "إعدادات الإشعارات" (مش وهو بيشوف راتب موظف بعينه). -->
+    <!-- ===== الأدمن: كل الأنواع (التفعيل + الإرسال اليدوي في نفس الكارت) ===== -->
     <div id="mySalaryAdminPushBox">
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إشعارات طلبات الاعتماد</div>
-      <button type="button" class="btn btn-secondary" id="enablePushBtn" style="width:100%;">🔔 فعّل إشعارات الجوال للطلبات الجديدة</button>
-      <div class="status-msg" id="pushStatus" style="margin:6px 0 0;font-size:13px;"></div>
-      <button type="button" class="btn btn-secondary" id="testAdminPushBtn" style="width:100%;margin-top:8px;">🧪 اختبر إشعار على جهازك</button>
-      <div class="status-msg" id="adminPushTestStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-group">تفعيل الإشعارات على الجهاز ده</div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">📋</span><div class="ns-txt"><div class="ns-title">طلبات الاعتماد</div><div class="ns-sub">أي طلب جديد (إذن / إجازة / مأمورية / سلفة)</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enablePushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="pushStatus"></div>
+        <div class="ns-test">
+          <button type="button" class="btn ns-btn-ghost" id="testAdminPushBtn">🧪 اختبر إشعار على جهازك</button>
+          <div class="status-msg ns-status" id="adminPushTestStatus"></div>
+        </div>
+      </div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">🧾</span><div class="ns-txt"><div class="ns-title">الشيكات</div><div class="ns-sub">الشيكات المستحقة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enableChecksPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="checksPushStatus"></div>
+        <div class="ns-test">
+          <button type="button" class="btn ns-btn-ghost" id="manualSendChecksBtn">إرسال الشيكات المستحقة دلوقتي</button>
+          <div class="status-msg ns-status" id="manualSendChecksStatus"></div>
+        </div>
+      </div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">🛒</span><div class="ns-txt"><div class="ns-title">أوامر الشراء</div><div class="ns-sub">أوامر الشراء الجديدة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enableOrderPushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="orderPushStatus"></div>
+      </div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">📉</span><div class="ns-txt"><div class="ns-title">المتأخرات</div><div class="ns-sub">المتأخرات المستحقة</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="enableOverduePushBtn">فعّل</button>
+        <div class="status-msg ns-status" id="overduePushStatus"></div>
+        <div class="ns-test">
+          <button type="button" class="btn ns-btn-ghost" id="manualSendOverdueBtn">إرسال المتأخرات دلوقتي</button>
+          <div class="status-msg ns-status" id="manualSendOverdueStatus"></div>
+        </div>
+      </div>
 
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إشعارات الشيكات</div>
-      <button type="button" class="btn btn-secondary" id="enableChecksPushBtn" style="width:100%;">🔔 فعّل إشعارات الشيكات على الجهاز ده</button>
-      <div class="status-msg" id="checksPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
-
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إشعارات أوامر الشراء</div>
-      <button type="button" class="btn btn-secondary" id="enableOrderPushBtn" style="width:100%;">🛒 فعّل إشعارات أوامر الشراء على الجهاز ده</button>
-      <div class="status-msg" id="orderPushStatus" style="margin:6px 0 0;font-size:13px;"></div>
-
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إشعارات المتأخرات</div>
-      <button type="button" class="btn btn-secondary" id="enableOverduePushBtn" style="width:100%;">📉 فعّل إشعارات المتأخرات على الجهاز ده</button>
-      <div class="status-msg" id="overduePushStatus" style="margin:6px 0 0;font-size:13px;"></div>
-
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إشعار الراتب لكل الموظفين</div>
-      <button type="button" class="btn btn-secondary" id="salarySendAllBtn" style="width:100%;display:none;">📢 إرسال إشعار الراتب لكل الموظفين</button>
-      <div class="status-msg" id="salarySendAllStatus" style="margin:6px 0 0;font-size:13px;"></div>
-
-      <!-- زراير إرسال يدوي — لو الإشعار الأوتوماتيكي (الجدولة كل يوم/كل 7 ساعات) وقف
-           لأي سبب، الأدمن يقدر يبعت الإشعار للناس دلوقتي بضغطة واحدة، من غير ما
-           يستنى الوقت المحدد التالي. -->
-      <div class="settings-divider"></div>
-      <div class="section-tag" style="margin:20px 0 8px;">إرسال يدوي فوري (لو الأوتوماتيك وقف)</div>
-      <button type="button" class="btn btn-secondary" id="manualSendChecksBtn" style="width:100%;">🧾 إرسال إشعار الشيكات المستحقة دلوقتي</button>
-      <div class="status-msg" id="manualSendChecksStatus" style="margin:6px 0 0;font-size:13px;"></div>
-      <button type="button" class="btn btn-secondary" id="manualSendOverdueBtn" style="width:100%;margin-top:8px;">📉 إرسال إشعار المتأخرات دلوقتي</button>
-      <div class="status-msg" id="manualSendOverdueStatus" style="margin:6px 0 0;font-size:13px;"></div>
+      <div class="ns-group">إرسال للموظفين</div>
+      <div class="ns-card">
+        <div class="ns-head"><span class="ns-ico">📢</span><div class="ns-txt"><div class="ns-title">إشعار الراتب لكل الموظفين</div><div class="ns-sub">بيوصل لكل موظف مفعّل إشعاراته</div></div></div>
+        <button type="button" class="btn btn-secondary ns-btn" id="salarySendAllBtn" style="display:none;">📢 إرسال الآن</button>
+        <div class="status-msg ns-status" id="salarySendAllStatus"></div>
+      </div>
+      <div class="ns-hint">الإرسال اليدوي للشيكات والمتأخرات للطوارئ بس — لو الإرسال التلقائي وقف.</div>
     </div>
   </div>
 </div>
@@ -4361,6 +4392,9 @@ window.safeFileName = function(str){
       defaultLabel  = '🔔 فعّل إشعارات الجوال للطلبات الجديدة';
       reenableLabel = '🔔 إعادة تفعيل إشعارات طلبات الاعتماد';
     }
+    // الكارت فوق الزرار بيوضّح النوع، فالزرار نصه مختصر.
+    defaultLabel  = '🔔 فعّل على الجهاز ده';
+    reenableLabel = '🔄 إعادة التفعيل';
     var savedToken = null;
     try { savedToken = localStorage.getItem(storageKey); } catch (e) {}
     var permission = ('Notification' in window) ? Notification.permission : 'default';
