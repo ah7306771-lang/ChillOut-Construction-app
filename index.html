@@ -4124,6 +4124,9 @@ window.safeFileName = function(str){
   var ATTENDANCE_EMPLOYEES = ['أحمد مفرح', 'محمود كارم', 'مني محمد', 'شهد خالد', 'سيد كارم', 'محمود رجب', 'صبري يحي'];
 
   var ATTENDANCE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyx1csVo37UKOdvZzQD_KGrGjtvWMOM8g3cPte1FQ92lhK7dR5KlvxMaWCLZBbak1k/exec';
+  // نعرّف الـ URL على window عشان أي script tag تاني (زي كود الخزنة في IIFE
+  // منفصل) يقدر يستخدمه ويبعت إشعارات.
+  try { window.ATTENDANCE_SCRIPT_URL = ATTENDANCE_SCRIPT_URL; } catch (e) {}
 
   // ---- Supabase (الحضور والانصراف + الموظفين) ----
   // الحفظ الأساسي بيروح على Supabase مباشرة، والشيت بيتحفظ فيه نسخة
