@@ -645,7 +645,67 @@
   .btn-approve:disabled,.btn-reject:disabled{opacity:.5;cursor:default;transform:none;}
   .btn-approve{background:var(--ok);color:#fff;}
   .btn-reject{background:#b3261e;color:#fff;}
+  .btn-print-req{
+    flex:0 0 auto;border:none;border-radius:8px;padding:9px 12px;font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:14px;cursor:pointer;background:#1f6feb;color:#fff;
+    transition:transform .15s,opacity .15s;
+  }
+  .btn-print-req:active{transform:scale(0.96);}
   .approvals-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:14px 0;}
+
+  /* Request print overlay */
+  .req-print-overlay{
+    position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);
+    display:flex;flex-direction:column;align-items:center;overflow:auto;padding:14px;
+  }
+  .req-print-toolbar{
+    width:100%;max-width:720px;display:flex;gap:8px;justify-content:space-between;
+    margin-bottom:10px;flex-wrap:wrap;
+  }
+  .req-print-toolbar button{
+    border:none;border-radius:8px;padding:10px 14px;font-family:'Cairo',sans-serif;
+    font-weight:700;font-size:14px;cursor:pointer;color:#fff;
+  }
+  .req-print-toolbar .rp-close{background:#555;}
+  .req-print-toolbar .rp-print{background:#1f6feb;}
+  .req-print-toolbar .rp-share{background:#25D366;}
+  .req-print-paper{
+    background:#fff;color:#111;width:100%;max-width:720px;border-radius:10px;
+    padding:28px 26px;font-family:'Cairo',sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3);
+    direction:rtl;line-height:1.8;
+  }
+  .req-print-paper h1{
+    text-align:center;font-size:22px;margin:0 0 6px;color:#0b2a5b;
+  }
+  .req-print-paper .rp-sub{
+    text-align:center;color:#666;font-size:13px;margin-bottom:18px;
+    border-bottom:2px solid #0b2a5b;padding-bottom:10px;
+  }
+  .req-print-paper .rp-grid{
+    display:grid;grid-template-columns:140px 1fr;gap:8px 14px;font-size:15px;margin-top:8px;
+  }
+  .req-print-paper .rp-label{color:#555;font-weight:700;}
+  .req-print-paper .rp-value{color:#111;}
+  .req-print-paper .rp-reason{
+    margin-top:16px;padding:12px 14px;background:#f6f8fb;border-right:4px solid #0b2a5b;
+    border-radius:6px;font-size:15px;color:#222;
+  }
+  .req-print-paper .rp-status{
+    display:inline-block;padding:4px 12px;border-radius:999px;font-weight:700;font-size:13px;
+  }
+  .rp-status.ok{background:#e6f4ea;color:#137333;}
+  .rp-status.no{background:#fce8e6;color:#b3261e;}
+  .rp-status.pend{background:#fef7e0;color:#8a6d1f;}
+  .req-print-paper .rp-sign{
+    display:flex;justify-content:space-between;margin-top:40px;font-size:14px;color:#333;
+  }
+  .req-print-paper .rp-sign div{text-align:center;min-width:140px;border-top:1px solid #999;padding-top:6px;}
+  @media print{
+    body > *:not(.req-print-overlay){display:none !important;}
+    .req-print-overlay{position:static;background:#fff;padding:0;}
+    .req-print-toolbar{display:none !important;}
+    .req-print-paper{box-shadow:none;max-width:100%;}
+  }
 
   .back-bar{
     position:sticky;top:0;z-index:20;background:var(--panel-ink);
@@ -4077,7 +4137,15 @@ window.safeFileName = function(str){
   window.notifCtx_ = function(){
     var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
     var map = { request: 'notifRequests', checks: 'notifChecks', order: 'notifOrders', overdue: 'notifOverdue' }, topics = [];
-    if (isEmployeeSession) Object.keys(map).forEach(function(t){ var p = notifPermById_(map[t]); if (p && notifPermGranted_(p, list)) topics.push(t); });
+    if (isEmployeeSession) {
+      Object.keys(map).forEach(function(t){ var p = notifPermById_(map[t]); if (p && notifPermGranted_(p, list)) topics.push(t); });
+      // قرارات الطلبات (موافق/مرفوض) + إشعارات الحضور/الانصراف الخاصة بالموظف
+      // لازم تظهرله دايمًا في مركز الإشعارات بتاعه، لأنها متخصصة ليه (target=اسمه)
+      // ومش broadcast. السيرفر بيفلتر بالاسم كمان، فما تظهرش قرارات حد تاني.
+      topics.push('approval');
+      topics.push('presence');
+      topics.push('departure');
+    }
     return { isAdmin: !isEmployeeSession, name: currentSessionEmployeeName || '', topics: topics };
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
@@ -7066,6 +7134,18 @@ window.safeFileName = function(str){
             + '&target=' + encodeURIComponent(empName)
             + '&dedupId=' + encodeURIComponent('req-' + id + '-' + status);
           fetch(notifUrl).catch(function(){});
+
+          // تأكيد للأدمن إنه نفذ الإجراء — نفس الحدث لكن من غير target عشان
+          // يروح لتوكنات الأدمن (employee='' في PushTokens) ويظهر في مركز
+          // إشعارات الأدمن كمان. dedupId مختلف عشان ما يتعارضش مع إشعار الموظف.
+          var adminTitle = isOk ? '✅ تم اعتماد طلب' : '❌ تم رفض طلب';
+          var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName;
+          var adminNotifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+            + '&title=' + encodeURIComponent(adminTitle)
+            + '&body=' + encodeURIComponent(adminBody)
+            + '&topic=approval'
+            + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status);
+          fetch(adminNotifUrl).catch(function(){});
         } catch (er) {}
       }
       loadAttendanceApprovals();
@@ -7074,6 +7154,124 @@ window.safeFileName = function(str){
       if (approveBtn) approveBtn.disabled = false;
       if (rejectBtn) rejectBtn.disabled = false;
       if (badge) { badge.className = 'approval-status-badge approval-status-rejected'; badge.textContent = 'حدث خطأ، حاول تاني'; }
+    });
+  }
+
+  // بيفتح معاينة قابلة للطباعة/المشاركة لطلب (إجازة/إذن/مأمورية) من شاشة
+  // الاعتماد. بيعرض نموذج احترافي RTL فيه بيانات الطلب حسب نوعه، وأزرار
+  // طباعة ومشاركة (واتساب / مشاركة الجهاز).
+  function openRequestPrintView_(req){
+    if (!req) return;
+    var typeTitle = req.type === 'إجازة' ? 'طلب إجازة'
+                   : req.type === 'مأمورية' ? 'طلب مأمورية'
+                   : 'طلب إذن';
+    var typeIcon = req.type === 'إجازة' ? '🏖️' : req.type === 'مأمورية' ? '🧳' : '📋';
+    var statusTxt = req.status || 'قيد المراجعة';
+    var statusCls = statusTxt === 'موافق' ? 'ok' : statusTxt === 'مرفوض' ? 'no' : 'pend';
+
+    // صف البيانات حسب النوع
+    var rowsHtml = '';
+    function addRow(label, value){
+      if (value == null || value === '') return;
+      rowsHtml += '<div class="rp-label">' + label + '</div><div class="rp-value">' + String(value) + '</div>';
+    }
+    addRow('اسم الموظف:', req.name || '—');
+    addRow('نوع الطلب:', typeIcon + ' ' + req.type);
+
+    if (req.type === 'إجازة') {
+      if (req.leaveFrom && req.leaveTo && req.leaveFrom !== req.leaveTo) {
+        addRow('من تاريخ:', req.leaveFrom);
+        addRow('إلى تاريخ:', req.leaveTo);
+        try {
+          var d1 = new Date(req.leaveFrom), d2 = new Date(req.leaveTo);
+          var diff = Math.round((d2 - d1) / 86400000) + 1;
+          if (diff > 0) addRow('عدد الأيام:', diff + ' يوم');
+        } catch (e) {}
+      } else {
+        addRow('التاريخ:', req.leaveFrom || req.leaveTo || req.date || '—');
+        addRow('عدد الأيام:', 'يوم واحد');
+      }
+    } else {
+      // إذن / مأمورية
+      addRow('التاريخ:', req.date || '—');
+      if (req.from) addRow('من الساعة:', req.from);
+      if (req.to) addRow('إلى الساعة:', req.to);
+      if (req.from && req.to) {
+        try {
+          function toMin(t){ var p = String(t).split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+          var mins = toMin(req.to) - toMin(req.from);
+          if (mins > 0) {
+            var h = Math.floor(mins / 60), m = mins % 60;
+            addRow('المدة:', (h ? h + ' ساعة' : '') + (h && m ? ' و' : '') + (m ? m + ' دقيقة' : (h ? '' : '0')));
+          }
+        } catch (e) {}
+      }
+    }
+    addRow('الحالة:', '<span class="rp-status ' + statusCls + '">' + statusTxt + '</span>');
+    if (req.submittedAt) addRow('تاريخ التقديم:', req.submittedAt);
+
+    var reasonBlock = req.reason
+      ? '<div class="rp-reason"><b>' + (req.type === 'مأمورية' ? 'تفاصيل المأمورية / السبب:' : 'السبب:') + '</b><br>' + String(req.reason).replace(/</g, '&lt;') + '</div>'
+      : '';
+
+    var overlay = document.createElement('div');
+    overlay.className = 'req-print-overlay';
+    overlay.innerHTML =
+      '<div class="req-print-toolbar">' +
+        '<button type="button" class="rp-close">✕ إغلاق</button>' +
+        '<div style="display:flex;gap:8px;">' +
+          '<button type="button" class="rp-share">📱 مشاركة</button>' +
+          '<button type="button" class="rp-print">🖨 طباعة</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="req-print-paper" id="rpPaper">' +
+        '<h1>' + typeIcon + ' ' + typeTitle + '</h1>' +
+        '<div class="rp-sub">ChillOut Construction — نموذج ' + typeTitle + '</div>' +
+        '<div class="rp-grid">' + rowsHtml + '</div>' +
+        reasonBlock +
+        '<div class="rp-sign">' +
+          '<div>توقيع الموظف</div>' +
+          '<div>اعتماد الإدارة</div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    function close(){ try { document.body.removeChild(overlay); } catch (e) {} }
+    overlay.querySelector('.rp-close').addEventListener('click', close);
+    overlay.addEventListener('click', function(e){ if (e.target === overlay) close(); });
+
+    overlay.querySelector('.rp-print').addEventListener('click', function(){
+      window.print();
+    });
+
+    overlay.querySelector('.rp-share').addEventListener('click', async function(){
+      // نص مختصر للمشاركة لو الجهاز ما بيدعمش مشاركة ملفات
+      var lines = [
+        typeIcon + ' ' + typeTitle,
+        'الموظف: ' + (req.name || '—'),
+        'النوع: ' + req.type
+      ];
+      if (req.type === 'إجازة') {
+        if (req.leaveFrom && req.leaveTo && req.leaveFrom !== req.leaveTo)
+          lines.push('من ' + req.leaveFrom + ' إلى ' + req.leaveTo);
+        else lines.push('يوم: ' + (req.leaveFrom || req.leaveTo || req.date || '—'));
+      } else {
+        lines.push('التاريخ: ' + (req.date || '—'));
+        if (req.from || req.to) lines.push('الوقت: ' + (req.from || '') + ' — ' + (req.to || ''));
+      }
+      if (req.reason) lines.push('السبب: ' + req.reason);
+      lines.push('الحالة: ' + statusTxt);
+      var text = lines.join('\n');
+
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: typeTitle, text: text });
+          return;
+        }
+      } catch (e) { /* المستخدم ممكن يكون قفل مربع المشاركة */ return; }
+      // fallback: واتساب
+      var waUrl = 'https://wa.me/?text=' + encodeURIComponent(text);
+      window.open(waUrl, '_blank');
     });
   }
 
@@ -7140,8 +7338,16 @@ window.safeFileName = function(str){
     approveBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'موافق', row, req.name, req.type); });
     rejectBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'مرفوض', row, req.name, req.type); });
 
+    var printBtn = document.createElement('button');
+    printBtn.type = 'button';
+    printBtn.className = 'btn-print-req';
+    printBtn.title = 'طباعة / مشاركة الطلب';
+    printBtn.textContent = '🖨';
+    printBtn.addEventListener('click', function(){ openRequestPrintView_(req); });
+
     actions.appendChild(approveBtn);
     actions.appendChild(rejectBtn);
+    actions.appendChild(printBtn);
 
     row.appendChild(head);
     row.appendChild(details);
