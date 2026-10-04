@@ -6077,26 +6077,27 @@ window.safeFileName = function(str){
 
       var dataPromise = supabasePromise.then(function(supabaseData){
         if (supabaseData && supabaseData.ok) {
-          // Supabase نجح — ابعت الإشعار من الفرونت (لو مش مسجّل قبل كده)
-          if (!supabaseData.alreadyRecorded) {
-            try {
-              var notifTitle = name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف');
-              // العنوان فيه الاسم ونوع الحركة، فالنص بقى الساعة بس.
-              var notifBody  = timeStr;
-              // topic=presence/departure + target=<اسم الموظف>: الإشعار بيروح
-              // للأدمن + للموظف نفسه بس، مش لباقي الموظفين. مركز الإشعارات
-              // بيفلتر على target عشان كل موظف يشوف حضور/انصرافه هو بس.
-              var notifParams = new URLSearchParams({
-                action: 'notifyEvent',
-                title: notifTitle,
-                body: notifBody,
-                topic: (type === 'حضور' ? 'presence' : 'departure'),
-                target: name,
-                dedupId: 'attendance-' + name + '-' + type + '-' + dateStr
-              });
-              fetch(ATTENDANCE_SCRIPT_URL + '?' + notifParams.toString()).catch(function(){});
-            } catch (e) {}
-          }
+          // ابعت الإشعار من الفرونت دايماً. الـ dedupId على مستوى (الموظف +
+          // نوع الحركة + التاريخ) + الـ server dedup بيضمنوا إنه ما يتبعتش
+          // مرتين لو حد ضغط بالخطأ. شلّينا شرط alreadyRecorded عشان كان
+          // بيمنع الإشعار الأصلي من الوصول في حالات ما كانش يستحق.
+          try {
+            var notifTitle = name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف');
+            // العنوان فيه الاسم ونوع الحركة، فالنص بقى الساعة بس.
+            var notifBody  = timeStr;
+            // topic=presence/departure + target=<اسم الموظف>: الإشعار بيروح
+            // للأدمن + للموظف نفسه بس، مش لباقي الموظفين. مركز الإشعارات
+            // بيفلتر على target عشان كل موظف يشوف حضور/انصرافه هو بس.
+            var notifParams = new URLSearchParams({
+              action: 'notifyEvent',
+              title: notifTitle,
+              body: notifBody,
+              topic: (type === 'حضور' ? 'presence' : 'departure'),
+              target: name,
+              dedupId: 'attendance-' + name + '-' + type + '-' + dateStr
+            });
+            fetch(ATTENDANCE_SCRIPT_URL + '?' + notifParams.toString()).catch(function(){});
+          } catch (e) {}
           // نسخة احتياطية للشيت (في الخلفية، مش بننتظر) مع skipNotify=1
           fetch(sheetUrl + '&skipNotify=1').catch(function(){});
           return supabaseData;
