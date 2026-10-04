@@ -6142,37 +6142,48 @@ window.safeFileName = function(str){
       });
     }
 
-    if (navigator.geolocation) {
-      // بنعتمد على أي موقع مكاش (حتى لو عمره ساعة كاملة) عشان الضغطة الأولى
-      // في اليوم تلاقي موقع جاهز فورًا لو الموبايل خزّن حاجة قبل كده،
-      // وبنقلل مهلة الانتظار للـ GPS الجديد من 5 ثواني لـ 2 ثانية بس —
-      // لأن الحفظ الأساسي بقى على Supabase (~200ms) فمافيش داعي نستنى GPS
-      // فترة طويلة قبل ما نبعت أصلاً. لو ما لقيناش موقع خلال 2 ثانية،
-      // بنبعت الحضور بدون إحداثيات، وممكن الإدمن يشوف الموقع من صف تاني
-      // للموظف نفسه في يوم آخر.
-      // تعديل: مهلة الـ2 ثانية كانت بتفشل كتير (أول ضغطة في اليوم / أول مرة
-      // الإذن يتطلب) فالحضور كان بيتسجل من غير لوكيشن. دلوقتي:
-      //  1) لو شاشة الحضور سخّنت موقع قريب (آخر 15 دقيقة) نستخدمه فورًا.
-      //  2) غير كده نطلب موقع بدقة عادية (5 ثواني)، ولو فشل نجرب GPS (8 ثواني).
-      //  3) لو الاتنين فشلوا بس نبعت من غير إحداثيات.
-      if (attendanceLastPos_ && (Date.now() - attendanceLastPos_.t) < 15 * 60000) {
-        send(attendanceLastPos_.lat, attendanceLastPos_.lng);
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
-        function(){
-          navigator.geolocation.getCurrentPosition(
-            function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
-            function(){ send(null, null); },
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-          );
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 3600000 }
-      );
-    } else {
-      send(null, null);
+    // إلزامي: لا تسجيل حضور/انصراف من غير إذن اللوكيشن مُفعّل.
+    //  1) لو المتصفح ما يدعمش geolocation — نرفض.
+    //  2) لو موقع سخّن قريب (آخر 15 دقيقة) نستخدمه فورًا.
+    //  3) غير كده نطلب موقع (محاولتين: دقة عادية ثم GPS).
+    //  4) لو كله فشل أو المستخدم رفض الإذن — رفض التسجيل وإظهار رسالة.
+    function blockWithLocationMsg_(reason){
+      // reason: 'denied' | 'timeout' | 'unsupported'
+      msg.style.color = '#b3261e';
+      var detail = (reason === 'denied')
+        ? 'برجاء تفعيل اللوكيشن على جهازك والسماح للتطبيق باستخدامه، ثم حاول تاني.'
+        : (reason === 'unsupported')
+          ? 'المتصفح ده مش بيدعم خدمة اللوكيشن — افتح من متصفح تاني (Chrome / Safari).'
+          : 'مش قادر يحدد موقعك دلوقتي، اتأكد إن اللوكيشن (GPS) مُفعّل وحاول تاني.';
+      msg.textContent = '📍 ' + detail;
+      inBtn.disabled = false;
+      outBtn.disabled = !!getAttendanceDoneTime(name, otherType);
     }
+
+    if (!navigator.geolocation) {
+      blockWithLocationMsg_('unsupported');
+      return;
+    }
+    if (attendanceLastPos_ && (Date.now() - attendanceLastPos_.t) < 15 * 60000) {
+      send(attendanceLastPos_.lat, attendanceLastPos_.lng);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
+      function(err1){
+        // لو المستخدم رفض الإذن صراحة، ما نحاولش تاني (المتصفح هيرفض برضه).
+        if (err1 && err1.code === 1) { blockWithLocationMsg_('denied'); return; }
+        navigator.geolocation.getCurrentPosition(
+          function(pos){ send(pos.coords.latitude, pos.coords.longitude); },
+          function(err2){
+            if (err2 && err2.code === 1) blockWithLocationMsg_('denied');
+            else blockWithLocationMsg_('timeout');
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 3600000 }
+    );
   }
 
   // بنجهّز اسم الجهاز (موديل/متصفح) من دلوقتي بدل ما ننتظر أول ضغطة
