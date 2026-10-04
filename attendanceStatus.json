@@ -1,10 +1,8 @@
 {
   "ok": true,
   "date": "2026-10-04",
-  "updatedAt": "2026-10-04T06:26:36.300578+00:00",
+  "updatedAt": "2026-10-04T12:47:37.521078+00:00",
   "absent": [
-    "محمود كارم",
-    "مني محمد",
     "سيد كارم",
     "بكر",
     "عماد"
@@ -15,6 +13,18 @@
       "time": "09:13:02",
       "official": "08:30",
       "minutes": 43
+    },
+    {
+      "name": "محمود كارم",
+      "time": "10:01:26",
+      "official": "10:00",
+      "minutes": 1
+    },
+    {
+      "name": "مني محمد",
+      "time": "10:03:12",
+      "official": "10:00",
+      "minutes": 3
     },
     {
       "name": "صبري يحي",
@@ -63,9 +73,53 @@
       "lng": "31.4615178",
       "map": "https://maps.google.com/?q=30.0334488,31.4615178",
       "device": ""
+    },
+    {
+      "name": "محمود كارم",
+      "type": "حضور",
+      "date": "2026-10-04",
+      "time": "10:01:26",
+      "lat": "29.9849325",
+      "lng": "30.9529366",
+      "map": "https://maps.google.com/?q=29.9849325,30.9529366",
+      "device": ""
+    },
+    {
+      "name": "محمود كارم",
+      "type": "انصراف",
+      "date": "2026-10-04",
+      "time": "13:58:30",
+      "lat": "29.9849613",
+      "lng": "",
+      "map": "https://maps.google.com/?q=29.9849613,30.9528652",
+      "device": ""
+    },
+    {
+      "name": "مني محمد",
+      "type": "حضور",
+      "date": "2026-10-04",
+      "time": "10:03:12",
+      "lat": "30.0075567",
+      "lng": "30.9834333",
+      "map": "https://maps.google.com/?q=30.0075567,30.9834333",
+      "device": ""
     }
   ],
-  "dashboardRequestRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mutovjdm-u13apo",
+      "name": "محمود كارم",
+      "type": "إذن",
+      "date": "2026-10-04",
+      "from": "14:00:00",
+      "to": "17:00:00",
+      "reason": "",
+      "status": "قيد المراجعة",
+      "submittedAt": "2026-10-04T10:39:41.000Z",
+      "leaveFrom": "",
+      "leaveTo": ""
+    }
+  ],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
     "بكر": "16:00",
@@ -76,7 +130,7 @@
     "محمود كارم": "17:00",
     "مني محمد": "17:00"
   },
-  "pendingRequestsCount": 0,
+  "pendingRequestsCount": 1,
   "employees": [
     {
       "name": "أحمد مفرح",
