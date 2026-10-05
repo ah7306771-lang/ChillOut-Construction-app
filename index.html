@@ -19,6 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <!-- Firebase Cloud Messaging: إشعارات فورية على الموبايل لطلبات الإذن/المأمورية
      الجديدة، حتى لو التطبيق مقفول. لازم تستبدل القيم PLACEHOLDER بالقيم
      الحقيقية من مشروع Firebase بتاعك (شوف تعليمات الإعداد اللي بعتهالك). -->
@@ -13562,15 +13563,129 @@ window.safeFileName = function(str){
   $('rpView').addEventListener('click', function(){ repPdf('view'); });
   $('rpShare').addEventListener('click', function(){ repPdf('share'); });
   $('rpDown').addEventListener('click', function(){ repPdf('down'); });
-  $('rpXls').addEventListener('click', function(){
+  $('rpXls').addEventListener('click', async function(){
     var s = statement(view()); if (!(s.lines.length || s.v.op)) { st('rpStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
-    var aoa = [['الموظف', who()], [], ['التاريخ', 'البيان', 'المشروع', 'وارد', 'منصرف', 'الرصيد']];
-    if (s.v.f) aoa.push(['', 'رصيد أول المدة', '', '', '', s.v.op]);
-    s.lines.forEach(function(l){ aoa.push([l.d, l.t, l.p, l.i, l.o, l.b]); });
-    aoa.push(['', 'الإجمالي', '', s.ti, s.to, s.end]);
-    var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'العهدة');
-    wb.Workbook = { Views: [{ RTL: true }] }; XLSX.writeFile(wb, fnameAr(who(), 'xlsx')); st('rpStatus', 'تم ✓');
+    st('rpStatus', 'جارٍ إنشاء الملف…');
+    try {
+      var wb = new ExcelJS.Workbook();
+      wb.views = [{ x:0, y:0, width:10000, height:20000, firstSheet:0, activeTab:0, visibility:'visible', rightToLeft:true }];
+      buildCustodySheet_(wb, who(), s, s.v.f, s.v.t);
+      var buf = await wb.xlsx.writeBuffer();
+      var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = fnameAr(who(), 'xlsx'); document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      st('rpStatus', 'تم ✓');
+    } catch (e) { st('rpStatus', 'تعذّر إنشاء الملف', true); }
   });
+
+  // ---------- بناء شيت احترافي للعهدة باستخدام ExcelJS ----------
+  // ألوان: عناوين كحلي + أبيض، صفوف متناوبة، إجمالي ذهبي، رصيد سالب أحمر.
+  function buildCustodySheet_(wb, empName, s, fromDate, toDate){
+    var sheetName = String(empName || 'العهدة').replace(/[\\\/\?\*\[\]:]/g, ' ').trim().slice(0, 30) || 'العهدة';
+    var ws = wb.addWorksheet(sheetName, { views: [{ rightToLeft: true, state:'normal' }] });
+    // عرض الأعمدة
+    ws.columns = [
+      { header:'التاريخ',  key:'d', width:14 },
+      { header:'البيان',   key:'t', width:36 },
+      { header:'المشروع',  key:'p', width:18 },
+      { header:'وارد',     key:'i', width:14 },
+      { header:'منصرف',    key:'o', width:14 },
+      { header:'الرصيد',   key:'b', width:14 }
+    ];
+    // صف 1: اسم الشركة
+    ws.mergeCells('A1:F1');
+    var r1 = ws.getCell('A1'); r1.value = 'ChillOut Construction — كشف حركة العهدة';
+    r1.font = { name:'Calibri', size:16, bold:true, color:{argb:'FFFFFFFF'} };
+    r1.alignment = { vertical:'middle', horizontal:'center' };
+    r1.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF0B2A5B'} };
+    ws.getRow(1).height = 30;
+
+    // صف 2: الموظف + الفترة
+    ws.mergeCells('A2:C2'); ws.mergeCells('D2:F2');
+    var r2a = ws.getCell('A2'); r2a.value = { richText:[{text:'الموظف: ', font:{bold:true, color:{argb:'FF5B6578'}}}, {text:String(empName||'—'), font:{bold:true, color:{argb:'FF0B2A5B'}}}] };
+    var r2b = ws.getCell('D2'); r2b.value = { richText:[{text:'الفترة: ', font:{bold:true, color:{argb:'FF5B6578'}}}, {text:(fromDate||'البداية') + ' → ' + (toDate||'اليوم'), font:{bold:true, color:{argb:'FF0B2A5B'}}}] };
+    [r2a,r2b].forEach(function(c){ c.alignment = { vertical:'middle', horizontal:'right' }; c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFEEF2F8'} }; });
+    ws.getRow(2).height = 22;
+
+    // صف 3: عناوين الأعمدة
+    var headerRow = ws.getRow(3);
+    ['التاريخ','البيان','المشروع','وارد','منصرف','الرصيد'].forEach(function(h, i){
+      var c = headerRow.getCell(i+1);
+      c.value = h;
+      c.font = { name:'Calibri', size:12, bold:true, color:{argb:'FFFFFFFF'} };
+      c.alignment = { vertical:'middle', horizontal:'center' };
+      c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF163A7A'} };
+      c.border = thinBorder_();
+    });
+    headerRow.height = 24;
+
+    var rowIdx = 4;
+    // رصيد أول المدة (لو في فترة)
+    if (fromDate) {
+      var openRow = ws.getRow(rowIdx++);
+      openRow.getCell(1).value = '';
+      openRow.getCell(2).value = 'رصيد أول المدة';
+      openRow.getCell(3).value = '';
+      openRow.getCell(4).value = '';
+      openRow.getCell(5).value = '';
+      openRow.getCell(6).value = +s.v.op || 0;
+      for (var cc=1; cc<=6; cc++) {
+        var cell = openRow.getCell(cc);
+        cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFEF7E0'} };
+        cell.font = { bold:true, color:{argb:'FF8A6D1F'} };
+        cell.border = thinBorder_();
+        cell.alignment = { vertical:'middle', horizontal: cc===2 ? 'right' : 'center' };
+        if (cc===6) cell.numFmt = '#,##0.00';
+      }
+    }
+
+    // صفوف الحركات
+    s.lines.forEach(function(l, idx){
+      var row = ws.getRow(rowIdx++);
+      row.getCell(1).value = l.d || '';
+      row.getCell(2).value = l.t || '';
+      row.getCell(3).value = l.p || '';
+      row.getCell(4).value = l.i ? +l.i : null;
+      row.getCell(5).value = l.o ? +l.o : null;
+      row.getCell(6).value = +l.b || 0;
+      var alt = idx % 2 === 1;
+      for (var k=1; k<=6; k++) {
+        var cell = row.getCell(k);
+        cell.border = thinBorder_();
+        cell.alignment = { vertical:'middle', horizontal: (k===2 ? 'right' : 'center'), wrapText: true };
+        if (alt) cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFF7F9FC'} };
+        if (k===4 || k===5 || k===6) cell.numFmt = '#,##0.00';
+        if (k===4 && l.i) cell.font = { color:{argb:'FF137333'}, bold:true };
+        if (k===5 && l.o) cell.font = { color:{argb:'FFB3261E'}, bold:true };
+        if (k===6) cell.font = { bold:true, color:{argb: (+l.b < 0 ? 'FFB3261E' : 'FF0B2A5B')} };
+      }
+    });
+
+    // صف الإجمالي
+    var totalRow = ws.getRow(rowIdx++);
+    totalRow.getCell(1).value = '';
+    totalRow.getCell(2).value = 'الإجمالي';
+    totalRow.getCell(3).value = '';
+    totalRow.getCell(4).value = +s.ti || 0;
+    totalRow.getCell(5).value = +s.to || 0;
+    totalRow.getCell(6).value = +s.end || 0;
+    for (var t=1; t<=6; t++) {
+      var tc = totalRow.getCell(t);
+      tc.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF0B2A5B'} };
+      tc.font = { bold:true, size:12, color:{argb:'FFFFFFFF'} };
+      tc.border = thinBorder_('FFFFFFFF');
+      tc.alignment = { vertical:'middle', horizontal: t===2 ? 'right' : 'center' };
+      if (t===4 || t===5 || t===6) tc.numFmt = '#,##0.00';
+    }
+    totalRow.height = 26;
+
+    // تجميد العناوين الـ3 الأولى (الهيدر وصف الموظف وصف الأعمدة)
+    ws.views = [{ state:'frozen', ySplit: 3, rightToLeft: true }];
+  }
+  function thinBorder_(color){
+    var c = { style:'thin', color:{argb: color || 'FFD5DBE5'} };
+    return { top:c, bottom:c, left:c, right:c };
+  }
 
   // ---------- تقرير الأدمن: اختيار الخزنة + من تاريخ لتاريخ ----------
   var R = { rows: [], sel: '' };
@@ -13674,22 +13789,25 @@ window.safeFileName = function(str){
   $('crPdf').addEventListener('click', function(){ runReport('down'); });
   $('crShare').addEventListener('click', function(){ runReport('share'); });
   $('crOpen').addEventListener('click', function(){ runReport('view'); });
-  $('crXls').addEventListener('click', function(){
+  $('crXls').addEventListener('click', async function(){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
-    var names = R.sel === '*' ? vaultNames() : [R.sel], wb = XLSX.utils.book_new(), used = {}, any = false;
-    names.forEach(function(n){
-      var s = statement(rview(n)); if (!(s.lines.length || s.v.op)) return;
-      any = true;
-      var aoa = [['الموظف', n], ['الفترة', (s.v.f || 'البداية') + ' إلى ' + (s.v.t || today())], [], ['التاريخ', 'البيان', 'المشروع', 'وارد', 'منصرف', 'الرصيد']];
-      if (s.v.f) aoa.push(['', 'رصيد أول المدة', '', '', '', s.v.op]);
-      s.lines.forEach(function(l){ aoa.push([l.d, l.t, l.p, l.i, l.o, l.b]); });
-      aoa.push(['', 'الإجمالي', '', s.ti, s.to, s.end]);
-      var sn = (n.replace(/[\\\/\?\*\[\]:]/g, ' ').trim().slice(0, 27)) || 'خزنة', k = sn, c = 2;
-      while (used[k]) k = sn + ' ' + (c++);
-      used[k] = 1; XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), k);
-    });
-    if (!any) { st('crStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
-    wb.Workbook = { Views: [{ RTL: true }] }; XLSX.writeFile(wb, fnameAr(R.sel === '*' ? 'All' : R.sel, 'xlsx')); st('crStatus', 'تم ✓');
+    st('crStatus', 'جارٍ إنشاء الملف…');
+    try {
+      var names = R.sel === '*' ? vaultNames() : [R.sel];
+      var wb = new ExcelJS.Workbook(), any = false;
+      names.forEach(function(n){
+        var s = statement(rview(n)); if (!(s.lines.length || s.v.op)) return;
+        any = true;
+        buildCustodySheet_(wb, n, s, s.v.f, s.v.t || today());
+      });
+      if (!any) { st('crStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
+      var buf = await wb.xlsx.writeBuffer();
+      var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = fnameAr(R.sel === '*' ? 'All' : R.sel, 'xlsx');
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      st('crStatus', 'تم ✓');
+    } catch (e) { st('crStatus', 'تعذّر إنشاء الملف', true); }
   });
 
 
