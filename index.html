@@ -653,58 +653,88 @@
   .btn-print-req:active{transform:scale(0.96);}
   .approvals-empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:14px 0;}
 
-  /* Request print overlay */
+  /* Request print overlay — نموذج احترافي للطباعة والمشاركة */
   .req-print-overlay{
-    position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);
+    position:fixed;inset:0;z-index:9999;background:rgba(10,20,40,.72);
     display:flex;flex-direction:column;align-items:center;overflow:auto;padding:14px;
   }
   .req-print-toolbar{
-    width:100%;max-width:720px;display:flex;gap:8px;justify-content:space-between;
-    margin-bottom:10px;flex-wrap:wrap;
+    width:100%;max-width:620px;display:flex;gap:8px;justify-content:space-between;
+    margin-bottom:12px;flex-wrap:wrap;
   }
   .req-print-toolbar button{
-    border:none;border-radius:8px;padding:10px 14px;font-family:'Cairo',sans-serif;
-    font-weight:700;font-size:14px;cursor:pointer;color:#fff;
+    border:none;border-radius:10px;padding:10px 16px;font-family:'Cairo',sans-serif;
+    font-weight:800;font-size:14px;cursor:pointer;color:#fff;
   }
-  .req-print-toolbar .rp-close{background:#555;}
-  .req-print-toolbar .rp-print{background:#1f6feb;}
+  .req-print-toolbar .rp-close{background:#5b6572;}
+  .req-print-toolbar .rp-print{background:#0b2a5b;}
   .req-print-toolbar .rp-share{background:#25D366;}
   .req-print-paper{
-    background:#fff;color:#111;width:100%;max-width:720px;border-radius:10px;
-    padding:28px 26px;font-family:'Cairo',sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3);
-    direction:rtl;line-height:1.8;
+    background:#fff;color:#1a1f2e;width:100%;max-width:620px;border-radius:12px;
+    padding:0;font-family:'Cairo',sans-serif;box-shadow:0 20px 50px rgba(0,0,0,.35);
+    direction:rtl;line-height:1.6;overflow:hidden;
+  }
+  .req-print-paper .rp-header{
+    background:linear-gradient(135deg,#0b2a5b 0%,#163a7a 100%);color:#fff;
+    padding:22px 24px 18px;text-align:center;
+  }
+  .req-print-paper .rp-brand{
+    font-size:12px;font-weight:800;letter-spacing:.08em;opacity:.85;
+    text-transform:uppercase;margin-bottom:6px;
   }
   .req-print-paper h1{
-    text-align:center;font-size:22px;margin:0 0 6px;color:#0b2a5b;
+    font-size:22px;margin:0;color:#fff;font-weight:800;
   }
   .req-print-paper .rp-sub{
-    text-align:center;color:#666;font-size:13px;margin-bottom:18px;
-    border-bottom:2px solid #0b2a5b;padding-bottom:10px;
+    color:#c7d4ec;font-size:12px;margin-top:4px;
   }
   .req-print-paper .rp-grid{
-    display:grid;grid-template-columns:140px 1fr;gap:8px 14px;font-size:15px;margin-top:8px;
+    display:grid;grid-template-columns:110px 1fr;gap:0;font-size:14px;
+    padding:14px 20px 6px;
   }
-  .req-print-paper .rp-label{color:#555;font-weight:700;}
-  .req-print-paper .rp-value{color:#111;}
+  .req-print-paper .rp-label{
+    color:#5b6578;font-weight:700;padding:9px 0;border-bottom:1px dashed #e3e8f0;
+    font-size:13px;align-self:center;
+  }
+  .req-print-paper .rp-value{
+    color:#1a1f2e;font-weight:700;padding:9px 0;border-bottom:1px dashed #e3e8f0;
+    word-break:break-word;align-self:center;
+  }
+  .req-print-paper .rp-grid > div:nth-last-child(-n+2){border-bottom:none;}
+  .req-print-paper .rp-sep{
+    color:#0b2a5b;font-weight:800;margin:0 6px;
+  }
   .req-print-paper .rp-reason{
-    margin-top:16px;padding:12px 14px;background:#f6f8fb;border-right:4px solid #0b2a5b;
-    border-radius:6px;font-size:15px;color:#222;
+    margin:4px 20px 0;padding:12px 14px;background:#f4f7fc;
+    border-right:4px solid #0b2a5b;border-radius:8px;
+  }
+  .req-print-paper .rp-reason-title{
+    font-weight:800;font-size:13px;color:#0b2a5b;margin-bottom:4px;
+  }
+  .req-print-paper .rp-reason-text{
+    font-size:14px;color:#1a1f2e;line-height:1.65;white-space:pre-wrap;
   }
   .req-print-paper .rp-status{
-    display:inline-block;padding:4px 12px;border-radius:999px;font-weight:700;font-size:13px;
+    display:inline-block;padding:3px 12px;border-radius:999px;font-weight:800;font-size:12px;
   }
   .rp-status.ok{background:#e6f4ea;color:#137333;}
   .rp-status.no{background:#fce8e6;color:#b3261e;}
   .rp-status.pend{background:#fef7e0;color:#8a6d1f;}
   .req-print-paper .rp-sign{
-    display:flex;justify-content:space-between;margin-top:40px;font-size:14px;color:#333;
+    display:flex;justify-content:space-around;margin:36px 20px 24px;gap:30px;
   }
-  .req-print-paper .rp-sign div{text-align:center;min-width:140px;border-top:1px solid #999;padding-top:6px;}
+  .req-print-paper .rp-sign div{flex:1;max-width:200px;text-align:center;}
+  .req-print-paper .rp-sign span{
+    display:block;border-top:1.5px solid #0b2a5b;padding-top:6px;
+    font-size:13px;color:#0b2a5b;font-weight:800;
+  }
   @media print{
+    @page{margin:12mm;}
     body > *:not(.req-print-overlay){display:none !important;}
     .req-print-overlay{position:static;background:#fff;padding:0;}
     .req-print-toolbar{display:none !important;}
-    .req-print-paper{box-shadow:none;max-width:100%;}
+    .req-print-paper{box-shadow:none;max-width:100%;border-radius:0;}
+    .req-print-paper .rp-header{background:#0b2a5b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 
   .back-bar{
@@ -1612,7 +1642,10 @@
 .cg-sec{margin:8px 0}.cg-add{padding:8px 12px;font-size:14px}.cg-add span{font-size:12px;font-weight:800}
 .cg-row{grid-template-columns:34px 1fr auto 22px;gap:5px;padding:4px 8px;font-size:12px;font-weight:700;line-height:1.3}
 .cg-row i{display:block;font-size:10px;font-weight:700;color:var(--ink-soft);margin:0 0 1px;direction:ltr;text-align:right}
-#cgListIn,#cgListOut{max-height:230px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.cg-row .cg-proj{display:block;font-size:10px;font-weight:800;color:#1f6feb;font-style:normal;margin:0 0 1px;line-height:1.2}
+.out .cg-row .cg-proj{color:#8e44ad}
+#cgListIn{max-height:230px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#cgListOut{max-height:320px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .cg-del{font-size:13px}.cg-empty{padding:6px;font-size:11.5px;font-weight:700}
 .cg-draft{gap:4px;padding:6px}.cg-draft input,.cg-draft select{padding:6px;font-size:13px;font-weight:700}
 .d-btns button{padding:6px}
@@ -1662,7 +1695,8 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
 #custodyLedgerScreen .cg-row.cg-locked{grid-template-columns:1fr auto}
 #custodyLedgerScreen .out .cg-row.cg-locked{grid-template-columns:1fr auto 22px}
 #cgLockMsg{margin:3px 0 !important;padding:4px 8px !important;font-size:12px !important}
-#cgListIn,#cgListOut{max-height:max(150px, calc((100vh - 330px) / 2)) !important}
+#cgListIn{max-height:max(150px, calc((100vh - 360px) / 2.4)) !important}
+#cgListOut{max-height:max(200px, calc((100vh - 300px) / 1.7)) !important}
 </style>
 <style>
 #notifCenterScreen{align-items:flex-start;padding:76px 10px 20px}
@@ -1676,6 +1710,17 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
 .nc-tab.active{background:var(--steel);color:#fff;border-color:var(--steel)}
 .nc-day{font-size:11px;font-weight:800;color:var(--ink-soft);margin:10px 4px 4px;text-align:right}
 .nc-item{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:10px;margin-bottom:5px;background:#fff;border:1px solid var(--panel-line);cursor:pointer;text-align:right;position:relative}
+.nc-chk{flex:0 0 auto;margin-top:9px;width:17px;height:17px;cursor:pointer;display:none}
+.nc-selmode .nc-chk{display:block}
+.nc-selmode .nc-item.selected{background:#dde9fb;border-color:#1f6feb}
+.nc-selectmode-btn{border:1px solid var(--panel-line);background:#fff;color:var(--steel);font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer;padding:7px 10px;border-radius:8px;margin-bottom:8px;display:block}
+.nc-selectmode-btn.active{background:#1f6feb;color:#fff;border-color:#1f6feb}
+.nc-selbar{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#eef4ff;border:1px solid #cfe0ff;border-radius:10px;margin-bottom:8px;flex-wrap:wrap}
+.nc-selall{display:flex;align-items:center;gap:6px;font-weight:800;font-size:13px;color:#0b2a5b;cursor:pointer}
+.nc-selall input{width:17px;height:17px;cursor:pointer}
+.nc-selcount{background:#1f6feb;color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;min-width:22px;text-align:center}
+.nc-selbtn{margin-right:auto;border:0;background:#1f6feb;color:#fff;border-radius:8px;padding:7px 12px;font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer}
+.nc-selbtn:disabled{opacity:.5;cursor:not-allowed}
 .nc-item.unread{background:#fff4ea;border-color:#f3c9a5}
 .nc-ico{flex:0 0 32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px}
 .nc-main{flex:1;min-width:0;padding-left:12px}
@@ -2038,6 +2083,12 @@ body.cg-compact .login-radio-btn svg{width:18px;height:18px}
       <button type="button" class="nc-tab active" data-f="all">الكل</button>
       <button type="button" class="nc-tab" data-f="unread">غير المقروءة <span id="ncTabCount"></span></button>
     </div>
+    <div class="nc-selbar" id="ncSelBar" style="display:none;">
+      <label class="nc-selall"><input type="checkbox" id="ncSelAll"> اختيار الكل</label>
+      <span id="ncSelCount" class="nc-selcount">0</span>
+      <button type="button" id="ncMarkSel" class="nc-selbtn">✓ تمييز المحدد كمقروء</button>
+    </div>
+    <button type="button" id="ncSelToggle" class="nc-selectmode-btn">☐ وضع التحديد المتعدد</button>
     <div class="status-msg" id="ncStatus"></div>
     <div id="ncList"></div>
     <button type="button" id="ncMore" class="btn btn-secondary" style="display:none;width:100%;margin-top:8px;">عرض إشعارات أقدم</button>
@@ -4051,14 +4102,65 @@ window.safeFileName = function(str){
     var hasPass = !!(p && String(p.value || ''));
     return !hasUser && !hasPass;
   }
+  // بنعرف هو مين من اللي مكتوب حاليًا في اليوزر/الباسورد:
+  //   - admin: اليوزر = APP_USER + الباسورد = APP_PASS
+  //   - employee: نفس الـ pin في الخانتين، والـ pin موجود في ATTENDANCE_PASSWORDS
+  // بترجع { kind: 'admin' | 'employee', name } أو null لو مش متطابق.
+  function identifyLoginCreds_(){
+    var u = document.getElementById('loginUser'), p = document.getElementById('loginPass');
+    if (!u || !p) return null;
+    var uv = String(u.value || '').trim(), pv = String(p.value || '');
+    if (!uv || !pv) return null;
+    if (uv === APP_USER && pv === APP_PASS) return { kind: 'admin', name: '' };
+    if (uv === pv) {
+      var name = (typeof findEmployeeByPin_ === 'function') ? findEmployeeByPin_(uv) : null;
+      if (name) return { kind: 'employee', name: name };
+    }
+    return null;
+  }
   function syncLoginFabsVisibility_(){
     var loginFabs = document.getElementById('loginFabs');
     if (!loginFabs) return;
-    var show = (currentScreenName_ === 'login') && !loginCredsEmpty_();
+    var who = (currentScreenName_ === 'login') ? identifyLoginCreds_() : null;
+    // الـ FABs تظهر فقط لما يكون في يوزر وباسورد متطابقين لحساب فعلي
+    // (أدمن أو موظف مسجّل عنده pin). غير كده (فاضي أو كلام غير متعرّف
+    // عليه) تختفي تمامًا.
+    var show = !!who;
     var next = show ? 'flex' : 'none';
-    if (loginFabs.style.display === next) return;
-    if (!show && window.resetLoginFabs_) window.resetLoginFabs_();   // اقفل القوايم والخلفية المظلّلة قبل الإخفاء
-    loginFabs.style.display = next;
+    if (loginFabs.style.display !== next) {
+      if (!show && window.resetLoginFabs_) window.resetLoginFabs_();
+      loginFabs.style.display = next;
+    }
+    if (show) applyLoginFabPermsFor_(who);
+  }
+  function applyLoginFabPermsFor_(who){
+    // الأدمن يشوف كل الأزرار. الموظف يشوف فقط اللي مش في قايمة إخفائه.
+    var hiddenList = (who && who.kind === 'employee' && typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[who.name])
+      ? EMPLOYEE_HIDDEN_ICONS_[who.name] : [];
+    if (typeof TOGGLE_TILES_ === 'undefined') return;
+    TOGGLE_TILES_.forEach(function(t){
+      if (!t.id || t.id.indexOf('login') !== 0) return;
+      var el = document.getElementById(t.id);
+      if (!el) return;
+      var hide = (who.kind === 'employee') && (hiddenList.indexOf(t.id) > -1);
+      el.style.display = hide ? 'none' : '';
+    });
+    // لو كل الأزرار في جهة من الاتنين (يمين/شمال) مخفية، نخفي زرار الـ 3
+    // شرط بتاع الجهة دي كمان، عشان ما يبقاش ظاهر ولمّا تدوس عليه ما يفتحش
+    // حاجة. (الأدمن دايمًا يشوف الاتنين).
+    ['fabStackRight', 'fabStackLeft'].forEach(function(stackId){
+      var stack = document.getElementById(stackId);
+      if (!stack) return;
+      var btns = stack.querySelectorAll('.login-fab-btn');
+      var anyVisible = false;
+      btns.forEach(function(b){
+        if (b.id === 'appRefreshBtn') { anyVisible = true; return; } // زرار التحديث مش قابل للإخفاء
+        if (b.style.display !== 'none') anyVisible = true;
+      });
+      var toggleBtnId = stackId === 'fabStackRight' ? 'fabToggleRight' : 'fabToggleLeft';
+      var toggle = document.getElementById(toggleBtnId);
+      if (toggle) toggle.style.display = anyVisible ? '' : 'none';
+    });
   }
   (function(){
     ['loginUser','loginPass'].forEach(function(id){
@@ -4137,14 +4239,11 @@ window.safeFileName = function(str){
   window.notifCtx_ = function(){
     var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
     var map = { request: 'notifRequests', checks: 'notifChecks', order: 'notifOrders', overdue: 'notifOverdue' }, topics = [];
+    // الموظف يشوف فقط: الإشعارات اللي target فيها = اسمه (قرارات طلباته،
+    // إشعارات حضوره هو، قرارات عهدته)، + الـ topics اللي فيها permission مفعّل
+    // صراحة. ما يشوفش إشعارات موظفين تانيين ولا إشعارات عامة زي تقفيل الخزنة.
     if (isEmployeeSession) {
       Object.keys(map).forEach(function(t){ var p = notifPermById_(map[t]); if (p && notifPermGranted_(p, list)) topics.push(t); });
-      // قرارات الطلبات (موافق/مرفوض) + إشعارات الحضور/الانصراف الخاصة بالموظف
-      // لازم تظهرله دايمًا في مركز الإشعارات بتاعه، لأنها متخصصة ليه (target=اسمه)
-      // ومش broadcast. السيرفر بيفلتر بالاسم كمان، فما تظهرش قرارات حد تاني.
-      topics.push('approval');
-      topics.push('presence');
-      topics.push('departure');
     }
     return { isAdmin: !isEmployeeSession, name: currentSessionEmployeeName || '', topics: topics };
   };
@@ -7138,7 +7237,7 @@ window.safeFileName = function(str){
           // تأكيد للأدمن إنه نفذ الإجراء — نفس الحدث لكن من غير target عشان
           // يروح لتوكنات الأدمن (employee='' في PushTokens) ويظهر في مركز
           // إشعارات الأدمن كمان. dedupId مختلف عشان ما يتعارضش مع إشعار الموظف.
-          var adminTitle = isOk ? '✅ تم اعتماد طلب' : '❌ تم رفض طلب';
+          var adminTitle = (isOk ? '✅ تم اعتماد طلب ' : '❌ تم رفض طلب ') + typeTxt + ' — ' + empName;
           var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName;
           var adminNotifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
             + '&title=' + encodeURIComponent(adminTitle)
@@ -7169,49 +7268,70 @@ window.safeFileName = function(str){
     var statusTxt = req.status || 'قيد المراجعة';
     var statusCls = statusTxt === 'موافق' ? 'ok' : statusTxt === 'مرفوض' ? 'no' : 'pend';
 
+    // استخراج "HH:MM" من أي صيغة (string فيه time، أو Date.toString(), أو ISO).
+    function fmtTime_(v){
+      if (!v) return '';
+      var s = String(v).trim();
+      var m = s.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+      return m ? (m[1].padStart(2,'0') + ':' + m[2]) : s;
+    }
+    // تنسيق تاريخ لـ "YYYY-MM-DD" (أو زي ما جاي لو مش معروف الشكل).
+    function fmtDate_(v){
+      if (!v) return '';
+      var s = String(v).trim();
+      var m = s.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+      return m ? (m[1] + '-' + m[2] + '-' + m[3]) : s;
+    }
+    // تنسيق تاريخ+وقت لـ "YYYY-MM-DD  HH:MM".
+    function fmtDateTime_(v){
+      if (!v) return '';
+      var d = fmtDate_(v), t = fmtTime_(v);
+      return d && t && d !== v ? (d + ' • ' + t) : (d || t || String(v));
+    }
+
     // صف البيانات حسب النوع
     var rowsHtml = '';
     function addRow(label, value){
       if (value == null || value === '') return;
       rowsHtml += '<div class="rp-label">' + label + '</div><div class="rp-value">' + String(value) + '</div>';
     }
-    addRow('اسم الموظف:', req.name || '—');
-    addRow('نوع الطلب:', typeIcon + ' ' + req.type);
+    addRow('اسم الموظف', req.name || '—');
+    addRow('نوع الطلب', typeIcon + ' ' + req.type);
 
     if (req.type === 'إجازة') {
       if (req.leaveFrom && req.leaveTo && req.leaveFrom !== req.leaveTo) {
-        addRow('من تاريخ:', req.leaveFrom);
-        addRow('إلى تاريخ:', req.leaveTo);
+        addRow('الفترة', fmtDate_(req.leaveFrom) + ' <span class="rp-sep">→</span> ' + fmtDate_(req.leaveTo));
         try {
           var d1 = new Date(req.leaveFrom), d2 = new Date(req.leaveTo);
           var diff = Math.round((d2 - d1) / 86400000) + 1;
-          if (diff > 0) addRow('عدد الأيام:', diff + ' يوم');
+          if (diff > 0) addRow('عدد الأيام', diff + ' يوم');
         } catch (e) {}
       } else {
-        addRow('التاريخ:', req.leaveFrom || req.leaveTo || req.date || '—');
-        addRow('عدد الأيام:', 'يوم واحد');
+        addRow('التاريخ', fmtDate_(req.leaveFrom || req.leaveTo || req.date) || '—');
+        addRow('عدد الأيام', 'يوم واحد');
       }
     } else {
       // إذن / مأمورية
-      addRow('التاريخ:', req.date || '—');
-      if (req.from) addRow('من الساعة:', req.from);
-      if (req.to) addRow('إلى الساعة:', req.to);
+      addRow('التاريخ', fmtDate_(req.date) || '—');
+      var fT = fmtTime_(req.from), tT = fmtTime_(req.to);
+      if (fT || tT) addRow('من — إلى', (fT || '—') + ' <span class="rp-sep">→</span> ' + (tT || '—'));
       if (req.from && req.to) {
         try {
-          function toMin(t){ var p = String(t).split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+          function toMin(t){ var p = fmtTime_(t).split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
           var mins = toMin(req.to) - toMin(req.from);
           if (mins > 0) {
             var h = Math.floor(mins / 60), m = mins % 60;
-            addRow('المدة:', (h ? h + ' ساعة' : '') + (h && m ? ' و' : '') + (m ? m + ' دقيقة' : (h ? '' : '0')));
+            var dur = (h ? h + ' س' : '') + (h && m ? ' ' : '') + (m ? m + ' د' : (h ? '' : '0'));
+            addRow('المدة', dur);
           }
         } catch (e) {}
       }
     }
-    addRow('الحالة:', '<span class="rp-status ' + statusCls + '">' + statusTxt + '</span>');
-    if (req.submittedAt) addRow('تاريخ التقديم:', req.submittedAt);
+    addRow('الحالة', '<span class="rp-status ' + statusCls + '">' + statusTxt + '</span>');
+    if (req.submittedAt) addRow('تاريخ التقديم', fmtDateTime_(req.submittedAt));
 
     var reasonBlock = req.reason
-      ? '<div class="rp-reason"><b>' + (req.type === 'مأمورية' ? 'تفاصيل المأمورية / السبب:' : 'السبب:') + '</b><br>' + String(req.reason).replace(/</g, '&lt;') + '</div>'
+      ? '<div class="rp-reason"><div class="rp-reason-title">' + (req.type === 'مأمورية' ? 'تفاصيل المأمورية / السبب' : 'السبب') + '</div><div class="rp-reason-text">' + String(req.reason).replace(/</g, '&lt;') + '</div></div>'
       : '';
 
     var overlay = document.createElement('div');
@@ -7225,13 +7345,16 @@ window.safeFileName = function(str){
         '</div>' +
       '</div>' +
       '<div class="req-print-paper" id="rpPaper">' +
-        '<h1>' + typeIcon + ' ' + typeTitle + '</h1>' +
-        '<div class="rp-sub">ChillOut Construction — نموذج ' + typeTitle + '</div>' +
+        '<div class="rp-header">' +
+          '<div class="rp-brand">ChillOut Construction</div>' +
+          '<h1>' + typeIcon + ' ' + typeTitle + '</h1>' +
+          '<div class="rp-sub">نموذج داخلي — ' + typeTitle + '</div>' +
+        '</div>' +
         '<div class="rp-grid">' + rowsHtml + '</div>' +
         reasonBlock +
         '<div class="rp-sign">' +
-          '<div>توقيع الموظف</div>' +
-          '<div>اعتماد الإدارة</div>' +
+          '<div><span>توقيع الموظف</span></div>' +
+          '<div><span>اعتماد الإدارة</span></div>' +
         '</div>' +
       '</div>';
     document.body.appendChild(overlay);
@@ -9725,8 +9848,12 @@ window.safeFileName = function(str){
     // الإخفاء بقى خاص بكل موظف لوحده؛ دخول المسؤول (APP_USER/APP_PASS)
     // بيشوف كل الأيقونات دايمًا (وفيها أيقونة الإعدادات) مهما كانت قايمة
     // إخفاء أي موظف.
-    var effectiveHidden = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName])
-      ? EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] : [];
+    var hasPermData_ = !!(isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]);
+    // لو موظف داخل لسه، وما جابناش صلاحياته (لا من الكاش ولا من السيرفر)،
+    // نخفي كل الأيقونات القابلة للتخصيص لحد ما البيانات توصل — ده بيمنع
+    // الـ flicker اللي كانت الأيقونات تظهر كلها ثم تختفي.
+    var pendingPerms_ = !!(isEmployeeSession && currentSessionEmployeeName && !hasPermData_);
+    var effectiveHidden = hasPermData_ ? EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] : [];
     // بنحفظ قايمة الإخفاء بتاعة الموظف الحالي على الجهاز، عشان بعد
     // "تحديث" الصفحة تتطبّق فورًا من غير ما نستنى السيرفر (وقتها الأيقونات
     // كلها كانت بتظهر لحد ما الرد يوصل، أو تفضل ظاهرة لو فشل).
@@ -9739,13 +9866,13 @@ window.safeFileName = function(str){
     }
     TOGGLE_TILES_.forEach(function(t){
       var el = document.getElementById(t.id);
-      if (el) el.style.display = (effectiveHidden.indexOf(t.id) > -1) ? 'none' : '';
+      if (el) el.style.display = (pendingPerms_ || effectiveHidden.indexOf(t.id) > -1) ? 'none' : '';
     });
     // "راتبي" مخصوصة للموظفين بس (بيشوف راتبه هو) — منفصلة عن قايمة
     // TOGGLE_TILES_ (اللي بتتحكم فيها شاشة "إدارة الشاشات").
     var salaryTile = document.getElementById('openMySalaryTileBtn');
     // للأدمن: بتظهر دايمًا (بيختار الموظف ويشوف راتبه). للموظف: بتظهر لو داخل باسمه.
-    if (salaryTile) salaryTile.style.display = (!isEmployeeSession || currentSessionEmployeeName) ? '' : 'none';
+    if (salaryTile) salaryTile.style.display = (!isEmployeeSession || (currentSessionEmployeeName && !pendingPerms_)) ? '' : 'none';
     // "إعدادات الإشعارات" في شاشة الإعدادات: للأدمن بس (بيختار أي موظف
     // ويشوف راتبه ويختبر إشعاراته). مش بتظهر أبدًا لموظف حتى لو الإعدادات
     // ظاهرة له، عشان ما يقدرش يشوف رواتب غيره.
@@ -9756,13 +9883,13 @@ window.safeFileName = function(str){
     var crHome = document.getElementById('openCustodyReportHomeBtn');
     if (crHome) {
       var crList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
-      crHome.style.display = (!isEmployeeSession || crList_.indexOf('allow_custodyReport') > -1) ? '' : 'none';
+      crHome.style.display = (!isEmployeeSession || (!pendingPerms_ && crList_.indexOf('allow_custodyReport') > -1)) ? '' : 'none';
     }
     var crTile = document.getElementById('openCustodyReportTileBtn');
     if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
     var notifSetHome = document.getElementById('openNotifSettingsHomeBtn');
     // للموظف: ظاهرة تلقائي، والمسؤول يقدر يخفيها له من "إدارة الشاشات". الأدمن بيدخلها من الإعدادات.
-    if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName && effectiveHidden.indexOf('openNotifSettingsHomeBtn') === -1) ? '' : 'none';
+    if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName && !pendingPerms_ && effectiveHidden.indexOf('openNotifSettingsHomeBtn') === -1) ? '' : 'none';
     var notifTestTile = document.getElementById('openNotifTestTileBtn');
     if (notifTestTile) notifTestTile.style.display = isEmployeeSession ? 'none' : '';
     // "إشعار الراتب لكل الموظفين" في الإعدادات: للأدمن بس.
@@ -13201,7 +13328,8 @@ window.safeFileName = function(str){
     });
     S.rows.slice().reverse().forEach(function(r){
       var inn = r.entry_type === 'in', a = +r.amount;
-      var row = '<div class="cg-row" data-row="' + r.id + '"><span><i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
+      var projTag = r.project ? '<em class="cg-proj">🏷 ' + esc(r.project) + '</em>' : '';
+      var row = '<div class="cg-row" data-row="' + r.id + '"><span>' + projTag + '<i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
       if (lockedFor(who(), r.entry_date)) row = row.replace('class="cg-row"', 'class="cg-row cg-locked"').replace(/<button type="button" class="cg-edit"[^>]*>[^<]*<\/button><button type="button" class="cg-del"[^>]*>[^<]*<\/button>/, '');
       if (inn) hin += row; else hout += row;
     });
@@ -13584,7 +13712,7 @@ window.safeFileName = function(str){
   var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
   var $ = function(id){ return document.getElementById(id); };
   var PAGE = 40;
-  var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0 };
+  var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0, sel: {}, selMode: false };
   var TOPIC = {   // أيقونة + لون لكل نوع
     order:     { i: '🛒', c: '#0284c7' }, checks:    { i: '🧾', c: '#059669' }, overdue:   { i: '📉', c: '#dc2626' },
     salary:    { i: '💰', c: '#7c3aed' }, request:   { i: '📝', c: '#e2621f' }, presence:  { i: '✅', c: '#16a34a' },
@@ -13679,7 +13807,13 @@ window.safeFileName = function(str){
   }
   function render(){
     var box = $('ncList'), html = '', lastDay = '', prev = null;
+    // فلتر الموظف: يشوف فقط اللي target فيه = اسمه. ده بيحجب الإشعارات
+    // القديمة اللي كانت متخزّنة بدون target (broadcast) من زمان، أو إشعارات
+    // عامة لحد تاني تسرّبت للـ feed بتاعه.
+    var _ctxE = ctx();
+    var _empFilter = (!_ctxE.isAdmin && _ctxE.name);
     NC.items.forEach(function(n){
+      if (_empFilter && n.target !== _ctxE.name) return;
       var d = new Date(n.created_at);
       // نفس الإشعار وصل من مصدرين في نفس الدقيقتين → نعرضه مرة واحدة
       if (prev && prev.title === n.title && prev.body === n.body && Math.abs(new Date(prev.created_at) - d) < 120000) return;
@@ -13687,13 +13821,22 @@ window.safeFileName = function(str){
       var day = dayLabel(d);
       if (day !== lastDay) { html += '<div class="nc-day">' + esc(day) + '</div>'; lastDay = day; }
       var tp = TOPIC[n.topic] || TOPIC.general;
-      html += '<div class="nc-item' + (n.is_read ? '' : ' unread') + '" data-id="' + n.id + '" data-topic="' + esc(n.topic) + '">' +
+      var isSel = NC.sel && NC.sel[n.id];
+      html += '<div class="nc-item' + (n.is_read ? '' : ' unread') + (isSel ? ' selected' : '') + '" data-id="' + n.id + '" data-topic="' + esc(n.topic) + '">' +
+        '<input type="checkbox" class="nc-chk"' + (isSel ? ' checked' : '') + '>' +
         '<div class="nc-ico" style="background:' + tp.c + '22;color:' + tp.c + '">' + tp.i + '</div>' +
         '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + esc(n.body) + '</div>' : '') +
         '<div class="nc-time">' + esc(timeLabel(d)) + '</div></div>' + (n.is_read ? '' : '<span class="nc-dot"></span>') + '</div>';
     });
     box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات لسه') + '</div>';
     $('ncMore').style.display = (NC.done || !NC.items.length) ? 'none' : '';
+    updateSelBar_();
+  }
+  function updateSelBar_(){
+    var count = NC.sel ? Object.keys(NC.sel).length : 0;
+    var cEl = $('ncSelCount'); if (cEl) cEl.textContent = count;
+    var btn = $('ncMarkSel'); if (btn) btn.disabled = count === 0;
+    var all = $('ncSelAll'); if (all) all.checked = count > 0 && count === NC.items.length;
   }
   function load(reset){
     if (NC.loading) return; NC.loading = true;
@@ -13731,6 +13874,12 @@ window.safeFileName = function(str){
   $('ncList').addEventListener('click', function(e){
     var el = e.target.closest('.nc-item'); if (!el) return;
     var id = +el.dataset.id, it = NC.items.filter(function(n){ return n.id === id; })[0], c = ctx();
+    // في وضع التحديد المتعدد، الضغط على الإشعار يختار/يلغي اختياره فقط
+    if (NC.selMode) {
+      if (NC.sel[id]) delete NC.sel[id]; else NC.sel[id] = true;
+      render();
+      return;
+    }
     if (it && !it.is_read) {
       it.is_read = true; render(); setBadge(Math.max(0, NC.unread - 1));
       rpc('notif_mark_read', { p_name: me(c), p_ids: [id] }).then(refreshBadge).catch(function(){});
@@ -13739,6 +13888,38 @@ window.safeFileName = function(str){
     var go = { request: 'openAttendanceApprovalsBtn', presence: 'openAttendanceDashboardBtn', departure: 'openAttendanceDashboardBtn' }[el.dataset.topic];
     var btn = go && $(go);
     if (btn && btn.style.display !== 'none' && (el.dataset.topic !== 'request' || it && !it.target)) btn.click();
+  });
+
+  // زرار تفعيل وضع التحديد المتعدد
+  $('ncSelToggle').addEventListener('click', function(){
+    NC.selMode = !NC.selMode;
+    if (!NC.selMode) NC.sel = {};
+    this.classList.toggle('active', NC.selMode);
+    this.textContent = NC.selMode ? '✕ إلغاء التحديد المتعدد' : '☐ وضع التحديد المتعدد';
+    $('ncSelBar').style.display = NC.selMode ? 'flex' : 'none';
+    document.getElementById('ncList').classList.toggle('nc-selmode', NC.selMode);
+    render();
+  });
+
+  // اختيار الكل / إلغاء اختيار الكل
+  $('ncSelAll').addEventListener('change', function(){
+    if (this.checked) NC.items.forEach(function(n){ NC.sel[n.id] = true; });
+    else NC.sel = {};
+    render();
+  });
+
+  // تمييز المحدد كمقروء
+  $('ncMarkSel').addEventListener('click', function(){
+    var ids = Object.keys(NC.sel).map(Number); if (!ids.length) return;
+    var c = ctx();
+    rpc('notif_mark_read', { p_name: me(c), p_ids: ids })
+      .then(function(){
+        NC.items.forEach(function(n){ if (NC.sel[n.id]) n.is_read = true; });
+        NC.sel = {};
+        setBadge(Math.max(0, NC.unread - ids.length));
+        render(); refreshBadge();
+      })
+      .catch(function(){ st('تعذّر التمييز', true); });
   });
 })();
 </script>
