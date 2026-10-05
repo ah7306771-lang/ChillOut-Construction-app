@@ -1702,7 +1702,7 @@ body.cg-compact .wa-float-btn{display:none !important}
 #custodyLedgerScreen .out .cg-row.cg-locked{grid-template-columns:1fr auto 22px}
 #cgLockMsg{margin:3px 0 !important;padding:4px 8px !important;font-size:12px !important}
 /* الوارد: 3 صفوف بالظبط + scroll للباقي. المنصرف: يمتد لآخر الصفحة. */
-#cgListIn{max-height:162px !important;overflow-y:auto !important}
+#cgListIn{max-height:125px !important;overflow-y:auto !important}
 #cgListOut{max-height:calc(100vh - 360px) !important;min-height:220px !important;overflow-y:auto !important}
 </style>
 <style>
@@ -13349,6 +13349,20 @@ window.safeFileName = function(str){
     });
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
     $('cgListOut').innerHTML = hout || '<div class="cg-empty">لا توجد سطور منصرف</div>';
+    // تثبيت ارتفاع الوارد على 3 صفوف بالظبط بغض النظر عن وجود tag للمشروع
+    // أو طول البيان، والباقي يظهر بـ scroll.
+    try {
+      var inList = $('cgListIn'), rows = inList ? inList.querySelectorAll('.cg-row') : [];
+      if (rows.length >= 3) {
+        var third = rows[2];
+        var topOffset = inList.getBoundingClientRect().top;
+        var thirdBottom = third.getBoundingClientRect().bottom;
+        var h = Math.ceil(thirdBottom - topOffset) + 2;
+        if (h > 40 && h < 400) inList.style.maxHeight = h + 'px';
+      } else if (inList) {
+        inList.style.maxHeight = '';
+      }
+    } catch (e) {}
     $('cgSumIn').textContent = fmt(tin); $('cgSumOut').textContent = fmt(tout);
     $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(total);
     var _open = $('cgOpen'); if (_open) _open.textContent = '';
