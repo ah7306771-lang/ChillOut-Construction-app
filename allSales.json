@@ -418,5 +418,29 @@
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
+  },
+  {
+    "date": null,
+    "orderNo": 54,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 39650,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "paymentMethod": "كاش 100 %"
+  },
+  {
+    "date": null,
+    "orderNo": 53,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 41700,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "paymentMethod": "كاش 100 %"
   }
 ]
