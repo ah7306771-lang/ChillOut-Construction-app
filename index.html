@@ -7268,25 +7268,32 @@ window.safeFileName = function(str){
     var statusTxt = req.status || 'قيد المراجعة';
     var statusCls = statusTxt === 'موافق' ? 'ok' : statusTxt === 'مرفوض' ? 'no' : 'pend';
 
-    // استخراج "HH:MM" من أي صيغة (string فيه time، أو Date.toString(), أو ISO).
+    // استخراج "HH:MM" من أي صيغة (ISO فيه T، أو Date.toString(), أو string).
     function fmtTime_(v){
       if (!v) return '';
       var s = String(v).trim();
-      var m = s.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
-      return m ? (m[1].padStart(2,'0') + ':' + m[2]) : s;
+      // أولوية لصيغة ISO (…T07:25:02…) عشان ما تلتبسش بالدقايق:الثواني.
+      var m = s.match(/T(\d{2}):(\d{2})/);
+      if (!m) m = s.match(/(?:^|[^\d])(\d{1,2}):(\d{2})(?!\d)/);
+      if (!m) return '';
+      var h = +m[1];
+      if (isNaN(h) || h < 0 || h > 23) return '';
+      return String(h).padStart(2, '0') + ':' + m[2];
     }
-    // تنسيق تاريخ لـ "YYYY-MM-DD" (أو زي ما جاي لو مش معروف الشكل).
+    // استخراج "YYYY-MM-DD" من أي صيغة فيها تاريخ.
     function fmtDate_(v){
       if (!v) return '';
       var s = String(v).trim();
-      var m = s.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+      var m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
       return m ? (m[1] + '-' + m[2] + '-' + m[3]) : s;
     }
-    // تنسيق تاريخ+وقت لـ "YYYY-MM-DD  HH:MM".
+    // تنسيق تاريخ+وقت لـ "YYYY-MM-DD • HH:MM" — تاريخ وساعة فقط، بدون
+    // ثواني ولا تاريخ منطقة زمنية.
     function fmtDateTime_(v){
       if (!v) return '';
       var d = fmtDate_(v), t = fmtTime_(v);
-      return d && t && d !== v ? (d + ' • ' + t) : (d || t || String(v));
+      if (d && t) return d + ' • ' + t;
+      return d || t || String(v);
     }
 
     // صف البيانات حسب النوع
