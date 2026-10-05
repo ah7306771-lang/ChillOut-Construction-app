@@ -157,7 +157,7 @@
     "number": 74668,
     "value": 1400000,
     "dueDate": "30/10/2026",
-    "bank": "",
+    "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
   },
@@ -166,7 +166,7 @@
     "number": 74669,
     "value": 1200000,
     "dueDate": "30/10/2026",
-    "bank": "",
+    "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
   }
