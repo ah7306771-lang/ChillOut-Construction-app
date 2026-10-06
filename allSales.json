@@ -21,7 +21,7 @@
     "sellPrice2": 0,
     "buyTotal": 4376600.0,
     "sellTotal": 4576040.0,
-    "paymentMethod": "شيك 30 يوم - شيك 60 يوم"
+    "paymentMethod": "شيك 30 يوم 50 % - شيك 60 يوم 50%"
   },
   {
     "date": "23/09/2026",
@@ -418,18 +418,6 @@
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
-  },
-  {
-    "date": null,
-    "orderNo": 55,
-    "client": "الامين",
-    "buyPrice": 0,
-    "sellPrice": 41000,
-    "buyPrice2": 0,
-    "sellPrice2": 0,
-    "buyTotal": 0.0,
-    "sellTotal": 0.0,
-    "paymentMethod": ""
   },
   {
     "date": null,
