@@ -1704,6 +1704,13 @@ body.cg-compact .wa-float-btn{display:none !important}
 /* الوارد: 3 صفوف بالظبط + scroll للباقي. المنصرف: يمتد لآخر الصفحة. */
 #cgListIn{max-height:125px !important;overflow-y:auto !important}
 #cgListOut{max-height:calc(100vh - 360px) !important;min-height:220px !important;overflow-y:auto !important}
+/* صف الهيدر للوارد/المنصرف: زرار الإضافة + checkbox "المقفلة" على يساره */
+.cg-head-row{display:flex;align-items:stretch;gap:4px}
+.cg-head-row .cg-add{flex:1;margin:0}
+.cg-show-locked{display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;cursor:pointer;user-select:none;padding:0 10px;border-radius:8px;white-space:nowrap}
+.cg-sec.in .cg-show-locked{background:#eaf6ef;color:#1f7a4c;border:1px solid #b7e0c8}
+.cg-sec.out .cg-show-locked{background:#fdecea;color:#c0392b;border:1px solid #f0bcb6}
+.cg-show-locked input{width:13px;height:13px;cursor:pointer;margin:0;accent-color:currentColor}
 </style>
 <style>
 #notifCenterScreen{align-items:flex-start;padding:76px 10px 20px}
@@ -2016,8 +2023,8 @@ body.cg-compact .wa-float-btn{display:none !important}
     </div>
     <div class="status-msg" id="cgStatus"></div>
     <div id="cgLockMsg" style="display:none;background:#eaf6ef;color:#1f7a4c;border:1px solid #b7e0c8;border-radius:10px;padding:8px 10px;margin:6px 0;text-align:center;font-weight:800;font-size:13px"></div>
-    <section class="cg-sec in"><button type="button" class="cg-add" id="cgAddIn">＋ وارد<span id="cgLkIn" style="display:none;margin-inline-start:4px;font-size:14px">🔒</span> <span id="cgSumIn"></span></button><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
-    <section class="cg-sec out"><button type="button" class="cg-add" id="cgAddOut">－ منصرف<span id="cgLkOut" style="display:none;margin-inline-start:4px;font-size:14px">🔒</span> <span id="cgSumOut"></span></button><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
+    <section class="cg-sec in"><div class="cg-head-row"><button type="button" class="cg-add" id="cgAddIn">＋ وارد<span id="cgLkIn" style="display:none;margin-inline-start:4px;font-size:14px">🔒</span> <span id="cgSumIn"></span></button><label class="cg-show-locked" id="cgShowLockedInWrap" style="display:none;" title="عرض الحركات المقفلة"><input type="checkbox" id="cgShowLockedIn"><span>المقفلة</span></label></div><div id="cgDraftIn"></div><div id="cgListIn"></div></section>
+    <section class="cg-sec out"><div class="cg-head-row"><button type="button" class="cg-add" id="cgAddOut">－ منصرف<span id="cgLkOut" style="display:none;margin-inline-start:4px;font-size:14px">🔒</span> <span id="cgSumOut"></span></button><label class="cg-show-locked" id="cgShowLockedOutWrap" style="display:none;" title="عرض الحركات المقفلة"><input type="checkbox" id="cgShowLockedOut"><span>المقفلة</span></label></div><div id="cgDraftOut"></div><div id="cgListOut"></div></section>
   </div>
 </div>
 
@@ -7766,11 +7773,11 @@ window.safeFileName = function(str){
   }
   function buildInstallmentRow_(raw){
     var v=raw.values||[], remaining=installmentNum_(v[8]), dueDays=installmentDays_(v[5]);
-    var paid=remaining<=0, overdue=!paid&&dueDays!==null&&dueDays<0, dueToday=!paid&&dueDays===0;
+    var paid=remaining<=0, overdue=!paid&&dueDays!==null&&dueDays<=0;  // المستحق اليوم يُعتبر متأخر
     var near=!paid&&dueDays!==null&&dueDays>0&&dueDays<=2;
-    var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':dueToday?'⚠ مستحق اليوم':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
+    var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
     return {values:v,remaining:remaining,days:dueDays,lateAmount:overdue?remaining:0,delay:overdue?Math.abs(dueDays):null,
-      status:status,key:paid?'paid':overdue?'overdue':dueToday?'today':near?'near':'running',statusClass:paid?'status-paid':(overdue||dueToday?'status-due':(near?'status-near':'status-running'))};
+      status:status,key:paid?'paid':overdue?'overdue':near?'near':'running',statusClass:paid?'status-paid':(overdue?'status-due':(near?'status-near':'status-running'))};
   }
   function renderInstallmentsStatus_(data){
     var listWrap=document.getElementById('quickStatusListWrap'), all=(data.rows||[]).map(buildInstallmentRow_);
@@ -7788,7 +7795,6 @@ window.safeFileName = function(str){
       +'<div class="inst-filter"><label for="instStatusFilter">الحالة</label><select id="instStatusFilter">'
       +'<option value="">الكل</option>'
       +'<option value="overdue">⚠ مستحق (متأخر)</option>'
-      +'<option value="today">⚠ مستحق اليوم</option>'
       +'<option value="near">🔔 قريب الاستحقاق</option>'
       +'<option value="running">🟢 جارٍ</option>'
       +'</select></div>'
@@ -7806,11 +7812,11 @@ window.safeFileName = function(str){
       var v=x.values,cells=[];
       for(var p=0;p<12;p++){
         var oi=INST_COL_ORDER[p];
-        var shown=(oi===2||oi===5)?fmtInstallmentDate_(v[oi]):([3,6,7,8].indexOf(oi)>=0?fmtInstallmentMoney_(v[oi]):oi===9?fmtInstallmentMoney_(x.lateAmount):oi===10?(x.delay!==null?(x.delay+' '+(x.delay===1?'يوم':'أيام')):''):oi===11?x.status:escQuick_(v[oi]===null||v[oi]===undefined?'':v[oi]));
+        var shown=(oi===2||oi===5)?fmtInstallmentDate_(v[oi]):([3,6,7,8].indexOf(oi)>=0?fmtInstallmentMoney_(v[oi]):oi===9?fmtInstallmentMoney_(x.lateAmount):oi===10?(x.delay!==null?(x.delay===0?'اليوم':(x.delay+' '+(x.delay===1?'يوم':'أيام'))):''):oi===11?x.status:escQuick_(v[oi]===null||v[oi]===undefined?'':v[oi]));
         cells.push('<td'+(oi===5?' dir="ltr"':'')+'>'+shown+'</td>');
       }
       // الصف المستحق (متأخر أو مستحق اليوم) بيتلوّن كله وردي زي الشيك المتأخر
-      return '<tr'+((x.key==='overdue'||x.key==='today')?' class="row-overdue"':'')+'>'+cells.join('')+'</tr>';
+      return '<tr'+(x.key==='overdue'?' class="row-overdue"':'')+'>'+cells.join('')+'</tr>';
     }
     listWrap.innerHTML='<div class="installments-summary" id="instSummary"></div>'+toolbar+
       '<div class="qs-table-scroll"><table class="dtable installments-table"><thead><tr>'+th+'</tr></thead><tbody id="instTbody"></tbody><tfoot id="instTfoot"></tfoot></table></div>';
@@ -7824,9 +7830,9 @@ window.safeFileName = function(str){
       list.forEach(function(x){
         totalRemaining+=x.remaining; sumInst+=installmentNum_(x.values[6]); sumPaid+=installmentNum_(x.values[7]); sumLate+=x.lateAmount;
         if(x.key==='overdue') overdueAmt+=x.remaining;
-        else if(x.key==='today'||x.key==='near') nearAmt+=x.remaining;
+        else if(x.key==='near') nearAmt+=x.remaining;
       });
-      summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
+      summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">قريب الاستحقاق: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
       tbody.innerHTML=list.length?list.map(rowHtml).join(''):'<tr><td colspan="12">مفيش أقساط بالفلتر ده.</td></tr>';
       tfoot.innerHTML=list.length?('<tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="5">الإجمالي</td><td>'+money(sumInst)+'</td><td></td><td>'+money(sumPaid)+'</td><td>'+money(totalRemaining)+'</td><td>'+money(sumLate)+'</td><td colspan="2"></td></tr>'):'';
     }
@@ -7845,12 +7851,27 @@ window.safeFileName = function(str){
   function refreshInstallmentsBadge_(){
     var badge=document.getElementById('loginInstallmentsBadge'); if(!badge)return;
     loadInstallmentsData_().then(function(data){
-      var count=(data.rows||[]).map(buildInstallmentRow_).filter(function(x){return x.remaining>0&&x.days!==null&&x.days<0;}).length;
+      var count=(data.rows||[]).map(buildInstallmentRow_).filter(function(x){return x.remaining>0&&x.days!==null&&x.days<=0;}).length;
       if(count){badge.textContent=count>99?'99+':String(count);badge.style.display='flex';}else badge.style.display='none';
     }).catch(function(){});
   }
   document.getElementById('loginInstallmentsBtn').addEventListener('click',loadInstallmentsStatus_);
   refreshInstallmentsBadge_(); setInterval(refreshInstallmentsBadge_,60000);
+
+  // المتأخرات بتتحسب من الأقساط نفسها (المستحق اليوم يُعتبر متأخر)،
+  // ولو الأقساط ما اتحمّلتش بنرجع لملف overdue.json القديم.
+  function getOverdueData_(){
+    return loadInstallmentsData_().then(function(data){
+      var byClient=Object.create(null), order=[];
+      (data.rows||[]).map(buildInstallmentRow_).forEach(function(x){
+        if(x.key!=='overdue') return;
+        var c=(x.values[1]===null||x.values[1]===undefined)?'':String(x.values[1]).trim();
+        if(!byClient[c]){byClient[c]={client:c,count:0,amount:0,delaySum:0};order.push(c);}
+        var g=byClient[c]; g.count++; g.amount+=x.remaining; g.delaySum+=(x.delay||0);
+      });
+      return {rows:order.map(function(c){var g=byClient[c];return {client:g.client,count:g.count,amount:g.amount,avgDelay:g.delaySum/g.count};})};
+    }).catch(function(){ return fetchAppJson_('overdue'); });
+  }
 
   function loadOverdueStatus_(){
     var titleEl = document.getElementById('quickStatusTitle');
@@ -7862,7 +7883,7 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
-    fetchAppJson_('overdue')
+    getOverdueData_()
       .then(function(data){
         var rows = data.rows || [];
         if (!rows.length) {
@@ -8004,7 +8025,7 @@ window.safeFileName = function(str){
   function refreshOverdueBadge_(){
     var badge = document.getElementById('loginOverdueBadge');
     if (!badge) return;
-    fetchAppJson_('overdue')
+    getOverdueData_()
       .then(function(data){
         var count = (data && data.rows) ? data.rows.length : 0;
         if (count > 0) {
@@ -13340,11 +13361,19 @@ window.safeFileName = function(str){
       if (r.entry_date < td) before += sg * a;
       else if (r.entry_date === td) { if (inn) tin += a; else tout += a; }
     });
+    // الافتراضي: لما العهدة تتقفل، نخفي الحركات اللي قبل تاريخ التقفيل (المقفلة)
+    // من كل من الوارد والمنصرف — ونعرض اللي بعد التاريخ ده فقط. الـ checkbox
+    // بتاع كل قسم يرجع الوضع ويعرض الحركات المقفلة كمان.
+    var _showLockedIn  = !!($('cgShowLockedIn')  && $('cgShowLockedIn').checked);
+    var _showLockedOut = !!($('cgShowLockedOut') && $('cgShowLockedOut').checked);
     S.rows.slice().reverse().forEach(function(r){
       var inn = r.entry_type === 'in', a = +r.amount;
+      var isLocked = lockedFor(who(), r.entry_date);
+      if (isLocked && inn && !_showLockedIn) return;
+      if (isLocked && !inn && !_showLockedOut) return;
       var projTag = r.project ? '<em class="cg-proj">🏷 ' + esc(r.project) + '</em>' : '';
       var row = '<div class="cg-row" data-row="' + r.id + '"><span>' + projTag + '<i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
-      if (lockedFor(who(), r.entry_date)) row = row.replace('class="cg-row"', 'class="cg-row cg-locked"').replace(/<button type="button" class="cg-edit"[^>]*>[^<]*<\/button><button type="button" class="cg-del"[^>]*>[^<]*<\/button>/, '');
+      if (isLocked) row = row.replace('class="cg-row"', 'class="cg-row cg-locked"').replace(/<button type="button" class="cg-edit"[^>]*>[^<]*<\/button><button type="button" class="cg-del"[^>]*>[^<]*<\/button>/, '');
       if (inn) hin += row; else hout += row;
     });
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
@@ -13370,6 +13399,8 @@ window.safeFileName = function(str){
     var lb = $('cgLockMsg'), lk = L[who()];
     if (lb) { if (lk) { lb.style.display = ''; lb.textContent = '✅ تم تقفيل العهدة بتاريخ ' + lk; } else lb.style.display = 'none'; }
     ['In','Out'].forEach(function(k){ var e = $('cgLk' + k); if (e) { e.style.display = lk ? '' : 'none'; e.title = lk ? ('مقفلة حتى ' + lk) : ''; } });
+    // الـ checkbox بتاع "عرض الحركات المقفلة" يبان فقط لو العهدة مقفلة
+    ['In','Out'].forEach(function(k){ var w = $('cgShowLocked' + k + 'Wrap'); if (w) w.style.display = lk ? 'flex' : 'none'; });
   }
 
   // ---------- تسجيل سطر ----------
@@ -13385,6 +13416,11 @@ window.safeFileName = function(str){
   }
   $('cgAddIn').addEventListener('click', function(){ draft('in'); });
   $('cgAddOut').addEventListener('click', function(){ draft('out'); });
+  // تغيير حالة الـ checkbox "عرض الحركات المقفلة" يعيد رسم القسم المعني
+  ['In','Out'].forEach(function(k){
+    var cb = $('cgShowLocked' + k);
+    if (cb) cb.addEventListener('change', function(){ render(); });
+  });
   function saveDraft(type, box){
     var d = box.querySelector('.cg-draft'), b = d.querySelector('.d-bayan').value.trim(), a = parseFloat(d.querySelector('.d-amt').value), pr = d.querySelector('.d-proj').value;
     if (!b || !(a > 0)) { st('cgStatus', 'اكتب البيان وقيمة أكبر من صفر', true); return; }
@@ -13834,7 +13870,11 @@ window.safeFileName = function(str){
     $('quickStatusSubtitle').textContent = today();
     wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     $('quickStatusOverlay').style.display = 'flex';
-    fetchAll(T + '?deleted_at=is.null&select=employee,entry_type,amount&order=created_at.asc,id.asc').then(function(rows){
+    Promise.all([
+      fetchAll(T + '?deleted_at=is.null&select=employee,entry_type,amount&order=created_at.asc,id.asc'),
+      loadLocks()
+    ]).then(function(res){
+      var rows = res[0] || [];
       var bal = {};
       rows.forEach(function(r){ bal[r.employee] = (bal[r.employee] || 0) + (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
       var list = Object.keys(bal).map(function(n){ return { n: n, b: Math.round(bal[n] * 100) / 100 }; })
@@ -13843,10 +13883,14 @@ window.safeFileName = function(str){
       var net = 0;
       var body = list.map(function(x, i){
         net += x.b;
-        return '<tr><td>' + (i + 1) + '</td><td>' + esc(x.n) + '</td><td style="font-weight:800;color:' + (x.b > 0 ? '#1f7a4c' : '#c0392b') + '" dir="ltr">' + faNum(x.b) + '</td></tr>';
+        var lockDate = L[x.n] || '';
+        var lockCell = lockDate
+          ? '<td style="font-weight:800;color:#c0392b" dir="ltr">' + esc(lockDate) + '</td>'
+          : '<td style="color:#9aa5b8">—</td>';
+        return '<tr><td>' + (i + 1) + '</td><td>' + esc(x.n) + '</td><td style="font-weight:800;color:' + (x.b > 0 ? '#1f7a4c' : '#c0392b') + '" dir="ltr">' + faNum(x.b) + '</td>' + lockCell + '</tr>';
       }).join('');
-      wrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>اسم الموظف</th><th>متبقي العهدة</th></tr></thead><tbody>' + body +
-        '</tbody><tfoot><tr class="qs-net-row"><td colspan="2">الإجمالي</td><td style="font-weight:800;color:' + (net >= 0 ? '#1f7a4c' : '#c0392b') + '" dir="ltr">' + faNum(Math.round(net * 100) / 100) + '</td></tr></tfoot></table></div>';
+      wrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>اسم الموظف</th><th>متبقي العهدة</th><th>آخر تقفيل</th></tr></thead><tbody>' + body +
+        '</tbody><tfoot><tr class="qs-net-row"><td colspan="2">الإجمالي</td><td style="font-weight:800;color:' + (net >= 0 ? '#1f7a4c' : '#c0392b') + '" dir="ltr">' + faNum(Math.round(net * 100) / 100) + '</td><td></td></tr></tfoot></table></div>';
     }).catch(function(){ wrap.innerHTML = '<div class="empty-note">تعذّر تحميل العهد.</div>'; });
   });
 })();
