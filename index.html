@@ -1745,6 +1745,27 @@ body.cg-compact .wa-float-btn{display:none !important}
 .nc-dot{position:absolute;top:12px;left:10px;width:8px;height:8px;border-radius:50%;background:#e2621f}
 .nc-empty{padding:22px 10px;text-align:center;color:var(--ink-soft);font-weight:700;font-size:12px}
 </style>
+<style>
+/* ===== مركز الإشعارات: شكل احترافي + رفع لفوق ===== */
+#notifCenterScreen{padding-top:50px !important;padding-bottom:40px !important}
+#notifCenterScreen .back-bar{top:20px !important;padding:4px 12px !important}
+#notifCenterScreen .gate-card{padding-top:8px !important;padding-bottom:12px !important}
+#notifCenterScreen .gate-title{font-size:16px !important;margin:0 !important;line-height:1.2}
+.nc-head{margin-bottom:8px !important;padding-bottom:8px;border-bottom:1px solid var(--panel-line)}
+.nc-markall{background:#f3f6fd;border:1px solid #c9d3ec;border-radius:8px;padding:6px 10px !important;font-size:12px !important}
+.nc-tabs{background:#f1f3f7;border-radius:12px;padding:3px;gap:3px !important;margin:0 0 8px !important}
+.nc-tab{border:0 !important;background:transparent !important;border-radius:9px !important;padding:7px !important}
+.nc-tab.active{background:var(--steel) !important;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.nc-toolbar{display:flex;align-items:stretch;gap:6px;margin-bottom:8px}
+.nc-prev{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;padding:7px 10px;border:1px solid var(--panel-line);background:#fff;border-radius:10px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;user-select:none;white-space:nowrap}
+.nc-prev input{width:16px;height:16px;margin:0;cursor:pointer;accent-color:var(--steel)}
+.nc-prev:has(input:checked){background:#eaf1ff;border-color:#9db8ee;color:#0b2a5b}
+.nc-toolbar .nc-selectmode-btn{flex:1;margin:0 !important;padding:7px 10px;border-radius:10px;text-align:center;white-space:nowrap}
+.nc-toolbar .nc-selectmode-btn.active{background:#eaf1ff;border-color:#9db8ee;color:#0b2a5b}
+.nc-item{border-radius:12px !important;box-shadow:0 1px 2px rgba(120,70,20,.06)}
+.nc-day{display:flex;align-items:center;gap:8px;margin:8px 2px 4px !important}
+.nc-day::after{content:"";flex:1;height:1px;background:var(--panel-line)}
+</style>
 </head>
 <body>
 <a id="waFloatBtn" class="wa-float-btn" href="https://wa.me/201005833218" target="_blank" rel="noopener" aria-label="تواصل معنا عبر واتساب">
@@ -2097,12 +2118,16 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="nc-tab active" data-f="all">الكل</button>
       <button type="button" class="nc-tab" data-f="unread">غير المقروءة <span id="ncTabCount"></span></button>
     </div>
-    <div class="nc-selbar" id="ncSelBar" style="display:none;">
+<div class="nc-toolbar">
+      <label class="nc-prev" for="ncPrev"><input type="checkbox" id="ncPrev"><span>ما قبل اليوم</span></label>
+      <button type="button" id="ncSelToggle" class="nc-selectmode-btn">☐ وضع التحديد المتعدد</button>
+    </div>
+        <div class="nc-selbar" id="ncSelBar" style="display:none;">
       <label class="nc-selall"><input type="checkbox" id="ncSelAll"> اختيار الكل</label>
       <span id="ncSelCount" class="nc-selcount">0</span>
       <button type="button" id="ncMarkSel" class="nc-selbtn">✓ تمييز المحدد كمقروء</button>
     </div>
-    <button type="button" id="ncSelToggle" class="nc-selectmode-btn">☐ وضع التحديد المتعدد</button>
+    
     <div class="status-msg" id="ncStatus"></div>
     <div id="ncList"></div>
     <button type="button" id="ncMore" class="btn btn-secondary" style="display:none;width:100%;margin-top:8px;">عرض إشعارات أقدم</button>
@@ -13315,7 +13340,9 @@ window.safeFileName = function(str){
   function freshLock(){ return loadLocks(); }
 
   // ---------- الخزنة ----------
+  function resetShowLocked(){ ['In','Out'].forEach(function(k){ var cb = $('cgShowLocked' + k); if (cb) cb.checked = false; }); }
   $('openCustodyLedgerBtn').addEventListener('click', function(){
+    resetShowLocked();
     var c = ctx();
     if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
     window.showScreen_('custody-ledger'); closeRep();
@@ -13329,7 +13356,7 @@ window.safeFileName = function(str){
     $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
     loadProjects().then(loadRows);
   });
-  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ window.showScreen_('home'); });
+  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ resetShowLocked(); window.showScreen_('home'); });
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
 
   function loadRows(){
@@ -13901,7 +13928,11 @@ window.safeFileName = function(str){
   var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
   var $ = function(id){ return document.getElementById(id); };
   var PAGE = 40;
-  var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0, sel: {}, selMode: false };
+  var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0, sel: {}, selMode: false, showPrev: false };
+  // الافتراضي: إشعارات اليوم فقط. الشيك بوكس "ما قبل اليوم" يرجّع عرض كل الإشعارات
+  function isToday_(n){ var d = new Date(n.created_at), t = new Date(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate(); }
+  function vis_(n){ return NC.showPrev || isToday_(n); }
+  function resetPrev_(){ NC.showPrev = false; var cb = $('ncPrev'); if (cb) cb.checked = false; }
   var TOPIC = {   // أيقونة + لون لكل نوع
     order:     { i: '🛒', c: '#0284c7' }, checks:    { i: '🧾', c: '#059669' }, overdue:   { i: '📉', c: '#dc2626' },
     salary:    { i: '💰', c: '#7c3aed' }, request:   { i: '📝', c: '#e2621f' }, presence:  { i: '✅', c: '#16a34a' },
@@ -14003,6 +14034,7 @@ window.safeFileName = function(str){
     var _empFilter = (!_ctxE.isAdmin && _ctxE.name);
     NC.items.forEach(function(n){
       if (_empFilter && n.target !== _ctxE.name) return;
+      if (!vis_(n)) return;
       var d = new Date(n.created_at);
       // نفس الإشعار وصل من مصدرين في نفس الدقيقتين → نعرضه مرة واحدة
       if (prev && prev.title === n.title && prev.body === n.body && Math.abs(new Date(prev.created_at) - d) < 120000) return;
@@ -14017,35 +14049,39 @@ window.safeFileName = function(str){
         '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + esc(n.body) + '</div>' : '') +
         '<div class="nc-time">' + esc(timeLabel(d)) + '</div></div>' + (n.is_read ? '' : '<span class="nc-dot"></span>') + '</div>';
     });
-    box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات لسه') + '</div>';
-    $('ncMore').style.display = (NC.done || !NC.items.length) ? 'none' : '';
+    box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? (NC.showPrev ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات غير مقروءة اليوم ✓') : (NC.showPrev ? 'مفيش إشعارات لسه' : 'مفيش إشعارات اليوم')) + '</div>';
+    $('ncMore').style.display = (NC.done || !NC.items.length || !NC.showPrev) ? 'none' : '';
     updateSelBar_();
   }
   function updateSelBar_(){
     var count = NC.sel ? Object.keys(NC.sel).length : 0;
     var cEl = $('ncSelCount'); if (cEl) cEl.textContent = count;
     var btn = $('ncMarkSel'); if (btn) btn.disabled = count === 0;
-    var all = $('ncSelAll'); if (all) all.checked = count > 0 && count === NC.items.length;
+    var all = $('ncSelAll'); if (all) all.checked = count > 0 && count === NC.items.filter(vis_).length;
   }
   function load(reset){
-    if (NC.loading) return; NC.loading = true;
+    if (NC.loading) return; NC.loading = true; NC.more = false;
     if (reset) { NC.items = []; NC.done = false; st('جارٍ التحميل…'); }
     var c = ctx(), last = NC.items[NC.items.length - 1];
     rpc('notif_feed', { p_name: me(c), p_is_admin: c.isAdmin, p_topics: c.topics, p_limit: PAGE,
       p_before: last ? last.created_at : null, p_before_id: last ? last.id : null, p_unread_only: NC.filter === 'unread' })
-      .then(function(rows){ rows = rows || []; NC.items = NC.items.concat(rows); NC.done = rows.length < PAGE; st(''); render(); })
+      .then(function(rows){ rows = rows || []; NC.items = NC.items.concat(rows); NC.done = rows.length < PAGE; st(''); render();
+        // وضع اليوم فقط: لو لسه آخر إشعار محمّل بتاع النهاردة نكمّل تحميل الصفحة اللي بعدها
+        var _l = NC.items[NC.items.length - 1];
+        NC.more = !NC.showPrev && !NC.done && _l && isToday_(_l); })
       .catch(function(){ st('تعذّر تحميل الإشعارات — اتأكد من تشغيل ملف notifications_center.sql في Supabase', true); render(); })
-      .then(function(){ NC.loading = false; });
+      .then(function(){ NC.loading = false; if (NC.more) { NC.more = false; load(false); } });
   }
 
   // ---------- الأحداث ----------
   $('openNotifCenterBtn').addEventListener('click', function(){
     window.showScreen_('notif-center');
-    NC.filter = 'all';
+    NC.filter = 'all'; resetPrev_();
     document.querySelectorAll('.nc-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.f === 'all'); });
     load(true); refreshBadge();
   });
-  $('backHomeBtnNotif').addEventListener('click', function(){ window.showScreen_('home'); });
+  $('backHomeBtnNotif').addEventListener('click', function(){ resetPrev_(); window.showScreen_('home'); });
+  $('ncPrev').addEventListener('change', function(){ NC.showPrev = this.checked; NC.sel = {}; render(); if (NC.showPrev && !NC.done) { /* الباقي بيتحمّل بزرار عرض أقدم */ } });
   document.querySelectorAll('.nc-tab').forEach(function(b){
     b.addEventListener('click', function(){
       NC.filter = b.dataset.f;
@@ -14092,7 +14128,7 @@ window.safeFileName = function(str){
 
   // اختيار الكل / إلغاء اختيار الكل
   $('ncSelAll').addEventListener('change', function(){
-    if (this.checked) NC.items.forEach(function(n){ NC.sel[n.id] = true; });
+    if (this.checked) NC.items.forEach(function(n){ if (vis_(n)) NC.sel[n.id] = true; });
     else NC.sel = {};
     render();
   });
