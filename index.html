@@ -13786,12 +13786,28 @@ window.safeFileName = function(str){
     return '<div class="cr-lock" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 10px 10px;font-size:12.5px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" data-lk="' + esc(n) + '"' + (d ? ' checked' : '') + '> 🔒 تقفيل العهدة حتى</label>' +
       '<input type="date" data-lkd="' + esc(n) + '" value="' + esc(d) + '" style="padding:3px 6px"><span class="cr-lk-msg" style="font-weight:800;color:#1f7a4c">' + (d ? 'تم التقفيل ✓' : '') + '</span></div>';
   }
+  // عدد الحركات اللي لسه ما اتقفلتش (تاريخها بعد تاريخ التقفيل، أو كلها لو الخزنة ما اتقفلتش)
+  function unclosedCount_(n){
+    var c = 0;
+    R.rows.forEach(function(r){ if (r.employee === n && !lockedFor(n, r.entry_date)) c++; });
+    return c;
+  }
+  function unclosedHtml_(n){
+    var c = unclosedCount_(n);
+    return '<span class="cr-unclosed" data-uw="' + esc(n) + '" style="flex:1;text-align:center;color:#d32f2f;font-weight:800;font-size:12px">' + (c ? '⚠ ' + c + ' حركة لم تقفل' : '') + '</span>';
+  }
+  function refreshUnclosed_(n){
+    var els = $('crList').querySelectorAll('[data-uw]');
+    for (var i = 0; i < els.length; i++) {
+      if (els[i].getAttribute('data-uw') === n) { var c = unclosedCount_(n); els[i].textContent = c ? '⚠ ' + c + ' حركة لم تقفل' : ''; }
+    }
+  }
   function renderVaults(){
     var h = '<label class="cp-item"><span><input type="radio" name="crEmp" value="*"' + (R.sel === '*' ? ' checked' : '') + '> &nbsp;<b>كل الخزن</b> (كل خزنة في صفحات منفصلة)</span></label>';
     vaultNames().forEach(function(n){
       var v = rview(n), bal = v.op; v.list.forEach(function(r){ bal += (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
       h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) +
-        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span><b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
+        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span>' + unclosedHtml_(n) + '<b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
     });
     $('crList').innerHTML = h;
   }
@@ -13824,6 +13840,7 @@ window.safeFileName = function(str){
     msg.style.color = '#6b7280'; msg.textContent = 'جارٍ الحفظ…';
     saveLock(n, val).then(function(){
       L[n] = val;
+      refreshUnclosed_(n);
       msg.style.color = '#1f7a4c';
       msg.textContent = val ? 'تم التقفيل ✓' : 'تم فك التقفيل';
       // إشعار صاحب الخزنة: بيتبعت في الحالتين — أول تقفيل، وأي تحديث للتاريخ
