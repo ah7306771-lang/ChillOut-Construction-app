@@ -421,6 +421,18 @@
   },
   {
     "date": null,
+    "orderNo": 55,
+    "client": "الامين",
+    "buyPrice": 0,
+    "sellPrice": 41000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "paymentMethod": ""
+  },
+  {
+    "date": null,
     "orderNo": 54,
     "client": "ويكادي",
     "buyPrice": 0,
