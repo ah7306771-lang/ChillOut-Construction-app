@@ -4289,7 +4289,8 @@ window.safeFileName = function(str){
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
     canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1),
-    hasVault: function(n){ return (EMPLOYEE_HIDDEN_ICONS_[n] || []).indexOf('allow_hasVault') > -1; } }; };
+    // افتراضي: الكل لديه خزنة، والمخفي بس هو اللي اتشال منه الفلاج (بيتسجل باسمه 'hasVault')
+    hasVault: function(n){ return (EMPLOYEE_HIDDEN_ICONS_[n] || []).indexOf('hasVault') === -1; } }; };
   window.custodyRefreshPerms_ = function(cb){ try { refreshHiddenIconsLive_(cb); } catch (e) { if (cb) cb(false); } };
 
   // Clone the brand logo (defined once in the app header) into the
@@ -9972,7 +9973,7 @@ window.safeFileName = function(str){
   var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
   var EXTRA_PERMS_ = [
     { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
-    { id: 'hasVault', label: 'لديه خزنة (يظهر في شاشة تقرير العهد) 💼', defaultOn: false }
+    { id: 'hasVault', label: 'لديه خزنة (يظهر في شاشة تقرير العهد) 💼', defaultOn: true }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
