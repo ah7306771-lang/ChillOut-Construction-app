@@ -1,5 +1,17 @@
 [
   {
+    "date": "06/10/2026",
+    "orderNo": 55,
+    "client": "الامين",
+    "buyPrice": 0,
+    "sellPrice": 41000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 4791465.0,
+    "paymentMethod": "كاش 50% - 50 % شيك اجل 30 يوم"
+  },
+  {
     "date": "02/10/2026",
     "orderNo": 52,
     "client": "الامين",
@@ -428,7 +440,7 @@
     "buyPrice2": 0,
     "sellPrice2": 0,
     "buyTotal": 0.0,
-    "sellTotal": 0.0,
+    "sellTotal": 1170468.0,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -440,7 +452,7 @@
     "buyPrice2": 0,
     "sellPrice2": 0,
     "buyTotal": 0.0,
-    "sellTotal": 0.0,
+    "sellTotal": 3260106.0,
     "paymentMethod": "كاش 100 %"
   }
 ]
