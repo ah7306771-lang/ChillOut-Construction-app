@@ -4289,8 +4289,7 @@ window.safeFileName = function(str){
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
     canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1),
-    // افتراضي: الكل لديه خزنة، والمخفي بس هو اللي اتشال منه الفلاج (بيتسجل باسمه 'hasVault')
-    hasVault: function(n){ return (EMPLOYEE_HIDDEN_ICONS_[n] || []).indexOf('hasVault') === -1; } }; };
+    hasVault: function(n){ return (EMPLOYEE_HIDDEN_ICONS_[n] || []).indexOf('allow_hasVault') > -1; } }; };
   window.custodyRefreshPerms_ = function(cb){ try { refreshHiddenIconsLive_(cb); } catch (e) { if (cb) cb(false); } };
 
   // Clone the brand logo (defined once in the app header) into the
@@ -9973,7 +9972,7 @@ window.safeFileName = function(str){
   var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
   var EXTRA_PERMS_ = [
     { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
-    { id: 'hasVault', label: 'لديه خزنة (يظهر في شاشة تقرير العهد) 💼', defaultOn: true }
+    { id: 'hasVault', label: 'لديه خزنة (يظهر في شاشة تقرير العهد) 💼', defaultOn: false }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
@@ -13901,13 +13900,9 @@ window.safeFileName = function(str){
   function vaultNames(){
     var c = ctx(), n = c.employees.slice();
     R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
-    // يظهر في التقرير: اللي معلّم له "لديه خزنة" بس (حسب فلتر الموظفين)
-    return c.hasVault ? n.filter(function(x){ return c.hasVault(x); }) : n;
-  }
-  // أسماء الموظفين اللي ليهم خزنة (بتتحسب بعد تحميل الصلاحيات) — بنحمّل حركاتهم هم بس
-  function vaultEmpNames_(){
-    var c = ctx(), n = c.employees.slice();
-    return c.hasVault ? n.filter(function(x){ return c.hasVault(x); }) : n;
+    // يظهر في التقرير: اللي معلّم له "لديه خزنة" + أي موظف عنده حركات عهدة
+    var withRows = {}; R.rows.forEach(function(r){ withRows[r.employee] = 1; });
+    return c.hasVault ? n.filter(function(x){ return withRows[x] || c.hasVault(x); }) : n;
   }
   function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
@@ -13945,14 +13940,8 @@ window.safeFileName = function(str){
     if (!ctx().canReport) return;
     reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    var permsP_ = new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); });
-    var rowsP_ = permsP_.then(function(){
-      var names = vaultEmpNames_();
-      if (!names.length) return [];
-      var inList = names.map(function(x){ return '"' + String(x).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'; }).join(',');
-      return fetchAll(T + '?deleted_at=is.null&employee=in.(' + encodeURIComponent(inList) + ')&select=*&order=entry_date.asc,created_at.asc');
-    });
-    Promise.all([loadProjects(), rowsP_, loadLocks(), permsP_]).then(function(res){
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(),
+      new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); })]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
       S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
