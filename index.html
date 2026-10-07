@@ -4288,8 +4288,7 @@ window.safeFileName = function(str){
     return { isAdmin: !isEmployeeSession, name: currentSessionEmployeeName || '', topics: topics };
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
-    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1),
-    hasVault: function(n){ return (EMPLOYEE_HIDDEN_ICONS_[n] || []).indexOf('allow_hasVault') > -1; } }; };
+    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
   window.custodyRefreshPerms_ = function(cb){ try { refreshHiddenIconsLive_(cb); } catch (e) { if (cb) cb(false); } };
 
   // Clone the brand logo (defined once in the app header) into the
@@ -9971,8 +9970,7 @@ window.safeFileName = function(str){
   //  - defaultOn:false → مخفي عن الموظفين تلقائي، ولما المسؤول يعلّم عليه بيتسجل allow_ + الاسم.
   var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
   var EXTRA_PERMS_ = [
-    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
-    { id: 'hasVault', label: 'لديه خزنة (يظهر في شاشة تقرير العهد) 💼', defaultOn: false }
+    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
@@ -13915,12 +13913,11 @@ window.safeFileName = function(str){
     });
   }
   function vaultNames(){
-    var c = ctx(), n = c.employees.slice();
+    // بيظهر كل الموظفين + أي اسم عنده حركات عهدة (من غير شرط "لديه خزنة")
+    var n = ctx().employees.slice();
     var seen = {}; n.forEach(function(x){ seen[x] = 1; });
     Object.keys(R.by).forEach(function(e){ if (!seen[e]) { seen[e] = 1; n.push(e); } });
-    // يظهر في التقرير: اللي معلّم له "لديه خزنة" + أي موظف عنده حركات عهدة
-    var withRows = R.by;
-    return c.hasVault ? n.filter(function(x){ return withRows[x] || c.hasVault(x); }) : n;
+    return n;
   }
   function rview(emp){ return viewOf(R.by[emp] || [], $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
