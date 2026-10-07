@@ -1765,6 +1765,7 @@ body.cg-compact .wa-float-btn{display:none !important}
 .nc-item{border-radius:12px !important;box-shadow:0 1px 2px rgba(120,70,20,.06)}
 .nc-day{display:flex;align-items:center;gap:8px;margin:8px 2px 4px !important}
 .nc-day::after{content:"";flex:1;height:1px;background:var(--panel-line)}
+.nc-selbtn.nc-delbtn{margin-right:0;background:#c0392b}
 </style>
 </head>
 <body>
@@ -2126,6 +2127,7 @@ body.cg-compact .wa-float-btn{display:none !important}
       <label class="nc-selall"><input type="checkbox" id="ncSelAll"> اختيار الكل</label>
       <span id="ncSelCount" class="nc-selcount">0</span>
       <button type="button" id="ncMarkSel" class="nc-selbtn">✓ تمييز المحدد كمقروء</button>
+      <button type="button" id="ncDelSel" class="nc-selbtn nc-delbtn">🗑 حذف المحدد</button>
     </div>
     
     <div class="status-msg" id="ncStatus"></div>
@@ -2320,10 +2322,6 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="home-tile" id="openCustodyProjectsTileBtn">
         <span class="home-tile-icon" style="font-size:26px;">🏗️</span>
         <span class="home-tile-label">مشاريع العهد</span>
-      </button>
-      <button type="button" class="home-tile" id="openCustodyReportTileBtn">
-        <span class="home-tile-icon" style="font-size:26px;">🧾</span>
-        <span class="home-tile-label">تقرير العهد</span>
       </button>
       <button type="button" class="home-tile" id="openNotifTestTileBtn" style="display:none;">
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
@@ -5468,6 +5466,66 @@ window.safeFileName = function(str){
     });
   }
 
+  // ---------- تسجيل قرار الموافقة/الرفض: مين اللي قرر + موقعه + بيانات جهازه ----------
+  // بيتكتب في جدول request_decisions (ملف request_decisions.sql). التسجيل في الخلفية
+  // ومش بيعطّل الموافقة نفسها لو فشل (الجدول مش موجود، الموقع مرفوض...).
+  function decisionActor_(){
+    try {
+      var c = window.notifCtx_ ? window.notifCtx_() : null;
+      if (c && !c.isAdmin && c.name) return { name: c.name, role: 'employee' };
+    } catch (e) {}
+    return { name: 'الأدمن', role: 'admin' };
+  }
+  function decisionGeo_(){
+    return new Promise(function(resolve){
+      try {
+        if (typeof attendanceLastPos_ !== 'undefined' && attendanceLastPos_ && (Date.now() - attendanceLastPos_.t) < 10 * 60000) {
+          resolve({ lat: attendanceLastPos_.lat, lng: attendanceLastPos_.lng, acc: null, status: 'ok' }); return;
+        }
+        if (!navigator.geolocation) { resolve({ status: 'unsupported' }); return; }
+        navigator.geolocation.getCurrentPosition(
+          function(pos){ resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, status: 'ok' }); },
+          function(err){ resolve({ status: (err && err.code === 1) ? 'denied' : (err && err.code === 3 ? 'timeout' : 'unavailable') }); },
+          { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+        );
+      } catch (e) { resolve({ status: 'unavailable' }); }
+    });
+  }
+  function decisionDeviceId_(){
+    try {
+      var k = 'deviceId_v1', v = localStorage.getItem(k);
+      if (!v) { v = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); localStorage.setItem(k, v); }
+      return v;
+    } catch (e) { return ''; }
+  }
+  function decisionDevice_(){
+    return new Promise(function(resolve){
+      var base = {
+        device_id: decisionDeviceId_(), user_agent: (navigator.userAgent || '').slice(0, 300), platform: navigator.platform || '',
+        screen: (window.screen ? (screen.width + 'x' + screen.height) : ''), language: navigator.language || '',
+        timezone: (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } })()
+      };
+      var done = false;
+      function fin(label){ if (done) return; done = true; base.device_label = label || ''; resolve(base); }
+      setTimeout(function(){ fin(''); }, 2500);
+      try { if (typeof getAttendanceDeviceLabel === 'function') getAttendanceDeviceLabel(fin); else fin(''); } catch (e) { fin(''); }
+    });
+  }
+  function logRequestDecision_(id, status, empName, reqType, actor, geoP){
+    return Promise.all([geoP, decisionDevice_()]).then(function(r){
+      var g = r[0] || {}, d = r[1] || {};
+      var row = {
+        request_id: String(id), decision: status, request_name: empName || '', request_type: reqType || '',
+        decided_by: actor.name, decided_by_role: actor.role,
+        lat: g.lat == null ? null : g.lat, lng: g.lng == null ? null : g.lng, accuracy: g.acc == null ? null : g.acc, location_status: g.status || '',
+        device_label: d.device_label, device_id: d.device_id, user_agent: d.user_agent, platform: d.platform,
+        screen: d.screen, language: d.language, timezone: d.timezone
+      };
+      return fetch(SUPABASE_URL + '/rest/v1/request_decisions', { method: 'POST', headers: sbHeaders({ 'Prefer': 'return=minimal' }), body: JSON.stringify(row) })
+        .then(function(res){ if (!res.ok) res.text().then(function(t){ try { console.warn('request_decisions فشل:', res.status, t.slice(0, 200)); } catch (e) {} }); });
+    }).catch(function(e){ try { console.warn('request_decisions network:', e); } catch (_) {} });
+  }
+
   // بيتأكد إن الطلب موجود فعلًا في جدول requests (true / false / null = مقدرناش نتأكد).
   function verifyRequestInSupabase_(id){
     return fetch(SUPABASE_URL + '/rest/v1/requests?id=eq.' + encodeURIComponent(id) + '&select=id', { headers: sbHeaders(), cache: 'no-store' })
@@ -7239,8 +7297,15 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ----------------
   // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
   // الحالة في تاب Requests مباشرة من التطبيق — من غير ما تفتح الشيت أصلاً.
+  var __reqStatusBusy_ = {};
   function setRequestStatus(id, status, row, empName, reqType){
     if (!id) return;
+    // حماية من التكرار: لو نفس الطلب بيتحفظ دلوقتي، أو حالته الحالية هي
+    // نفس القرار المطلوب، ما نعملش حاجة (ولا نبعت إشعارات تاني).
+    if (__reqStatusBusy_[id]) return;
+    if (row && row.getAttribute && row.getAttribute('data-status') === status) return;
+    __reqStatusBusy_[id] = true;
+    var actor_ = decisionActor_(), geoP_ = decisionGeo_();
     var approveBtn = row.querySelector('.btn-approve');
     var rejectBtn = row.querySelector('.btn-reject');
     var badge = row.querySelector('.approval-status-badge');
@@ -7258,6 +7323,8 @@ window.safeFileName = function(str){
       // عشان كده بنبعت الإشعار من الفرونت كمان ضمانًا — الـ dedup السيرفري
       // (60 ثانية على نفس الـ dedupId) هيضمن إنه مش يتكرر.
       if (url) { fetch(url).then(function(r){ return r.json(); }).catch(function(){}); }
+      // تسجيل مين قرر + الموقع + الجهاز في Supabase (في الخلفية)
+      logRequestDecision_(id, status, empName, reqType, actor_, geoP_);
       // إشعار صاحب الطلب مباشرة — topic=approval + target=<اسمه> عشان يروح
       // لتوكناته هو بس (مش broadcast). الدلفب الفريد = request id + status
       // عشان نفس القرار ما يتبعتش مرتين.
@@ -7266,7 +7333,7 @@ window.safeFileName = function(str){
           var isOk = (status === 'موافق');
           var title = isOk ? '✅ تم اعتماد طلبك' : '❌ تم رفض طلبك';
           var typeTxt = reqType || 'طلب';
-          var body = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك.';
+          var body = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك' + ' — بواسطة: ' + actor_.name;
           var notifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
             + '&title=' + encodeURIComponent(title)
             + '&body=' + encodeURIComponent(body)
@@ -7279,11 +7346,12 @@ window.safeFileName = function(str){
           // يروح لتوكنات الأدمن (employee='' في PushTokens) ويظهر في مركز
           // إشعارات الأدمن كمان. dedupId مختلف عشان ما يتعارضش مع إشعار الموظف.
           var adminTitle = (isOk ? '✅ تم اعتماد طلب ' : '❌ تم رفض طلب ') + typeTxt + ' — ' + empName;
-          var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName;
+          var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName + ' — بواسطة: ' + actor_.name;
           var adminNotifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
             + '&title=' + encodeURIComponent(adminTitle)
             + '&body=' + encodeURIComponent(adminBody)
             + '&topic=approval'
+            + '&audience=admin'
             + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status);
           fetch(adminNotifUrl).catch(function(){});
         } catch (er) {}
@@ -7294,6 +7362,9 @@ window.safeFileName = function(str){
       if (approveBtn) approveBtn.disabled = false;
       if (rejectBtn) rejectBtn.disabled = false;
       if (badge) { badge.className = 'approval-status-badge approval-status-rejected'; badge.textContent = 'حدث خطأ، حاول تاني'; }
+    }).then(function(){
+      // نفك القفل بعد فترة قصيرة (بعد ما القايمة تتحدّث بالحالة الجديدة)
+      setTimeout(function(){ delete __reqStatusBusy_[id]; }, 3000);
     });
   }
 
@@ -7449,6 +7520,7 @@ window.safeFileName = function(str){
   function buildApprovalRow(req){
     var row = document.createElement('div');
     row.className = 'approval-row';
+    row.setAttribute('data-status', req.status || 'قيد المراجعة');
 
     var head = document.createElement('div');
     head.className = 'approval-row-head';
@@ -7516,8 +7588,13 @@ window.safeFileName = function(str){
     printBtn.textContent = '🖨';
     printBtn.addEventListener('click', function(){ openRequestPrintView_(req); });
 
-    actions.appendChild(approveBtn);
-    actions.appendChild(rejectBtn);
+    // أزرار الموافقة/الرفض بتظهر بس للطلبات اللي لسه قيد المراجعة — بعد
+    // القرار بيفضل زرار الطباعة بس، عشان محدش يرفض/يوافق نفس الطلب تاني.
+    var __isPending = !req.status || req.status === 'قيد المراجعة';
+    if (__isPending) {
+      actions.appendChild(approveBtn);
+      actions.appendChild(rejectBtn);
+    }
     actions.appendChild(printBtn);
 
     row.appendChild(head);
@@ -9948,8 +10025,6 @@ window.safeFileName = function(str){
       var crList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
       crHome.style.display = (!isEmployeeSession || (!pendingPerms_ && crList_.indexOf('allow_custodyReport') > -1)) ? '' : 'none';
     }
-    var crTile = document.getElementById('openCustodyReportTileBtn');
-    if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
     var notifSetHome = document.getElementById('openNotifSettingsHomeBtn');
     // للموظف: ظاهرة تلقائي، والمسؤول يقدر يخفيها له من "إدارة الشاشات". الأدمن بيدخلها من الإعدادات.
     if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName && !pendingPerms_ && effectiveHidden.indexOf('openNotifSettingsHomeBtn') === -1) ? '' : 'none';
@@ -13811,8 +13886,9 @@ window.safeFileName = function(str){
   function vaultNames(){
     var c = ctx(), n = c.employees.slice();
     R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
-    // اللي معلّم له "لديه خزنة" بس هو اللي يظهر في التقرير
-    return c.hasVault ? n.filter(function(x){ return c.hasVault(x); }) : n;
+    // يظهر في التقرير: اللي معلّم له "لديه خزنة" + أي موظف عنده حركات عهدة
+    var withRows = {}; R.rows.forEach(function(r){ withRows[r.employee] = 1; });
+    return c.hasVault ? n.filter(function(x){ return withRows[x] || c.hasVault(x); }) : n;
   }
   function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
@@ -13859,7 +13935,6 @@ window.safeFileName = function(str){
       $('crProj').innerHTML = opts; renderVaults();
     }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
   }
-  $('openCustodyReportTileBtn').addEventListener('click', function(){ openReport_('settings-menu'); });
   $('openCustodyReportHomeBtn').addEventListener('click', function(){ openReport_('home'); });
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
   ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
@@ -13990,7 +14065,11 @@ window.safeFileName = function(str){
   var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0, sel: {}, selMode: false, showPrev: false };
   // الافتراضي: إشعارات اليوم فقط. الشيك بوكس "ما قبل اليوم" يرجّع عرض كل الإشعارات
   function isToday_(n){ var d = new Date(n.created_at), t = new Date(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate(); }
-  function vis_(n){ return NC.showPrev || isToday_(n); }
+  // الإشعارات المحذوفة: بتتخزن على الجهاز لكل مستخدم ومش بتظهر تاني
+  function hidKey_(){ return 'ncHidden:' + me(ctx()); }
+  function hidLoad_(){ try { var a = JSON.parse(localStorage.getItem(hidKey_()) || '[]') || []; NC.hid = {}; a.forEach(function(i){ NC.hid[i] = 1; }); } catch (e) { NC.hid = {}; } }
+  function hidSave_(){ try { var a = Object.keys(NC.hid).map(Number).sort(function(x, y){ return x - y; }).slice(-3000); localStorage.setItem(hidKey_(), JSON.stringify(a)); } catch (e) {} }
+  function vis_(n){ return !(NC.hid && NC.hid[n.id]) && (NC.showPrev || isToday_(n)); }
   function resetPrev_(){ NC.showPrev = false; var cb = $('ncPrev'); if (cb) cb.checked = false; }
   var TOPIC = {   // أيقونة + لون لكل نوع
     order:     { i: '🛒', c: '#0284c7' }, checks:    { i: '🧾', c: '#059669' }, overdue:   { i: '📉', c: '#dc2626' },
@@ -14116,6 +14195,7 @@ window.safeFileName = function(str){
     var count = NC.sel ? Object.keys(NC.sel).length : 0;
     var cEl = $('ncSelCount'); if (cEl) cEl.textContent = count;
     var btn = $('ncMarkSel'); if (btn) btn.disabled = count === 0;
+    var dbtn = $('ncDelSel'); if (dbtn) dbtn.disabled = count === 0;
     var all = $('ncSelAll'); if (all) all.checked = count > 0 && count === NC.items.filter(vis_).length;
   }
   function load(reset){
@@ -14135,7 +14215,7 @@ window.safeFileName = function(str){
   // ---------- الأحداث ----------
   $('openNotifCenterBtn').addEventListener('click', function(){
     window.showScreen_('notif-center');
-    NC.filter = 'all'; resetPrev_();
+    NC.filter = 'all'; resetPrev_(); hidLoad_();
     document.querySelectorAll('.nc-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.f === 'all'); });
     load(true); refreshBadge();
   });
@@ -14190,6 +14270,21 @@ window.safeFileName = function(str){
     if (this.checked) NC.items.forEach(function(n){ if (vis_(n)) NC.sel[n.id] = true; });
     else NC.sel = {};
     render();
+  });
+
+  // حذف المحدد: يتخفى نهائيًا من القايمة (ويتعلّم مقروء عشان الشارة الحمرا ما تفضلش عدّاده)
+  $('ncDelSel').addEventListener('click', function(){
+    var ids = Object.keys(NC.sel).map(Number); if (!ids.length) return;
+    if (!confirm('حذف ' + ids.length + ' إشعار؟')) return;
+    var c = ctx();
+    if (!NC.hid) NC.hid = {};
+    var unreadDel = 0;
+    NC.items.forEach(function(n){ if (NC.sel[n.id]) { if (!n.is_read) unreadDel++; n.is_read = true; } });
+    ids.forEach(function(i){ NC.hid[i] = 1; });
+    hidSave_(); NC.sel = {};
+    setBadge(Math.max(0, NC.unread - unreadDel));
+    render();
+    rpc('notif_mark_read', { p_name: me(c), p_ids: ids }).then(refreshBadge).catch(function(){});
   });
 
   // تمييز المحدد كمقروء
