@@ -1864,6 +1864,9 @@ body.cg-compact .wa-float-btn{display:none !important}
      يخلص شغله بنجاح. -->
 <div id="savedToast" class="welcome-toast" style="display:none;"></div>
 
+<!-- رسالة تحفيزية بعد تسجيل الحضور/الانصراف (شكلية فقط، مش بتأثر على أي حاجة) -->
+<div id="attendanceToast" class="welcome-toast" style="display:none;"></div>
+
 <!-- احتفال عيد الميلاد: بيظهر بمجرد ما موظف يسجل دخوله لو النهاردة تاريخ
      ميلاده (من عمود "تاريخ الميلاد" في تاب الموظفين)، بدل رسالة الترحيب
      العادية. مستقل عن الشاشات فبيبان فوق أي شاشة. -->
@@ -6379,6 +6382,7 @@ window.safeFileName = function(str){
         var alreadyRecorded = !!(data && data.alreadyRecorded);
         var finalTime = alreadyRecorded && data.time ? data.time : timeStr;
         markAttendanceDone(name, type, finalTime);
+        if (!alreadyRecorded) { try { showAttendanceToast_(name, type); } catch(e){} }
         // بيرسم "تم تسجيل الحضور..." بالأخضر و"تم تسجيل الانصراف..." بالأحمر.
         renderAttendanceRowMsg(msg, name);
         if (usedSheetFallback) {
@@ -8271,6 +8275,16 @@ window.safeFileName = function(str){
   // رسالة "Welcome back" بتظهر أول ما تسجيل الدخول ينجح (أي وسيلة دخول).
   function showWelcomeToast_(name){
     showToast_(document.getElementById('welcomeToast'), 'Welcome back ' + (name || '') + ' 🌷🤩', 2800);
+  }
+
+  // رسالة تحفيزية بعد بصمة الحضور/الانصراف — شكلية بس: بتظهر وتختفي لوحدها
+  // ومش بتغيّر أي بيانات ولا بتأثر على التسجيل.
+  function showAttendanceToast_(name, type){
+    var n = name || '';
+    var txt = (type === 'حضور')
+      ? 'يومك سعيد ' + n + ' ومليء بالإنجاز! 🌟💪'
+      : 'جهدك مقدر دائماً ' + n + '. نتمنى لك وقتاً ممتعاً بعد العمل 🌇😊';
+    showToast_(document.getElementById('attendanceToast'), txt, 3000);
   }
 
   // رسالة "تم الحفظ" بتظهر أول ما أي زرار حفظ في شاشة إدارة الموظفين ينجح.
@@ -13886,9 +13900,13 @@ window.safeFileName = function(str){
   function vaultNames(){
     var c = ctx(), n = c.employees.slice();
     R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
-    // يظهر في التقرير: اللي معلّم له "لديه خزنة" + أي موظف عنده حركات عهدة
-    var withRows = {}; R.rows.forEach(function(r){ withRows[r.employee] = 1; });
-    return c.hasVault ? n.filter(function(x){ return withRows[x] || c.hasVault(x); }) : n;
+    // يظهر في التقرير: اللي معلّم له "لديه خزنة" بس (حسب فلتر الموظفين)
+    return c.hasVault ? n.filter(function(x){ return c.hasVault(x); }) : n;
+  }
+  // أسماء الموظفين اللي ليهم خزنة (بتتحسب بعد تحميل الصلاحيات) — بنحمّل حركاتهم هم بس
+  function vaultEmpNames_(){
+    var c = ctx(), n = c.employees.slice();
+    return c.hasVault ? n.filter(function(x){ return c.hasVault(x); }) : n;
   }
   function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
@@ -13926,8 +13944,14 @@ window.safeFileName = function(str){
     if (!ctx().canReport) return;
     reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(),
-      new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); })]).then(function(res){
+    var permsP_ = new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); });
+    var rowsP_ = permsP_.then(function(){
+      var names = vaultEmpNames_();
+      if (!names.length) return [];
+      var inList = names.map(function(x){ return '"' + String(x).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'; }).join(',');
+      return fetchAll(T + '?deleted_at=is.null&employee=in.(' + encodeURIComponent(inList) + ')&select=*&order=entry_date.asc,created_at.asc');
+    });
+    Promise.all([loadProjects(), rowsP_, loadLocks(), permsP_]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
       S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
