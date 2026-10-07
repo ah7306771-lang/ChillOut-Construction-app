@@ -4287,7 +4287,9 @@ window.safeFileName = function(str){
     return { isAdmin: !isEmployeeSession, name: currentSessionEmployeeName || '', topics: topics };
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
-    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
+    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1),
+    hasVault: function(n){ return (EMPLOYEE_HIDDEN_ICONS_[n] || []).indexOf('allow_hasVault') > -1; } }; };
+  window.custodyRefreshPerms_ = function(cb){ try { refreshHiddenIconsLive_(cb); } catch (e) { if (cb) cb(false); } };
 
   // Clone the brand logo (defined once in the app header) into the
   // login/home screens instead of duplicating the embedded image data.
@@ -9878,7 +9880,8 @@ window.safeFileName = function(str){
   //  - defaultOn:false → مخفي عن الموظفين تلقائي، ولما المسؤول يعلّم عليه بيتسجل allow_ + الاسم.
   var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
   var EXTRA_PERMS_ = [
-    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false }
+    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
+    { id: 'hasVault', label: 'لديه خزنة (يظهر في شاشة تقرير العهد) 💼', defaultOn: false }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
@@ -11092,6 +11095,21 @@ window.safeFileName = function(str){
     el.className = 'ord-num-hint' + (isErr ? ' err' : '');
   }
 
+  // ---- الشركة وسريال كل شركة لوحده ----
+  var ORD_CO_LABELS_ = { shellout: 'شيل اوت', irongate: 'أيرون جيت' };
+  function ordCoKey_(){ var s = $('ordCompany'); return (s && s.value === 'irongate') ? 'irongate' : 'shellout'; }
+  // الأمر بيتحدد برقمه + شركته (الأوامر القديمة اللي company فيها فاضي بتتحسب شيل اوت)
+  function ordScope_(num, co){
+    return 'num=eq.' + encodeURIComponent(num) + (co === 'irongate' ? '&company=eq.irongate' : '&or=(company.eq.shellout,company.is.null)');
+  }
+  async function ordDeleteRows_(num, co){
+    var h = sbHeaders({ 'Prefer': 'return=minimal' });
+    var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?' + ordScope_(num, co), { method: 'DELETE', headers: h });
+    // عمود company لسه مش موجود في الجدول (400) → المسح بالرقم زي الأول
+    if (r.status === 400) r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), { method: 'DELETE', headers: h });
+    return r;
+  }
+
   async function fetchNextOrderNumber(){
     const input = $('ordNum');
     const btn = $('ordNumRefreshBtn');
@@ -11109,7 +11127,7 @@ window.safeFileName = function(str){
       const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/next_order_num', {
         method: 'POST',
         headers: sbHeaders(),
-        body: '{}'
+        body: JSON.stringify({ p_company: ordCoKey_() })
       });
       if (r.ok) {
         const data = await r.json();
@@ -11122,7 +11140,8 @@ window.safeFileName = function(str){
     }
 
     // Fallback: Apps Script (لو Supabase وقع/RPC ما شغّالتش)
-    if (!num && ATTENDANCE_SCRIPT_URL) {
+    // (الشيت له عدّاد واحد بس، فبنستخدمه احتياطي لشيل اوت بس عشان ما يتلخبطش سريال أيرون جيت)
+    if (!num && ATTENDANCE_SCRIPT_URL && ordCoKey_() === 'shellout') {
       try {
         const url = ATTENDANCE_SCRIPT_URL + '?action=nextOrderNumber';
         const resp = await fetch(url);
@@ -11133,7 +11152,7 @@ window.safeFileName = function(str){
 
     if (num) {
       input.value = num;
-      setOrdNumHint('رقم تلقائي من السيرفر ✅');
+      setOrdNumHint('رقم تلقائي من السيرفر ✅ (سريال ' + ORD_CO_LABELS_[ordCoKey_()] + ')');
     } else {
       input.readOnly = false;
       input.placeholder = 'مثال: 0035';
@@ -11195,10 +11214,7 @@ window.safeFileName = function(str){
     ordDeleteBtnEl.disabled = true;
     setOrdStatus('جارٍ حذف الأمر...');
     try{
-      const r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), {
-        method: 'DELETE',
-        headers: sbHeaders({ 'Prefer': 'return=minimal' })
-      });
+      const r = await ordDeleteRows_(num, ordCoKey_());
       if(!r.ok){
         setOrdStatus('تعذّر حذف الأمر، حاول تاني', true);
         ordDeleteBtnEl.disabled = false;
@@ -11207,7 +11223,7 @@ window.safeFileName = function(str){
       // نسخة احتياطية: نبلّغ الشيت كذلك (best-effort، مش لازم ننتظره)
       if (ATTENDANCE_SCRIPT_URL) {
         try {
-          const delParams = new URLSearchParams({ action: 'orderDelete', num: num });
+          const delParams = new URLSearchParams({ action: 'orderDelete', num: num, company: ordCoKey_() });
           fetch(ATTENDANCE_SCRIPT_URL + '?' + delParams.toString()).catch(function(){});
         } catch(e){}
       }
@@ -11246,7 +11262,17 @@ window.safeFileName = function(str){
     if(stampSlot) ordSetImg_(stampSlot, iron ? c.stamp : null, true);
   }
   window.applyOrdCompany = applyOrdCompany;
-  if($('ordCompany')) $('ordCompany').addEventListener('change', applyOrdCompany);
+  if($('ordCompany')) $('ordCompany').addEventListener('change', function(){
+    applyOrdCompany();
+    // أمر جديد برقم تلقائي: الرقم بتاع الشركة اللي فاتت ما يصلحش للجديدة، فنفضّيه ويتجاب من جديد
+    var la = $('ordLoadedActions'), isLoaded = la && la.style.display !== 'none';
+    if (!isLoaded && $('ordNum').readOnly && $('ordNum').value.trim()) {
+      $('ordNum').value = '';
+      $('ordNum').placeholder = 'يتحدد أوتوماتيك عند التحميل';
+      setOrdNumHint('الشركة اتغيّرت — الرقم هيتحدد من سريال ' + ORD_CO_LABELS_[ordCoKey_()] + ' عند التنزيل/المشاركة، أو دوس 🔄.');
+      renderOrdPreview();
+    }
+  });
 
   // ---- PDF generation ----
   function setOrdStatus(msg, isErr){
@@ -11371,7 +11397,7 @@ window.safeFileName = function(str){
   async function saveOrderToServer(){
     var num = $('ordNum').value.trim();
     if(!num) return;
-    var fp = num + '|' + $('ordClient').value.trim() + '|' + $('ordSupplier').value.trim();
+    var fp = ordCoKey_() + '|' + num + '|' + $('ordClient').value.trim() + '|' + $('ordSupplier').value.trim();
     if(__orderSavedSet.has(fp)) return;
     __orderSavedSet.add(fp);
 
@@ -11381,10 +11407,7 @@ window.safeFileName = function(str){
     var supabaseOk = false;
     try {
       // امسح كل صفوف الأمر ده أولاً (لو موجود من قبل)
-      await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), {
-        method: 'DELETE',
-        headers: sbHeaders({ 'Prefer': 'return=minimal' })
-      });
+      await ordDeleteRows_(num, meta.company);
       // ثم أدخل الصفوف الجديدة
       var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders', {
         method: 'POST',
@@ -11411,14 +11434,14 @@ window.safeFileName = function(str){
     // فشل، الشيت backup هو اللي هيبعت الإشعار (السلوك القديم) عشان ما ينقطعش.
     if (supabaseOk && ATTENDANCE_SCRIPT_URL) {
       try {
-        var title = '🛒 أمر شراء جديد #' + num + (meta.client ? (' — ' + meta.client) : '');
+        var title = '🛒 أمر شراء جديد #' + num + (meta.company === 'irongate' ? ' (أيرون جيت)' : '') + (meta.client ? (' — ' + meta.client) : '');
         var body  = 'مورد: ' + (meta.supplier || '—');
         var notifyParams = new URLSearchParams({
           action: 'notifyEvent',
           title: title,
           body: body,
           topic: 'order',
-          dedupId: 'order-' + num,
+          dedupId: 'order-' + (meta.company === 'irongate' ? 'irongate-' : '') + num,
           qty: String(totalQty),
           unit: 'طن'
         });
@@ -11590,23 +11613,25 @@ window.safeFileName = function(str){
       }
       if (r.ok) {
         var raw = await r.json();
+        var hasCo = !!(raw.length && ('company' in raw[0]));
         // جمّع بحسب رقم الأمر: أول صف يظهر لكل أمر ياخد الميتاداتا،
         // وكل الصفوف بتاعت نفس الأمر بتتحوّل لأصناف داخل items.
         var byNum = {};
         var order = [];
         raw.forEach(function (rr) {
-          if (!byNum[rr.num]) {
-            byNum[rr.num] = {
+          var k = (rr.company || 'shellout') + '|' + rr.num;
+          if (!byNum[k]) {
+            byNum[k] = {
               num: rr.num, date: rr.date, supplier: rr.supplier, client: rr.client,
               attention: rr.attention, address: rr.address,
               contact_name: rr.contact_name, contact_phone: rr.contact_phone,
-              rep: rr.rep, notes: rr.notes, company: rr.company || '',
+              rep: rr.rep, notes: rr.notes, company: hasCo ? (rr.company || 'shellout') : '',
               items: []
             };
-            order.push(rr.num);
+            order.push(k);
           }
           if (rr.diameter || rr.qty || rr.spec || rr.item_type) {
-            byNum[rr.num].items.push({
+            byNum[k].items.push({
               diameter: rr.diameter || '',
               qty: (rr.qty == null) ? '' : rr.qty,
               spec: rr.spec || 'B500DWR',
@@ -11668,7 +11693,7 @@ window.safeFileName = function(str){
       const div = document.createElement('div');
       div.className = 'ord-search-item';
       div.innerHTML = `
-        <div class="osi-num">أمر رقم ${esc(row.num)}</div>
+        <div class="osi-num">أمر رقم ${esc(row.num)}${row.company ? ' <span style="font-size:.8em;font-weight:700;color:#0d6efd">— ' + esc(ORD_CO_LABELS_[row.company] || row.company) + '</span>' : ''}</div>
         <div class="osi-meta">${esc(row.date || '—')} &nbsp;|&nbsp; ${esc(row.client || '—')} / ${esc(row.supplier || '—')}</div>
         ${summary ? `<div class="osi-meta">${esc(summary)}</div>` : ''}
       `;
@@ -13341,7 +13366,9 @@ window.safeFileName = function(str){
 
   // ---------- الخزنة ----------
   function resetShowLocked(){ ['In','Out'].forEach(function(k){ var cb = $('cgShowLocked' + k); if (cb) cb.checked = false; }); }
-  $('openCustodyLedgerBtn').addEventListener('click', function(){
+  var ledgerBack_ = 'home';
+  function openLedger_(emp, back){
+    ledgerBack_ = back || 'home';
     resetShowLocked();
     var c = ctx();
     if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
@@ -13351,12 +13378,18 @@ window.safeFileName = function(str){
     if (!c.isEmp) {
       var sel = $('cgEmp'), cur = sel.value;
       sel.innerHTML = c.employees.map(function(n){ return '<option>' + esc(n) + '</option>'; }).join('');
-      if (cur) sel.value = cur; S.emp = sel.value;
+      if (cur) sel.value = cur;
+      if (emp) sel.value = emp;
+      S.emp = sel.value;
     }
     $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
     loadProjects().then(loadRows);
+  }
+  $('openCustodyLedgerBtn').addEventListener('click', function(){ openLedger_(); });
+  $('backHomeBtnCustodyLedger').addEventListener('click', function(){
+    resetShowLocked();
+    if (ledgerBack_ === 'custody-report') openReport_(reportBack_); else window.showScreen_('home');
   });
-  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ resetShowLocked(); window.showScreen_('home'); });
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
 
   function loadRows(){
@@ -13776,9 +13809,10 @@ window.safeFileName = function(str){
     return go(0);
   }
   function vaultNames(){
-    var n = ctx().employees.slice();
+    var c = ctx(), n = c.employees.slice();
     R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
-    return n;
+    // اللي معلّم له "لديه خزنة" بس هو اللي يظهر في التقرير
+    return c.hasVault ? n.filter(function(x){ return c.hasVault(x); }) : n;
   }
   function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
@@ -13794,7 +13828,7 @@ window.safeFileName = function(str){
   }
   function unclosedHtml_(n){
     var c = unclosedCount_(n);
-    return '<span class="cr-unclosed" data-uw="' + esc(n) + '" style="flex:1;text-align:center;color:#d32f2f;font-weight:800;font-size:12px">' + (c ? '⚠ ' + c + ' حركة لم تقفل' : '') + '</span>';
+    return '<span class="cr-unclosed" data-uw="' + esc(n) + '" style="flex:1;text-align:center;color:#d32f2f;font-weight:800;font-size:12px;cursor:pointer;text-decoration:underline">' + (c ? '⚠ ' + c + ' حركة لم تقفل' : '') + '</span>';
   }
   function refreshUnclosed_(n){
     var els = $('crList').querySelectorAll('[data-uw]');
@@ -13816,7 +13850,8 @@ window.safeFileName = function(str){
     if (!ctx().canReport) return;
     reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()]).then(function(res){
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(),
+      new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); })]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
       S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
@@ -13829,6 +13864,13 @@ window.safeFileName = function(str){
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
   ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
   $('crList').addEventListener('change', function(e){ if (e.target.name === 'crEmp') R.sel = e.target.value; });
+  // الضغط على "⚠ X حركة لم تقفل" يفتح شاشة العهد الخاصة بصاحب الخزنة
+  $('crList').addEventListener('click', function(e){
+    var u = e.target.closest && e.target.closest('[data-uw]');
+    if (!u || !u.textContent.trim() || ctx().isEmp) return;
+    e.preventDefault(); e.stopPropagation();
+    openLedger_(u.getAttribute('data-uw'), 'custody-report');
+  });
   // تقفيل/فك تقفيل خزنة: شيك بوكس + تاريخ (بيتحفظ فورًا)
   $('crList').addEventListener('change', function(e){
     var t = e.target, n = t.dataset && (t.dataset.lk || t.dataset.lkd); if (!n) return;
