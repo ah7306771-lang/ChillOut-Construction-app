@@ -13887,24 +13887,42 @@ window.safeFileName = function(str){
   }
 
   // ---------- تقرير الأدمن: اختيار الخزنة + من تاريخ لتاريخ ----------
-  var R = { rows: [], sel: '' };
+  var R = { rows: [], by: {}, sel: '' };
   function fetchAll(url){
-    var out = [];
-    function go(o){
-      return fetch(url, { headers: H({ 'Range-Unit': 'items', Range: o + '-' + (o + 999) }) })
-        .then(function(r){ if (!r.ok) throw 0; return r.json(); })
-        .then(function(d){ out = out.concat(d); return d.length === 1000 ? go(o + 1000) : out; });
+    var PG = 1000;
+    function page(o, withCount){
+      var hd = { 'Range-Unit': 'items', Range: o + '-' + (o + PG - 1) };
+      if (withCount) hd.Prefer = 'count=exact';
+      return fetch(url, { headers: H(hd) }).then(function(r){
+        if (!r.ok) throw 0;
+        var cr = r.headers.get('Content-Range') || '', m = cr.match(/\/(\d+)$/);
+        return r.json().then(function(d){ return { d: d, total: m ? +m[1] : -1 }; });
+      });
     }
-    return go(0);
+    // الصفحة الأولى + العدد الكلي، وبعدها باقي الصفحات مرة واحدة بالتوازي (بدل صفحة ورا صفحة)
+    return page(0, true).then(function(first){
+      var out = first.d;
+      if (first.d.length < PG) return out;
+      if (first.total > 0) {
+        var jobs = [];
+        for (var o = PG; o < first.total; o += PG) jobs.push(page(o, false));
+        return Promise.all(jobs).then(function(rs){ rs.forEach(function(x){ out = out.concat(x.d); }); return out; });
+      }
+      function go(o){
+        return page(o, false).then(function(x){ out = out.concat(x.d); return x.d.length === PG ? go(o + PG) : out; });
+      }
+      return go(PG);
+    });
   }
   function vaultNames(){
     var c = ctx(), n = c.employees.slice();
-    R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
+    var seen = {}; n.forEach(function(x){ seen[x] = 1; });
+    Object.keys(R.by).forEach(function(e){ if (!seen[e]) { seen[e] = 1; n.push(e); } });
     // يظهر في التقرير: اللي معلّم له "لديه خزنة" + أي موظف عنده حركات عهدة
-    var withRows = {}; R.rows.forEach(function(r){ withRows[r.employee] = 1; });
+    var withRows = R.by;
     return c.hasVault ? n.filter(function(x){ return withRows[x] || c.hasVault(x); }) : n;
   }
-  function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
+  function rview(emp){ return viewOf(R.by[emp] || [], $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
     var d = L[n] || '';
     return '<div class="cr-lock" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 10px 10px;font-size:12.5px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" data-lk="' + esc(n) + '"' + (d ? ' checked' : '') + '> 🔒 تقفيل العهدة حتى</label>' +
@@ -13913,7 +13931,7 @@ window.safeFileName = function(str){
   // عدد الحركات اللي لسه ما اتقفلتش (تاريخها بعد تاريخ التقفيل، أو كلها لو الخزنة ما اتقفلتش)
   function unclosedCount_(n){
     var c = 0;
-    R.rows.forEach(function(r){ if (r.employee === n && !lockedFor(n, r.entry_date)) c++; });
+    (R.by[n] || []).forEach(function(r){ if (!lockedFor(n, r.entry_date)) c++; });
     return c;
   }
   function unclosedHtml_(n){
@@ -13940,9 +13958,9 @@ window.safeFileName = function(str){
     if (!ctx().canReport) return;
     reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(),
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc,id.asc'), loadLocks(),
       new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); })]).then(function(res){
-      R.rows = res[1]; st('crStatus', '');
+      R.rows = res[1]; R.by = {}; R.rows.forEach(function(r){ (R.by[r.employee] || (R.by[r.employee] = [])).push(r); }); st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
       S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
       R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
