@@ -1700,6 +1700,11 @@ body.cg-compact .wa-float-btn{display:none !important}
 #custodyLedgerScreen .cg-add{padding:6px 12px}
 #custodyLedgerScreen .cg-row.cg-locked{grid-template-columns:1fr auto}
 #custodyLedgerScreen .out .cg-row.cg-locked{grid-template-columns:1fr auto 22px}
+/* كاميرا المرفق: بعد ما الموظف يبعت المرفق تفضل منوّرة بوميض فلاش + علامة ✓ */
+.cg-cam{position:relative;display:inline-block}
+.cg-cam.sent{filter:drop-shadow(0 0 3px #facc15);animation:cgFlash 2.2s ease-in-out infinite}
+.cg-cam.sent::after{content:"✓";position:absolute;top:-6px;right:-6px;width:12px;height:12px;border-radius:50%;background:#16a34a;color:#fff;font-size:8px;line-height:12px;font-weight:900;text-align:center;box-shadow:0 0 0 1.5px #fff}
+@keyframes cgFlash{0%,70%,100%{filter:drop-shadow(0 0 2px #facc15) brightness(1);transform:scale(1)}78%{filter:drop-shadow(0 0 10px #fde047) drop-shadow(0 0 5px #fff) brightness(1.7);transform:scale(1.3)}90%{filter:drop-shadow(0 0 4px #facc15) brightness(1.1);transform:scale(1.05)}}
 #cgLockMsg{margin:3px 0 !important;padding:4px 8px !important;font-size:12px !important}
 /* الوارد: 3 صفوف بالظبط + scroll للباقي. المنصرف: يمتد لآخر الصفحة. */
 #cgListIn{max-height:125px !important;overflow-y:auto !important}
@@ -2042,8 +2047,8 @@ body.cg-compact .wa-float-btn{display:none !important}
     <div class="field" id="cgEmpWrap" style="display:none;"><label for="cgEmp">اختر الموظف</label><select id="cgEmp"></select></div>
     <div class="cg-top"><button type="button" class="cg-rep" id="cgRepBtn">📄 تقرير</button><div class="cg-who" id="cgWho"></div></div>
     <div class="cg-cards">
-      <div class="cg-card in">وارد اليوم<b id="cgTin">0</b></div>
-      <div class="cg-card out">منصرف اليوم<b id="cgTout">0</b></div>
+      <div class="cg-card in">إجمالي الوارد<b id="cgTin">0</b></div>
+      <div class="cg-card out">إجمالي المنصرف<b id="cgTout">0</b></div>
       <div class="cg-card" id="cgBalCard">الرصيد<b id="cgBal">0</b></div>
     </div>
     <div class="status-msg" id="cgStatus"></div>
@@ -13379,7 +13384,7 @@ window.safeFileName = function(str){
 (function(){
   var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
   var T = SB + '/rest/v1/custody_entries', $ = function(id){ return document.getElementById(id); };
-  var S = { rows: [], projects: [], emp: '' };
+  var S = { rows: [], projects: [], emp: '', full: false, tot: null, att: {}, rtok: 0, projLoaded: false };
   function H(x){ var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }; for (var k in (x||{})) h[k] = x[k]; return h; }
   function ctx(){ return window.custodyCtx_ ? window.custodyCtx_() : { isEmp: false, name: '', employees: [] }; }
   function who(){ var c = ctx(); return c.isEmp ? c.name : S.emp; }
@@ -13396,6 +13401,62 @@ window.safeFileName = function(str){
     return 'https://wa.me/' + CAM_WA + '?text=' + encodeURIComponent(msg);
   }
   function st(id, m, e){ var el = $(id); el.textContent = m || ''; el.className = 'status-msg' + (e ? ' err' : ''); }
+  function r2(x){ return Math.round(x * 100) / 100; }
+  // إجمالي الوارد/المنصرف: أول محاولة بالتجميع في السيرفر (طلب واحد صغير)، ولو مش متاح بنجيب عمودين بس (خفيف) بدل كل البيانات
+  function totalsFor(e){
+    var base = T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null';
+    return fetch(base + '&select=entry_type,amount.sum()', { headers: H() })
+      .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+      .then(function(d){
+        if (!Array.isArray(d)) throw 0;
+        var t = { 'in': 0, out: 0 };
+        d.forEach(function(x){ var v = +x.sum; if (isNaN(v)) throw 0; t[x.entry_type === 'in' ? 'in' : 'out'] += v; });
+        return { 'in': r2(t['in']), out: r2(t.out) };
+      })
+      .catch(function(){
+        return fetchAll(base + '&select=entry_type,amount&order=id.asc').then(function(rows){
+          var t = { 'in': 0, out: 0 };
+          rows.forEach(function(x){ t[x.entry_type === 'in' ? 'in' : 'out'] += +x.amount; });
+          return { 'in': r2(t['in']), out: r2(t.out) };
+        });
+      });
+  }
+  function cacheTot_(){ try { localStorage.setItem('cgTot:' + who(), JSON.stringify(S.tot)); } catch (x) {} }
+  function bump(type, amt){ if (!S.tot) return; var k = type === 'in' ? 'in' : 'out'; S.tot[k] = r2(S.tot[k] + amt); cacheTot_(); }
+  // تحميل كل الحركات (بما فيها المقفلة) — بيتعمل بس وقت الحاجة: تقرير / عرض المقفلة
+  function ensureFull(){
+    if (S.full) return Promise.resolve();
+    var e = who(), tok = S.rtok;
+    return fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc,id.asc')
+      .then(function(rows){ if (tok !== S.rtok) return; S.rows = rows; S.full = true; });
+  }
+  // ---------- علامة المرفق (📷): بتتخزن في app_settings بمفتاح custodyAtt:<الموظف>:<رقم السطر> ----------
+  var CAMP = null;
+  function attPre_(e){ return 'custodyAtt:' + e + ':'; }
+  function markCams_(){
+    var els = document.querySelectorAll('#custodyLedgerScreen .cg-cam[data-cam]');
+    for (var i = 0; i < els.length; i++) els[i].classList.toggle('sent', !!S.att[els[i].getAttribute('data-cam')]);
+  }
+  function loadAtt_(e, tok){
+    return fetch(SB + '/rest/v1/app_settings?select=key&key=like.' + encodeURIComponent(attPre_(e) + '*'), { headers: H() })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rows){
+        if (!rows || tok !== S.rtok) return;
+        var m = {}, n = attPre_(e).length; rows.forEach(function(x){ if (x && x.key) m[String(x.key).slice(n)] = 1; });
+        S.att = m; try { localStorage.setItem('cgAtt:' + e, JSON.stringify(m)); } catch (x) {} markCams_();
+      }).catch(function(){});
+  }
+  function markSent_(id){
+    var e = who(); if (!e) return;
+    S.att[id] = 1; try { localStorage.setItem('cgAtt:' + e, JSON.stringify(S.att)); } catch (x) {} markCams_();
+    fetch(SB + '/rest/v1/app_settings?on_conflict=key', { method: 'POST', headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify([{ key: attPre_(e) + id, value: new Date().toISOString() }]) }).catch(function(){});
+  }
+  // الموظف دوس على الكاميرا → راح لواتساب → رجع للتطبيق = نعتبر المرفق اتبعت
+  document.addEventListener('click', function(ev){ var a = ev.target.closest && ev.target.closest('#custodyLedgerScreen .cg-cam[data-cam]'); if (a) CAMP = { id: a.getAttribute('data-cam'), t: Date.now() }; }, true);
+  function camBack_(){ if (!CAMP || document.visibilityState === 'hidden') return; var c = CAMP; CAMP = null; if (Date.now() - c.t > 3000) markSent_(c.id); }
+  document.addEventListener('visibilitychange', camBack_);
+  window.addEventListener('focus', camBack_);
+  window.addEventListener('pageshow', camBack_);
 
   // ---------- المشاريع (جدول cost_center: رقم + اسم + فلاج إيقاف) ----------
   var CC = SB + '/rest/v1/cost_center';
@@ -13405,7 +13466,7 @@ window.safeFileName = function(str){
       .then(function(r){ if (!r.ok) throw 0; return r.json(); })
       .then(function(d){ S.cc = d; S.ccErr = false; })
       .catch(function(){ S.cc = []; S.ccErr = true; })
-      .then(function(){ S.projects = S.cc.filter(function(c){ return !c.is_stopped; }).map(function(c){ return c.name; }); });
+      .then(function(){ S.projects = S.cc.filter(function(c){ return !c.is_stopped; }).map(function(c){ return c.name; }); S.projLoaded = true; });
   }
   function renderProjects(){
     var max = S.cc.reduce(function(m, c){ return Math.max(m, c.code); }, 0); $('cpCode').value = max + 1;
@@ -13470,7 +13531,7 @@ window.safeFileName = function(str){
       S.emp = sel.value;
     }
     $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
-    loadProjects().then(loadRows);
+    loadRows(); loadProjects();
   }
   $('openCustodyLedgerBtn').addEventListener('click', function(){ openLedger_(); });
   $('backHomeBtnCustodyLedger').addEventListener('click', function(){
@@ -13480,11 +13541,23 @@ window.safeFileName = function(str){
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
 
   function loadRows(){
-    var e = who(); if (!e) { S.rows = []; render(); return Promise.resolve(); }
-    st('cgStatus', 'جارٍ التحميل…');
-    return Promise.all([fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()])
-      .then(function(res){ S.rows = res[0]; st('cgStatus', ''); render(); })
-      .catch(function(){ S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
+    var e = who(); if (!e) { S.rows = []; S.tot = null; S.full = false; render(); return Promise.resolve(); }
+    var tok = ++S.rtok, enc = encodeURIComponent(e); S.full = false; S.rows = [];
+    // رسم فوري من آخر نسخة محفوظة على الجهاز، وبعدها بيتحدّث لوحده
+    try { S.tot = JSON.parse(localStorage.getItem('cgTot:' + e) || 'null'); } catch (x) { S.tot = null; }
+    try { S.att = JSON.parse(localStorage.getItem('cgAtt:' + e) || '{}') || {}; } catch (x) { S.att = {}; }
+    render(); st('cgStatus', 'جارٍ التحميل…');
+    var cols = 'id,employee,entry_type,entry_date,description,amount,project,created_at,created_by';
+    var pT = totalsFor(e).then(function(t){ if (tok !== S.rtok) return; S.tot = t; cacheTot_(); render(); }).catch(function(){});
+    // الشاشة بتعرض الحركات اللي بعد تاريخ التقفيل بس، فمفيش داعي نحمّل المقفلة (بتتحمّل لو اتعلّم "عرض المقفلة" أو فُتح التقرير)
+    var pR = loadLocks().then(function(){
+      var lk = L[e];
+      return fetchAll(T + '?employee=eq.' + enc + '&deleted_at=is.null&select=' + cols + '&order=entry_date.asc,created_at.asc,id.asc' + (lk ? '&entry_date=gt.' + lk : ''))
+        .then(function(rows){ return { rows: rows, full: !lk }; });
+    }).then(function(x){ if (tok !== S.rtok) return; S.rows = x.rows; S.full = x.full; render(); markCams_(); });
+    loadAtt_(e, tok);
+    return Promise.all([pT, pR]).then(function(){ if (tok === S.rtok) { st('cgStatus', ''); render(); markCams_(); } })
+      .catch(function(){ if (tok !== S.rtok) return; S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
   }
   // فلترة بالتاريخ والمشروع + الرصيد السابق قبل "من تاريخ" (بتستخدم للتقارير بس)
   function viewOf(rows, f, t, p){
@@ -13501,13 +13574,10 @@ window.safeFileName = function(str){
   function view(){ return viewOf(S.rows, $('rpFrom').value, $('rpTo').value, $('rpProj').value); }
   // الشاشة بتعرض كل حركات الأيام (بتاريخها) من الأحدث للأقدم؛ كروت اليوم والرصيد إجمالي الخزنة، ومعاه رصيد أول اليوم
   function render(){
-    var td = today(), tin = 0, tout = 0, before = 0, total = 0, hin = '', hout = '';
-    S.rows.forEach(function(r){
-      var inn = r.entry_type === 'in', a = +r.amount, sg = inn ? 1 : -1;
-      total += sg * a;
-      if (r.entry_date < td) before += sg * a;
-      else if (r.entry_date === td) { if (inn) tin += a; else tout += a; }
-    });
+    var td = today(), tin = 0, tout = 0, hin = '', hout = '';
+    S.rows.forEach(function(r){ if (r.entry_date === td) { if (r.entry_type === 'in') tin += +r.amount; else tout += +r.amount; } });
+    var tot = S.tot;
+    if (!tot && S.full) { tot = { 'in': 0, out: 0 }; S.rows.forEach(function(r){ tot[r.entry_type === 'in' ? 'in' : 'out'] += +r.amount; }); }
     // الافتراضي: لما العهدة تتقفل، نخفي الحركات اللي قبل تاريخ التقفيل (المقفلة)
     // من كل من الوارد والمنصرف — ونعرض اللي بعد التاريخ ده فقط. الـ checkbox
     // بتاع كل قسم يرجع الوضع ويعرض الحركات المقفلة كمان.
@@ -13539,8 +13609,9 @@ window.safeFileName = function(str){
         inList.style.maxHeight = '';
       }
     } catch (e) {}
-    $('cgSumIn').textContent = fmt(tin); $('cgSumOut').textContent = fmt(tout);
-    $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(total);
+    $('cgSumIn').textContent = tin ? 'اليوم ' + fmt(tin) : ''; $('cgSumOut').textContent = tout ? 'اليوم ' + fmt(tout) : '';
+    var total = tot ? r2(tot['in'] - tot.out) : 0;
+    $('cgTin').textContent = tot ? fmt(tot['in']) : '…'; $('cgTout').textContent = tot ? fmt(tot.out) : '…'; $('cgBal').textContent = tot ? fmt(total) : '…';
     var _open = $('cgOpen'); if (_open) _open.textContent = '';
     $('cgBalCard').classList.toggle('neg', total < 0);
     var lb = $('cgLockMsg'), lk = L[who()];
@@ -13552,6 +13623,7 @@ window.safeFileName = function(str){
 
   // ---------- تسجيل سطر ----------
   function draft(type){
+    if (!S.projLoaded) { loadProjects().then(function(){ draft(type); }); return; }
     var box = $(type === 'in' ? 'cgDraftIn' : 'cgDraftOut');
     if (box.firstChild) { box.querySelector('.d-bayan').focus(); return; }
     // المنصرف: المشروع إجباري (مفيش "عام")؛ الوارد: اختياري
@@ -13566,7 +13638,12 @@ window.safeFileName = function(str){
   // تغيير حالة الـ checkbox "عرض الحركات المقفلة" يعيد رسم القسم المعني
   ['In','Out'].forEach(function(k){
     var cb = $('cgShowLocked' + k);
-    if (cb) cb.addEventListener('change', function(){ render(); });
+    if (cb) cb.addEventListener('change', function(){
+      if (cb.checked && !S.full) {
+        st('cgStatus', 'جارٍ تحميل الحركات المقفلة…');
+        ensureFull().then(function(){ st('cgStatus', ''); render(); markCams_(); }).catch(function(){ cb.checked = false; st('cgStatus', 'تعذّر تحميل الحركات المقفلة', true); render(); });
+      } else render();
+    });
   });
   function saveDraft(type, box){
     var d = box.querySelector('.cg-draft'), b = d.querySelector('.d-bayan').value.trim(), a = parseFloat(d.querySelector('.d-amt').value), pr = d.querySelector('.d-proj').value;
@@ -13577,7 +13654,7 @@ window.safeFileName = function(str){
     freshLock().then(function(){ if (lockedFor(body.employee, body.entry_date)) throw 'lock'; return fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) }); })
       .then(function(r){ if (!r.ok) throw 0; return r.json(); })
       .then(function(rows){
-        S.rows.push(rows[0]); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
+        S.rows.push(rows[0]); bump(type, a); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
         box.innerHTML = ''; st('cgStatus', 'تم تسجيل السطر ✓'); render();
       }).catch(function(er){ ok.disabled = false; if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(body.employee) : 'تعذّر الحفظ، حاول تاني', true); });
   }
@@ -13591,6 +13668,7 @@ window.safeFileName = function(str){
   // فالأصل بيفضل محفوظ في الجدول كسجل للتغيير من غير ما نغيّر أعمدة قاعدة البيانات.
   function findRow(id){ return S.rows.filter(function(x){ return String(x.id) === String(id); })[0]; }
   function openEdit(id){
+    if (!S.projLoaded) { loadProjects().then(function(){ openEdit(id); }); return; }
     var r = findRow(id), el = document.querySelector('#custodyLedgerScreen [data-row="' + id + '"]'); if (!r || !el) return;
     var projs = S.projects.slice(); if (r.project && projs.indexOf(r.project) < 0) projs.push(r.project);
     var opts = (r.entry_type === 'out' ? '<option value="">— اختر المشروع * —</option>' : '<option value="">عام (بدون مشروع)</option>') +
@@ -13622,7 +13700,7 @@ window.safeFileName = function(str){
           });
       })
       .then(function(){
-        S.rows = S.rows.filter(function(x){ return String(x.id) !== String(r.id); }); S.rows.push(newRow);
+        S.rows = S.rows.filter(function(x){ return String(x.id) !== String(r.id); }); S.rows.push(newRow); bump(r.entry_type, -(+r.amount)); bump(r.entry_type, a);
         S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
         st('cgStatus', 'تم تعديل السطر ✓'); render();
       }).catch(function(er){ ok.disabled = false; if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(r.employee) : 'تعذّر تعديل السطر، حاول تاني', true); });
@@ -13643,7 +13721,7 @@ window.safeFileName = function(str){
     var c = ctx();
     freshLock().then(function(){ if (lockedFor(dr.employee, dr.entry_date)) throw 'lock'; return fetch(T + '?id=eq.' + b.dataset.del, { method: 'PATCH', headers: H({ Prefer: 'return=minimal' }),
       body: JSON.stringify({ deleted_at: new Date().toISOString(), deleted_by: c.isEmp ? c.name : 'الأدمن' }) }); })
-      .then(function(r){ if (!r.ok) throw 0; S.rows = S.rows.filter(function(x){ return String(x.id) !== b.dataset.del; }); render(); })
+      .then(function(r){ if (!r.ok) throw 0; S.rows = S.rows.filter(function(x){ return String(x.id) !== b.dataset.del; }); bump(dr.entry_type, -(+dr.amount)); render(); })
       .catch(function(er){ if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(dr.employee) : 'تعذّر الحذف', true); });
   });
 
@@ -13741,12 +13819,20 @@ window.safeFileName = function(str){
     S.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; o += '<option>' + esc(r.project) + '</option>'; } });
     $('rpProj').innerHTML = o; $('rpFrom').value = monthStart(); $('rpTo').value = today(); st('rpStatus', '');
     $('cgRepModal').style.display = 'flex';
+    // تجهيز كل الحركات في الخلفية عشان التقرير يطلع بسرعة
+    ensureFull().then(function(){
+      var cur = $('rpProj').value, extra = '';
+      S.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; extra += '<option>' + esc(r.project) + '</option>'; } });
+      if (extra) { $('rpProj').insertAdjacentHTML('beforeend', extra); $('rpProj').value = cur; }
+    }).catch(function(){});
   }
   function closeRep(){ $('cgRepModal').style.display = 'none'; }
   $('cgRepBtn').addEventListener('click', openRep);
   $('rpClose').addEventListener('click', closeRep);
   $('cgRepModal').addEventListener('click', function(e){ if (e.target === this) closeRep(); });
   async function repPdf(mode){
+    st('rpStatus', 'جارٍ تجهيز البيانات…');
+    try { await ensureFull(); } catch (er) { st('rpStatus', 'تعذّر تحميل الحركات', true); return; }
     var v = view(); if (!(v.list.length || v.op)) { st('rpStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
     var bs = $('cgRepModal').querySelectorAll('button'); bs.forEach(function(b){ b.disabled = true; }); st('rpStatus', 'جارٍ إنشاء التقرير…');
     try {
@@ -13761,6 +13847,7 @@ window.safeFileName = function(str){
   $('rpShare').addEventListener('click', function(){ repPdf('share'); });
   $('rpDown').addEventListener('click', function(){ repPdf('down'); });
   $('rpXls').addEventListener('click', async function(){
+    try { await ensureFull(); } catch (er) { st('rpStatus', 'تعذّر تحميل الحركات', true); return; }
     var s = statement(view()); if (!(s.lines.length || s.v.op)) { st('rpStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
     st('rpStatus', 'جارٍ إنشاء الملف…');
     try {
@@ -13885,7 +13972,7 @@ window.safeFileName = function(str){
   }
 
   // ---------- تقرير الأدمن: اختيار الخزنة + من تاريخ لتاريخ ----------
-  var R = { rows: [], by: {}, sel: '' };
+  var R = { rows: [], by: {}, sel: '', loaded: false, full: false, tok: 0 };
   function fetchAll(url){
     var PG = 1000;
     function page(o, withCount){
@@ -13944,25 +14031,56 @@ window.safeFileName = function(str){
   function renderVaults(){
     var h = '<label class="cp-item"><span><input type="radio" name="crEmp" value="*"' + (R.sel === '*' ? ' checked' : '') + '> &nbsp;<b>كل الخزن</b> (كل خزنة في صفحات منفصلة)</span></label>';
     vaultNames().forEach(function(n){
+      if (!R.loaded) {
+        h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) + ' <small style="color:var(--ink-soft)">…</small></span></label>' + lockLine(n);
+        return;
+      }
       var v = rview(n), bal = v.op; v.list.forEach(function(r){ bal += (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
       h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) +
         ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span>' + unclosedHtml_(n) + '<b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
     });
     $('crList').innerHTML = h;
   }
+  function renderProjOpts_(){
+    var sel = $('crProj'), cur = sel.value, known = {}, opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
+    S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
+    R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
+    sel.innerHTML = opts;
+    for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === cur) { sel.value = cur; break; }
+  }
+  // تحميل التفاصيل الكاملة (البيان) وقت إنشاء التقرير فقط
+  function ensureFullR_(){
+    if (R.full) return Promise.resolve();
+    var tok = R.tok;
+    return fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc,id.asc').then(function(rows){
+      if (tok !== R.tok) return;
+      R.rows = rows; R.by = {}; rows.forEach(function(r){ (R.by[r.employee] || (R.by[r.employee] = [])).push(r); }); R.full = true;
+    });
+  }
+  function setLight_(rows){ R.rows = rows; R.by = {}; rows.forEach(function(r){ (R.by[r.employee] || (R.by[r.employee] = [])).push(r); }); }
   var reportBack_ = 'settings-menu';
   function openReport_(from){
     if (!ctx().canReport) return;
     reportBack_ = from;
-    window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc,id.asc'), loadLocks(),
-      new Promise(function(ok){ if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){ ok(); }); else ok(); })]).then(function(res){
-      R.rows = res[1]; R.by = {}; R.rows.forEach(function(r){ (R.by[r.employee] || (R.by[r.employee] = [])).push(r); }); st('crStatus', '');
-      var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
-      S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
-      R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
-      $('crProj').innerHTML = opts; renderVaults();
-    }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
+    window.showScreen_('custody-report'); $('crFrom').value = monthStart(); $('crTo').value = today();
+    var tok = ++R.tok; R.full = false; R.loaded = false; R.rows = []; R.by = {};
+    // آخر نسخة خفيفة محفوظة على الجهاز → الشاشة تظهر فورًا وبعدها تتحدّث
+    var cached = null; try { cached = JSON.parse(localStorage.getItem('cgRepLight') || 'null'); } catch (x) {}
+    if (cached && cached.length) {
+      setLight_(cached.map(function(a){ return { employee: a[0], entry_type: a[1], amount: a[2], entry_date: a[3], project: a[4] }; })); R.loaded = true;
+      st('crStatus', 'جارٍ التحديث…');
+    } else st('crStatus', 'جارٍ التحميل…');
+    renderProjOpts_(); renderVaults();
+    // تحديث الصلاحيات في الخلفية (مش بنستناه)
+    try { if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){}); } catch (x) {}
+    Promise.all([loadProjects(), loadLocks()]).then(function(){ if (tok === R.tok) { renderProjOpts_(); renderVaults(); } });
+    // أعمدة خفيفة بس (من غير البيان) للقايمة والأرصدة
+    fetchAll(T + '?deleted_at=is.null&select=employee,entry_type,entry_date,amount,project&order=id.asc').then(function(rows){
+      if (tok !== R.tok) return;
+      setLight_(rows); R.loaded = true; st('crStatus', '');
+      try { localStorage.setItem('cgRepLight', JSON.stringify(rows.map(function(r){ return [r.employee, r.entry_type, r.amount, r.entry_date, r.project || '']; }))); } catch (x) {}
+      renderProjOpts_(); renderVaults();
+    }).catch(function(){ if (tok === R.tok) st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
   }
   $('openCustodyReportHomeBtn').addEventListener('click', function(){ openReport_('home'); });
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
@@ -14014,6 +14132,8 @@ window.safeFileName = function(str){
   });
   async function runReport(mode){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
+    st('crStatus', 'جارٍ تجهيز البيانات…');
+    try { await ensureFullR_(); } catch (er) { st('crStatus', 'تعذّر تحميل البيانات', true); return; }
     var names = R.sel === '*' ? vaultNames() : [R.sel], pages = [];
     names.forEach(function(n){ var v = rview(n); if (v.list.length || v.op) pages = pages.concat(pagesFor(n, v)); });
     if (!pages.length) { st('crStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
@@ -14033,6 +14153,7 @@ window.safeFileName = function(str){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
     st('crStatus', 'جارٍ إنشاء الملف…');
     try {
+      await ensureFullR_();
       var names = R.sel === '*' ? vaultNames() : [R.sel];
       var wb = new ExcelJS.Workbook(), any = false;
       names.forEach(function(n){
