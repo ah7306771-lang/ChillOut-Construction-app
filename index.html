@@ -13449,10 +13449,11 @@ window.safeFileName = function(str){
   function markSent_(id){
     var e = who(); if (!e) return;
     S.att[id] = 1; try { localStorage.setItem('cgAtt:' + e, JSON.stringify(S.att)); } catch (x) {} markCams_();
-    fetch(SB + '/rest/v1/app_settings?on_conflict=key', { method: 'POST', headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify([{ key: attPre_(e) + id, value: new Date().toISOString() }]) }).catch(function(){});
+    fetch(SB + '/rest/v1/app_settings?on_conflict=key', { method: 'POST', headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify([{ key: attPre_(e) + id, value: new Date().toISOString() }]) })
+      .then(function(r){ if (!r.ok) throw 0; }).catch(function(){ st('cgStatus', 'تعذّر حفظ علامة المرفق في السيرفر — هتظهر عندك بس', true); });
   }
   // الموظف دوس على الكاميرا → راح لواتساب → رجع للتطبيق = نعتبر المرفق اتبعت
-  document.addEventListener('click', function(ev){ var a = ev.target.closest && ev.target.closest('#custodyLedgerScreen .cg-cam[data-cam]'); if (a) CAMP = { id: a.getAttribute('data-cam'), t: Date.now() }; }, true);
+  document.addEventListener('click', function(ev){ var a = ev.target.closest && ev.target.closest('#custodyLedgerScreen .cg-cam[data-cam]'); if (a) markSent_(a.getAttribute('data-cam')); }, true);
   function camBack_(){ if (!CAMP || document.visibilityState === 'hidden') return; var c = CAMP; CAMP = null; if (Date.now() - c.t > 3000) markSent_(c.id); }
   document.addEventListener('visibilitychange', camBack_);
   window.addEventListener('focus', camBack_);
@@ -13574,7 +13575,7 @@ window.safeFileName = function(str){
   function view(){ return viewOf(S.rows, $('rpFrom').value, $('rpTo').value, $('rpProj').value); }
   // الشاشة بتعرض كل حركات الأيام (بتاريخها) من الأحدث للأقدم؛ كروت اليوم والرصيد إجمالي الخزنة، ومعاه رصيد أول اليوم
   function render(){
-    var td = today(), tin = 0, tout = 0, hin = '', hout = '';
+    var td = today(), tin = 0, tout = 0, hin = '', hout = '', dIn = 0, dOut = 0;
     S.rows.forEach(function(r){ if (r.entry_date === td) { if (r.entry_type === 'in') tin += +r.amount; else tout += +r.amount; } });
     var tot = S.tot;
     if (!tot && S.full) { tot = { 'in': 0, out: 0 }; S.rows.forEach(function(r){ tot[r.entry_type === 'in' ? 'in' : 'out'] += +r.amount; }); }
@@ -13591,7 +13592,7 @@ window.safeFileName = function(str){
       var projTag = r.project ? '<em class="cg-proj">🏷 ' + esc(r.project) + '</em>' : '';
       var row = '<div class="cg-row" data-row="' + r.id + '"><span>' + projTag + '<i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
       if (isLocked) row = row.replace('class="cg-row"', 'class="cg-row cg-locked"').replace(/<button type="button" class="cg-edit"[^>]*>[^<]*<\/button><button type="button" class="cg-del"[^>]*>[^<]*<\/button>/, '');
-      if (inn) hin += row; else hout += row;
+      if (inn) { hin += row; dIn += a; } else { hout += row; dOut += a; }
     });
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
     $('cgListOut').innerHTML = hout || '<div class="cg-empty">لا توجد سطور منصرف</div>';
@@ -13609,7 +13610,7 @@ window.safeFileName = function(str){
         inList.style.maxHeight = '';
       }
     } catch (e) {}
-    $('cgSumIn').textContent = tot ? fmt(tot['in']) : '…'; $('cgSumOut').textContent = tot ? fmt(tot.out) : '…';
+    $('cgSumIn').textContent = fmt(dIn); $('cgSumOut').textContent = fmt(dOut);
     var total = tot ? r2(tot['in'] - tot.out) : 0;
     $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = tot ? fmt(total) : '…';
     var _open = $('cgOpen'); if (_open) _open.textContent = '';
