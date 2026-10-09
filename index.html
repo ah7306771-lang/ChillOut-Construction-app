@@ -5030,6 +5030,7 @@ window.safeFileName = function(str){
     confirmBtn.addEventListener('click', function(){
       var els = attendanceReqEls;
       var cb = els.onSubmit;
+      if (!cb) return;   // ضغطة تانية بعد ما الطلب اتبعت: تتجاهل
       var reason = els.textarea.value.trim();
       var from = els.fromInput.value;
       var to = els.toInput.value;
@@ -5616,6 +5617,12 @@ window.safeFileName = function(str){
   function submitAttendanceRequest(name, type, from, to, reason, statusEl, opts){
     opts = opts || {};
     var dateParam = opts.dateOverride || attendanceTodayKey();
+    // منع تكرار نفس الطلب (نفس الموظف/النوع/التواريخ/الساعات) لو اتبعت مرتين في أقل من 20 ثانية
+    window.__recentReqSubmits_ = window.__recentReqSubmits_ || {};
+    var dupKey_ = [name, type, dateParam, from || '', to || '', opts.leaveFrom || '', opts.leaveTo || ''].join('|');
+    var nowTs_ = Date.now();
+    if (window.__recentReqSubmits_[dupKey_] && nowTs_ - window.__recentReqSubmits_[dupKey_] < 20000) return;
+    window.__recentReqSubmits_[dupKey_] = nowTs_;
     var reqId = generateRequestId();
     var rowRefs_ = attendanceRowRefs[name];
     // يمنع الإرسال المزدوج: بنعطّل الزرار أثناء الإرسال بس (من غير ما نخفيه) ونرجّعه بعد ما الطلب يخلص.
@@ -7324,7 +7331,8 @@ window.safeFileName = function(str){
     var url = ATTENDANCE_SCRIPT_URL
       ? ATTENDANCE_SCRIPT_URL + '?action=requestSetStatus' + '&id=' + encodeURIComponent(id) + '&status=' + encodeURIComponent(status) + '&skipNotify=1'
       : '';
-    mirrorRequestsToSupabase_([{ id: id, status: status }]).then(function(res){
+    var allIds_ = [id].concat((window.__reqDupIds_ && window.__reqDupIds_[id]) || []);
+    mirrorRequestsToSupabase_(allIds_.map(function(i){ return { id: i, status: status }; })).then(function(res){
       if (!res || !res.ok) throw new Error('failed');
       // الشيت backup (في الخلفية). الـ Apps Script هو كمان بيبعت إشعار من
       // تلقاء نفسه لو لقى الطلب في الشيت، لكن ممكن لسه ما يكونش اتزامن.
@@ -7361,7 +7369,12 @@ window.safeFileName = function(str){
             + '&topic=approval'
             + '&audience=admin'
             + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status);
-          fetch(adminNotifUrl).catch(function(){});
+          // موقع من اعتمد/رفض: ننتظر الموقع (أقصى 4 ثواني) ونضيفه كـ loc عشان يظهر في مركز الإشعارات
+          Promise.race([ geoP_, new Promise(function(r){ setTimeout(function(){ r(null); }, 4000); }) ]).then(function(g){
+            var u = adminNotifUrl;
+            if (g && g.lat != null && g.lng != null) u += '&loc=' + encodeURIComponent(g.lat + ',' + g.lng);
+            fetch(u).catch(function(){});
+          }).catch(function(){ fetch(adminNotifUrl).catch(function(){}); });
         } catch (er) {}
       }
       loadAttendanceApprovals();
@@ -7629,6 +7642,15 @@ window.safeFileName = function(str){
   function renderApprovalsList(rows){
     var container = document.getElementById('attendanceApprovalsList');
     if (!container) return;
+    // دمج الطلبات المكررة (نفس الموظف والنوع والتواريخ والسبب والحالة) في طلب واحد
+    window.__reqDupIds_ = {};
+    var seenKeys_ = {};
+    rows = (rows || []).filter(function(r){
+      var k = [r.name, r.type, r.status, r.date, r.from, r.to, r.leaveFrom, r.leaveTo, r.reason].join('|');
+      if (seenKeys_[k]) { (window.__reqDupIds_[seenKeys_[k]] = window.__reqDupIds_[seenKeys_[k]] || []).push(r.id); return false; }
+      seenKeys_[k] = r.id;
+      return true;
+    });
     var filtered = filterApprovalRows(rows, approvalsCurrentFilter);
     container.innerHTML = '';
     if (!filtered.length) {
@@ -14220,7 +14242,9 @@ window.safeFileName = function(str){
   function hidKey_(){ return 'ncHidden:' + me(ctx()); }
   function hidLoad_(){ try { var a = JSON.parse(localStorage.getItem(hidKey_()) || '[]') || []; NC.hid = {}; a.forEach(function(i){ NC.hid[i] = 1; }); } catch (e) { NC.hid = {}; } }
   function hidSave_(){ try { var a = Object.keys(NC.hid).map(Number).sort(function(x, y){ return x - y; }).slice(-3000); localStorage.setItem(hidKey_(), JSON.stringify(a)); } catch (e) {} }
-  function vis_(n){ return !(NC.hid && NC.hid[n.id]) && (NC.showPrev || isToday_(n)); }
+  // إشعار الموافقة المكرر القادم من الـ Apps Script (بدون اسم الموظف) — نخفيه ونكتفي بإشعار "تم اعتماد طلب ... — الاسم"
+  function dupApproval_(n){ return /^[^\u0600-\u06FFA-Za-z]*تمت الموافقة على طلب/.test(String(n && n.title || '')); }
+  function vis_(n){ return !dupApproval_(n) && !(NC.hid && NC.hid[n.id]) && (NC.showPrev || isToday_(n)); }
   function resetPrev_(){ NC.showPrev = false; var cb = $('ncPrev'); if (cb) cb.checked = false; }
   var TOPIC = {   // أيقونة + لون لكل نوع
     order:     { i: '🛒', c: '#0284c7' }, checks:    { i: '🧾', c: '#059669' }, overdue:   { i: '📉', c: '#dc2626' },
@@ -14260,6 +14284,7 @@ window.safeFileName = function(str){
     var topic = topicOf(n.topic, n.dedupId, n.title);
     // تجاهل إشعارات الاختبار — مش بتبقى حدث حقيقي يستاهل يبان في مركز الإشعارات.
     if (topic === 'test') return;
+    if (dupApproval_(n)) return;   // ما نسجلش الإشعار المكرر
     rpc('notif_log', { p_title: n.title, p_body: n.body || '', p_topic: topic, p_target: n.target || null, p_dedup: dedupKey(n.title, n.body || '', n.dedupId) })
       .then(function(){ setTimeout(refreshBadge, 700); }).catch(function(){});
   }
@@ -14273,6 +14298,8 @@ window.safeFileName = function(str){
       if (u.indexOf('action=notifyEvent') > -1 && u.indexOf('/rest/v1/') < 0) {
         var q = new URL(u, location.href).searchParams, body = q.get('body') || '';
         if (q.get('qty') && body.indexOf(q.get('qty')) === -1) body += (body ? ' — ' : '') + q.get('qty') + (q.get('unit') ? ' ' + q.get('unit') : '');
+        var loc_ = q.get('loc');
+        if (loc_ && /^-?[\d.]+,-?[\d.]+$/.test(loc_)) body += (body ? ' ' : '') + '📍 https://maps.google.com/?q=' + loc_;
         logNotif({ title: q.get('title'), body: body, topic: q.get('topic'), target: q.get('target'), dedupId: q.get('dedupId') });
       }
     } catch (e) {}
@@ -14314,6 +14341,14 @@ window.safeFileName = function(str){
     if (m < 60) return 'منذ ' + m + ' د';
     return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
   }
+  // رابط الموقع داخل نص الإشعار يتحول لزرار "📍 موقع الموافقة" قابل للضغط
+  function bodyHtml_(b){
+    var re = /📍?\s*(https:\/\/maps\.google\.com\/\?q=-?[\d.]+,-?[\d.]+)/;
+    var m = String(b).match(re);
+    if (!m) return esc(b);
+    var text = String(b).replace(re, '').replace(/\s+$/, '');
+    return esc(text) + '<div><a class="nc-map" href="' + esc(m[1]) + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;background:#e8f4ff;color:#0369a1;font-size:12px;text-decoration:none;">📍 موقع الموافقة</a></div>';
+  }
   function render(){
     var box = $('ncList'), html = '', lastDay = '', prev = null;
     // فلتر الموظف: يشوف فقط اللي target فيه = اسمه. ده بيحجب الإشعارات
@@ -14335,7 +14370,7 @@ window.safeFileName = function(str){
       html += '<div class="nc-item' + (n.is_read ? '' : ' unread') + (isSel ? ' selected' : '') + '" data-id="' + n.id + '" data-topic="' + esc(n.topic) + '">' +
         '<input type="checkbox" class="nc-chk"' + (isSel ? ' checked' : '') + '>' +
         '<div class="nc-ico" style="background:' + tp.c + '22;color:' + tp.c + '">' + tp.i + '</div>' +
-        '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + esc(n.body) + '</div>' : '') +
+        '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + bodyHtml_(n.body) + '</div>' : '') +
         '<div class="nc-time">' + esc(timeLabel(d)) + '</div></div>' + (n.is_read ? '' : '<span class="nc-dot"></span>') + '</div>';
     });
     box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? (NC.showPrev ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات غير مقروءة اليوم ✓') : (NC.showPrev ? 'مفيش إشعارات لسه' : 'مفيش إشعارات اليوم')) + '</div>';
@@ -14387,6 +14422,7 @@ window.safeFileName = function(str){
       .catch(function(){ st('تعذّر التحديد', true); });
   });
   $('ncList').addEventListener('click', function(e){
+    if (e.target.closest('a.nc-map')) return;   // فتح الخريطة بس، من غير فتح الشاشة
     var el = e.target.closest('.nc-item'); if (!el) return;
     var id = +el.dataset.id, it = NC.items.filter(function(n){ return n.id === id; })[0], c = ctx();
     // في وضع التحديد المتعدد، الضغط على الإشعار يختار/يلغي اختياره فقط
