@@ -4,24 +4,24 @@
       "client": "الامين",
       "count": 1,
       "amount": 1396532.5,
-      "avgDelay": 2
+      "avgDelay": 3
     },
     {
       "client": "فالتور",
       "count": 4,
       "amount": 9655901.5,
-      "avgDelay": 28
+      "avgDelay": 29
     },
     {
       "client": "ويكادي",
-      "count": 1,
-      "amount": 1116022,
-      "avgDelay": 15
+      "count": 3,
+      "amount": 6368086,
+      "avgDelay": 6
     }
   ],
   "grandTotal": {
-    "count": 6,
-    "amount": 12168456,
-    "avgDelay": 21.5
+    "count": 8,
+    "amount": 17420520,
+    "avgDelay": 17.125
   }
 }
