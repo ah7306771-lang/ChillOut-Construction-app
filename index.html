@@ -1700,11 +1700,6 @@ body.cg-compact .wa-float-btn{display:none !important}
 #custodyLedgerScreen .cg-add{padding:6px 12px}
 #custodyLedgerScreen .cg-row.cg-locked{grid-template-columns:1fr auto}
 #custodyLedgerScreen .out .cg-row.cg-locked{grid-template-columns:1fr auto 22px}
-/* كاميرا المرفق: بعد ما الموظف يبعت المرفق تفضل منوّرة بوميض فلاش + علامة ✓ */
-.cg-cam{position:relative;display:inline-block}
-.cg-cam.sent{filter:drop-shadow(0 0 3px #facc15);animation:cgFlash 2.2s ease-in-out infinite}
-.cg-cam.sent::after{content:"✓";position:absolute;top:-6px;right:-6px;width:12px;height:12px;border-radius:50%;background:#16a34a;color:#fff;font-size:8px;line-height:12px;font-weight:900;text-align:center;box-shadow:0 0 0 1.5px #fff}
-@keyframes cgFlash{0%,70%,100%{filter:drop-shadow(0 0 2px #facc15) brightness(1);transform:scale(1)}78%{filter:drop-shadow(0 0 10px #fde047) drop-shadow(0 0 5px #fff) brightness(1.7);transform:scale(1.3)}90%{filter:drop-shadow(0 0 4px #facc15) brightness(1.1);transform:scale(1.05)}}
 #cgLockMsg{margin:3px 0 !important;padding:4px 8px !important;font-size:12px !important}
 /* الوارد: 3 صفوف بالظبط + scroll للباقي. المنصرف: يمتد لآخر الصفحة. */
 #cgListIn{max-height:125px !important;overflow-y:auto !important}
@@ -1749,28 +1744,6 @@ body.cg-compact .wa-float-btn{display:none !important}
 .nc-item.unread .nc-time{color:#e2621f}
 .nc-dot{position:absolute;top:12px;left:10px;width:8px;height:8px;border-radius:50%;background:#e2621f}
 .nc-empty{padding:22px 10px;text-align:center;color:var(--ink-soft);font-weight:700;font-size:12px}
-</style>
-<style>
-/* ===== مركز الإشعارات: شكل احترافي + رفع لفوق ===== */
-#notifCenterScreen{padding-top:50px !important;padding-bottom:40px !important}
-#notifCenterScreen .back-bar{top:20px !important;padding:4px 12px !important}
-#notifCenterScreen .gate-card{padding-top:8px !important;padding-bottom:12px !important}
-#notifCenterScreen .gate-title{font-size:16px !important;margin:0 !important;line-height:1.2}
-.nc-head{margin-bottom:8px !important;padding-bottom:8px;border-bottom:1px solid var(--panel-line)}
-.nc-markall{background:#f3f6fd;border:1px solid #c9d3ec;border-radius:8px;padding:6px 10px !important;font-size:12px !important}
-.nc-tabs{background:#f1f3f7;border-radius:12px;padding:3px;gap:3px !important;margin:0 0 8px !important}
-.nc-tab{border:0 !important;background:transparent !important;border-radius:9px !important;padding:7px !important}
-.nc-tab.active{background:var(--steel) !important;box-shadow:0 1px 3px rgba(0,0,0,.18)}
-.nc-toolbar{display:flex;align-items:stretch;gap:6px;margin-bottom:8px}
-.nc-prev{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;padding:7px 10px;border:1px solid var(--panel-line);background:#fff;border-radius:10px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;user-select:none;white-space:nowrap}
-.nc-prev input{width:16px;height:16px;margin:0;cursor:pointer;accent-color:var(--steel)}
-.nc-prev:has(input:checked){background:#eaf1ff;border-color:#9db8ee;color:#0b2a5b}
-.nc-toolbar .nc-selectmode-btn{flex:1;margin:0 !important;padding:7px 10px;border-radius:10px;text-align:center;white-space:nowrap}
-.nc-toolbar .nc-selectmode-btn.active{background:#eaf1ff;border-color:#9db8ee;color:#0b2a5b}
-.nc-item{border-radius:12px !important;box-shadow:0 1px 2px rgba(120,70,20,.06)}
-.nc-day{display:flex;align-items:center;gap:8px;margin:8px 2px 4px !important}
-.nc-day::after{content:"";flex:1;height:1px;background:var(--panel-line)}
-.nc-selbtn.nc-delbtn{margin-right:0;background:#c0392b}
 </style>
 </head>
 <body>
@@ -1868,9 +1841,6 @@ body.cg-compact .wa-float-btn{display:none !important}
 <!-- رسالة صغيرة "تم الحفظ" بتظهر أول ما أي زرار حفظ في شاشة إدارة الموظفين
      يخلص شغله بنجاح. -->
 <div id="savedToast" class="welcome-toast" style="display:none;"></div>
-
-<!-- رسالة تحفيزية بعد تسجيل الحضور/الانصراف (شكلية فقط، مش بتأثر على أي حاجة) -->
-<div id="attendanceToast" class="welcome-toast" style="display:none;"></div>
 
 <!-- احتفال عيد الميلاد: بيظهر بمجرد ما موظف يسجل دخوله لو النهاردة تاريخ
      ميلاده (من عمود "تاريخ الميلاد" في تاب الموظفين)، بدل رسالة الترحيب
@@ -2127,17 +2097,12 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="nc-tab active" data-f="all">الكل</button>
       <button type="button" class="nc-tab" data-f="unread">غير المقروءة <span id="ncTabCount"></span></button>
     </div>
-<div class="nc-toolbar">
-      <label class="nc-prev" for="ncPrev"><input type="checkbox" id="ncPrev"><span>ما قبل اليوم</span></label>
-      <button type="button" id="ncSelToggle" class="nc-selectmode-btn">☐ وضع التحديد المتعدد</button>
-    </div>
-        <div class="nc-selbar" id="ncSelBar" style="display:none;">
+    <div class="nc-selbar" id="ncSelBar" style="display:none;">
       <label class="nc-selall"><input type="checkbox" id="ncSelAll"> اختيار الكل</label>
       <span id="ncSelCount" class="nc-selcount">0</span>
       <button type="button" id="ncMarkSel" class="nc-selbtn">✓ تمييز المحدد كمقروء</button>
-      <button type="button" id="ncDelSel" class="nc-selbtn nc-delbtn">🗑 حذف المحدد</button>
     </div>
-    
+    <button type="button" id="ncSelToggle" class="nc-selectmode-btn">☐ وضع التحديد المتعدد</button>
     <div class="status-msg" id="ncStatus"></div>
     <div id="ncList"></div>
     <button type="button" id="ncMore" class="btn btn-secondary" style="display:none;width:100%;margin-top:8px;">عرض إشعارات أقدم</button>
@@ -2330,6 +2295,10 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="home-tile" id="openCustodyProjectsTileBtn">
         <span class="home-tile-icon" style="font-size:26px;">🏗️</span>
         <span class="home-tile-label">مشاريع العهد</span>
+      </button>
+      <button type="button" class="home-tile" id="openCustodyReportTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🧾</span>
+        <span class="home-tile-label">تقرير العهد</span>
       </button>
       <button type="button" class="home-tile" id="openNotifTestTileBtn" style="display:none;">
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
@@ -4294,7 +4263,6 @@ window.safeFileName = function(str){
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
     canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
-  window.custodyRefreshPerms_ = function(cb){ try { refreshHiddenIconsLive_(cb); } catch (e) { if (cb) cb(false); } };
 
   // Clone the brand logo (defined once in the app header) into the
   // login/home screens instead of duplicating the embedded image data.
@@ -5030,7 +4998,6 @@ window.safeFileName = function(str){
     confirmBtn.addEventListener('click', function(){
       var els = attendanceReqEls;
       var cb = els.onSubmit;
-      if (!cb) return;   // ضغطة تانية بعد ما الطلب اتبعت: تتجاهل
       var reason = els.textarea.value.trim();
       var from = els.fromInput.value;
       var to = els.toInput.value;
@@ -5474,66 +5441,6 @@ window.safeFileName = function(str){
     });
   }
 
-  // ---------- تسجيل قرار الموافقة/الرفض: مين اللي قرر + موقعه + بيانات جهازه ----------
-  // بيتكتب في جدول request_decisions (ملف request_decisions.sql). التسجيل في الخلفية
-  // ومش بيعطّل الموافقة نفسها لو فشل (الجدول مش موجود، الموقع مرفوض...).
-  function decisionActor_(){
-    try {
-      var c = window.notifCtx_ ? window.notifCtx_() : null;
-      if (c && !c.isAdmin && c.name) return { name: c.name, role: 'employee' };
-    } catch (e) {}
-    return { name: 'الأدمن', role: 'admin' };
-  }
-  function decisionGeo_(){
-    return new Promise(function(resolve){
-      try {
-        if (typeof attendanceLastPos_ !== 'undefined' && attendanceLastPos_ && (Date.now() - attendanceLastPos_.t) < 10 * 60000) {
-          resolve({ lat: attendanceLastPos_.lat, lng: attendanceLastPos_.lng, acc: null, status: 'ok' }); return;
-        }
-        if (!navigator.geolocation) { resolve({ status: 'unsupported' }); return; }
-        navigator.geolocation.getCurrentPosition(
-          function(pos){ resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy, status: 'ok' }); },
-          function(err){ resolve({ status: (err && err.code === 1) ? 'denied' : (err && err.code === 3 ? 'timeout' : 'unavailable') }); },
-          { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
-        );
-      } catch (e) { resolve({ status: 'unavailable' }); }
-    });
-  }
-  function decisionDeviceId_(){
-    try {
-      var k = 'deviceId_v1', v = localStorage.getItem(k);
-      if (!v) { v = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); localStorage.setItem(k, v); }
-      return v;
-    } catch (e) { return ''; }
-  }
-  function decisionDevice_(){
-    return new Promise(function(resolve){
-      var base = {
-        device_id: decisionDeviceId_(), user_agent: (navigator.userAgent || '').slice(0, 300), platform: navigator.platform || '',
-        screen: (window.screen ? (screen.width + 'x' + screen.height) : ''), language: navigator.language || '',
-        timezone: (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } })()
-      };
-      var done = false;
-      function fin(label){ if (done) return; done = true; base.device_label = label || ''; resolve(base); }
-      setTimeout(function(){ fin(''); }, 2500);
-      try { if (typeof getAttendanceDeviceLabel === 'function') getAttendanceDeviceLabel(fin); else fin(''); } catch (e) { fin(''); }
-    });
-  }
-  function logRequestDecision_(id, status, empName, reqType, actor, geoP){
-    return Promise.all([geoP, decisionDevice_()]).then(function(r){
-      var g = r[0] || {}, d = r[1] || {};
-      var row = {
-        request_id: String(id), decision: status, request_name: empName || '', request_type: reqType || '',
-        decided_by: actor.name, decided_by_role: actor.role,
-        lat: g.lat == null ? null : g.lat, lng: g.lng == null ? null : g.lng, accuracy: g.acc == null ? null : g.acc, location_status: g.status || '',
-        device_label: d.device_label, device_id: d.device_id, user_agent: d.user_agent, platform: d.platform,
-        screen: d.screen, language: d.language, timezone: d.timezone
-      };
-      return fetch(SUPABASE_URL + '/rest/v1/request_decisions', { method: 'POST', headers: sbHeaders({ 'Prefer': 'return=minimal' }), body: JSON.stringify(row) })
-        .then(function(res){ if (!res.ok) res.text().then(function(t){ try { console.warn('request_decisions فشل:', res.status, t.slice(0, 200)); } catch (e) {} }); });
-    }).catch(function(e){ try { console.warn('request_decisions network:', e); } catch (_) {} });
-  }
-
   // بيتأكد إن الطلب موجود فعلًا في جدول requests (true / false / null = مقدرناش نتأكد).
   function verifyRequestInSupabase_(id){
     return fetch(SUPABASE_URL + '/rest/v1/requests?id=eq.' + encodeURIComponent(id) + '&select=id', { headers: sbHeaders(), cache: 'no-store' })
@@ -5617,12 +5524,6 @@ window.safeFileName = function(str){
   function submitAttendanceRequest(name, type, from, to, reason, statusEl, opts){
     opts = opts || {};
     var dateParam = opts.dateOverride || attendanceTodayKey();
-    // منع تكرار نفس الطلب (نفس الموظف/النوع/التواريخ/الساعات) لو اتبعت مرتين في أقل من 20 ثانية
-    window.__recentReqSubmits_ = window.__recentReqSubmits_ || {};
-    var dupKey_ = [name, type, dateParam, from || '', to || '', opts.leaveFrom || '', opts.leaveTo || ''].join('|');
-    var nowTs_ = Date.now();
-    if (window.__recentReqSubmits_[dupKey_] && nowTs_ - window.__recentReqSubmits_[dupKey_] < 20000) return;
-    window.__recentReqSubmits_[dupKey_] = nowTs_;
     var reqId = generateRequestId();
     var rowRefs_ = attendanceRowRefs[name];
     // يمنع الإرسال المزدوج: بنعطّل الزرار أثناء الإرسال بس (من غير ما نخفيه) ونرجّعه بعد ما الطلب يخلص.
@@ -6393,7 +6294,6 @@ window.safeFileName = function(str){
         var alreadyRecorded = !!(data && data.alreadyRecorded);
         var finalTime = alreadyRecorded && data.time ? data.time : timeStr;
         markAttendanceDone(name, type, finalTime);
-        if (!alreadyRecorded) { try { showAttendanceToast_(name, type); } catch(e){} }
         // بيرسم "تم تسجيل الحضور..." بالأخضر و"تم تسجيل الانصراف..." بالأحمر.
         renderAttendanceRowMsg(msg, name);
         if (usedSheetFallback) {
@@ -7312,15 +7212,8 @@ window.safeFileName = function(str){
   // ---------------- ATTENDANCE APPROVALS (اعتماد الإذن والمأموريات) ----------------
   // بيبعت "موافق" أو "مرفوض" لطلب معين (بمعرّفه الفريد id) عشان يعدّل عمود
   // الحالة في تاب Requests مباشرة من التطبيق — من غير ما تفتح الشيت أصلاً.
-  var __reqStatusBusy_ = {};
   function setRequestStatus(id, status, row, empName, reqType){
     if (!id) return;
-    // حماية من التكرار: لو نفس الطلب بيتحفظ دلوقتي، أو حالته الحالية هي
-    // نفس القرار المطلوب، ما نعملش حاجة (ولا نبعت إشعارات تاني).
-    if (__reqStatusBusy_[id]) return;
-    if (row && row.getAttribute && row.getAttribute('data-status') === status) return;
-    __reqStatusBusy_[id] = true;
-    var actor_ = decisionActor_(), geoP_ = decisionGeo_();
     var approveBtn = row.querySelector('.btn-approve');
     var rejectBtn = row.querySelector('.btn-reject');
     var badge = row.querySelector('.approval-status-badge');
@@ -7331,16 +7224,13 @@ window.safeFileName = function(str){
     var url = ATTENDANCE_SCRIPT_URL
       ? ATTENDANCE_SCRIPT_URL + '?action=requestSetStatus' + '&id=' + encodeURIComponent(id) + '&status=' + encodeURIComponent(status) + '&skipNotify=1'
       : '';
-    var allIds_ = [id].concat((window.__reqDupIds_ && window.__reqDupIds_[id]) || []);
-    mirrorRequestsToSupabase_(allIds_.map(function(i){ return { id: i, status: status }; })).then(function(res){
+    mirrorRequestsToSupabase_([{ id: id, status: status }]).then(function(res){
       if (!res || !res.ok) throw new Error('failed');
       // الشيت backup (في الخلفية). الـ Apps Script هو كمان بيبعت إشعار من
       // تلقاء نفسه لو لقى الطلب في الشيت، لكن ممكن لسه ما يكونش اتزامن.
       // عشان كده بنبعت الإشعار من الفرونت كمان ضمانًا — الـ dedup السيرفري
       // (60 ثانية على نفس الـ dedupId) هيضمن إنه مش يتكرر.
       if (url) { fetch(url).then(function(r){ return r.json(); }).catch(function(){}); }
-      // تسجيل مين قرر + الموقع + الجهاز في Supabase (في الخلفية)
-      logRequestDecision_(id, status, empName, reqType, actor_, geoP_);
       // إشعار صاحب الطلب مباشرة — topic=approval + target=<اسمه> عشان يروح
       // لتوكناته هو بس (مش broadcast). الدلفب الفريد = request id + status
       // عشان نفس القرار ما يتبعتش مرتين.
@@ -7349,7 +7239,7 @@ window.safeFileName = function(str){
           var isOk = (status === 'موافق');
           var title = isOk ? '✅ تم اعتماد طلبك' : '❌ تم رفض طلبك';
           var typeTxt = reqType || 'طلب';
-          var body = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك' + ' — بواسطة: ' + actor_.name;
+          var body = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك.';
           var notifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
             + '&title=' + encodeURIComponent(title)
             + '&body=' + encodeURIComponent(body)
@@ -7362,19 +7252,13 @@ window.safeFileName = function(str){
           // يروح لتوكنات الأدمن (employee='' في PushTokens) ويظهر في مركز
           // إشعارات الأدمن كمان. dedupId مختلف عشان ما يتعارضش مع إشعار الموظف.
           var adminTitle = (isOk ? '✅ تم اعتماد طلب ' : '❌ تم رفض طلب ') + typeTxt + ' — ' + empName;
-          var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName + ' — بواسطة: ' + actor_.name;
+          var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName;
           var adminNotifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
             + '&title=' + encodeURIComponent(adminTitle)
             + '&body=' + encodeURIComponent(adminBody)
             + '&topic=approval'
-            + '&audience=admin'
             + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status);
-          // موقع من اعتمد/رفض: ننتظر الموقع (أقصى 4 ثواني) ونضيفه كـ loc عشان يظهر في مركز الإشعارات
-          Promise.race([ geoP_, new Promise(function(r){ setTimeout(function(){ r(null); }, 4000); }) ]).then(function(g){
-            var u = adminNotifUrl;
-            if (g && g.lat != null && g.lng != null) u += '&loc=' + encodeURIComponent(g.lat + ',' + g.lng);
-            fetch(u).catch(function(){});
-          }).catch(function(){ fetch(adminNotifUrl).catch(function(){}); });
+          fetch(adminNotifUrl).catch(function(){});
         } catch (er) {}
       }
       loadAttendanceApprovals();
@@ -7383,9 +7267,6 @@ window.safeFileName = function(str){
       if (approveBtn) approveBtn.disabled = false;
       if (rejectBtn) rejectBtn.disabled = false;
       if (badge) { badge.className = 'approval-status-badge approval-status-rejected'; badge.textContent = 'حدث خطأ، حاول تاني'; }
-    }).then(function(){
-      // نفك القفل بعد فترة قصيرة (بعد ما القايمة تتحدّث بالحالة الجديدة)
-      setTimeout(function(){ delete __reqStatusBusy_[id]; }, 3000);
     });
   }
 
@@ -7541,7 +7422,6 @@ window.safeFileName = function(str){
   function buildApprovalRow(req){
     var row = document.createElement('div');
     row.className = 'approval-row';
-    row.setAttribute('data-status', req.status || 'قيد المراجعة');
 
     var head = document.createElement('div');
     head.className = 'approval-row-head';
@@ -7609,13 +7489,8 @@ window.safeFileName = function(str){
     printBtn.textContent = '🖨';
     printBtn.addEventListener('click', function(){ openRequestPrintView_(req); });
 
-    // أزرار الموافقة/الرفض بتظهر بس للطلبات اللي لسه قيد المراجعة — بعد
-    // القرار بيفضل زرار الطباعة بس، عشان محدش يرفض/يوافق نفس الطلب تاني.
-    var __isPending = !req.status || req.status === 'قيد المراجعة';
-    if (__isPending) {
-      actions.appendChild(approveBtn);
-      actions.appendChild(rejectBtn);
-    }
+    actions.appendChild(approveBtn);
+    actions.appendChild(rejectBtn);
     actions.appendChild(printBtn);
 
     row.appendChild(head);
@@ -7642,15 +7517,6 @@ window.safeFileName = function(str){
   function renderApprovalsList(rows){
     var container = document.getElementById('attendanceApprovalsList');
     if (!container) return;
-    // دمج الطلبات المكررة (نفس الموظف والنوع والتواريخ والسبب والحالة) في طلب واحد
-    window.__reqDupIds_ = {};
-    var seenKeys_ = {};
-    rows = (rows || []).filter(function(r){
-      var k = [r.name, r.type, r.status, r.date, r.from, r.to, r.leaveFrom, r.leaveTo, r.reason].join('|');
-      if (seenKeys_[k]) { (window.__reqDupIds_[seenKeys_[k]] = window.__reqDupIds_[seenKeys_[k]] || []).push(r.id); return false; }
-      seenKeys_[k] = r.id;
-      return true;
-    });
     var filtered = filterApprovalRows(rows, approvalsCurrentFilter);
     container.innerHTML = '';
     if (!filtered.length) {
@@ -7907,9 +7773,13 @@ window.safeFileName = function(str){
   }
   function buildInstallmentRow_(raw){
     var v=raw.values||[], remaining=installmentNum_(v[8]), dueDays=installmentDays_(v[5]);
-    var paid=remaining<=0, overdue=!paid&&dueDays!==null&&dueDays<=0;  // المستحق اليوم يُعتبر متأخر
+    // "مستحق اليوم" يُعتبر متأخر — بناءً على طلب المستخدم، أي قسط ميعاده
+    // اليوم أو قبله يتصنّف كـ overdue ويبقى ضمن المتأخرات في الحسابات.
+    var paid=remaining<=0;
+    var overdue=!paid&&dueDays!==null&&dueDays<=0;
+    var dueToday=!paid&&dueDays===0;    // للعرض فقط (نص الحالة)
     var near=!paid&&dueDays!==null&&dueDays>0&&dueDays<=2;
-    var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
+    var status=paid?'✅ مسدّد':dueToday?'⚠ مستحق اليوم':overdue?'⚠ مستحق':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
     return {values:v,remaining:remaining,days:dueDays,lateAmount:overdue?remaining:0,delay:overdue?Math.abs(dueDays):null,
       status:status,key:paid?'paid':overdue?'overdue':near?'near':'running',statusClass:paid?'status-paid':(overdue?'status-due':(near?'status-near':'status-running'))};
   }
@@ -7929,6 +7799,7 @@ window.safeFileName = function(str){
       +'<div class="inst-filter"><label for="instStatusFilter">الحالة</label><select id="instStatusFilter">'
       +'<option value="">الكل</option>'
       +'<option value="overdue">⚠ مستحق (متأخر)</option>'
+      +'<option value="today">⚠ مستحق اليوم</option>'
       +'<option value="near">🔔 قريب الاستحقاق</option>'
       +'<option value="running">🟢 جارٍ</option>'
       +'</select></div>'
@@ -7946,11 +7817,11 @@ window.safeFileName = function(str){
       var v=x.values,cells=[];
       for(var p=0;p<12;p++){
         var oi=INST_COL_ORDER[p];
-        var shown=(oi===2||oi===5)?fmtInstallmentDate_(v[oi]):([3,6,7,8].indexOf(oi)>=0?fmtInstallmentMoney_(v[oi]):oi===9?fmtInstallmentMoney_(x.lateAmount):oi===10?(x.delay!==null?(x.delay===0?'اليوم':(x.delay+' '+(x.delay===1?'يوم':'أيام'))):''):oi===11?x.status:escQuick_(v[oi]===null||v[oi]===undefined?'':v[oi]));
+        var shown=(oi===2||oi===5)?fmtInstallmentDate_(v[oi]):([3,6,7,8].indexOf(oi)>=0?fmtInstallmentMoney_(v[oi]):oi===9?fmtInstallmentMoney_(x.lateAmount):oi===10?(x.delay!==null?(x.delay+' '+(x.delay===1?'يوم':'أيام')):''):oi===11?x.status:escQuick_(v[oi]===null||v[oi]===undefined?'':v[oi]));
         cells.push('<td'+(oi===5?' dir="ltr"':'')+'>'+shown+'</td>');
       }
       // الصف المستحق (متأخر أو مستحق اليوم) بيتلوّن كله وردي زي الشيك المتأخر
-      return '<tr'+(x.key==='overdue'?' class="row-overdue"':'')+'>'+cells.join('')+'</tr>';
+      return '<tr'+((x.key==='overdue'||x.key==='today')?' class="row-overdue"':'')+'>'+cells.join('')+'</tr>';
     }
     listWrap.innerHTML='<div class="installments-summary" id="instSummary"></div>'+toolbar+
       '<div class="qs-table-scroll"><table class="dtable installments-table"><thead><tr>'+th+'</tr></thead><tbody id="instTbody"></tbody><tfoot id="instTfoot"></tfoot></table></div>';
@@ -7964,9 +7835,9 @@ window.safeFileName = function(str){
       list.forEach(function(x){
         totalRemaining+=x.remaining; sumInst+=installmentNum_(x.values[6]); sumPaid+=installmentNum_(x.values[7]); sumLate+=x.lateAmount;
         if(x.key==='overdue') overdueAmt+=x.remaining;
-        else if(x.key==='near') nearAmt+=x.remaining;
+        else if(x.key==='today'||x.key==='near') nearAmt+=x.remaining;
       });
-      summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">قريب الاستحقاق: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
+      summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
       tbody.innerHTML=list.length?list.map(rowHtml).join(''):'<tr><td colspan="12">مفيش أقساط بالفلتر ده.</td></tr>';
       tfoot.innerHTML=list.length?('<tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="5">الإجمالي</td><td>'+money(sumInst)+'</td><td></td><td>'+money(sumPaid)+'</td><td>'+money(totalRemaining)+'</td><td>'+money(sumLate)+'</td><td colspan="2"></td></tr>'):'';
     }
@@ -7992,21 +7863,6 @@ window.safeFileName = function(str){
   document.getElementById('loginInstallmentsBtn').addEventListener('click',loadInstallmentsStatus_);
   refreshInstallmentsBadge_(); setInterval(refreshInstallmentsBadge_,60000);
 
-  // المتأخرات بتتحسب من الأقساط نفسها (المستحق اليوم يُعتبر متأخر)،
-  // ولو الأقساط ما اتحمّلتش بنرجع لملف overdue.json القديم.
-  function getOverdueData_(){
-    return loadInstallmentsData_().then(function(data){
-      var byClient=Object.create(null), order=[];
-      (data.rows||[]).map(buildInstallmentRow_).forEach(function(x){
-        if(x.key!=='overdue') return;
-        var c=(x.values[1]===null||x.values[1]===undefined)?'':String(x.values[1]).trim();
-        if(!byClient[c]){byClient[c]={client:c,count:0,amount:0,delaySum:0};order.push(c);}
-        var g=byClient[c]; g.count++; g.amount+=x.remaining; g.delaySum+=(x.delay||0);
-      });
-      return {rows:order.map(function(c){var g=byClient[c];return {client:g.client,count:g.count,amount:g.amount,avgDelay:g.delaySum/g.count};})};
-    }).catch(function(){ return fetchAppJson_('overdue'); });
-  }
-
   function loadOverdueStatus_(){
     var titleEl = document.getElementById('quickStatusTitle');
     var subtitleEl = document.getElementById('quickStatusSubtitle');
@@ -8017,7 +7873,7 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(false);
-    getOverdueData_()
+    fetchAppJson_('overdue')
       .then(function(data){
         var rows = data.rows || [];
         if (!rows.length) {
@@ -8159,7 +8015,7 @@ window.safeFileName = function(str){
   function refreshOverdueBadge_(){
     var badge = document.getElementById('loginOverdueBadge');
     if (!badge) return;
-    getOverdueData_()
+    fetchAppJson_('overdue')
       .then(function(data){
         var count = (data && data.rows) ? data.rows.length : 0;
         if (count > 0) {
@@ -8301,16 +8157,6 @@ window.safeFileName = function(str){
   // رسالة "Welcome back" بتظهر أول ما تسجيل الدخول ينجح (أي وسيلة دخول).
   function showWelcomeToast_(name){
     showToast_(document.getElementById('welcomeToast'), 'Welcome back ' + (name || '') + ' 🌷🤩', 2800);
-  }
-
-  // رسالة تحفيزية بعد بصمة الحضور/الانصراف — شكلية بس: بتظهر وتختفي لوحدها
-  // ومش بتغيّر أي بيانات ولا بتأثر على التسجيل.
-  function showAttendanceToast_(name, type){
-    var n = name || '';
-    var txt = (type === 'حضور')
-      ? 'يومك سعيد ' + n + ' ومليء بالإنجاز! 🌟💪'
-      : 'جهدك مقدر دائماً ' + n + '. نتمنى لك وقتاً ممتعاً بعد العمل 🌇😊';
-    showToast_(document.getElementById('attendanceToast'), txt, 3000);
   }
 
   // رسالة "تم الحفظ" بتظهر أول ما أي زرار حفظ في شاشة إدارة الموظفين ينجح.
@@ -9038,10 +8884,12 @@ window.safeFileName = function(str){
           return;
         }
         var rowsHtml = rows.map(function(it, i){
+          // "مستحق اليوم" يعامَل كـ متأخر: ينضم للـ row-overdue بنفس اللون
+          // الوردي، والنص بيوضّح "مستحق اليوم" بدل "متأخر 0 يوم".
           var when = it.daysRemaining < 0 ? ('متأخر ' + Math.abs(it.daysRemaining) + ' يوم')
             : (it.daysRemaining === 0 ? 'مستحق اليوم' : ('باقي ' + it.daysRemaining + ' يوم'));
           var valTxt = (typeof it.value === 'number') ? it.value.toLocaleString('ar-EG') : escQuick_(it.value);
-          var trClass = (it.daysRemaining < 0) ? ' class="row-overdue"' : (it.daysRemaining === 0 ? ' class="row-due-today"' : '');
+          var trClass = (it.daysRemaining <= 0) ? ' class="row-overdue"' : '';
           return '<tr' + trClass + '><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
             + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
             + '</td><td>' + escQuick_(it.type) + '</td><td>' + escQuick_(when) + '</td><td>' + escQuick_(it.notes || '') + '</td></tr>';
@@ -10064,6 +9912,8 @@ window.safeFileName = function(str){
       var crList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
       crHome.style.display = (!isEmployeeSession || (!pendingPerms_ && crList_.indexOf('allow_custodyReport') > -1)) ? '' : 'none';
     }
+    var crTile = document.getElementById('openCustodyReportTileBtn');
+    if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
     var notifSetHome = document.getElementById('openNotifSettingsHomeBtn');
     // للموظف: ظاهرة تلقائي، والمسؤول يقدر يخفيها له من "إدارة الشاشات". الأدمن بيدخلها من الإعدادات.
     if (notifSetHome) notifSetHome.style.display = (isEmployeeSession && currentSessionEmployeeName && !pendingPerms_ && effectiveHidden.indexOf('openNotifSettingsHomeBtn') === -1) ? '' : 'none';
@@ -11209,21 +11059,6 @@ window.safeFileName = function(str){
     el.className = 'ord-num-hint' + (isErr ? ' err' : '');
   }
 
-  // ---- الشركة وسريال كل شركة لوحده ----
-  var ORD_CO_LABELS_ = { shellout: 'شيل اوت', irongate: 'أيرون جيت' };
-  function ordCoKey_(){ var s = $('ordCompany'); return (s && s.value === 'irongate') ? 'irongate' : 'shellout'; }
-  // الأمر بيتحدد برقمه + شركته (الأوامر القديمة اللي company فيها فاضي بتتحسب شيل اوت)
-  function ordScope_(num, co){
-    return 'num=eq.' + encodeURIComponent(num) + (co === 'irongate' ? '&company=eq.irongate' : '&or=(company.eq.shellout,company.is.null)');
-  }
-  async function ordDeleteRows_(num, co){
-    var h = sbHeaders({ 'Prefer': 'return=minimal' });
-    var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?' + ordScope_(num, co), { method: 'DELETE', headers: h });
-    // عمود company لسه مش موجود في الجدول (400) → المسح بالرقم زي الأول
-    if (r.status === 400) r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), { method: 'DELETE', headers: h });
-    return r;
-  }
-
   async function fetchNextOrderNumber(){
     const input = $('ordNum');
     const btn = $('ordNumRefreshBtn');
@@ -11241,7 +11076,7 @@ window.safeFileName = function(str){
       const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/next_order_num', {
         method: 'POST',
         headers: sbHeaders(),
-        body: JSON.stringify({ p_company: ordCoKey_() })
+        body: '{}'
       });
       if (r.ok) {
         const data = await r.json();
@@ -11254,8 +11089,7 @@ window.safeFileName = function(str){
     }
 
     // Fallback: Apps Script (لو Supabase وقع/RPC ما شغّالتش)
-    // (الشيت له عدّاد واحد بس، فبنستخدمه احتياطي لشيل اوت بس عشان ما يتلخبطش سريال أيرون جيت)
-    if (!num && ATTENDANCE_SCRIPT_URL && ordCoKey_() === 'shellout') {
+    if (!num && ATTENDANCE_SCRIPT_URL) {
       try {
         const url = ATTENDANCE_SCRIPT_URL + '?action=nextOrderNumber';
         const resp = await fetch(url);
@@ -11266,7 +11100,7 @@ window.safeFileName = function(str){
 
     if (num) {
       input.value = num;
-      setOrdNumHint('رقم تلقائي من السيرفر ✅ (سريال ' + ORD_CO_LABELS_[ordCoKey_()] + ')');
+      setOrdNumHint('رقم تلقائي من السيرفر ✅');
     } else {
       input.readOnly = false;
       input.placeholder = 'مثال: 0035';
@@ -11328,7 +11162,10 @@ window.safeFileName = function(str){
     ordDeleteBtnEl.disabled = true;
     setOrdStatus('جارٍ حذف الأمر...');
     try{
-      const r = await ordDeleteRows_(num, ordCoKey_());
+      const r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), {
+        method: 'DELETE',
+        headers: sbHeaders({ 'Prefer': 'return=minimal' })
+      });
       if(!r.ok){
         setOrdStatus('تعذّر حذف الأمر، حاول تاني', true);
         ordDeleteBtnEl.disabled = false;
@@ -11337,7 +11174,7 @@ window.safeFileName = function(str){
       // نسخة احتياطية: نبلّغ الشيت كذلك (best-effort، مش لازم ننتظره)
       if (ATTENDANCE_SCRIPT_URL) {
         try {
-          const delParams = new URLSearchParams({ action: 'orderDelete', num: num, company: ordCoKey_() });
+          const delParams = new URLSearchParams({ action: 'orderDelete', num: num });
           fetch(ATTENDANCE_SCRIPT_URL + '?' + delParams.toString()).catch(function(){});
         } catch(e){}
       }
@@ -11376,17 +11213,7 @@ window.safeFileName = function(str){
     if(stampSlot) ordSetImg_(stampSlot, iron ? c.stamp : null, true);
   }
   window.applyOrdCompany = applyOrdCompany;
-  if($('ordCompany')) $('ordCompany').addEventListener('change', function(){
-    applyOrdCompany();
-    // أمر جديد برقم تلقائي: الرقم بتاع الشركة اللي فاتت ما يصلحش للجديدة، فنفضّيه ويتجاب من جديد
-    var la = $('ordLoadedActions'), isLoaded = la && la.style.display !== 'none';
-    if (!isLoaded && $('ordNum').readOnly && $('ordNum').value.trim()) {
-      $('ordNum').value = '';
-      $('ordNum').placeholder = 'يتحدد أوتوماتيك عند التحميل';
-      setOrdNumHint('الشركة اتغيّرت — الرقم هيتحدد من سريال ' + ORD_CO_LABELS_[ordCoKey_()] + ' عند التنزيل/المشاركة، أو دوس 🔄.');
-      renderOrdPreview();
-    }
-  });
+  if($('ordCompany')) $('ordCompany').addEventListener('change', applyOrdCompany);
 
   // ---- PDF generation ----
   function setOrdStatus(msg, isErr){
@@ -11511,7 +11338,7 @@ window.safeFileName = function(str){
   async function saveOrderToServer(){
     var num = $('ordNum').value.trim();
     if(!num) return;
-    var fp = ordCoKey_() + '|' + num + '|' + $('ordClient').value.trim() + '|' + $('ordSupplier').value.trim();
+    var fp = num + '|' + $('ordClient').value.trim() + '|' + $('ordSupplier').value.trim();
     if(__orderSavedSet.has(fp)) return;
     __orderSavedSet.add(fp);
 
@@ -11521,7 +11348,10 @@ window.safeFileName = function(str){
     var supabaseOk = false;
     try {
       // امسح كل صفوف الأمر ده أولاً (لو موجود من قبل)
-      await ordDeleteRows_(num, meta.company);
+      await fetch(SUPABASE_URL + '/rest/v1/purchase_orders?num=eq.' + encodeURIComponent(num), {
+        method: 'DELETE',
+        headers: sbHeaders({ 'Prefer': 'return=minimal' })
+      });
       // ثم أدخل الصفوف الجديدة
       var r = await fetch(SUPABASE_URL + '/rest/v1/purchase_orders', {
         method: 'POST',
@@ -11548,14 +11378,14 @@ window.safeFileName = function(str){
     // فشل، الشيت backup هو اللي هيبعت الإشعار (السلوك القديم) عشان ما ينقطعش.
     if (supabaseOk && ATTENDANCE_SCRIPT_URL) {
       try {
-        var title = '🛒 أمر شراء جديد #' + num + (meta.company === 'irongate' ? ' (أيرون جيت)' : '') + (meta.client ? (' — ' + meta.client) : '');
+        var title = '🛒 أمر شراء جديد #' + num + (meta.client ? (' — ' + meta.client) : '');
         var body  = 'مورد: ' + (meta.supplier || '—');
         var notifyParams = new URLSearchParams({
           action: 'notifyEvent',
           title: title,
           body: body,
           topic: 'order',
-          dedupId: 'order-' + (meta.company === 'irongate' ? 'irongate-' : '') + num,
+          dedupId: 'order-' + num,
           qty: String(totalQty),
           unit: 'طن'
         });
@@ -11727,25 +11557,23 @@ window.safeFileName = function(str){
       }
       if (r.ok) {
         var raw = await r.json();
-        var hasCo = !!(raw.length && ('company' in raw[0]));
         // جمّع بحسب رقم الأمر: أول صف يظهر لكل أمر ياخد الميتاداتا،
         // وكل الصفوف بتاعت نفس الأمر بتتحوّل لأصناف داخل items.
         var byNum = {};
         var order = [];
         raw.forEach(function (rr) {
-          var k = (rr.company || 'shellout') + '|' + rr.num;
-          if (!byNum[k]) {
-            byNum[k] = {
+          if (!byNum[rr.num]) {
+            byNum[rr.num] = {
               num: rr.num, date: rr.date, supplier: rr.supplier, client: rr.client,
               attention: rr.attention, address: rr.address,
               contact_name: rr.contact_name, contact_phone: rr.contact_phone,
-              rep: rr.rep, notes: rr.notes, company: hasCo ? (rr.company || 'shellout') : '',
+              rep: rr.rep, notes: rr.notes, company: rr.company || '',
               items: []
             };
-            order.push(k);
+            order.push(rr.num);
           }
           if (rr.diameter || rr.qty || rr.spec || rr.item_type) {
-            byNum[k].items.push({
+            byNum[rr.num].items.push({
               diameter: rr.diameter || '',
               qty: (rr.qty == null) ? '' : rr.qty,
               spec: rr.spec || 'B500DWR',
@@ -11807,7 +11635,7 @@ window.safeFileName = function(str){
       const div = document.createElement('div');
       div.className = 'ord-search-item';
       div.innerHTML = `
-        <div class="osi-num">أمر رقم ${esc(row.num)}${row.company ? ' <span style="font-size:.8em;font-weight:700;color:#0d6efd">— ' + esc(ORD_CO_LABELS_[row.company] || row.company) + '</span>' : ''}</div>
+        <div class="osi-num">أمر رقم ${esc(row.num)}</div>
         <div class="osi-meta">${esc(row.date || '—')} &nbsp;|&nbsp; ${esc(row.client || '—')} / ${esc(row.supplier || '—')}</div>
         ${summary ? `<div class="osi-meta">${esc(summary)}</div>` : ''}
       `;
@@ -13406,7 +13234,7 @@ window.safeFileName = function(str){
 (function(){
   var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
   var T = SB + '/rest/v1/custody_entries', $ = function(id){ return document.getElementById(id); };
-  var S = { rows: [], projects: [], emp: '', full: false, tot: null, att: {}, rtok: 0, projLoaded: false };
+  var S = { rows: [], projects: [], emp: '' };
   function H(x){ var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }; for (var k in (x||{})) h[k] = x[k]; return h; }
   function ctx(){ return window.custodyCtx_ ? window.custodyCtx_() : { isEmp: false, name: '', employees: [] }; }
   function who(){ var c = ctx(); return c.isEmp ? c.name : S.emp; }
@@ -13423,63 +13251,6 @@ window.safeFileName = function(str){
     return 'https://wa.me/' + CAM_WA + '?text=' + encodeURIComponent(msg);
   }
   function st(id, m, e){ var el = $(id); el.textContent = m || ''; el.className = 'status-msg' + (e ? ' err' : ''); }
-  function r2(x){ return Math.round(x * 100) / 100; }
-  // إجمالي الوارد/المنصرف: أول محاولة بالتجميع في السيرفر (طلب واحد صغير)، ولو مش متاح بنجيب عمودين بس (خفيف) بدل كل البيانات
-  function totalsFor(e){
-    var base = T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null';
-    return fetch(base + '&select=entry_type,amount.sum()', { headers: H() })
-      .then(function(r){ if (!r.ok) throw 0; return r.json(); })
-      .then(function(d){
-        if (!Array.isArray(d)) throw 0;
-        var t = { 'in': 0, out: 0 };
-        d.forEach(function(x){ var v = +x.sum; if (isNaN(v)) throw 0; t[x.entry_type === 'in' ? 'in' : 'out'] += v; });
-        return { 'in': r2(t['in']), out: r2(t.out) };
-      })
-      .catch(function(){
-        return fetchAll(base + '&select=entry_type,amount&order=id.asc').then(function(rows){
-          var t = { 'in': 0, out: 0 };
-          rows.forEach(function(x){ t[x.entry_type === 'in' ? 'in' : 'out'] += +x.amount; });
-          return { 'in': r2(t['in']), out: r2(t.out) };
-        });
-      });
-  }
-  function cacheTot_(){ try { localStorage.setItem('cgTot:' + who(), JSON.stringify(S.tot)); } catch (x) {} }
-  function bump(type, amt){ if (!S.tot) return; var k = type === 'in' ? 'in' : 'out'; S.tot[k] = r2(S.tot[k] + amt); cacheTot_(); }
-  // تحميل كل الحركات (بما فيها المقفلة) — بيتعمل بس وقت الحاجة: تقرير / عرض المقفلة
-  function ensureFull(){
-    if (S.full) return Promise.resolve();
-    var e = who(), tok = S.rtok;
-    return fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc,id.asc')
-      .then(function(rows){ if (tok !== S.rtok) return; S.rows = rows; S.full = true; });
-  }
-  // ---------- علامة المرفق (📷): بتتخزن في app_settings بمفتاح custodyAtt:<الموظف>:<رقم السطر> ----------
-  var CAMP = null;
-  function attPre_(e){ return 'custodyAtt:' + e + ':'; }
-  function markCams_(){
-    var els = document.querySelectorAll('#custodyLedgerScreen .cg-cam[data-cam]');
-    for (var i = 0; i < els.length; i++) els[i].classList.toggle('sent', !!S.att[els[i].getAttribute('data-cam')]);
-  }
-  function loadAtt_(e, tok){
-    return fetch(SB + '/rest/v1/app_settings?select=key&key=like.' + encodeURIComponent(attPre_(e) + '*'), { headers: H() })
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(rows){
-        if (!rows || tok !== S.rtok) return;
-        var m = {}, n = attPre_(e).length; rows.forEach(function(x){ if (x && x.key) m[String(x.key).slice(n)] = 1; });
-        S.att = m; try { localStorage.setItem('cgAtt:' + e, JSON.stringify(m)); } catch (x) {} markCams_();
-      }).catch(function(){});
-  }
-  function markSent_(id){
-    var e = who(); if (!e) return;
-    S.att[id] = 1; try { localStorage.setItem('cgAtt:' + e, JSON.stringify(S.att)); } catch (x) {} markCams_();
-    fetch(SB + '/rest/v1/app_settings?on_conflict=key', { method: 'POST', headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify([{ key: attPre_(e) + id, value: new Date().toISOString() }]) })
-      .then(function(r){ if (!r.ok) throw 0; }).catch(function(){ st('cgStatus', 'تعذّر حفظ علامة المرفق في السيرفر — هتظهر عندك بس', true); });
-  }
-  // الموظف دوس على الكاميرا → راح لواتساب → رجع للتطبيق = نعتبر المرفق اتبعت
-  document.addEventListener('click', function(ev){ var a = ev.target.closest && ev.target.closest('#custodyLedgerScreen .cg-cam[data-cam]'); if (a) markSent_(a.getAttribute('data-cam')); }, true);
-  function camBack_(){ if (!CAMP || document.visibilityState === 'hidden') return; var c = CAMP; CAMP = null; if (Date.now() - c.t > 3000) markSent_(c.id); }
-  document.addEventListener('visibilitychange', camBack_);
-  window.addEventListener('focus', camBack_);
-  window.addEventListener('pageshow', camBack_);
 
   // ---------- المشاريع (جدول cost_center: رقم + اسم + فلاج إيقاف) ----------
   var CC = SB + '/rest/v1/cost_center';
@@ -13489,7 +13260,7 @@ window.safeFileName = function(str){
       .then(function(r){ if (!r.ok) throw 0; return r.json(); })
       .then(function(d){ S.cc = d; S.ccErr = false; })
       .catch(function(){ S.cc = []; S.ccErr = true; })
-      .then(function(){ S.projects = S.cc.filter(function(c){ return !c.is_stopped; }).map(function(c){ return c.name; }); S.projLoaded = true; });
+      .then(function(){ S.projects = S.cc.filter(function(c){ return !c.is_stopped; }).map(function(c){ return c.name; }); });
   }
   function renderProjects(){
     var max = S.cc.reduce(function(m, c){ return Math.max(m, c.code); }, 0); $('cpCode').value = max + 1;
@@ -13536,11 +13307,7 @@ window.safeFileName = function(str){
   function freshLock(){ return loadLocks(); }
 
   // ---------- الخزنة ----------
-  function resetShowLocked(){ ['In','Out'].forEach(function(k){ var cb = $('cgShowLocked' + k); if (cb) cb.checked = false; }); }
-  var ledgerBack_ = 'home';
-  function openLedger_(emp, back){
-    ledgerBack_ = back || 'home';
-    resetShowLocked();
+  $('openCustodyLedgerBtn').addEventListener('click', function(){
     var c = ctx();
     if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
     window.showScreen_('custody-ledger'); closeRep();
@@ -13549,38 +13316,20 @@ window.safeFileName = function(str){
     if (!c.isEmp) {
       var sel = $('cgEmp'), cur = sel.value;
       sel.innerHTML = c.employees.map(function(n){ return '<option>' + esc(n) + '</option>'; }).join('');
-      if (cur) sel.value = cur;
-      if (emp) sel.value = emp;
-      S.emp = sel.value;
+      if (cur) sel.value = cur; S.emp = sel.value;
     }
     $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
-    loadRows(); loadProjects();
-  }
-  $('openCustodyLedgerBtn').addEventListener('click', function(){ openLedger_(); });
-  $('backHomeBtnCustodyLedger').addEventListener('click', function(){
-    resetShowLocked();
-    if (ledgerBack_ === 'custody-report') openReport_(reportBack_); else window.showScreen_('home');
+    loadProjects().then(loadRows);
   });
+  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ window.showScreen_('home'); });
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
 
   function loadRows(){
-    var e = who(); if (!e) { S.rows = []; S.tot = null; S.full = false; render(); return Promise.resolve(); }
-    var tok = ++S.rtok, enc = encodeURIComponent(e); S.full = false; S.rows = [];
-    // رسم فوري من آخر نسخة محفوظة على الجهاز، وبعدها بيتحدّث لوحده
-    try { S.tot = JSON.parse(localStorage.getItem('cgTot:' + e) || 'null'); } catch (x) { S.tot = null; }
-    try { S.att = JSON.parse(localStorage.getItem('cgAtt:' + e) || '{}') || {}; } catch (x) { S.att = {}; }
-    render(); st('cgStatus', 'جارٍ التحميل…');
-    var cols = 'id,employee,entry_type,entry_date,description,amount,project,created_at,created_by';
-    var pT = totalsFor(e).then(function(t){ if (tok !== S.rtok) return; S.tot = t; cacheTot_(); render(); }).catch(function(){});
-    // الشاشة بتعرض الحركات اللي بعد تاريخ التقفيل بس، فمفيش داعي نحمّل المقفلة (بتتحمّل لو اتعلّم "عرض المقفلة" أو فُتح التقرير)
-    var pR = loadLocks().then(function(){
-      var lk = L[e];
-      return fetchAll(T + '?employee=eq.' + enc + '&deleted_at=is.null&select=' + cols + '&order=entry_date.asc,created_at.asc,id.asc' + (lk ? '&entry_date=gt.' + lk : ''))
-        .then(function(rows){ return { rows: rows, full: !lk }; });
-    }).then(function(x){ if (tok !== S.rtok) return; S.rows = x.rows; S.full = x.full; render(); markCams_(); });
-    loadAtt_(e, tok);
-    return Promise.all([pT, pR]).then(function(){ if (tok === S.rtok) { st('cgStatus', ''); render(); markCams_(); } })
-      .catch(function(){ if (tok !== S.rtok) return; S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
+    var e = who(); if (!e) { S.rows = []; render(); return Promise.resolve(); }
+    st('cgStatus', 'جارٍ التحميل…');
+    return Promise.all([fetchAll(T + '?employee=eq.' + encodeURIComponent(e) + '&deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()])
+      .then(function(res){ S.rows = res[0]; st('cgStatus', ''); render(); })
+      .catch(function(){ S.rows = []; render(); st('cgStatus', 'تعذّر تحميل العهد — اتأكد إن جدول custody_entries اتعمل في Supabase (ملف custody_setup.sql)', true); });
   }
   // فلترة بالتاريخ والمشروع + الرصيد السابق قبل "من تاريخ" (بتستخدم للتقارير بس)
   function viewOf(rows, f, t, p){
@@ -13597,10 +13346,13 @@ window.safeFileName = function(str){
   function view(){ return viewOf(S.rows, $('rpFrom').value, $('rpTo').value, $('rpProj').value); }
   // الشاشة بتعرض كل حركات الأيام (بتاريخها) من الأحدث للأقدم؛ كروت اليوم والرصيد إجمالي الخزنة، ومعاه رصيد أول اليوم
   function render(){
-    var td = today(), tin = 0, tout = 0, hin = '', hout = '', dIn = 0, dOut = 0;
-    S.rows.forEach(function(r){ if (r.entry_date === td) { if (r.entry_type === 'in') tin += +r.amount; else tout += +r.amount; } });
-    var tot = S.tot;
-    if (!tot && S.full) { tot = { 'in': 0, out: 0 }; S.rows.forEach(function(r){ tot[r.entry_type === 'in' ? 'in' : 'out'] += +r.amount; }); }
+    var td = today(), tin = 0, tout = 0, before = 0, total = 0, hin = '', hout = '';
+    S.rows.forEach(function(r){
+      var inn = r.entry_type === 'in', a = +r.amount, sg = inn ? 1 : -1;
+      total += sg * a;
+      if (r.entry_date < td) before += sg * a;
+      else if (r.entry_date === td) { if (inn) tin += a; else tout += a; }
+    });
     // الافتراضي: لما العهدة تتقفل، نخفي الحركات اللي قبل تاريخ التقفيل (المقفلة)
     // من كل من الوارد والمنصرف — ونعرض اللي بعد التاريخ ده فقط. الـ checkbox
     // بتاع كل قسم يرجع الوضع ويعرض الحركات المقفلة كمان.
@@ -13614,7 +13366,7 @@ window.safeFileName = function(str){
       var projTag = r.project ? '<em class="cg-proj">🏷 ' + esc(r.project) + '</em>' : '';
       var row = '<div class="cg-row" data-row="' + r.id + '"><span>' + projTag + '<i>' + esc(r.entry_date) + '</i>' + esc(r.description) + '</span><b>' + fmt(a) + '</b>' + (inn ? '' : '<a class="cg-cam" href="' + camLink(r) + '" target="_blank" rel="noopener" title="تصوير مرفق وإرساله على واتساب" aria-label="تصوير مرفق">📷</a>') + '<button type="button" class="cg-edit" data-edit="' + r.id + '" title="تعديل">✎</button><button type="button" class="cg-del" data-del="' + r.id + '" title="حذف">✕</button></div>';
       if (isLocked) row = row.replace('class="cg-row"', 'class="cg-row cg-locked"').replace(/<button type="button" class="cg-edit"[^>]*>[^<]*<\/button><button type="button" class="cg-del"[^>]*>[^<]*<\/button>/, '');
-      if (inn) { hin += row; dIn += a; } else { hout += row; dOut += a; }
+      if (inn) hin += row; else hout += row;
     });
     $('cgListIn').innerHTML = hin || '<div class="cg-empty">لا توجد سطور وارد</div>';
     $('cgListOut').innerHTML = hout || '<div class="cg-empty">لا توجد سطور منصرف</div>';
@@ -13632,9 +13384,8 @@ window.safeFileName = function(str){
         inList.style.maxHeight = '';
       }
     } catch (e) {}
-    $('cgSumIn').textContent = fmt(dIn); $('cgSumOut').textContent = fmt(dOut);
-    var total = tot ? r2(tot['in'] - tot.out) : 0;
-    $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = tot ? fmt(total) : '…';
+    $('cgSumIn').textContent = fmt(tin); $('cgSumOut').textContent = fmt(tout);
+    $('cgTin').textContent = fmt(tin); $('cgTout').textContent = fmt(tout); $('cgBal').textContent = fmt(total);
     var _open = $('cgOpen'); if (_open) _open.textContent = '';
     $('cgBalCard').classList.toggle('neg', total < 0);
     var lb = $('cgLockMsg'), lk = L[who()];
@@ -13646,7 +13397,6 @@ window.safeFileName = function(str){
 
   // ---------- تسجيل سطر ----------
   function draft(type){
-    if (!S.projLoaded) { loadProjects().then(function(){ draft(type); }); return; }
     var box = $(type === 'in' ? 'cgDraftIn' : 'cgDraftOut');
     if (box.firstChild) { box.querySelector('.d-bayan').focus(); return; }
     // المنصرف: المشروع إجباري (مفيش "عام")؛ الوارد: اختياري
@@ -13661,12 +13411,7 @@ window.safeFileName = function(str){
   // تغيير حالة الـ checkbox "عرض الحركات المقفلة" يعيد رسم القسم المعني
   ['In','Out'].forEach(function(k){
     var cb = $('cgShowLocked' + k);
-    if (cb) cb.addEventListener('change', function(){
-      if (cb.checked && !S.full) {
-        st('cgStatus', 'جارٍ تحميل الحركات المقفلة…');
-        ensureFull().then(function(){ st('cgStatus', ''); render(); markCams_(); }).catch(function(){ cb.checked = false; st('cgStatus', 'تعذّر تحميل الحركات المقفلة', true); render(); });
-      } else render();
-    });
+    if (cb) cb.addEventListener('change', function(){ render(); });
   });
   function saveDraft(type, box){
     var d = box.querySelector('.cg-draft'), b = d.querySelector('.d-bayan').value.trim(), a = parseFloat(d.querySelector('.d-amt').value), pr = d.querySelector('.d-proj').value;
@@ -13677,7 +13422,7 @@ window.safeFileName = function(str){
     freshLock().then(function(){ if (lockedFor(body.employee, body.entry_date)) throw 'lock'; return fetch(T, { method: 'POST', headers: H({ Prefer: 'return=representation' }), body: JSON.stringify(body) }); })
       .then(function(r){ if (!r.ok) throw 0; return r.json(); })
       .then(function(rows){
-        S.rows.push(rows[0]); bump(type, a); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
+        S.rows.push(rows[0]); S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
         box.innerHTML = ''; st('cgStatus', 'تم تسجيل السطر ✓'); render();
       }).catch(function(er){ ok.disabled = false; if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(body.employee) : 'تعذّر الحفظ، حاول تاني', true); });
   }
@@ -13691,7 +13436,6 @@ window.safeFileName = function(str){
   // فالأصل بيفضل محفوظ في الجدول كسجل للتغيير من غير ما نغيّر أعمدة قاعدة البيانات.
   function findRow(id){ return S.rows.filter(function(x){ return String(x.id) === String(id); })[0]; }
   function openEdit(id){
-    if (!S.projLoaded) { loadProjects().then(function(){ openEdit(id); }); return; }
     var r = findRow(id), el = document.querySelector('#custodyLedgerScreen [data-row="' + id + '"]'); if (!r || !el) return;
     var projs = S.projects.slice(); if (r.project && projs.indexOf(r.project) < 0) projs.push(r.project);
     var opts = (r.entry_type === 'out' ? '<option value="">— اختر المشروع * —</option>' : '<option value="">عام (بدون مشروع)</option>') +
@@ -13723,7 +13467,7 @@ window.safeFileName = function(str){
           });
       })
       .then(function(){
-        S.rows = S.rows.filter(function(x){ return String(x.id) !== String(r.id); }); S.rows.push(newRow); bump(r.entry_type, -(+r.amount)); bump(r.entry_type, a);
+        S.rows = S.rows.filter(function(x){ return String(x.id) !== String(r.id); }); S.rows.push(newRow);
         S.rows.sort(function(x, y){ return (x.entry_date + x.created_at).localeCompare(y.entry_date + y.created_at); });
         st('cgStatus', 'تم تعديل السطر ✓'); render();
       }).catch(function(er){ ok.disabled = false; if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(r.employee) : 'تعذّر تعديل السطر، حاول تاني', true); });
@@ -13744,7 +13488,7 @@ window.safeFileName = function(str){
     var c = ctx();
     freshLock().then(function(){ if (lockedFor(dr.employee, dr.entry_date)) throw 'lock'; return fetch(T + '?id=eq.' + b.dataset.del, { method: 'PATCH', headers: H({ Prefer: 'return=minimal' }),
       body: JSON.stringify({ deleted_at: new Date().toISOString(), deleted_by: c.isEmp ? c.name : 'الأدمن' }) }); })
-      .then(function(r){ if (!r.ok) throw 0; S.rows = S.rows.filter(function(x){ return String(x.id) !== b.dataset.del; }); bump(dr.entry_type, -(+dr.amount)); render(); })
+      .then(function(r){ if (!r.ok) throw 0; S.rows = S.rows.filter(function(x){ return String(x.id) !== b.dataset.del; }); render(); })
       .catch(function(er){ if (er === 'lock') render(); st('cgStatus', er === 'lock' ? lockText(dr.employee) : 'تعذّر الحذف', true); });
   });
 
@@ -13842,20 +13586,12 @@ window.safeFileName = function(str){
     S.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; o += '<option>' + esc(r.project) + '</option>'; } });
     $('rpProj').innerHTML = o; $('rpFrom').value = monthStart(); $('rpTo').value = today(); st('rpStatus', '');
     $('cgRepModal').style.display = 'flex';
-    // تجهيز كل الحركات في الخلفية عشان التقرير يطلع بسرعة
-    ensureFull().then(function(){
-      var cur = $('rpProj').value, extra = '';
-      S.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; extra += '<option>' + esc(r.project) + '</option>'; } });
-      if (extra) { $('rpProj').insertAdjacentHTML('beforeend', extra); $('rpProj').value = cur; }
-    }).catch(function(){});
   }
   function closeRep(){ $('cgRepModal').style.display = 'none'; }
   $('cgRepBtn').addEventListener('click', openRep);
   $('rpClose').addEventListener('click', closeRep);
   $('cgRepModal').addEventListener('click', function(e){ if (e.target === this) closeRep(); });
   async function repPdf(mode){
-    st('rpStatus', 'جارٍ تجهيز البيانات…');
-    try { await ensureFull(); } catch (er) { st('rpStatus', 'تعذّر تحميل الحركات', true); return; }
     var v = view(); if (!(v.list.length || v.op)) { st('rpStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
     var bs = $('cgRepModal').querySelectorAll('button'); bs.forEach(function(b){ b.disabled = true; }); st('rpStatus', 'جارٍ إنشاء التقرير…');
     try {
@@ -13870,7 +13606,6 @@ window.safeFileName = function(str){
   $('rpShare').addEventListener('click', function(){ repPdf('share'); });
   $('rpDown').addEventListener('click', function(){ repPdf('down'); });
   $('rpXls').addEventListener('click', async function(){
-    try { await ensureFull(); } catch (er) { st('rpStatus', 'تعذّر تحميل الحركات', true); return; }
     var s = statement(view()); if (!(s.lines.length || s.v.op)) { st('rpStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
     st('rpStatus', 'جارٍ إنشاء الملف…');
     try {
@@ -13995,127 +13730,54 @@ window.safeFileName = function(str){
   }
 
   // ---------- تقرير الأدمن: اختيار الخزنة + من تاريخ لتاريخ ----------
-  var R = { rows: [], by: {}, sel: '', loaded: false, full: false, tok: 0 };
+  var R = { rows: [], sel: '' };
   function fetchAll(url){
-    var PG = 1000;
-    function page(o, withCount){
-      var hd = { 'Range-Unit': 'items', Range: o + '-' + (o + PG - 1) };
-      if (withCount) hd.Prefer = 'count=exact';
-      return fetch(url, { headers: H(hd) }).then(function(r){
-        if (!r.ok) throw 0;
-        var cr = r.headers.get('Content-Range') || '', m = cr.match(/\/(\d+)$/);
-        return r.json().then(function(d){ return { d: d, total: m ? +m[1] : -1 }; });
-      });
+    var out = [];
+    function go(o){
+      return fetch(url, { headers: H({ 'Range-Unit': 'items', Range: o + '-' + (o + 999) }) })
+        .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+        .then(function(d){ out = out.concat(d); return d.length === 1000 ? go(o + 1000) : out; });
     }
-    // الصفحة الأولى + العدد الكلي، وبعدها باقي الصفحات مرة واحدة بالتوازي (بدل صفحة ورا صفحة)
-    return page(0, true).then(function(first){
-      var out = first.d;
-      if (first.d.length < PG) return out;
-      if (first.total > 0) {
-        var jobs = [];
-        for (var o = PG; o < first.total; o += PG) jobs.push(page(o, false));
-        return Promise.all(jobs).then(function(rs){ rs.forEach(function(x){ out = out.concat(x.d); }); return out; });
-      }
-      function go(o){
-        return page(o, false).then(function(x){ out = out.concat(x.d); return x.d.length === PG ? go(o + PG) : out; });
-      }
-      return go(PG);
-    });
+    return go(0);
   }
   function vaultNames(){
-    // بيظهر كل الموظفين + أي اسم عنده حركات عهدة (من غير شرط "لديه خزنة")
     var n = ctx().employees.slice();
-    var seen = {}; n.forEach(function(x){ seen[x] = 1; });
-    Object.keys(R.by).forEach(function(e){ if (!seen[e]) { seen[e] = 1; n.push(e); } });
+    R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
     return n;
   }
-  function rview(emp){ return viewOf(R.by[emp] || [], $('crFrom').value, $('crTo').value, $('crProj').value); }
+  function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
   function lockLine(n){
     var d = L[n] || '';
     return '<div class="cr-lock" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 10px 10px;font-size:12.5px"><label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" data-lk="' + esc(n) + '"' + (d ? ' checked' : '') + '> 🔒 تقفيل العهدة حتى</label>' +
       '<input type="date" data-lkd="' + esc(n) + '" value="' + esc(d) + '" style="padding:3px 6px"><span class="cr-lk-msg" style="font-weight:800;color:#1f7a4c">' + (d ? 'تم التقفيل ✓' : '') + '</span></div>';
   }
-  // عدد الحركات اللي لسه ما اتقفلتش (تاريخها بعد تاريخ التقفيل، أو كلها لو الخزنة ما اتقفلتش)
-  function unclosedCount_(n){
-    var c = 0;
-    (R.by[n] || []).forEach(function(r){ if (!lockedFor(n, r.entry_date)) c++; });
-    return c;
-  }
-  function unclosedHtml_(n){
-    var c = unclosedCount_(n);
-    return '<span class="cr-unclosed" data-uw="' + esc(n) + '" style="flex:1;text-align:center;color:#d32f2f;font-weight:800;font-size:12px;cursor:pointer;text-decoration:underline">' + (c ? '⚠ ' + c + ' حركة لم تقفل' : '') + '</span>';
-  }
-  function refreshUnclosed_(n){
-    var els = $('crList').querySelectorAll('[data-uw]');
-    for (var i = 0; i < els.length; i++) {
-      if (els[i].getAttribute('data-uw') === n) { var c = unclosedCount_(n); els[i].textContent = c ? '⚠ ' + c + ' حركة لم تقفل' : ''; }
-    }
-  }
   function renderVaults(){
     var h = '<label class="cp-item"><span><input type="radio" name="crEmp" value="*"' + (R.sel === '*' ? ' checked' : '') + '> &nbsp;<b>كل الخزن</b> (كل خزنة في صفحات منفصلة)</span></label>';
     vaultNames().forEach(function(n){
-      if (!R.loaded) {
-        h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) + ' <small style="color:var(--ink-soft)">…</small></span></label>' + lockLine(n);
-        return;
-      }
       var v = rview(n), bal = v.op; v.list.forEach(function(r){ bal += (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
       h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) +
-        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span>' + unclosedHtml_(n) + '<b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
+        ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small></span><b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
     });
     $('crList').innerHTML = h;
   }
-  function renderProjOpts_(){
-    var sel = $('crProj'), cur = sel.value, known = {}, opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
-    S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
-    R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
-    sel.innerHTML = opts;
-    for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === cur) { sel.value = cur; break; }
-  }
-  // تحميل التفاصيل الكاملة (البيان) وقت إنشاء التقرير فقط
-  function ensureFullR_(){
-    if (R.full) return Promise.resolve();
-    var tok = R.tok;
-    return fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc,id.asc').then(function(rows){
-      if (tok !== R.tok) return;
-      R.rows = rows; R.by = {}; rows.forEach(function(r){ (R.by[r.employee] || (R.by[r.employee] = [])).push(r); }); R.full = true;
-    });
-  }
-  function setLight_(rows){ R.rows = rows; R.by = {}; rows.forEach(function(r){ (R.by[r.employee] || (R.by[r.employee] = [])).push(r); }); }
   var reportBack_ = 'settings-menu';
   function openReport_(from){
     if (!ctx().canReport) return;
     reportBack_ = from;
-    window.showScreen_('custody-report'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    var tok = ++R.tok; R.full = false; R.loaded = false; R.rows = []; R.by = {};
-    // آخر نسخة خفيفة محفوظة على الجهاز → الشاشة تظهر فورًا وبعدها تتحدّث
-    var cached = null; try { cached = JSON.parse(localStorage.getItem('cgRepLight') || 'null'); } catch (x) {}
-    if (cached && cached.length) {
-      setLight_(cached.map(function(a){ return { employee: a[0], entry_type: a[1], amount: a[2], entry_date: a[3], project: a[4] }; })); R.loaded = true;
-      st('crStatus', 'جارٍ التحديث…');
-    } else st('crStatus', 'جارٍ التحميل…');
-    renderProjOpts_(); renderVaults();
-    // تحديث الصلاحيات في الخلفية (مش بنستناه)
-    try { if (window.custodyRefreshPerms_) window.custodyRefreshPerms_(function(){}); } catch (x) {}
-    Promise.all([loadProjects(), loadLocks()]).then(function(){ if (tok === R.tok) { renderProjOpts_(); renderVaults(); } });
-    // أعمدة خفيفة بس (من غير البيان) للقايمة والأرصدة
-    fetchAll(T + '?deleted_at=is.null&select=employee,entry_type,entry_date,amount,project&order=id.asc').then(function(rows){
-      if (tok !== R.tok) return;
-      setLight_(rows); R.loaded = true; st('crStatus', '');
-      try { localStorage.setItem('cgRepLight', JSON.stringify(rows.map(function(r){ return [r.employee, r.entry_type, r.amount, r.entry_date, r.project || '']; }))); } catch (x) {}
-      renderProjOpts_(); renderVaults();
-    }).catch(function(){ if (tok === R.tok) st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
+    window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()]).then(function(res){
+      R.rows = res[1]; st('crStatus', '');
+      var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
+      S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
+      R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
+      $('crProj').innerHTML = opts; renderVaults();
+    }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
   }
+  $('openCustodyReportTileBtn').addEventListener('click', function(){ openReport_('settings-menu'); });
   $('openCustodyReportHomeBtn').addEventListener('click', function(){ openReport_('home'); });
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
   ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
   $('crList').addEventListener('change', function(e){ if (e.target.name === 'crEmp') R.sel = e.target.value; });
-  // الضغط على "⚠ X حركة لم تقفل" يفتح شاشة العهد الخاصة بصاحب الخزنة
-  $('crList').addEventListener('click', function(e){
-    var u = e.target.closest && e.target.closest('[data-uw]');
-    if (!u || !u.textContent.trim() || ctx().isEmp) return;
-    e.preventDefault(); e.stopPropagation();
-    openLedger_(u.getAttribute('data-uw'), 'custody-report');
-  });
   // تقفيل/فك تقفيل خزنة: شيك بوكس + تاريخ (بيتحفظ فورًا)
   $('crList').addEventListener('change', function(e){
     var t = e.target, n = t.dataset && (t.dataset.lk || t.dataset.lkd); if (!n) return;
@@ -14127,7 +13789,6 @@ window.safeFileName = function(str){
     msg.style.color = '#6b7280'; msg.textContent = 'جارٍ الحفظ…';
     saveLock(n, val).then(function(){
       L[n] = val;
-      refreshUnclosed_(n);
       msg.style.color = '#1f7a4c';
       msg.textContent = val ? 'تم التقفيل ✓' : 'تم فك التقفيل';
       // إشعار صاحب الخزنة: بيتبعت في الحالتين — أول تقفيل، وأي تحديث للتاريخ
@@ -14155,8 +13816,6 @@ window.safeFileName = function(str){
   });
   async function runReport(mode){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
-    st('crStatus', 'جارٍ تجهيز البيانات…');
-    try { await ensureFullR_(); } catch (er) { st('crStatus', 'تعذّر تحميل البيانات', true); return; }
     var names = R.sel === '*' ? vaultNames() : [R.sel], pages = [];
     names.forEach(function(n){ var v = rview(n); if (v.list.length || v.op) pages = pages.concat(pagesFor(n, v)); });
     if (!pages.length) { st('crStatus', 'مفيش حركات ولا رصيد في الفترة دي', true); return; }
@@ -14176,7 +13835,6 @@ window.safeFileName = function(str){
     if (!R.sel) { st('crStatus', 'اختار الخزنة الأول', true); return; }
     st('crStatus', 'جارٍ إنشاء الملف…');
     try {
-      await ensureFullR_();
       var names = R.sel === '*' ? vaultNames() : [R.sel];
       var wb = new ExcelJS.Workbook(), any = false;
       names.forEach(function(n){
@@ -14235,17 +13893,7 @@ window.safeFileName = function(str){
   var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
   var $ = function(id){ return document.getElementById(id); };
   var PAGE = 40;
-  var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0, sel: {}, selMode: false, showPrev: false };
-  // الافتراضي: إشعارات اليوم فقط. الشيك بوكس "ما قبل اليوم" يرجّع عرض كل الإشعارات
-  function isToday_(n){ var d = new Date(n.created_at), t = new Date(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate(); }
-  // الإشعارات المحذوفة: بتتخزن على الجهاز لكل مستخدم ومش بتظهر تاني
-  function hidKey_(){ return 'ncHidden:' + me(ctx()); }
-  function hidLoad_(){ try { var a = JSON.parse(localStorage.getItem(hidKey_()) || '[]') || []; NC.hid = {}; a.forEach(function(i){ NC.hid[i] = 1; }); } catch (e) { NC.hid = {}; } }
-  function hidSave_(){ try { var a = Object.keys(NC.hid).map(Number).sort(function(x, y){ return x - y; }).slice(-3000); localStorage.setItem(hidKey_(), JSON.stringify(a)); } catch (e) {} }
-  // إشعار الموافقة المكرر القادم من الـ Apps Script (بدون اسم الموظف) — نخفيه ونكتفي بإشعار "تم اعتماد طلب ... — الاسم"
-  function dupApproval_(n){ return /^[^\u0600-\u06FFA-Za-z]*تمت الموافقة على طلب/.test(String(n && n.title || '')); }
-  function vis_(n){ return !dupApproval_(n) && !(NC.hid && NC.hid[n.id]) && (NC.showPrev || isToday_(n)); }
-  function resetPrev_(){ NC.showPrev = false; var cb = $('ncPrev'); if (cb) cb.checked = false; }
+  var NC = { items: [], filter: 'all', done: false, loading: false, unread: 0, sel: {}, selMode: false };
   var TOPIC = {   // أيقونة + لون لكل نوع
     order:     { i: '🛒', c: '#0284c7' }, checks:    { i: '🧾', c: '#059669' }, overdue:   { i: '📉', c: '#dc2626' },
     salary:    { i: '💰', c: '#7c3aed' }, request:   { i: '📝', c: '#e2621f' }, presence:  { i: '✅', c: '#16a34a' },
@@ -14284,7 +13932,6 @@ window.safeFileName = function(str){
     var topic = topicOf(n.topic, n.dedupId, n.title);
     // تجاهل إشعارات الاختبار — مش بتبقى حدث حقيقي يستاهل يبان في مركز الإشعارات.
     if (topic === 'test') return;
-    if (dupApproval_(n)) return;   // ما نسجلش الإشعار المكرر
     rpc('notif_log', { p_title: n.title, p_body: n.body || '', p_topic: topic, p_target: n.target || null, p_dedup: dedupKey(n.title, n.body || '', n.dedupId) })
       .then(function(){ setTimeout(refreshBadge, 700); }).catch(function(){});
   }
@@ -14298,8 +13945,6 @@ window.safeFileName = function(str){
       if (u.indexOf('action=notifyEvent') > -1 && u.indexOf('/rest/v1/') < 0) {
         var q = new URL(u, location.href).searchParams, body = q.get('body') || '';
         if (q.get('qty') && body.indexOf(q.get('qty')) === -1) body += (body ? ' — ' : '') + q.get('qty') + (q.get('unit') ? ' ' + q.get('unit') : '');
-        var loc_ = q.get('loc');
-        if (loc_ && /^-?[\d.]+,-?[\d.]+$/.test(loc_)) body += (body ? ' ' : '') + '📍 https://maps.google.com/?q=' + loc_;
         logNotif({ title: q.get('title'), body: body, topic: q.get('topic'), target: q.get('target'), dedupId: q.get('dedupId') });
       }
     } catch (e) {}
@@ -14341,14 +13986,6 @@ window.safeFileName = function(str){
     if (m < 60) return 'منذ ' + m + ' د';
     return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
   }
-  // رابط الموقع داخل نص الإشعار يتحول لزرار "📍 موقع الموافقة" قابل للضغط
-  function bodyHtml_(b){
-    var re = /📍?\s*(https:\/\/maps\.google\.com\/\?q=-?[\d.]+,-?[\d.]+)/;
-    var m = String(b).match(re);
-    if (!m) return esc(b);
-    var text = String(b).replace(re, '').replace(/\s+$/, '');
-    return esc(text) + '<div><a class="nc-map" href="' + esc(m[1]) + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;background:#e8f4ff;color:#0369a1;font-size:12px;text-decoration:none;">📍 موقع الموافقة</a></div>';
-  }
   function render(){
     var box = $('ncList'), html = '', lastDay = '', prev = null;
     // فلتر الموظف: يشوف فقط اللي target فيه = اسمه. ده بيحجب الإشعارات
@@ -14356,12 +13993,32 @@ window.safeFileName = function(str){
     // عامة لحد تاني تسرّبت للـ feed بتاعه.
     var _ctxE = ctx();
     var _empFilter = (!_ctxE.isAdmin && _ctxE.name);
+    // دي-دوب شاملة: نجمّع كل الإشعارات حسب (topic + target + bucket وقت 10 دقايق)
+    // ونختار "الأفضل" من كل مجموعة. "الأفضل" = اللي عنوانه فيه الاسم المستهدف،
+    // عشان الأدمن ما يشوفش إشعار "تمت الموافقة" بدون اسم بجوار إشعار "تم اعتماد
+    // طلب إجازة — شهد خالد" (نفس الحدث اتبعت من GAS والفرونت بعنوانين مختلفين).
+    var _buckets = {}, _keep = {};
+    function _score(x){
+      var s = 0, title = String(x.title || '');
+      if (x.target && title.indexOf(x.target) > -1) s += 1000;
+      // لو مفيش target، نفضّل العناوين اللي فيها شرطة طويلة (دلالة على اسم)
+      if (title.indexOf(' — ') > -1 || title.indexOf(' - ') > -1) s += 500;
+      s += title.length;
+      return s;
+    }
+    NC.items.forEach(function(n){
+      var tsec = Math.floor(new Date(n.created_at).getTime() / 600000);
+      // بنجمع حسب الـ topic والـ target فقط (بدون العنوان) عشان نلم الإشعارين
+      // اللي من مصدرين مختلفين لنفس الحدث.
+      var k = (n.topic || '-') + '|' + (n.target || '') + '|' + tsec;
+      var ex = _buckets[k];
+      if (!ex || _score(n) > _score(ex)) _buckets[k] = n;
+    });
+    Object.keys(_buckets).forEach(function(k){ _keep[_buckets[k].id] = true; });
     NC.items.forEach(function(n){
       if (_empFilter && n.target !== _ctxE.name) return;
-      if (!vis_(n)) return;
+      if (!_keep[n.id]) return;
       var d = new Date(n.created_at);
-      // نفس الإشعار وصل من مصدرين في نفس الدقيقتين → نعرضه مرة واحدة
-      if (prev && prev.title === n.title && prev.body === n.body && Math.abs(new Date(prev.created_at) - d) < 120000) return;
       prev = n;
       var day = dayLabel(d);
       if (day !== lastDay) { html += '<div class="nc-day">' + esc(day) + '</div>'; lastDay = day; }
@@ -14370,43 +14027,38 @@ window.safeFileName = function(str){
       html += '<div class="nc-item' + (n.is_read ? '' : ' unread') + (isSel ? ' selected' : '') + '" data-id="' + n.id + '" data-topic="' + esc(n.topic) + '">' +
         '<input type="checkbox" class="nc-chk"' + (isSel ? ' checked' : '') + '>' +
         '<div class="nc-ico" style="background:' + tp.c + '22;color:' + tp.c + '">' + tp.i + '</div>' +
-        '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + bodyHtml_(n.body) + '</div>' : '') +
+        '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + esc(n.body) + '</div>' : '') +
         '<div class="nc-time">' + esc(timeLabel(d)) + '</div></div>' + (n.is_read ? '' : '<span class="nc-dot"></span>') + '</div>';
     });
-    box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? (NC.showPrev ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات غير مقروءة اليوم ✓') : (NC.showPrev ? 'مفيش إشعارات لسه' : 'مفيش إشعارات اليوم')) + '</div>';
-    $('ncMore').style.display = (NC.done || !NC.items.length || !NC.showPrev) ? 'none' : '';
+    box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات لسه') + '</div>';
+    $('ncMore').style.display = (NC.done || !NC.items.length) ? 'none' : '';
     updateSelBar_();
   }
   function updateSelBar_(){
     var count = NC.sel ? Object.keys(NC.sel).length : 0;
     var cEl = $('ncSelCount'); if (cEl) cEl.textContent = count;
     var btn = $('ncMarkSel'); if (btn) btn.disabled = count === 0;
-    var dbtn = $('ncDelSel'); if (dbtn) dbtn.disabled = count === 0;
-    var all = $('ncSelAll'); if (all) all.checked = count > 0 && count === NC.items.filter(vis_).length;
+    var all = $('ncSelAll'); if (all) all.checked = count > 0 && count === NC.items.length;
   }
   function load(reset){
-    if (NC.loading) return; NC.loading = true; NC.more = false;
+    if (NC.loading) return; NC.loading = true;
     if (reset) { NC.items = []; NC.done = false; st('جارٍ التحميل…'); }
     var c = ctx(), last = NC.items[NC.items.length - 1];
     rpc('notif_feed', { p_name: me(c), p_is_admin: c.isAdmin, p_topics: c.topics, p_limit: PAGE,
       p_before: last ? last.created_at : null, p_before_id: last ? last.id : null, p_unread_only: NC.filter === 'unread' })
-      .then(function(rows){ rows = rows || []; NC.items = NC.items.concat(rows); NC.done = rows.length < PAGE; st(''); render();
-        // وضع اليوم فقط: لو لسه آخر إشعار محمّل بتاع النهاردة نكمّل تحميل الصفحة اللي بعدها
-        var _l = NC.items[NC.items.length - 1];
-        NC.more = !NC.showPrev && !NC.done && _l && isToday_(_l); })
+      .then(function(rows){ rows = rows || []; NC.items = NC.items.concat(rows); NC.done = rows.length < PAGE; st(''); render(); })
       .catch(function(){ st('تعذّر تحميل الإشعارات — اتأكد من تشغيل ملف notifications_center.sql في Supabase', true); render(); })
-      .then(function(){ NC.loading = false; if (NC.more) { NC.more = false; load(false); } });
+      .then(function(){ NC.loading = false; });
   }
 
   // ---------- الأحداث ----------
   $('openNotifCenterBtn').addEventListener('click', function(){
     window.showScreen_('notif-center');
-    NC.filter = 'all'; resetPrev_(); hidLoad_();
+    NC.filter = 'all';
     document.querySelectorAll('.nc-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.f === 'all'); });
     load(true); refreshBadge();
   });
-  $('backHomeBtnNotif').addEventListener('click', function(){ resetPrev_(); window.showScreen_('home'); });
-  $('ncPrev').addEventListener('change', function(){ NC.showPrev = this.checked; NC.sel = {}; render(); if (NC.showPrev && !NC.done) { /* الباقي بيتحمّل بزرار عرض أقدم */ } });
+  $('backHomeBtnNotif').addEventListener('click', function(){ window.showScreen_('home'); });
   document.querySelectorAll('.nc-tab').forEach(function(b){
     b.addEventListener('click', function(){
       NC.filter = b.dataset.f;
@@ -14422,7 +14074,6 @@ window.safeFileName = function(str){
       .catch(function(){ st('تعذّر التحديد', true); });
   });
   $('ncList').addEventListener('click', function(e){
-    if (e.target.closest('a.nc-map')) return;   // فتح الخريطة بس، من غير فتح الشاشة
     var el = e.target.closest('.nc-item'); if (!el) return;
     var id = +el.dataset.id, it = NC.items.filter(function(n){ return n.id === id; })[0], c = ctx();
     // في وضع التحديد المتعدد، الضغط على الإشعار يختار/يلغي اختياره فقط
@@ -14454,24 +14105,9 @@ window.safeFileName = function(str){
 
   // اختيار الكل / إلغاء اختيار الكل
   $('ncSelAll').addEventListener('change', function(){
-    if (this.checked) NC.items.forEach(function(n){ if (vis_(n)) NC.sel[n.id] = true; });
+    if (this.checked) NC.items.forEach(function(n){ NC.sel[n.id] = true; });
     else NC.sel = {};
     render();
-  });
-
-  // حذف المحدد: يتخفى نهائيًا من القايمة (ويتعلّم مقروء عشان الشارة الحمرا ما تفضلش عدّاده)
-  $('ncDelSel').addEventListener('click', function(){
-    var ids = Object.keys(NC.sel).map(Number); if (!ids.length) return;
-    if (!confirm('حذف ' + ids.length + ' إشعار؟')) return;
-    var c = ctx();
-    if (!NC.hid) NC.hid = {};
-    var unreadDel = 0;
-    NC.items.forEach(function(n){ if (NC.sel[n.id]) { if (!n.is_read) unreadDel++; n.is_read = true; } });
-    ids.forEach(function(i){ NC.hid[i] = 1; });
-    hidSave_(); NC.sel = {};
-    setBadge(Math.max(0, NC.unread - unreadDel));
-    render();
-    rpc('notif_mark_read', { p_name: me(c), p_ids: ids }).then(refreshBadge).catch(function(){});
   });
 
   // تمييز المحدد كمقروء
