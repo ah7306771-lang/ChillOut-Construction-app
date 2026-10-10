@@ -1740,6 +1740,9 @@ body.cg-compact .wa-float-btn{display:none !important}
 .nc-main{flex:1;min-width:0;padding-left:12px}
 .nc-title{font-weight:700;font-size:12px;line-height:1.4;color:var(--ink)}
 .nc-body{font-size:11px;color:var(--ink-soft);margin-top:2px;line-height:1.45;word-break:break-word}
+.nc-body .nc-map-link{display:inline-block;margin-top:4px;padding:3px 10px;background:#1f6feb;color:#fff;border-radius:999px;font-weight:800;text-decoration:none;font-size:11px}
+.nc-body .nc-map-link:hover{background:#1858c4}
+.nc-body .nc-url-link{color:#1f6feb;text-decoration:underline;word-break:break-all}
 .nc-time{font-size:10px;color:var(--ink-soft);margin-top:2px;font-weight:700}
 .nc-item.unread .nc-time{color:#e2621f}
 .nc-dot{position:absolute;top:12px;left:10px;width:8px;height:8px;border-radius:50%;background:#e2621f}
@@ -13986,6 +13989,28 @@ window.safeFileName = function(str){
     if (m < 60) return 'منذ ' + m + ' د';
     return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
   }
+  // تحويل الروابط في متن الإشعار لـ anchors قابلة للضغط. أي حاجة غير الرابط
+  // بتتعمل escape عادي عشان ما تسمحش بـ XSS. اللوكيشن (مثلاً روابط
+  // maps.google.com) بيبقى زرار مميز بأيقونة 📍.
+  function linkifyBody_(txt){
+    if (!txt) return '';
+    var s = String(txt);
+    var re = /(https?:\/\/[^\s<>"']+)/g;
+    var out = '', last = 0, m;
+    while ((m = re.exec(s)) !== null) {
+      if (m.index > last) out += esc(s.slice(last, m.index));
+      var url = m[1];
+      var isMap = /maps\.google|google\.com\/maps|goo\.gl\/maps|maps\.app\.goo\.gl/i.test(url);
+      var label = isMap ? '📍 افتح الموقع على الخريطة' : url;
+      out += '<a href="' + esc(url) + '" target="_blank" rel="noopener"'
+        + (isMap ? ' class="nc-map-link"' : ' class="nc-url-link"')
+        + ' onclick="event.stopPropagation();">' + esc(label) + '</a>';
+      last = m.index + url.length;
+    }
+    if (last < s.length) out += esc(s.slice(last));
+    return out;
+  }
+
   function render(){
     var box = $('ncList'), html = '', lastDay = '', prev = null;
     // فلتر الموظف: يشوف فقط اللي target فيه = اسمه. ده بيحجب الإشعارات
@@ -14001,20 +14026,44 @@ window.safeFileName = function(str){
     function _score(x){
       var s = 0, title = String(x.title || '');
       if (x.target && title.indexOf(x.target) > -1) s += 1000;
-      // لو مفيش target، نفضّل العناوين اللي فيها شرطة طويلة (دلالة على اسم)
       if (title.indexOf(' — ') > -1 || title.indexOf(' - ') > -1) s += 500;
       s += title.length;
       return s;
     }
     NC.items.forEach(function(n){
       var tsec = Math.floor(new Date(n.created_at).getTime() / 600000);
-      // بنجمع حسب الـ topic والـ target فقط (بدون العنوان) عشان نلم الإشعارين
-      // اللي من مصدرين مختلفين لنفس الحدث.
       var k = (n.topic || '-') + '|' + (n.target || '') + '|' + tsec;
       var ex = _buckets[k];
       if (!ex || _score(n) > _score(ex)) _buckets[k] = n;
     });
-    Object.keys(_buckets).forEach(function(k){ _keep[_buckets[k].id] = true; });
+    // تجميع ثاني: نفس topic+bucket (بدون target) — لو في إشعار بـ target
+    // وتاني بدون target في نفس المجموعة، والـ target أو العنوان بيأشّر لنفس
+    // الحدث (يحتوي اسم أو جزء من بياناته)، نحذف اللي من غير target.
+    var _byTB = {};
+    Object.keys(_buckets).forEach(function(k){
+      var n = _buckets[k];
+      var tsec = Math.floor(new Date(n.created_at).getTime() / 600000);
+      var tbk = (n.topic || '-') + '|' + tsec;
+      (_byTB[tbk] = _byTB[tbk] || []).push(n);
+    });
+    var _drop = {};
+    Object.keys(_byTB).forEach(function(tbk){
+      var grp = _byTB[tbk];
+      var withT = grp.filter(function(n){ return n.target; });
+      if (!withT.length) return;
+      grp.forEach(function(n){
+        if (n.target) return;
+        var combined = String(n.title || '') + ' ' + String(n.body || '');
+        var matched = withT.some(function(t){ return combined.indexOf(t.target) > -1; });
+        // لو مش فيه إشارة لاسم أي target في العنوان/المتن، نحذفه برضه لأن
+        // الحدث نفسه في نفس الـ topic+bucket متبعت بالفعل باسم كامل.
+        if (matched || withT.length === grp.length - 1) _drop[n.id] = true;
+      });
+    });
+    Object.keys(_buckets).forEach(function(k){
+      var n = _buckets[k];
+      if (!_drop[n.id]) _keep[n.id] = true;
+    });
     NC.items.forEach(function(n){
       if (_empFilter && n.target !== _ctxE.name) return;
       if (!_keep[n.id]) return;
@@ -14027,7 +14076,7 @@ window.safeFileName = function(str){
       html += '<div class="nc-item' + (n.is_read ? '' : ' unread') + (isSel ? ' selected' : '') + '" data-id="' + n.id + '" data-topic="' + esc(n.topic) + '">' +
         '<input type="checkbox" class="nc-chk"' + (isSel ? ' checked' : '') + '>' +
         '<div class="nc-ico" style="background:' + tp.c + '22;color:' + tp.c + '">' + tp.i + '</div>' +
-        '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + esc(n.body) + '</div>' : '') +
+        '<div class="nc-main"><div class="nc-title">' + esc(n.title) + '</div>' + (n.body ? '<div class="nc-body">' + linkifyBody_(n.body) + '</div>' : '') +
         '<div class="nc-time">' + esc(timeLabel(d)) + '</div></div>' + (n.is_read ? '' : '<span class="nc-dot"></span>') + '</div>';
     });
     box.innerHTML = html || '<div class="nc-empty">' + (NC.filter === 'unread' ? 'مفيش إشعارات غير مقروءة ✓' : 'مفيش إشعارات لسه') + '</div>';
