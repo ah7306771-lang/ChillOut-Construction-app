@@ -14030,8 +14030,11 @@ window.safeFileName = function(str){
       s += title.length;
       return s;
     }
+    // نافذة التجميع: ساعتين — تكفي لتأخير إشعارات GAS التلقائية مقارنة
+    // بإشعار الفرونت للحدث نفسه (شوفنا فروق تصل لساعة بين الاتنين).
+    var _WIN = 7200000;
     NC.items.forEach(function(n){
-      var tsec = Math.floor(new Date(n.created_at).getTime() / 600000);
+      var tsec = Math.floor(new Date(n.created_at).getTime() / _WIN);
       var k = (n.topic || '-') + '|' + (n.target || '') + '|' + tsec;
       var ex = _buckets[k];
       if (!ex || _score(n) > _score(ex)) _buckets[k] = n;
@@ -14042,7 +14045,7 @@ window.safeFileName = function(str){
     var _byTB = {};
     Object.keys(_buckets).forEach(function(k){
       var n = _buckets[k];
-      var tsec = Math.floor(new Date(n.created_at).getTime() / 600000);
+      var tsec = Math.floor(new Date(n.created_at).getTime() / _WIN);
       var tbk = (n.topic || '-') + '|' + tsec;
       (_byTB[tbk] = _byTB[tbk] || []).push(n);
     });
@@ -14064,9 +14067,18 @@ window.safeFileName = function(str){
       var n = _buckets[k];
       if (!_drop[n.id]) _keep[n.id] = true;
     });
+    // فلتر إضافي: الإشعارات اللي من GAS التلقائية ("تمت الموافقة على طلب…"،
+    // "تم الرفض لطلب…") هي نفس الحدث اللي الفرونت بيبعته بالاسم ("تم اعتماد
+    // طلب [النوع] — [الاسم]"). بنحذف صيغة GAS طول ما مفيش شرطة واسم بعدها.
+    function _looksLikeGasAutoApproval(t){
+      t = String(t || '');
+      if (/—|-/.test(t)) return false; // فيه شرطة = غالبًا الفرونت بالاسم
+      return /تمت الموافقة|تمّت الموافقة|تم الرفض|تمّ الرفض/.test(t);
+    }
     NC.items.forEach(function(n){
       if (_empFilter && n.target !== _ctxE.name) return;
       if (!_keep[n.id]) return;
+      if (_looksLikeGasAutoApproval(n.title)) return;
       var d = new Date(n.created_at);
       prev = n;
       var day = dayLabel(d);
