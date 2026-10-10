@@ -4,24 +4,30 @@
       "client": "الامين",
       "count": 1,
       "amount": 1396532.5,
-      "avgDelay": 3
+      "avgDelay": 5
+    },
+    {
+      "client": "خالد صبري",
+      "count": 1,
+      "amount": 5043144.614035088,
+      "avgDelay": 1
     },
     {
       "client": "فالتور",
       "count": 4,
       "amount": 9655901.5,
-      "avgDelay": 29
+      "avgDelay": 31
     },
     {
       "client": "ويكادي",
       "count": 3,
       "amount": 6368086,
-      "avgDelay": 6
+      "avgDelay": 8
     }
   ],
   "grandTotal": {
-    "count": 8,
-    "amount": 17420520,
-    "avgDelay": 17.125
+    "count": 9,
+    "amount": 22463664.61403509,
+    "avgDelay": 17.11111111111111
   }
 }
