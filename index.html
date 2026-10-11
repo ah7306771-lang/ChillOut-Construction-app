@@ -13764,10 +13764,18 @@ window.safeFileName = function(str){
     var h = '<label class="cp-item"><span><input type="radio" name="crEmp" value="*"' + (R.sel === '*' ? ' checked' : '') + '> &nbsp;<b>كل الخزن</b> (كل خزنة في صفحات منفصلة)</span></label>';
     vaultNames().forEach(function(n){
       var v = rview(n), bal = v.op; v.list.forEach(function(r){ bal += (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
-      // عدّ الحركات غير المقفلة (التاريخ بعد آخر تاريخ تقفيل) — عشان الأدمن
-      // يلاحظ فورًا الخزن اللي عندها حركات جديدة بعد آخر تقفيل.
-      var lk = L[n] || '';
-      var unlockedCnt = lk ? v.list.filter(function(r){ return r.entry_date > lk; }).length : 0;
+      // عدّ الحركات غير المقفلة (التاريخ بعد آخر تاريخ تقفيل) — نحسبه من
+      // كل حركات الموظف (R.rows) مش من v.list اللي محدود بالفترة، وبنقارن
+      // أول 10 حروف من التاريخ (YYYY-MM-DD) عشان أي صيغة ISO ما تلخبطش.
+      var lk = String(L[n] || '').slice(0, 10);
+      var unlockedCnt = 0;
+      if (lk) {
+        R.rows.forEach(function(r){
+          if (r.employee !== n) return;
+          var d = String(r.entry_date || '').slice(0, 10);
+          if (d && d > lk) unlockedCnt++;
+        });
+      }
       var pendingBadge = unlockedCnt
         ? ' <small style="color:#c0392b;font-weight:800">⚠ ' + unlockedCnt + ' حركة غير مقفلة</small>'
         : '';
