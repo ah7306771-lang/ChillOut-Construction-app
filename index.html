@@ -1638,6 +1638,9 @@
 .cg-empty{padding:12px;text-align:center;color:var(--ink-soft);font-size:12.5px;background:#fff}
 .cg-actions{display:flex;gap:8px;margin-top:6px}.cg-actions .btn{flex:1}
 .cp-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-bottom:6px;background:#fff;border:1px solid var(--panel-line);border-radius:8px}
+.cr-pending-btn{border:1px solid #c0392b;background:#fdecea;color:#c0392b;font-weight:800;font-size:11.5px;padding:3px 10px;border-radius:999px;cursor:pointer;font-family:inherit;margin-inline-start:4px;transition:transform .1s}
+.cr-pending-btn:hover{background:#c0392b;color:#fff}
+.cr-pending-btn:active{transform:scale(.95)}
 </style>
 <style>
 .cg-back{padding:4px 14px !important;font-size:20px !important;line-height:1.1 !important;min-width:0 !important;width:auto !important}
@@ -7240,28 +7243,45 @@ window.safeFileName = function(str){
       if (empName && ATTENDANCE_SCRIPT_URL) {
         try {
           var isOk = (status === 'موافق');
-          var title = isOk ? '✅ تم اعتماد طلبك' : '❌ تم رفض طلبك';
           var typeTxt = reqType || 'طلب';
-          var body = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك.';
-          var notifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
-            + '&title=' + encodeURIComponent(title)
-            + '&body=' + encodeURIComponent(body)
-            + '&topic=approval'
-            + '&target=' + encodeURIComponent(empName)
-            + '&dedupId=' + encodeURIComponent('req-' + id + '-' + status);
-          fetch(notifUrl).catch(function(){});
+          // اسم المُعتمِد: لو جلسة موظف باسم، نستخدم اسمه؛ غير كده الأدمن (APP_USER).
+          var approver = (isEmployeeSession && currentSessionEmployeeName) ? currentSessionEmployeeName : (APP_USER || 'الأدمن');
 
-          // تأكيد للأدمن إنه نفذ الإجراء — نفس الحدث لكن من غير target عشان
-          // يروح لتوكنات الأدمن (employee='' في PushTokens) ويظهر في مركز
-          // إشعارات الأدمن كمان. dedupId مختلف عشان ما يتعارضش مع إشعار الموظف.
-          var adminTitle = (isOk ? '✅ تم اعتماد طلب ' : '❌ تم رفض طلب ') + typeTxt + ' — ' + empName;
-          var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName;
-          var adminNotifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
-            + '&title=' + encodeURIComponent(adminTitle)
-            + '&body=' + encodeURIComponent(adminBody)
-            + '&topic=approval'
-            + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status);
-          fetch(adminNotifUrl).catch(function(){});
+          // بنجيب اللوكيشن (لو متاح)، وبعدها نبعت الاتنين — إشعار للموظف
+          // وإشعار للأدمن — نفس البيانات (المُعتمِد + اللوكيشن).
+          function _sendBoth(locPart){
+            var title = isOk ? '✅ تم اعتماد طلبك' : '❌ تم رفض طلبك';
+            var bodyEmp = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك — بواسطة: ' + approver + locPart;
+            fetch(ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+              + '&title=' + encodeURIComponent(title)
+              + '&body=' + encodeURIComponent(bodyEmp)
+              + '&topic=approval'
+              + '&target=' + encodeURIComponent(empName)
+              + '&dedupId=' + encodeURIComponent('req-' + id + '-' + status)).catch(function(){});
+
+            var adminTitle = (isOk ? '✅ تم اعتماد طلب ' : '❌ تم رفض طلب ') + typeTxt + ' — ' + empName;
+            var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName + ' — بواسطة: ' + approver + locPart;
+            fetch(ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
+              + '&title=' + encodeURIComponent(adminTitle)
+              + '&body=' + encodeURIComponent(adminBody)
+              + '&topic=approval'
+              + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status)).catch(function(){});
+          }
+
+          if (navigator.geolocation) {
+            var done = false;
+            var fallback = setTimeout(function(){ if (!done) { done = true; _sendBoth(''); } }, 4000);
+            navigator.geolocation.getCurrentPosition(function(pos){
+              if (done) return; done = true; clearTimeout(fallback);
+              var lat = pos.coords.latitude, lng = pos.coords.longitude;
+              _sendBoth(' 📍 https://maps.google.com/?q=' + lat + ',' + lng);
+            }, function(){
+              if (done) return; done = true; clearTimeout(fallback);
+              _sendBoth('');
+            }, { enableHighAccuracy: false, timeout: 3500, maximumAge: 60000 });
+          } else {
+            _sendBoth('');
+          }
         } catch (er) {}
       }
       loadAttendanceApprovals();
@@ -13777,7 +13797,7 @@ window.safeFileName = function(str){
         });
       }
       var pendingBadge = unlockedCnt
-        ? ' <small style="color:#c0392b;font-weight:800">⚠ ' + unlockedCnt + ' حركة غير مقفلة</small>'
+        ? ' <button type="button" class="cr-pending-btn" data-cr-goto="' + esc(n) + '" title="افتح خزنة ' + esc(n) + '">⚠ ' + unlockedCnt + ' حركة غير مقفلة ↗</button>'
         : '';
       h += '<label class="cp-item"><span><input type="radio" name="crEmp" value="' + esc(n) + '"' + (R.sel === n ? ' checked' : '') + '> &nbsp;' + esc(n) +
         ' <small style="color:var(--ink-soft)">(' + v.list.length + ' حركة)</small>' + pendingBadge + '</span><b style="color:' + (bal < 0 ? '#c0392b' : '#1f7a4c') + '">' + fmt(bal) + '</b></label>' + lockLine(n);
@@ -13802,6 +13822,25 @@ window.safeFileName = function(str){
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
   ['crFrom','crTo','crProj'].forEach(function(id){ $(id).addEventListener('change', renderVaults); });
   $('crList').addEventListener('change', function(e){ if (e.target.name === 'crEmp') R.sel = e.target.value; });
+  // ضغط على badge "⚠ N حركة غير مقفلة" → يروح على شاشة العهدة للموظف ده مباشرة.
+  $('crList').addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.cr-pending-btn');
+    if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    var name = btn.getAttribute('data-cr-goto');
+    if (!name) return;
+    try {
+      window.showScreen_('custody-ledger');
+      var sel = document.getElementById('cgEmp');
+      if (sel) {
+        // لو الاسم مش موجود في الـ options، نضيفه مؤقتًا عشان نقدر نحدده
+        var exists = Array.prototype.some.call(sel.options, function(o){ return o.value === name; });
+        if (!exists) { var opt = document.createElement('option'); opt.value = name; opt.textContent = name; sel.appendChild(opt); }
+        sel.value = name;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    } catch (er) {}
+  });
   // تقفيل/فك تقفيل خزنة: شيك بوكس + تاريخ (بيتحفظ فورًا)
   $('crList').addEventListener('change', function(e){
     var t = e.target, n = t.dataset && (t.dataset.lk || t.dataset.lkd); if (!n) return;
