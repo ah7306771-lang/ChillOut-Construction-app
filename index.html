@@ -7847,17 +7847,29 @@ window.safeFileName = function(str){
             var sh = wb.Sheets['الاقساط'];
             if (!sh) throw new Error('Sheet الاقساط not found');
             var range = XLSX.utils.decode_range(sh['!ref'] || 'A1:L1');
-            var rows = [], headers = [];
-            for (var c=0;c<12;c++){
-              var hc=sh[XLSX.utils.encode_cell({r:1,c:c})];
-              headers.push(hc ? hc.v : '');
+            function cellVal_(r,c){
+              var cell=sh[XLSX.utils.encode_cell({r:r,c:c})]; var v=cell?cell.v:null;
+              if (v instanceof Date){
+                // نستخدم مكونات التاريخ المحلية (toISOString كانت بتأخر اليوم في مصر)
+                var d=new Date(v.getTime()+60000);
+                v=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+              }
+              return v;
             }
-            for (var r=2;r<=range.e.r;r++){
+            // الشيت فوق الجدول فيه سطور ملخص (زي \"المطابقة\") — بندوّر على صف العناوين الحقيقي
+            // (اللي فيه \"أمر البيع\" و\"العميل\") بدل ما نفترض إنه الصف التاني.
+            var hdrRow=-1, maxScan=Math.min(range.e.r,40);
+            for (var hr=range.s.r; hr<=maxScan && hdrRow<0; hr++){
+              var t0=String(cellVal_(hr,0)||'').trim(), t1=String(cellVal_(hr,1)||'').trim();
+              if (t0==='أمر البيع' && t1==='العميل') hdrRow=hr;
+            }
+            if (hdrRow<0) hdrRow=3; // الصف 4 في الشيت (زي installments.json)
+            var rows = [], headers = [];
+            for (var c=0;c<12;c++){ var hv=cellVal_(hdrRow,c); headers.push(hv===null?'':hv); }
+            for (var r=hdrRow+1;r<=range.e.r;r++){
               var values=[], has=false;
               for (var c2=0;c2<12;c2++){
-                var cell=sh[XLSX.utils.encode_cell({r:r,c:c2})];
-                var v=cell ? cell.v : null;
-                if (v instanceof Date) v=v.toISOString().slice(0,10);
+                var v=cellVal_(r,c2);
                 if (v!==null && v!==undefined && v!=='') has=true;
                 values.push(v);
               }
@@ -7865,7 +7877,18 @@ window.safeFileName = function(str){
             }
             return {sheet:'الاقساط',columns:headers,rows:rows,source:'APP.xlsx'};
           });
-      });
+      }).then(sanitizeInstallmentsData_);
+  }
+  // بيشيل أي صف مش قسط حقيقي (سطور الملخص/المطابقة/العناوين): لازم يكون فيه عميل وتاريخ استحقاق صالح
+  function sanitizeInstallmentsData_(data){
+    var rows=(data.rows||[]).filter(function(r){
+      var v=(r&&r.values)||[];
+      var client=(v[1]===null||v[1]===undefined)?'':String(v[1]).trim();
+      if(!client||client==='العميل') return false;
+      return !!installmentDate_(v[5]);
+    });
+    var cols=data.columns, ok=Array.isArray(cols)&&cols.length>=12&&String(cols[0]).trim()==='أمر البيع'&&String(cols[1]).trim()==='العميل';
+    return Object.assign({},data,{rows:rows,columns:ok?cols:null});
   }
   function installmentDate_(v){
     if (!v) return null;
