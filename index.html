@@ -7900,14 +7900,17 @@ window.safeFileName = function(str){
   }
   function buildInstallmentRow_(raw){
     var v=raw.values||[], remaining=installmentNum_(v[8]), dueDays=installmentDays_(v[5]);
-    // "مستحق اليوم" يُعتبر متأخر — بناءً على طلب المستخدم، أي قسط ميعاده
-    // اليوم أو قبله يتصنّف كـ overdue ويبقى ضمن المتأخرات في الحسابات.
+    // "المتبقي المتأخر" (عمود 9) محسوب بالفعل في شيت APP ومصدر الحقيقة
+    // للـ متأخرات. بناخده كـ هو من الشيت بدل ما نحسبه هنا.
+    var sheetLate = installmentNum_(v[9]);
     var paid=remaining<=0;
-    var overdue=!paid&&dueDays!==null&&dueDays<=0;
-    var dueToday=!paid&&dueDays===0;    // للعرض فقط (نص الحالة)
+    var overdue=!paid&&(sheetLate>0 || (dueDays!==null && dueDays<=0));
+    var dueToday=!paid&&dueDays===0;
     var near=!paid&&dueDays!==null&&dueDays>0&&dueDays<=2;
     var status=paid?'✅ مسدّد':dueToday?'⚠ مستحق اليوم':overdue?'⚠ مستحق':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
-    return {values:v,remaining:remaining,days:dueDays,lateAmount:overdue?remaining:0,delay:overdue?Math.abs(dueDays):null,
+    // lateAmount = قيمة المتبقي المتأخر زي ما حسبها الشيت تمامًا
+    var lateAmount = sheetLate > 0 ? sheetLate : (overdue ? remaining : 0);
+    return {values:v,remaining:remaining,days:dueDays,lateAmount:lateAmount,delay:overdue?Math.abs(dueDays||0):null,
       status:status,key:paid?'paid':overdue?'overdue':near?'near':'running',statusClass:paid?'status-paid':(overdue?'status-due':(near?'status-near':'status-running'))};
   }
   function renderInstallmentsStatus_(data){
@@ -7961,7 +7964,9 @@ window.safeFileName = function(str){
       var overdueAmt=0, nearAmt=0, totalRemaining=0, sumInst=0, sumPaid=0, sumLate=0;
       list.forEach(function(x){
         totalRemaining+=x.remaining; sumInst+=installmentNum_(x.values[6]); sumPaid+=installmentNum_(x.values[7]); sumLate+=x.lateAmount;
-        if(x.key==='overdue') overdueAmt+=x.remaining;
+        // المتأخر = نجمع "المتبقي المتأخر" من الشيت (lateAmount) مش الـ remaining
+        // عشان يطابق إجمالي شيت APP بالظبط (= 36,557,132 عندك).
+        if(x.key==='overdue') overdueAmt+=x.lateAmount;
         else if(x.key==='today'||x.key==='near') nearAmt+=x.remaining;
       });
       summaryEl.innerHTML='<span class="is-overdue">متأخر: '+money(overdueAmt)+'</span><span class="is-near">مستحق/قريب: '+money(nearAmt)+'</span><span>إجمالي المتبقي: '+money(totalRemaining)+'</span><span>عدد الأقساط: '+list.length+'</span>';
