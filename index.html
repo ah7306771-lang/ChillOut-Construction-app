@@ -7884,8 +7884,9 @@ window.safeFileName = function(str){
     var rows=(data.rows||[]).filter(function(r){
       var v=(r&&r.values)||[];
       var client=(v[1]===null||v[1]===undefined)?'':String(v[1]).trim();
-      if(!client||client==='العميل') return false;
-      return !!installmentDate_(v[5]);
+      // القسط الحقيقي لازم يكون له عميل (سطر المطابقة/الملخص/العناوين مفيهمش). مش بنشترط تاريخ
+      // عشان الأقساط "بدون تاريخ" داخلة في إجمالي المتبقي بتاع الشيت.
+      return !!client && client!=='العميل';
     });
     var cols=data.columns, ok=Array.isArray(cols)&&cols.length>=12&&String(cols[0]).trim()==='أمر البيع'&&String(cols[1]).trim()==='العميل';
     return Object.assign({},data,{rows:rows,columns:ok?cols:null});
@@ -7927,10 +7928,12 @@ window.safeFileName = function(str){
     var paid=remaining<=0;
     var overdue=!paid&&lateAmount>0;
     var dueToday=!paid&&dueDays===0&&!overdue;
-    var near=!paid&&!overdue&&dueDays!==null&&dueDays>0&&dueDays<=2;
-    var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':dueToday?'⚠ مستحق اليوم':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
+    var noDate=!paid&&dueDays===null;
+    // "قريب الاستحقاق" = خلال 7 أيام (نفس تعريف شيت APP: 29,034,334)
+    var near=!paid&&!overdue&&dueDays!==null&&dueDays>0&&dueDays<=7;
+    var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':dueToday?'⚠ مستحق اليوم':near?('🔔 متبقي '+(dueDays===1?'يوم واحد':dueDays===2?'يومان':dueDays+' أيام')):noDate?'⚠ بدون تاريخ':'🟢 جارٍ';
     return {values:v,remaining:remaining,days:dueDays,lateAmount:lateAmount,delay:overdue&&dueDays!==null?Math.abs(dueDays):null,
-      status:status,key:paid?'paid':overdue?'overdue':dueToday?'today':near?'near':'running',statusClass:paid?'status-paid':(overdue||dueToday?'status-due':(near?'status-near':'status-running'))};
+      status:status,key:paid?'paid':overdue?'overdue':dueToday?'today':near?'near':noDate?'nodate':'running',statusClass:paid?'status-paid':(overdue||dueToday?'status-due':(near||noDate?'status-near':'status-running'))};
   }
   function renderInstallmentsStatus_(data){
     var listWrap=document.getElementById('quickStatusListWrap'), all=(data.rows||[]).map(buildInstallmentRow_);
@@ -7951,6 +7954,7 @@ window.safeFileName = function(str){
       +'<option value="today">⚠ مستحق اليوم</option>'
       +'<option value="near">🔔 قريب الاستحقاق</option>'
       +'<option value="running">🟢 جارٍ</option>'
+      +'<option value="nodate">⚠ بدون تاريخ</option>'
       +'</select></div>'
       +'<div class="inst-filter"><label for="instClientFilter">العميل</label><select id="instClientFilter"><option value="">كل العملاء</option>'
       +clients.map(function(c,i){return '<option value="'+i+'">'+escQuick_(c)+'</option>';}).join('')
