@@ -4264,6 +4264,13 @@ window.safeFileName = function(str){
     var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
     var map = { request: 'notifRequests', checks: 'notifChecks', order: 'notifOrders', overdue: 'notifOverdue' }, topics = [];
     var isMonitor = false, canCustody = true;
+    // الأدمن لازم topics بتاعه تشمل كل الأنواع عشان السيرفر يرجّعله كل
+    // الإشعارات (بما فيها vault/salary اللي target بتاعها اسم موظف تاني).
+    // لو سيبنا topics فاضية، السيرفر غالبًا يرجع فقط اللي target='__admin__'
+    // أو broadcast على topics اللي الأدمن مشترك فيها (= لا شيء).
+    if (!isEmployeeSession) {
+      topics = ['request','checks','order','overdue','approval','vault','salary','presence','departure','general','auth','test','all_events'];
+    }
     // الموظف يشوف فقط: الإشعارات اللي target فيها = اسمه (قرارات طلباته،
     // إشعارات حضوره هو، قرارات عهدته)، + الـ topics اللي فيها permission مفعّل
     // صراحة. ما يشوفش إشعارات موظفين تانيين ولا إشعارات عامة زي تقفيل الخزنة.
