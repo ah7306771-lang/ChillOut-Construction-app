@@ -4259,13 +4259,19 @@ window.safeFileName = function(str){
   window.notifCtx_ = function(){
     var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
     var map = { request: 'notifRequests', checks: 'notifChecks', order: 'notifOrders', overdue: 'notifOverdue' }, topics = [];
+    var isMonitor = false, canCustody = true;
     // الموظف يشوف فقط: الإشعارات اللي target فيها = اسمه (قرارات طلباته،
     // إشعارات حضوره هو، قرارات عهدته)، + الـ topics اللي فيها permission مفعّل
     // صراحة. ما يشوفش إشعارات موظفين تانيين ولا إشعارات عامة زي تقفيل الخزنة.
+    // لو عنده صلاحية "notifAllEvents" (مراقب زي الأدمن) يشوف كل حاجة.
     if (isEmployeeSession) {
       Object.keys(map).forEach(function(t){ var p = notifPermById_(map[t]); if (p && notifPermGranted_(p, list)) topics.push(t); });
+      var pAll = typeof notifPermById_ === 'function' ? notifPermById_('notifAllEvents') : null;
+      if (pAll && notifPermGranted_(pAll, list)) isMonitor = true;
+      // لو أيقونة العهد مخفية عن الموظف ده، ما يشوفش أي إشعار خاص بالخزنة.
+      if (list.indexOf('openCustodyLedgerBtn') > -1) canCustody = false;
     }
-    return { isAdmin: !isEmployeeSession, name: currentSessionEmployeeName || '', topics: topics };
+    return { isAdmin: !isEmployeeSession, isMonitor: isMonitor, canCustody: canCustody, name: currentSessionEmployeeName || '', topics: topics };
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
     canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
@@ -14091,7 +14097,8 @@ window.safeFileName = function(str){
     // القديمة اللي كانت متخزّنة بدون target (broadcast) من زمان، أو إشعارات
     // عامة لحد تاني تسرّبت للـ feed بتاعه.
     var _ctxE = ctx();
-    var _empFilter = (!_ctxE.isAdmin && _ctxE.name);
+    // المراقب (notifAllEvents) يشوف كل حاجة زي الأدمن. غيره: الاسم فقط.
+    var _empFilter = (!_ctxE.isAdmin && !_ctxE.isMonitor && _ctxE.name);
     // دي-دوب شاملة: نجمّع كل الإشعارات حسب (topic + target + bucket وقت 10 دقايق)
     // ونختار "الأفضل" من كل مجموعة. "الأفضل" = اللي عنوانه فيه الاسم المستهدف،
     // عشان الأدمن ما يشوفش إشعار "تمت الموافقة" بدون اسم بجوار إشعار "تم اعتماد
@@ -14151,6 +14158,15 @@ window.safeFileName = function(str){
     }
     NC.items.forEach(function(n){
       if (_empFilter && n.target !== _ctxE.name) return;
+      // قاعدة الخزنة (vault/salary) أقوى من قاعدة المراقب: حتى المراقب
+      // (notifAllEvents) ما يشوفش إشعارات خزن غيره — بس اللي target عليه اسمه.
+      // ولو أيقونة العهد مخفية عن الموظف خالص، ما يشوفش أي إشعار خزنة أصلاً.
+      if (n.topic === 'vault' || n.topic === 'salary') {
+        if (!_ctxE.isAdmin) {
+          if (_ctxE.canCustody === false) return;
+          if (!_ctxE.name || n.target !== _ctxE.name) return;
+        }
+      }
       if (!_keep[n.id]) return;
       if (_looksLikeGasAutoApproval(n.title)) return;
       var d = new Date(n.created_at);
