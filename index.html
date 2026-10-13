@@ -6270,19 +6270,21 @@ window.safeFileName = function(str){
           // بيمنع الإشعار الأصلي من الوصول في حالات ما كانش يستحق.
           try {
             var notifTitle = name + ' — ' + (type === 'حضور' ? 'سجّل حضور' : 'سجّل انصراف');
-            // العنوان فيه الاسم ونوع الحركة، فالنص الساعة + اللوكيشن (لو متوفر).
-            var notifBody  = timeStr + (mapLink ? (' 📍 ' + mapLink) : '');
-            // topic=presence/departure + target=<اسم الموظف>: الإشعار بيروح
-            // للأدمن + للموظف نفسه بس، مش لباقي الموظفين. مركز الإشعارات
-            // بيفلتر على target عشان كل موظف يشوف حضور/انصرافه هو بس.
-            var notifParams = new URLSearchParams({
+            // الـ push على التليفون: الساعة بس (بدون اللوكيشن).
+            // اللوكيشن بيتضاف لمركز الإشعارات داخل التطبيق فقط عبر extraLog
+            // اللي بيلتقطه الـ fetch interceptor ويضيفه للـ body المحفوظ،
+            // لكن ما بيوصلش للـ GAS/FCM — فالموبايل يفضل بالساعة فقط.
+            var notifBody  = timeStr;
+            var paramsObj = {
               action: 'notifyEvent',
               title: notifTitle,
               body: notifBody,
               topic: (type === 'حضور' ? 'presence' : 'departure'),
               target: name,
               dedupId: 'attendance-' + name + '-' + type + '-' + dateStr
-            });
+            };
+            if (mapLink) paramsObj.extraLog = '📍 ' + mapLink;
+            var notifParams = new URLSearchParams(paramsObj);
             fetch(ATTENDANCE_SCRIPT_URL + '?' + notifParams.toString()).catch(function(){});
           } catch (e) {}
           // نسخة احتياطية للشيت (في الخلفية، مش بننتظر) مع skipNotify=1
@@ -7492,18 +7494,28 @@ window.safeFileName = function(str){
     var actions = document.createElement('div');
     actions.className = 'approval-actions';
 
-    var approveBtn = document.createElement('button');
-    approveBtn.type = 'button';
-    approveBtn.className = 'btn-approve';
-    approveBtn.textContent = '✔ موافقة';
+    // أزرار موافق/رفض بتظهر فقط لما الطلب لسه قيد المراجعة. لو الطلب
+    // اتعمدت أو اترفض فعلاً، الأزرار دي ما يبقاش لها لازمة — بيبقى زرار
+    // الطباعة بس. التبويبات (موافق/مرفوض/الكل) بترجع صفوف كلها بغض النظر
+    // عن حالتها، فالفلترة هنا على مستوى العرض.
+    var isPending = !req.status || req.status === 'قيد المراجعة';
+    if (isPending) {
+      var approveBtn = document.createElement('button');
+      approveBtn.type = 'button';
+      approveBtn.className = 'btn-approve';
+      approveBtn.textContent = '✔ موافقة';
 
-    var rejectBtn = document.createElement('button');
-    rejectBtn.type = 'button';
-    rejectBtn.className = 'btn-reject';
-    rejectBtn.textContent = '✘ رفض';
+      var rejectBtn = document.createElement('button');
+      rejectBtn.type = 'button';
+      rejectBtn.className = 'btn-reject';
+      rejectBtn.textContent = '✘ رفض';
 
-    approveBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'موافق', row, req.name, req.type); });
-    rejectBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'مرفوض', row, req.name, req.type); });
+      approveBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'موافق', row, req.name, req.type); });
+      rejectBtn.addEventListener('click', function(){ setRequestStatus(req.id, 'مرفوض', row, req.name, req.type); });
+
+      actions.appendChild(approveBtn);
+      actions.appendChild(rejectBtn);
+    }
 
     var printBtn = document.createElement('button');
     printBtn.type = 'button';
@@ -7511,9 +7523,6 @@ window.safeFileName = function(str){
     printBtn.title = 'طباعة / مشاركة الطلب';
     printBtn.textContent = '🖨';
     printBtn.addEventListener('click', function(){ openRequestPrintView_(req); });
-
-    actions.appendChild(approveBtn);
-    actions.appendChild(rejectBtn);
     actions.appendChild(printBtn);
 
     row.appendChild(head);
@@ -14008,6 +14017,11 @@ window.safeFileName = function(str){
       if (u.indexOf('action=notifyEvent') > -1 && u.indexOf('/rest/v1/') < 0) {
         var q = new URL(u, location.href).searchParams, body = q.get('body') || '';
         if (q.get('qty') && body.indexOf(q.get('qty')) === -1) body += (body ? ' — ' : '') + q.get('qty') + (q.get('unit') ? ' ' + q.get('unit') : '');
+        // extraLog: نص إضافي يتضاف للـ body في مركز الإشعارات داخل التطبيق
+        // فقط (مش في الـ push اللي بيوصل الموبايل). مفيد لحاجة زي اللوكيشن
+        // اللي عايزين نشوفها جوّة التطبيق بس بدون ما تدوّش الـ push.
+        var extra = q.get('extraLog') || '';
+        if (extra) body += (body ? ' ' : '') + extra;
         logNotif({ title: q.get('title'), body: body, topic: q.get('topic'), target: q.get('target'), dedupId: q.get('dedupId') });
       }
     } catch (e) {}
