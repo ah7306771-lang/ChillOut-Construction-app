@@ -1,27 +1,21 @@
 {
   "rows": [
     {
-      "client": "الامين",
-      "count": 1,
-      "amount": 800.5,
-      "avgDelay": 7
-    },
-    {
       "client": "فالتور",
-      "count": 5,
-      "amount": 32052335.66555605,
-      "avgDelay": 23
+      "count": 3,
+      "amount": 31523432.24210526,
+      "avgDelay": 5.333333333333333
     },
     {
       "client": "ويكادي",
-      "count": 2,
-      "amount": 4368086,
-      "avgDelay": 5
+      "count": 4,
+      "amount": 5433700,
+      "avgDelay": 4
     }
   ],
   "grandTotal": {
-    "count": 8,
-    "amount": 36421222.16555605,
-    "avgDelay": 16.5
+    "count": 7,
+    "amount": 36957132.24210526,
+    "avgDelay": 4.571428571428571
   }
 }
