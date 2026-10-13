@@ -4264,22 +4264,12 @@ window.safeFileName = function(str){
     var list = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
     var map = { request: 'notifRequests', checks: 'notifChecks', order: 'notifOrders', overdue: 'notifOverdue' }, topics = [];
     var isMonitor = false, canCustody = true;
-    // الأدمن لازم topics بتاعه تشمل كل الأنواع عشان السيرفر يرجّعله كل
-    // الإشعارات (بما فيها vault/salary اللي target بتاعها اسم موظف تاني).
-    // لو سيبنا topics فاضية، السيرفر غالبًا يرجع فقط اللي target='__admin__'
-    // أو broadcast على topics اللي الأدمن مشترك فيها (= لا شيء).
-    if (!isEmployeeSession) {
-      topics = ['request','checks','order','overdue','approval','vault','salary','presence','departure','general','auth','test','all_events'];
-    }
-    // الموظف يشوف فقط: الإشعارات اللي target فيها = اسمه (قرارات طلباته،
-    // إشعارات حضوره هو، قرارات عهدته)، + الـ topics اللي فيها permission مفعّل
-    // صراحة. ما يشوفش إشعارات موظفين تانيين ولا إشعارات عامة زي تقفيل الخزنة.
-    // لو عنده صلاحية "notifAllEvents" (مراقب زي الأدمن) يشوف كل حاجة.
+    // الموظف يبعت topics حسب صلاحياته المفعّلة فقط. الأدمن يبعت فاضية
+    // (السيرفر بيعرفه من p_is_admin:true ويرجّع له كل حاجة).
     if (isEmployeeSession) {
       Object.keys(map).forEach(function(t){ var p = notifPermById_(map[t]); if (p && notifPermGranted_(p, list)) topics.push(t); });
       var pAll = typeof notifPermById_ === 'function' ? notifPermById_('notifAllEvents') : null;
       if (pAll && notifPermGranted_(pAll, list)) isMonitor = true;
-      // لو أيقونة العهد مخفية عن الموظف ده، ما يشوفش أي إشعار خاص بالخزنة.
       if (list.indexOf('openCustodyLedgerBtn') > -1) canCustody = false;
     }
     return { isAdmin: !isEmployeeSession, isMonitor: isMonitor, canCustody: canCustody, name: currentSessionEmployeeName || '', topics: topics };
@@ -7836,11 +7826,17 @@ window.safeFileName = function(str){
   // لو JSON غير موجود، بنقرأ APP.xlsx مباشرة كحل احتياطي باستخدام SheetJS.
   // مدة التأخير والحالة والمتبقي المتأخر تتحسب هنا كل مرة من تاريخ الجهاز،
   // لذلك لا نعتمد على أعمدة K/J/L المحسوبة داخل Excel.
-  // بنقرأ من APP.xlsx مباشرة دايمًا (أسرع من انتظار GitHub Actions يولد
-  // installments.json). الـ JSON بقى fallback تاني بس لو XLSX فشل.
+  // المصدر الأساسي installments.json. لو مش موجود أو عمره > 20 دقيقة، بنقرأ
+  // APP.xlsx مباشرة كحل احتياطي. forceXlsx=true يتجاوز JSON ويقرأ XLSX فورًا.
+  var MAX_INSTALLMENTS_JSON_AGE_MIN_ = 20;
   function loadInstallmentsData_(forceXlsx){
-    // نحاول APP.xlsx الأول — ده المصدر الحي اللي بيتحدث فور الـ push.
-    var tryJson = Promise.reject(new Error('skip json, use xlsx first'));
+    var tryJson = forceXlsx ? Promise.reject(new Error('forced xlsx')) :
+      fetchAppJson_('installments').then(function(data){
+        if (!data || !Array.isArray(data.rows)) throw new Error('installments.json empty');
+        var age = data.updatedAt ? ((Date.now() - new Date(data.updatedAt).getTime()) / 60000) : null;
+        if (age !== null && age > MAX_INSTALLMENTS_JSON_AGE_MIN_) throw new Error('installments.json stale');
+        return data;
+      });
     return tryJson
       .catch(function(){
         if (!window.XLSX) throw new Error('SheetJS not loaded');
@@ -7902,16 +7898,16 @@ window.safeFileName = function(str){
     var v=raw.values||[], remaining=installmentNum_(v[8]), dueDays=installmentDays_(v[5]);
     // "المتبقي المتأخر" (عمود 9) محسوب بالفعل في شيت APP ومصدر الحقيقة
     // للـ متأخرات. بناخده كـ هو من الشيت بدل ما نحسبه هنا.
-    var sheetLate = installmentNum_(v[9]);
+    // المصدر الوحيد للمتأخر = عمود 9 "المتبقي المتأخر" من الشيت (مش بنحسب
+    // بالتاريخ هنا عشان الإجمالي يطابق APP.xlsx بالضبط).
+    var lateAmount = installmentNum_(v[9]);
     var paid=remaining<=0;
-    var overdue=!paid&&(sheetLate>0 || (dueDays!==null && dueDays<=0));
-    var dueToday=!paid&&dueDays===0;
-    var near=!paid&&dueDays!==null&&dueDays>0&&dueDays<=2;
-    var status=paid?'✅ مسدّد':dueToday?'⚠ مستحق اليوم':overdue?'⚠ مستحق':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
-    // lateAmount = قيمة المتبقي المتأخر زي ما حسبها الشيت تمامًا
-    var lateAmount = sheetLate > 0 ? sheetLate : (overdue ? remaining : 0);
-    return {values:v,remaining:remaining,days:dueDays,lateAmount:lateAmount,delay:overdue?Math.abs(dueDays||0):null,
-      status:status,key:paid?'paid':overdue?'overdue':near?'near':'running',statusClass:paid?'status-paid':(overdue?'status-due':(near?'status-near':'status-running'))};
+    var overdue=!paid&&lateAmount>0;
+    var dueToday=!paid&&dueDays===0&&!overdue;
+    var near=!paid&&!overdue&&dueDays!==null&&dueDays>0&&dueDays<=2;
+    var status=paid?'✅ مسدّد':overdue?'⚠ مستحق':dueToday?'⚠ مستحق اليوم':near?('🔔 متبقي '+(dueDays===2?'يومان':dueDays+' أيام')):'🟢 جارٍ';
+    return {values:v,remaining:remaining,days:dueDays,lateAmount:lateAmount,delay:overdue&&dueDays!==null?Math.abs(dueDays):null,
+      status:status,key:paid?'paid':overdue?'overdue':dueToday?'today':near?'near':'running',statusClass:paid?'status-paid':(overdue||dueToday?'status-due':(near?'status-near':'status-running'))};
   }
   function renderInstallmentsStatus_(data){
     var listWrap=document.getElementById('quickStatusListWrap'), all=(data.rows||[]).map(buildInstallmentRow_);
@@ -7991,7 +7987,7 @@ window.safeFileName = function(str){
   function refreshInstallmentsBadge_(){
     var badge=document.getElementById('loginInstallmentsBadge'); if(!badge)return;
     loadInstallmentsData_().then(function(data){
-      var count=(data.rows||[]).map(buildInstallmentRow_).filter(function(x){return x.remaining>0&&x.days!==null&&x.days<=0;}).length;
+      var count=(data.rows||[]).map(buildInstallmentRow_).filter(function(x){return x.lateAmount>0;}).length;
       if(count){badge.textContent=count>99?'99+':String(count);badge.style.display='flex';}else badge.style.display='none';
     }).catch(function(){});
   }
@@ -14203,77 +14199,20 @@ window.safeFileName = function(str){
     var _ctxE = ctx();
     // المراقب (notifAllEvents) يشوف كل حاجة زي الأدمن. غيره: الاسم فقط.
     var _empFilter = (!_ctxE.isAdmin && !_ctxE.isMonitor && _ctxE.name);
-    // دي-دوب شاملة: نجمّع كل الإشعارات حسب (topic + target + bucket وقت 10 دقايق)
-    // ونختار "الأفضل" من كل مجموعة. "الأفضل" = اللي عنوانه فيه الاسم المستهدف،
-    // عشان الأدمن ما يشوفش إشعار "تمت الموافقة" بدون اسم بجوار إشعار "تم اعتماد
-    // طلب إجازة — شهد خالد" (نفس الحدث اتبعت من GAS والفرونت بعنوانين مختلفين).
-    var _buckets = {}, _keep = {};
-    function _score(x){
-      var s = 0, title = String(x.title || '');
-      if (x.target && title.indexOf(x.target) > -1) s += 1000;
-      if (title.indexOf(' — ') > -1 || title.indexOf(' - ') > -1) s += 500;
-      s += title.length;
-      return s;
-    }
-    // نافذة التجميع: ساعتين — تكفي لتأخير إشعارات GAS التلقائية مقارنة
-    // بإشعار الفرونت للحدث نفسه (شوفنا فروق تصل لساعة بين الاتنين).
-    var _WIN = 7200000;
     NC.items.forEach(function(n){
-      var tsec = Math.floor(new Date(n.created_at).getTime() / _WIN);
-      var k = (n.topic || '-') + '|' + (n.target || '') + '|' + tsec;
-      var ex = _buckets[k];
-      if (!ex || _score(n) > _score(ex)) _buckets[k] = n;
-    });
-    // تجميع ثاني: نفس topic+bucket (بدون target) — لو في إشعار بـ target
-    // وتاني بدون target في نفس المجموعة، والـ target أو العنوان بيأشّر لنفس
-    // الحدث (يحتوي اسم أو جزء من بياناته)، نحذف اللي من غير target.
-    var _byTB = {};
-    Object.keys(_buckets).forEach(function(k){
-      var n = _buckets[k];
-      var tsec = Math.floor(new Date(n.created_at).getTime() / _WIN);
-      var tbk = (n.topic || '-') + '|' + tsec;
-      (_byTB[tbk] = _byTB[tbk] || []).push(n);
-    });
-    var _drop = {};
-    Object.keys(_byTB).forEach(function(tbk){
-      var grp = _byTB[tbk];
-      var withT = grp.filter(function(n){ return n.target; });
-      if (!withT.length) return;
-      grp.forEach(function(n){
-        if (n.target) return;
-        var combined = String(n.title || '') + ' ' + String(n.body || '');
-        var matched = withT.some(function(t){ return combined.indexOf(t.target) > -1; });
-        // لو مش فيه إشارة لاسم أي target في العنوان/المتن، نحذفه برضه لأن
-        // الحدث نفسه في نفس الـ topic+bucket متبعت بالفعل باسم كامل.
-        if (matched || withT.length === grp.length - 1) _drop[n.id] = true;
-      });
-    });
-    Object.keys(_buckets).forEach(function(k){
-      var n = _buckets[k];
-      if (!_drop[n.id]) _keep[n.id] = true;
-    });
-    // فلتر إضافي: الإشعارات اللي من GAS التلقائية ("تمت الموافقة على طلب…"،
-    // "تم الرفض لطلب…") هي نفس الحدث اللي الفرونت بيبعته بالاسم ("تم اعتماد
-    // طلب [النوع] — [الاسم]"). بنحذف صيغة GAS طول ما مفيش شرطة واسم بعدها.
-    function _looksLikeGasAutoApproval(t){
-      t = String(t || '');
-      if (/—|-/.test(t)) return false; // فيه شرطة = غالبًا الفرونت بالاسم
-      return /تمت الموافقة|تمّت الموافقة|تم الرفض|تمّ الرفض/.test(t);
-    }
-    NC.items.forEach(function(n){
+      // فلتر الموظف العادي: يشوف فقط اللي target عليه اسمه
       if (_empFilter && n.target !== _ctxE.name) return;
-      // قاعدة الخزنة (vault/salary) أقوى من قاعدة المراقب: حتى المراقب
-      // (notifAllEvents) ما يشوفش إشعارات خزن غيره — بس اللي target عليه اسمه.
-      // ولو أيقونة العهد مخفية عن الموظف خالص، ما يشوفش أي إشعار خزنة أصلاً.
+      // إشعارات الخزنة/الراتب: لغير الأدمن، لازم target = اسمه
+      // ولو أيقونة العهد مخفية عنه، ما يشوفش أي إشعار خزنة
       if (n.topic === 'vault' || n.topic === 'salary') {
         if (!_ctxE.isAdmin) {
           if (_ctxE.canCustody === false) return;
           if (!_ctxE.name || n.target !== _ctxE.name) return;
         }
       }
-      if (!_keep[n.id]) return;
-      if (_looksLikeGasAutoApproval(n.title)) return;
       var d = new Date(n.created_at);
+      // دي-دوب بسيطة: نفس العنوان ونفس المتن في خلال دقيقتين → مرة واحدة
+      if (prev && prev.title === n.title && prev.body === n.body && Math.abs(new Date(prev.created_at) - d) < 120000) return;
       prev = n;
       var day = dayLabel(d);
       if (day !== lastDay) { html += '<div class="nc-day">' + esc(day) + '</div>'; lastDay = day; }
