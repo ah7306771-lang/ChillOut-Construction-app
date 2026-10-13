@@ -16,11 +16,11 @@
     "orderNo": 57,
     "client": "فالتور",
     "buyPrice": 38000,
-    "sellPrice": 40084.722529582534,
+    "sellPrice": 40350,
     "buyPrice2": 40100,
     "sellPrice2": 0,
     "buyTotal": 12228856.0,
-    "sellTotal": 12317233.538890122,
+    "sellTotal": 12398748.0,
     "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم"
   },
   {
@@ -40,11 +40,11 @@
     "orderNo": 53,
     "client": "ويكادي",
     "buyPrice": 41150,
-    "sellPrice": 41700,
+    "sellPrice": 41500,
     "buyPrice2": 0,
     "sellPrice2": 0,
     "buyTotal": 4027762.0,
-    "sellTotal": 4081596.0,
+    "sellTotal": 4062020.0,
     "paymentMethod": "كاش 100 %"
   },
   {
