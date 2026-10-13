@@ -7836,12 +7836,12 @@ window.safeFileName = function(str){
   // لو JSON غير موجود، بنقرأ APP.xlsx مباشرة كحل احتياطي باستخدام SheetJS.
   // مدة التأخير والحالة والمتبقي المتأخر تتحسب هنا كل مرة من تاريخ الجهاز،
   // لذلك لا نعتمد على أعمدة K/J/L المحسوبة داخل Excel.
-  function loadInstallmentsData_(){
-    return fetchAppJson_('installments')
-      .then(function(data){
-        if (data && Array.isArray(data.rows)) return data;
-        throw new Error('installments.json empty');
-      })
+  // بنقرأ من APP.xlsx مباشرة دايمًا (أسرع من انتظار GitHub Actions يولد
+  // installments.json). الـ JSON بقى fallback تاني بس لو XLSX فشل.
+  function loadInstallmentsData_(forceXlsx){
+    // نحاول APP.xlsx الأول — ده المصدر الحي اللي بيتحدث فور الـ push.
+    var tryJson = Promise.reject(new Error('skip json, use xlsx first'));
+    return tryJson
       .catch(function(){
         if (!window.XLSX) throw new Error('SheetJS not loaded');
         return fetch('APP.xlsx?v=' + Date.now(), {cache:'no-store'})
@@ -7977,13 +7977,16 @@ window.safeFileName = function(str){
     csel.addEventListener('change',draw);
     draw();
   }
-  function loadInstallmentsStatus_(){
+  function loadInstallmentsStatus_(forceXlsx){
     var titleEl=document.getElementById('quickStatusTitle'), subtitleEl=document.getElementById('quickStatusSubtitle'), listWrap=document.getElementById('quickStatusListWrap');
-    titleEl.textContent='💳 الأقساط والمستحقات'; subtitleEl.textContent=attendanceTodayKey(); appendExcelDataUpdatedNote_(subtitleEl);
+    titleEl.innerHTML='💳 الأقساط والمستحقات <button type="button" id="instRefreshBtn" title="تحديث من APP.xlsx" style="margin-inline-start:8px;border:0;background:#1f6feb;color:#fff;border-radius:8px;padding:3px 10px;font:inherit;font-size:12px;font-weight:800;cursor:pointer">🔄 تحديث</button>';
+    subtitleEl.textContent=attendanceTodayKey(); appendExcelDataUpdatedNote_(subtitleEl);
     listWrap.innerHTML='<div class="empty-note">جاري تحميل الأقساط...</div>';
     document.getElementById('quickStatusOverlay').style.display='flex';
     var modal=document.querySelector('.quick-status-modal'); if(modal) modal.classList.add('qsm-wide','installments-modal');
-    loadInstallmentsData_().then(renderInstallmentsStatus_).catch(function(){listWrap.innerHTML='<div class="empty-note">تعذّر تحميل APP.xlsx / installments.json.</div>';});
+    var refBtn = document.getElementById('instRefreshBtn');
+    if (refBtn) refBtn.addEventListener('click', function(){ loadInstallmentsStatus_(true); });
+    loadInstallmentsData_(forceXlsx).then(renderInstallmentsStatus_).catch(function(){listWrap.innerHTML='<div class="empty-note">تعذّر تحميل APP.xlsx / installments.json.</div>';});
   }
   function refreshInstallmentsBadge_(){
     var badge=document.getElementById('loginInstallmentsBadge'); if(!badge)return;
