@@ -1,5 +1,29 @@
 [
   {
+    "date": "12/10/2026",
+    "orderNo": 62,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 40000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 3795800.0,
+    "paymentMethod": ""
+  },
+  {
+    "date": "12/10/2026",
+    "orderNo": 61,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 42000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 1626240.0,
+    "paymentMethod": "100% كاش"
+  },
+  {
     "date": "11/10/2026",
     "orderNo": 60,
     "client": "فالتور",
@@ -478,5 +502,17 @@
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
+  },
+  {
+    "date": null,
+    "orderNo": 63,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 40100,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "paymentMethod": ""
   }
 ]
