@@ -1647,6 +1647,10 @@
 .cg-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}
 .cg-who{margin:0;font-size:13px;text-align:right}
 .cg-rep{border:0;background:var(--steel);color:#fff;border-radius:8px;padding:7px 14px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.cg-refresh{border:0;background:#1f6feb;color:#fff;border-radius:8px;padding:7px 10px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;line-height:1;transition:transform .25s}
+.cg-refresh.spin{animation:cgSpin .8s linear infinite}
+.cg-refresh:active{transform:scale(.92)}
+@keyframes cgSpin{to{transform:rotate(360deg)}}
 .cg-cards{gap:5px;margin-bottom:5px}.cg-card{padding:3px 2px;font-size:10px;font-weight:800;border-radius:7px}.cg-card b{font-size:12.5px;margin-top:0}
 .cg-sec{margin:8px 0}.cg-add{padding:8px 12px;font-size:14px}.cg-add span{font-size:12px;font-weight:800}
 .cg-row{grid-template-columns:34px 1fr auto 22px;gap:5px;padding:4px 8px;font-size:12px;font-weight:700;line-height:1.3}
@@ -2021,7 +2025,7 @@ body.cg-compact .wa-float-btn{display:none !important}
   <div class="gate-card home-card" style="max-width:640px;">
     <h1 class="gate-title">العهد</h1>
     <div class="field" id="cgEmpWrap" style="display:none;"><label for="cgEmp">اختر الموظف</label><select id="cgEmp"></select></div>
-    <div class="cg-top"><button type="button" class="cg-rep" id="cgRepBtn">📄 تقرير</button><div class="cg-who" id="cgWho"></div></div>
+    <div class="cg-top"><button type="button" class="cg-rep" id="cgRepBtn">📄 تقرير</button><button type="button" class="cg-refresh" id="cgRefreshBtn" title="تحديث البيانات">🔄</button><div class="cg-who" id="cgWho"></div></div>
     <div class="cg-cards">
       <div class="cg-card in">وارد اليوم<b id="cgTin">0</b></div>
       <div class="cg-card out">منصرف اليوم<b id="cgTout">0</b></div>
@@ -6093,6 +6097,7 @@ window.safeFileName = function(str){
     return { sum: sum, det: det, rq: rq };
   }
   function attXlsBook_(rep){
+    // النسخة القديمة بـ XLSX بدون تنسيق — متسابة للاستخدام في أي مكان لسه بيستعملها.
     var d = attXlsData_(rep), wb = XLSX.utils.book_new();
     [['ملخص الشهر', d.sum], ['التفاصيل', d.det], ['الطلبات', d.rq]].forEach(function(p){
       var ws = XLSX.utils.aoa_to_sheet(p[1]);
@@ -6101,6 +6106,83 @@ window.safeFileName = function(str){
     });
     wb.Workbook = { Views: [{ RTL: true }] };
     return wb;
+  }
+  // نسخة احترافية من تقرير الحضور/الانصراف باستخدام ExcelJS — بنفس تنسيق
+  // تقرير العهد (هيدر كحلي، صفوف متناوبة، إجمالي ملوّن، تجميد عناوين).
+  function _attThinBorder_(color){
+    var c = { style:'thin', color:{argb: color || 'FFD5DBE5'} };
+    return { top:c, bottom:c, left:c, right:c };
+  }
+  async function attXlsDownloadStyled_(rep, fileName){
+    var thinBorder_ = _attThinBorder_;
+    var d = attXlsData_(rep);
+    var wb = new ExcelJS.Workbook();
+    wb.views = [{ x:0, y:0, width:10000, height:20000, firstSheet:0, activeTab:0, visibility:'visible', rightToLeft:true }];
+    var sheets = [
+      { name:'ملخص الشهر', aoa:d.sum, totalLastRow:false },
+      { name:'التفاصيل',   aoa:d.det, totalLastRow:false },
+      { name:'الطلبات',    aoa:d.rq,  totalLastRow:false }
+    ];
+    var title = 'ChillOut Construction — تقرير الحضور والانصراف';
+    var period = rep && rep.month ? ('شهر: ' + rep.month) : '';
+    var empLabel = (rep && rep.emps && rep.emps.length === 1) ? rep.emps[0].name : 'كل الموظفين';
+    sheets.forEach(function(s){
+      if (!s.aoa || !s.aoa.length) return;
+      var ws = wb.addWorksheet(s.name, { views: [{ rightToLeft: true, state: 'frozen', ySplit: 3 }] });
+      var headers = s.aoa[0];
+      ws.columns = headers.map(function(h){
+        var w = Math.min(34, Math.max(11, String(h || '').length + 2));
+        return { header: h, width: w };
+      });
+      // صف 1: عنوان الشركة
+      var lastCol = String.fromCharCode(64 + Math.min(26, headers.length));
+      ws.mergeCells('A1:' + lastCol + '1');
+      var r1 = ws.getCell('A1'); r1.value = title + ' — ' + s.name;
+      r1.font = { name:'Calibri', size:15, bold:true, color:{argb:'FFFFFFFF'} };
+      r1.alignment = { vertical:'middle', horizontal:'center' };
+      r1.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF0B2A5B'} };
+      ws.getRow(1).height = 28;
+      // صف 2: الموظف + الفترة
+      var midCol = String.fromCharCode(64 + Math.ceil(Math.min(26, headers.length) / 2));
+      ws.mergeCells('A2:' + midCol + '2');
+      var nextCol = String.fromCharCode(64 + Math.ceil(Math.min(26, headers.length) / 2) + 1);
+      ws.mergeCells(nextCol + '2:' + lastCol + '2');
+      var r2a = ws.getCell('A2'); r2a.value = { richText:[{text:'الموظف: ', font:{bold:true,color:{argb:'FF5B6578'}}}, {text:String(empLabel), font:{bold:true,color:{argb:'FF0B2A5B'}}}] };
+      var r2b = ws.getCell(nextCol + '2'); r2b.value = { richText:[{text:'الفترة: ', font:{bold:true,color:{argb:'FF5B6578'}}}, {text:String(period || '—'), font:{bold:true,color:{argb:'FF0B2A5B'}}}] };
+      [r2a,r2b].forEach(function(c){ c.alignment = { vertical:'middle', horizontal:'right' }; c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFEEF2F8'} }; });
+      ws.getRow(2).height = 20;
+      // صف 3: عناوين الأعمدة
+      var hr = ws.getRow(3);
+      headers.forEach(function(h, i){
+        var c = hr.getCell(i+1);
+        c.value = h;
+        c.font = { name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'} };
+        c.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
+        c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF163A7A'} };
+        c.border = thinBorder_();
+      });
+      hr.height = 32;
+      // صفوف البيانات (باقي الـ aoa)
+      var cBorder = thinBorder_();
+      for (var ri = 1; ri < s.aoa.length; ri++) {
+        var dataRow = s.aoa[ri];
+        var row = ws.getRow(ri + 3);
+        var alt = ri % 2 === 0;
+        dataRow.forEach(function(val, ci){
+          var c = row.getCell(ci + 1);
+          c.value = val;
+          c.border = cBorder;
+          c.alignment = { vertical:'middle', horizontal: (typeof val === 'number' ? 'center' : 'right'), wrapText: true };
+          if (alt) c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFF7F9FC'} };
+          if (typeof val === 'number') c.numFmt = Number.isInteger(val) ? '#,##0' : '#,##0.00';
+        });
+      }
+    });
+    var buf = await wb.xlsx.writeBuffer();
+    var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
   async function attRenderImgs_(pages){
     var host = document.createElement('div'); host.style.cssText = 'position:fixed;left:-10000px;top:0';
@@ -6145,7 +6227,7 @@ window.safeFileName = function(str){
       else {
         attRepData_ = { month: month, label: emp || 'All' };
         if (mode === 'xls') {
-          XLSX.writeFile(attXlsBook_(rep), attRepFile_('xlsx'));
+          await attXlsDownloadStyled_(rep, attRepFile_('xlsx'));
           attRepStatus_(rep.reqFail ? 'تم ✓ — تعذّر تحميل الأذونات، التأخير بدون خصم إذن' : 'تم ✓');
         } else {
           var imgs = await attRenderImgs_(attPages_(rep));
@@ -13633,6 +13715,13 @@ window.safeFileName = function(str){
   }
   function closeRep(){ $('cgRepModal').style.display = 'none'; }
   $('cgRepBtn').addEventListener('click', openRep);
+  // زرار 🔄 يعيد تحميل حركات العهدة من Supabase ويحدث العرض بآخر البيانات.
+  $('cgRefreshBtn').addEventListener('click', function(){
+    var b = this; b.classList.add('spin'); b.disabled = true;
+    Promise.resolve(loadRows()).catch(function(){}).then(function(){
+      setTimeout(function(){ b.classList.remove('spin'); b.disabled = false; }, 500);
+    });
+  });
   $('rpClose').addEventListener('click', closeRep);
   $('cgRepModal').addEventListener('click', function(e){ if (e.target === this) closeRep(); });
   async function repPdf(mode){
