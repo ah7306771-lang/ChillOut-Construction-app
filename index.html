@@ -5588,11 +5588,23 @@ window.safeFileName = function(str){
         // الشيت فشل أو validation رفض.
         try {
           if (ATTENDANCE_SCRIPT_URL) {
-            var title = 'طلب ' + type + ' جديد';
-            var body  = name + ' طلب ' + type
-              + (from ? (' من ' + from) : '')
-              + (to   ? (' إلى ' + to)   : '')
-              + (reason ? (' — ' + reason) : '');
+            var title = 'طلب ' + type + ' جديد — ' + name;
+            // نبني النص بتفاصيل الطلب حسب نوعه:
+            //  - إجازة: التاريخ (أو الفترة لو من/إلى مختلفين)
+            //  - إذن / مأمورية: التاريخ + من الساعة … إلى الساعة …
+            var body;
+            if (type === 'إجازة') {
+              if (opts.leaveFrom && opts.leaveTo && opts.leaveFrom !== opts.leaveTo) {
+                body = 'إجازة من ' + opts.leaveFrom + ' إلى ' + opts.leaveTo;
+              } else {
+                body = 'إجازة يوم ' + (opts.leaveFrom || opts.leaveTo || dateParam || '');
+              }
+            } else {
+              body = 'بتاريخ ' + (dateParam || '')
+                   + (from ? (' من ' + from) : '')
+                   + (to   ? (' إلى ' + to)   : '');
+            }
+            if (reason) body += ' — ' + reason;
             var notifUrl = ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
               + '&title=' + encodeURIComponent(title)
               + '&body=' + encodeURIComponent(body)
@@ -7334,25 +7346,29 @@ window.safeFileName = function(str){
           // اسم المُعتمِد: لو جلسة موظف باسم، نستخدم اسمه؛ غير كده الأدمن (APP_USER).
           var approver = (isEmployeeSession && currentSessionEmployeeName) ? currentSessionEmployeeName : (APP_USER || 'الأدمن');
 
-          // بنجيب اللوكيشن (لو متاح)، وبعدها نبعت الاتنين — إشعار للموظف
-          // وإشعار للأدمن — نفس البيانات (المُعتمِد + اللوكيشن).
-          function _sendBoth(locPart){
+          // الـ push على التليفون = بيانات القرار + المُعتمِد (بدون لوكيشن).
+          // اللوكيشن بيروح لمركز إشعارات التطبيق فقط عبر extraLog اللي الـ
+          // fetch interceptor بيضيفه للـ body المحفوظ لكن GAS بيتجاهله.
+          function _sendBoth(locExtra){
             var title = isOk ? '✅ تم اعتماد طلبك' : '❌ تم رفض طلبك';
-            var bodyEmp = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك — بواسطة: ' + approver + locPart;
-            fetch(ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
-              + '&title=' + encodeURIComponent(title)
-              + '&body=' + encodeURIComponent(bodyEmp)
-              + '&topic=approval'
-              + '&target=' + encodeURIComponent(empName)
-              + '&dedupId=' + encodeURIComponent('req-' + id + '-' + status)).catch(function(){});
+            var bodyEmp = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بك — بواسطة: ' + approver;
+            var empParams = {
+              action: 'notifyEvent', title: title, body: bodyEmp,
+              topic: 'approval', target: empName,
+              dedupId: 'req-' + id + '-' + status
+            };
+            if (locExtra) empParams.extraLog = locExtra;
+            fetch(ATTENDANCE_SCRIPT_URL + '?' + new URLSearchParams(empParams).toString()).catch(function(){});
 
             var adminTitle = (isOk ? '✅ تم اعتماد طلب ' : '❌ تم رفض طلب ') + typeTxt + ' — ' + empName;
-            var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName + ' — بواسطة: ' + approver + locPart;
-            fetch(ATTENDANCE_SCRIPT_URL + '?action=notifyEvent'
-              + '&title=' + encodeURIComponent(adminTitle)
-              + '&body=' + encodeURIComponent(adminBody)
-              + '&topic=approval'
-              + '&dedupId=' + encodeURIComponent('req-admin-' + id + '-' + status)).catch(function(){});
+            var adminBody = (isOk ? 'تم اعتماد ' : 'تم رفض ') + 'طلب "' + typeTxt + '" الخاص بـ ' + empName + ' — بواسطة: ' + approver;
+            var adminParams = {
+              action: 'notifyEvent', title: adminTitle, body: adminBody,
+              topic: 'approval',
+              dedupId: 'req-admin-' + id + '-' + status
+            };
+            if (locExtra) adminParams.extraLog = locExtra;
+            fetch(ATTENDANCE_SCRIPT_URL + '?' + new URLSearchParams(adminParams).toString()).catch(function(){});
           }
 
           if (navigator.geolocation) {
@@ -7361,7 +7377,7 @@ window.safeFileName = function(str){
             navigator.geolocation.getCurrentPosition(function(pos){
               if (done) return; done = true; clearTimeout(fallback);
               var lat = pos.coords.latitude, lng = pos.coords.longitude;
-              _sendBoth(' 📍 https://maps.google.com/?q=' + lat + ',' + lng);
+              _sendBoth('📍 https://maps.google.com/?q=' + lat + ',' + lng);
             }, function(){
               if (done) return; done = true; clearTimeout(fallback);
               _sendBoth('');
