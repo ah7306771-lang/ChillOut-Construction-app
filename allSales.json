@@ -1,5 +1,29 @@
 [
   {
+    "date": "14/10/2026",
+    "orderNo": 65,
+    "client": "فالتور",
+    "buyPrice": 0,
+    "sellPrice": 40500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 542902.5,
+    "paymentMethod": ""
+  },
+  {
+    "date": "14/10/2026",
+    "orderNo": 64,
+    "client": "فالتور",
+    "buyPrice": 0,
+    "sellPrice": 40500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 1249222.5,
+    "paymentMethod": ""
+  },
+  {
     "date": "13/10/2026",
     "orderNo": 63,
     "client": "ويكادي",
