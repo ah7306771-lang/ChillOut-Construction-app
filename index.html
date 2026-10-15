@@ -13534,7 +13534,10 @@ window.safeFileName = function(str){
     $('paProjName').textContent = proj.name;
     $('paStatus').textContent = '';
     var allowed = String(proj.allowed_employees || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-    var employees = (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []).slice();
+    // ملاحظة: ATTENDANCE_EMPLOYEES معرّف جوّه IIFE تاني ومش شايفينه من هنا،
+    // عشان كده بناخد الموظفين من custodyCtx_().employees اللي بيحمّل من السيرفر.
+    var ctxEmp = (typeof window.custodyCtx_ === 'function' ? (window.custodyCtx_().employees || []) : []);
+    var employees = ctxEmp.slice();
     $('paList').innerHTML = employees.length ? employees.map(function(n){
       var chk = allowed.indexOf(n) > -1 ? ' checked' : '';
       return '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 2px;">' +
@@ -13562,7 +13565,7 @@ window.safeFileName = function(str){
       ? 'هيتم تحديد كل الموظفين لكل المشاريع. تمام؟'
       : 'هيتم إلغاء صلاحيات كل الموظفين على كل المشاريع. تمام؟';
     if (!window.confirm(confirmMsg)) return;
-    var csv = giveAll ? ((typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []).join(',')) : '';
+    var csv = giveAll ? ((typeof window.custodyCtx_ === 'function' ? (window.custodyCtx_().employees || []) : []).join(',')) : '';
     st('cpStatus', 'جارٍ التحديث…');
     var jobs = S.cc.map(function(p){
       return fetch(CC + '?id=eq.' + p.id, {
