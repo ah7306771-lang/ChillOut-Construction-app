@@ -133,5 +133,14 @@
     "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
+  },
+  {
+    "client": "بينتاكون",
+    "number": null,
+    "value": 1923110,
+    "dueDate": "22/11/2026",
+    "bank": "",
+    "notes": "",
+    "type": "أ.ق"
   }
 ]

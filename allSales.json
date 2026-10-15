@@ -1,5 +1,17 @@
 [
   {
+    "date": "15/10/2026",
+    "orderNo": 70,
+    "client": "مصطفي عمر",
+    "buyPrice": 0,
+    "sellPrice": 42500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 1638800.0,
+    "paymentMethod": ""
+  },
+  {
     "date": "14/10/2026",
     "orderNo": 68,
     "client": "ويكادي",
@@ -550,5 +562,17 @@
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
     "paymentMethod": "شيك 60يوم"
+  },
+  {
+    "date": null,
+    "orderNo": 69,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 39900,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "paymentMethod": "كاش 100 %"
   }
 ]
