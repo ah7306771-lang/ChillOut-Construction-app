@@ -14453,6 +14453,31 @@ window.safeFileName = function(str){
             return true;
           });
         }
+        // Dedup: نفس العنوان (من غير إيموجي البداية) + نفس الـ body + نفس الـ target
+        // في خلال 5 دقايق = إشعار واحد. ده بيمنع تكرار الطلب الواحد لما
+        // الفرونت والـ GAS auto بيبعتوا نسختين بـ dedupId مختلف.
+        function _normT(s){
+          s = String(s == null ? '' : s).trim();
+          // شيل أي ايموجي/رمز/مسافات في أول العنوان
+          s = s.replace(/^[^\p{L}\p{N}]+/u, '').trim();
+          return s.toLowerCase().replace(/\s+/g, ' ');
+        }
+        // بناخد الأرقام فقط من الـ body عشان الفروقات الصغيرة في الكلمات
+        // (زي "إجازة من" مقابل "من") ما تبوّظش الـ dedup — المهم إن
+        // التواريخ/الساعات واحدة.
+        function _digits(s){ return String(s == null ? '' : s).replace(/[^0-9]/g, ''); }
+        function _dkey(r){
+          return _normT(r.title) + '||' + _digits(r.body) + '||' + String(r.target || '').trim();
+        }
+        var _seen = {};
+        NC.items.forEach(function(r){ _seen[_dkey(r)] = r.created_at ? Date.parse(r.created_at) || 0 : 0; });
+        rows = rows.filter(function(r){
+          var k = _dkey(r), ts = r.created_at ? Date.parse(r.created_at) || 0 : 0;
+          var prev = _seen[k];
+          if (prev && Math.abs(ts - prev) < 5 * 60 * 1000) return false;
+          _seen[k] = ts;
+          return true;
+        });
         NC.items = NC.items.concat(rows); NC.done = rows.length < PAGE; st(''); render();
       })
       .catch(function(){ st('تعذّر تحميل الإشعارات — اتأكد من تشغيل ملف notifications_center.sql في Supabase', true); render(); })
