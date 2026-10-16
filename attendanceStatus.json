@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-10-16",
-  "updatedAt": "2026-10-16T21:36:36.273187+00:00",
+  "date": "2026-10-17",
+  "updatedAt": "2026-10-16T23:52:35.255202+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -16,19 +16,22 @@
     "25"
   ],
   "late": [],
-  "dashboardRows": [
+  "dashboardRows": [],
+  "dashboardRequestRows": [
     {
-      "name": "محمود رجب",
-      "type": "انصراف",
-      "date": "2026-10-16",
-      "time": "00:24:32",
-      "lat": "30.0324039",
-      "lng": "",
-      "map": "https://maps.google.com/?q=30.0324039,31.4625463",
-      "device": ""
+      "id": "mvbas2o4-ktsu7f",
+      "name": "صبري يحي",
+      "type": "إجازة",
+      "date": "2026-10-17",
+      "from": "",
+      "to": "",
+      "reason": "ظروف شخصيه",
+      "status": "موافق",
+      "submittedAt": "2026-10-16T18:24:56.000Z",
+      "leaveFrom": "2026-10-17",
+      "leaveTo": "2026-10-18"
     }
   ],
-  "dashboardRequestRows": [],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
     "بكر": "16:00",
