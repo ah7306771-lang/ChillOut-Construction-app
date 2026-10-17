@@ -1788,6 +1788,10 @@ body.cg-compact .wa-float-btn{display:none !important}
         🧾<span class="fab-label" aria-hidden="true">الشيكات</span>
         <span class="login-bell-badge" id="loginChecksBadge">0</span>
       </button>
+      <button type="button" id="loginChecksAgainstUsBtn" class="login-fab-btn" aria-label="شيكات علينا">
+        📝<span class="fab-label" aria-hidden="true">شيكات علينا</span>
+        <span class="login-bell-badge" id="loginChecksAgainstUsBadge">0</span>
+      </button>
       <button type="button" id="loginPartiesBtn" class="login-fab-btn" aria-label="أرصدة العملاء والموردين">
         🤝<span class="fab-label" aria-hidden="true">العملاء والموردين</span>
       </button>
@@ -6651,7 +6655,7 @@ window.safeFileName = function(str){
   // مضاف جديد (متسجل في Supabase) ومش لاقيينه في القايمة المحمّلة، بنضيفه هنا عشان يظهر
   // فورًا في بيانات الموظفين ولائحة الحضور. الإضافة بس — مفيش حد بيتشال. وأيقونات الإعدادات
   // مخفية عنه افتراضيًا لحد ما القايمة الأصلية توصل بإعداداته الفعلية.
-  var NEW_EMPLOYEE_DEFAULT_HIDDEN_ = ['homeSettingsBtn', 'openEmployeeManageTileBtn', 'openIconManageTileBtn'];
+  var NEW_EMPLOYEE_DEFAULT_HIDDEN_ = ['homeSettingsBtn', 'openEmployeeManageTileBtn', 'openIconManageTileBtn', 'loginChecksAgainstUsBtn'];
   function mergeEmployeesFromSupabase_(cb){
     var done = function(){ if (cb) cb(); };
     try {
@@ -6688,6 +6692,19 @@ window.safeFileName = function(str){
       var pw = {};
       var hidden = {};
       var birthdays = {};
+      // تطبيق إضافي: أيقونات محتاجة تكون مخفية افتراضيًا لكل الموظفين الحاليين
+      // (مش بس الجدد). الـ migration ده بيحصل مرة واحدة لكل أيقونة بـ flag في
+      // localStorage. لو الأدمن يسمح لموظف يشوفها، بيشيلها من قايمة hidden
+      // بتاعته ومتترجعش.
+      var FORCE_HIDE_MIGRATIONS_ = [
+        { icon: 'loginChecksAgainstUsBtn', flag: 'migrated_hide_v1_loginChecksAgainstUsBtn' }
+      ];
+      var pendingMigrations = [];
+      try {
+        FORCE_HIDE_MIGRATIONS_.forEach(function(m){
+          if (localStorage.getItem(m.flag) !== '1') pendingMigrations.push(m);
+        });
+      } catch(e){}
       list.forEach(function(emp){
         if (!emp || !emp.name || !emp.pass) return;
         names.push(emp.name);
@@ -6698,8 +6715,25 @@ window.safeFileName = function(str){
         else hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
         // الملف الجاهز قديم دايمًا: صلاحيات Supabase (لو اتحمّلت) تغلبه
         if (SB_ICONS_MAP_ && SB_ICONS_MAP_[emp.name]) hidden[emp.name] = SB_ICONS_MAP_[emp.name].slice();
+        // Migration لمرة واحدة: ضيف الأيقونات اللي لازم تكون مخفية افتراضيًا
+        pendingMigrations.forEach(function(m){
+          if (hidden[emp.name].indexOf(m.icon) === -1) hidden[emp.name].push(m.icon);
+        });
         birthdays[emp.name] = emp.birthday || '';
       });
+      // لو في migrations شغّالة، احفظها على Supabase وعلّم الـ flags في localStorage
+      // (مرة واحدة بس — الـ flag بيمنع التكرار). الحفظ بيعدي على كل الموظفين.
+      if (pendingMigrations.length) {
+        try {
+          Object.keys(hidden).forEach(function(name){
+            fetch(SUPABASE_URL + '/rest/v1/rpc/save_employee_icons', {
+              method: 'POST', headers: sbHeaders(),
+              body: JSON.stringify({ p_name: name, p_hidden: (hidden[name] || []).join(',') })
+            }).catch(function(){});
+          });
+          pendingMigrations.forEach(function(m){ try { localStorage.setItem(m.flag, '1'); } catch(e){} });
+        } catch(e){}
+      }
       if (names.length) {
         ATTENDANCE_EMPLOYEES = names;
         ATTENDANCE_PASSWORDS = pw;
@@ -7895,6 +7929,65 @@ window.safeFileName = function(str){
   }
   refreshChecksDueBadge_();
   setInterval(refreshChecksDueBadge_, 60000);
+
+  // ---------- شيكات علينا (نفس فكرة الشيكات بس من شيت "شيكات علينا") ----------
+  function loadChecksAgainstUsStatus_(){
+    var titleEl = document.getElementById('quickStatusTitle');
+    var subtitleEl = document.getElementById('quickStatusSubtitle');
+    var listWrap = document.getElementById('quickStatusListWrap');
+    titleEl.textContent = '📝 شيكات علينا';
+    subtitleEl.textContent = attendanceTodayKey();
+    appendExcelDataUpdatedNote_(subtitleEl);
+    listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+    document.getElementById('quickStatusOverlay').style.display = 'flex';
+    setQuickStatusPaperMode_(true);
+    fetchAppJson_('checksAgainstUs')
+      .then(function(checks){
+        var rows = buildChecksAllRows_(checks);
+        if (!rows.length) {
+          listWrap.innerHTML = '<div class="empty-note">مفيش شيكات علينا مسجلة في الشيت لسه</div>';
+          return;
+        }
+        var rowsHtml = rows.map(function(it, i){
+          var when = it.daysRemaining < 0 ? ('متأخر ' + Math.abs(it.daysRemaining) + ' يوم')
+            : (it.daysRemaining === 0 ? 'مستحق اليوم' : ('باقي ' + it.daysRemaining + ' يوم'));
+          var valTxt = (typeof it.value === 'number') ? it.value.toLocaleString('ar-EG') : escQuick_(it.value);
+          var trClass = (it.daysRemaining <= 0) ? ' class="row-overdue"' : '';
+          return '<tr' + trClass + '><td>' + (i + 1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + valTxt
+            + '</td><td dir="ltr">' + escQuick_(it.dueDate) + '</td><td>' + escQuick_(it.bank)
+            + '</td><td>' + escQuick_(it.type) + '</td><td>' + escQuick_(when) + '</td><td>' + escQuick_(it.notes || '') + '</td></tr>';
+        }).join('');
+        var totalValue = rows.reduce(function(sum, it){
+          var v = (typeof it.value === 'number') ? it.value : (parseFloat(String(it.value).replace(/,/g, '')) || 0);
+          return sum + v;
+        }, 0);
+        var totalTxt = totalValue.toLocaleString('ar-EG');
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>المستفيد</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>النوع</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>' + rowsHtml + '</tbody><tfoot><tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="2">الإجمالي</td><td>' + totalTxt + '</td><td colspan="5"></td></tr></tfoot></table></div>';
+      })
+      .catch(function(){
+        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر أو ملف checksAgainstUs.json لسه ما تولّدش.</div>';
+      });
+  }
+  function refreshChecksAgainstUsBadge_(){
+    var badge = document.getElementById('loginChecksAgainstUsBadge');
+    if (!badge) return;
+    fetchAppJson_('checksAgainstUs')
+      .then(function(checks){
+        var count = buildChecksAllRows_(checks).filter(function(it){ return it.daysRemaining <= 2; }).length;
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : String(count);
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }).catch(function(){ /* ملف لسه ما تولّدش أو أوفلاين */ });
+  }
+  refreshChecksAgainstUsBadge_();
+  setInterval(refreshChecksAgainstUsBadge_, 60000);
+  (function(){
+    var btn = document.getElementById('loginChecksAgainstUsBtn');
+    if (btn) btn.addEventListener('click', loadChecksAgainstUsStatus_);
+  })();
 
   // ---------- تقرير الأقساط (زرار "💳" في الصف الشمال بصفحة الدخول) ----------
   // المصدر الأساسي installments.json الناتج من شيت "الاقساط" في APP.xlsx.
@@ -10063,6 +10156,7 @@ window.safeFileName = function(str){
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginLateBtn', label: 'التأخير النهارده ⏰' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginRadioBtn', label: 'إذاعة القرآن الكريم 📻' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksBtn', label: 'الشيكات المستحقة 🧾' },
+    { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginChecksAgainstUsBtn', label: 'شيكات علينا 📝' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginPartiesBtn', label: 'أرصدة العملاء والموردين 🤝' },
     { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginOverdueBtn', label: 'اجمالي المتأخرات 📉' },
      { group: 'صفحة الدخول (الإشعارات الخارجية)', id: 'loginInstallmentsBtn', label: 'الأقساط 💳' },
