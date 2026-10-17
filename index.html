@@ -6733,48 +6733,24 @@ window.safeFileName = function(str){
       var pw = {};
       var hidden = {};
       var birthdays = {};
-      // تطبيق إضافي: أيقونات محتاجة تكون مخفية افتراضيًا لكل الموظفين الحاليين
-      // (مش بس الجدد). الـ migration ده بيحصل مرة واحدة لكل أيقونة بـ flag في
-      // localStorage. لو الأدمن يسمح لموظف يشوفها، بيشيلها من قايمة hidden
-      // بتاعته ومتترجعش.
-      var FORCE_HIDE_MIGRATIONS_ = [
-        { icon: 'loginChecksAgainstUsBtn', flag: 'migrated_hide_v1_loginChecksAgainstUsBtn' }
-      ];
-      var pendingMigrations = [];
-      try {
-        FORCE_HIDE_MIGRATIONS_.forEach(function(m){
-          if (localStorage.getItem(m.flag) !== '1') pendingMigrations.push(m);
-        });
-      } catch(e){}
       list.forEach(function(emp){
         if (!emp || !emp.name || !emp.pass) return;
         names.push(emp.name);
         pw[emp.name] = emp.pass;
-        // لو المصدر (الملف الجاهز) مبعتش حقل hiddenIcons أصلاً، منمسحش القايمة
-        // الموجودة بقايمة فاضية — دي كانت بتخلي كل الأيقونات تظهر تاني.
-        if (emp.hiddenIcons === undefined && EMPLOYEE_HIDDEN_ICONS_[emp.name]) hidden[emp.name] = EMPLOYEE_HIDDEN_ICONS_[emp.name];
-        else hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
-        // الملف الجاهز قديم دايمًا: صلاحيات Supabase (لو اتحمّلت) تغلبه
-        if (SB_ICONS_MAP_ && SB_ICONS_MAP_[emp.name]) hidden[emp.name] = SB_ICONS_MAP_[emp.name].slice();
-        // Migration لمرة واحدة: ضيف الأيقونات اللي لازم تكون مخفية افتراضيًا
-        pendingMigrations.forEach(function(m){
-          if (hidden[emp.name].indexOf(m.icon) === -1) hidden[emp.name].push(m.icon);
-        });
+        // قاعدة ثابتة: Supabase هو المصدر الوحيد لصلاحيات الموظفين.
+        //  - لو Supabase فيه سجل للموظف ده: نستخدمه بالظبط.
+        //  - لو Supabase لسه ما حمّلش بس عندنا نسخة قديمة في الذاكرة: نحتفظ بيها.
+        //  - لو مفيش ولا الاتنين: نرجع للـ hiddenIcons اللي في الشيت (قديم).
+        //  رفع index.html جديد ما بيلمسش القيم المحفوظة في Supabase نهائياً.
+        if (SB_ICONS_MAP_ && SB_ICONS_MAP_[emp.name]) {
+          hidden[emp.name] = SB_ICONS_MAP_[emp.name].slice();
+        } else if (EMPLOYEE_HIDDEN_ICONS_[emp.name]) {
+          hidden[emp.name] = EMPLOYEE_HIDDEN_ICONS_[emp.name].slice();
+        } else {
+          hidden[emp.name] = parseHiddenIcons_(emp.hiddenIcons);
+        }
         birthdays[emp.name] = emp.birthday || '';
       });
-      // لو في migrations شغّالة، احفظها على Supabase وعلّم الـ flags في localStorage
-      // (مرة واحدة بس — الـ flag بيمنع التكرار). الحفظ بيعدي على كل الموظفين.
-      if (pendingMigrations.length) {
-        try {
-          Object.keys(hidden).forEach(function(name){
-            fetch(SUPABASE_URL + '/rest/v1/rpc/save_employee_icons', {
-              method: 'POST', headers: sbHeaders(),
-              body: JSON.stringify({ p_name: name, p_hidden: (hidden[name] || []).join(',') })
-            }).catch(function(){});
-          });
-          pendingMigrations.forEach(function(m){ try { localStorage.setItem(m.flag, '1'); } catch(e){} });
-        } catch(e){}
-      }
       if (names.length) {
         ATTENDANCE_EMPLOYEES = names;
         ATTENDANCE_PASSWORDS = pw;
