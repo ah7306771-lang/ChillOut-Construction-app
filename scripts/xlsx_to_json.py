@@ -452,6 +452,7 @@ def main():
     wb = openpyxl.load_workbook(xlsx_path, data_only=True)
 
     checks = convert_checks(wb['الشيكات'])
+    checks_against_us = convert_checks(wb['شيكات علينا']) if 'شيكات علينا' in wb.sheetnames else []
     parties = convert_parties(wb['العملاء والموردين'])
     salaries = convert_salaries(wb['الرواتب'])
     overdue = convert_overdue(wb['اجمالي متأخرات']) if 'اجمالي متأخرات' in wb.sheetnames else {'rows': [], 'grandTotal': {'count': 0, 'amount': 0, 'avgDelay': 0}}
@@ -461,6 +462,8 @@ def main():
 
     with open(os.path.join(out_dir, 'checks.json'), 'w', encoding='utf-8') as f:
         json.dump(checks, f, ensure_ascii=False, indent=2)
+    with open(os.path.join(out_dir, 'checksAgainstUs.json'), 'w', encoding='utf-8') as f:
+        json.dump(checks_against_us, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'parties.json'), 'w', encoding='utf-8') as f:
         json.dump(parties, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'salaries.json'), 'w', encoding='utf-8') as f:
@@ -480,7 +483,7 @@ def main():
     with open(os.path.join(out_dir, 'dataUpdatedAt.json'), 'w', encoding='utf-8') as f:
         json.dump({'updatedAt': datetime.now(timezone.utc).isoformat()}, f, ensure_ascii=False, indent=2)
 
-    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices), '| installments rows:', len(installments['rows']))
+    print('checks:', len(checks), '| checksAgainstUs:', len(checks_against_us), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices), '| installments rows:', len(installments['rows']))
 
 
 if __name__ == '__main__':
