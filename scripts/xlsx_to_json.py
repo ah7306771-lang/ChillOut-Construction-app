@@ -92,7 +92,14 @@ def find_header_row(rows, required_headers, max_scan=10):
 
 def convert_checks(ws):
     rows = list(ws.iter_rows(values_only=True))
-    header_i, cols = find_header_row(rows, ['العميل', 'تاريخ الاستحقاق'])
+    # شيت الشيكات هيدر اسم العمود الأول = "العميل"، وشيت "شيكات علينا" هيدره
+    # = "المورد" (أو "المستفيد"). نجرب الاتنين على التوالي.
+    name_header_options = ['العميل', 'اسم العميل', 'المورد', 'اسم المورد', 'المستفيد']
+    header_i, cols = -1, {}
+    for name_h in name_header_options:
+        header_i, cols = find_header_row(rows, [name_h, 'تاريخ الاستحقاق'])
+        if header_i != -1:
+            break
     if header_i == -1:
         return []
 
@@ -102,7 +109,7 @@ def convert_checks(ws):
                 return cols[n]
         return -1
 
-    c_client = col('العميل', 'اسم العميل')
+    c_client = col('العميل', 'اسم العميل', 'المورد', 'اسم المورد', 'المستفيد')
     c_number = col('الرقم')
     c_value = col('القيمة', 'القيمه')
     c_due = col('تاريخ الاستحقاق', 'تاريخه الاستحقاق')
