@@ -4488,9 +4488,10 @@ window.safeFileName = function(str){
               var _me = (_ctx && _ctx.name) || '';
               var _target = (d.target || '').trim();
               if (topic === 'approval_admin' && !_isAdmin && !_isMonitor) return;
-              if (topic === 'approval' && !_isAdmin && !_isMonitor) {
-                if (!_target || _target !== _me) return;
-              }
+              // لو السيرفر بعت target في data الـ FCM وما كانش اسم المستخدم،
+              // نرميه. لكن لو target جه فاضي (GAS بيستخدمه داخلياً للتوجيه
+              // بس وما بيضيفوش في data) نسيب السيرفر هو اللي وجّه ونعرض الإشعار.
+              if (topic === 'approval' && !_isAdmin && !_isMonitor && _target && _target !== _me) return;
             } catch (e) {}
             // امنع التكرار: نفس النص خلال 60 ثانية بيتشال.
             var key = fcmDedupKey(title, body);
@@ -8996,6 +8997,42 @@ window.safeFileName = function(str){
   }
   var testMyPushBtn = document.getElementById('testMyPushBtn');
   if (testMyPushBtn) testMyPushBtn.addEventListener('click', runMyPushDiagnostics_);
+
+  // Auto-migration لمرة واحدة: الأجهزة اللي اتسجلت قبل تقسيم topic الاعتماد
+  // (approval → approval + approval_admin) محتاجة تضيف approval_admin لجدول
+  // push_tokens عشان broadcast الأدمن يوصلها. ده بيحصل صامت أول ما التطبيق
+  // يفتح، من غير ما المستخدم يحتاج يدوس "إعادة التفعيل".
+  (function autoMigrateApprovalAdmin_(){
+    try {
+      if (localStorage.getItem('fcmApprovalAdminMigrated_v1') === '1') return;
+      var token = localStorage.getItem('fcmTokenRegistered') || localStorage.getItem('fcmApprovalTokenRegistered') || localStorage.getItem('fcmAllEventsTokenRegistered');
+      if (!token) return; // جهاز ما سجّل أصلاً — مش محتاج migration
+      // الأدمن أو المراقب فقط هم اللي يستفيدوا من approval_admin
+      var ctxFn = window.notifCtx_;
+      var ctx = (typeof ctxFn === 'function') ? ctxFn() : null;
+      var isAdminOrMonitor = !!(ctx && (ctx.isAdmin || ctx.isMonitor));
+      if (!isAdminOrMonitor) return;
+      var getUrl = SUPABASE_URL + '/rest/v1/push_tokens?select=employee,topics&token=eq.' + encodeURIComponent(token);
+      fetch(getUrl, { headers: sbHeaders() })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(existing){
+          if (!existing || !existing.length) return;
+          var oldTopics = existing[0].topics || '';
+          var arr = oldTopics ? oldTopics.split(',').map(function(s){ return s.trim(); }).filter(Boolean) : [];
+          if (arr.indexOf('approval_admin') > -1) {
+            try { localStorage.setItem('fcmApprovalAdminMigrated_v1', '1'); } catch(e){}
+            return;
+          }
+          arr.push('approval_admin');
+          var row = { token: token, employee: existing[0].employee || '', topics: arr.join(','), updated_at: new Date().toISOString() };
+          return fetch(SUPABASE_URL + '/rest/v1/push_tokens?on_conflict=token', {
+            method: 'POST',
+            headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+            body: JSON.stringify(row)
+          }).then(function(){ try { localStorage.setItem('fcmApprovalAdminMigrated_v1', '1'); } catch(e){} });
+        }).catch(function(){});
+    } catch(e){}
+  })();
 
   // أزرار تفعيل الإشعارات الإضافية للموظف (بتظهر حسب الصلاحية). التسجيل بنفس
   // طريقة أزرار الأدمن بالظبط (نفس الـ topics)، بس الزرار بيتأكد من الصلاحية الأول.
