@@ -14727,12 +14727,12 @@ window.safeFileName = function(str){
           s = s.replace(/^[^\p{L}\p{N}]+/u, '').trim();
           return s.toLowerCase().replace(/\s+/g, ' ');
         }
-        // بناخد الأرقام فقط من الـ body عشان الفروقات الصغيرة في الكلمات
-        // (زي "إجازة من" مقابل "من") ما تبوّظش الـ dedup — المهم إن
-        // التواريخ/الساعات واحدة.
-        function _digits(s){ return String(s == null ? '' : s).replace(/[^0-9]/g, ''); }
+        // Dedup مبني على العنوان المُطبّع + صاحب الطلب فقط (بدون body)،
+        // عشان الفروقات في الصياغة ("إجازة يوم …" vs "من … إلى …") ما تخلّيش
+        // النسختين تتفرقعوا. أي إشعارين بنفس العنوان ونفس الاسم في خلال
+        // 5 دقايق = نفس الحدث.
         function _dkey(r){
-          return _normT(r.title) + '||' + _digits(r.body) + '||' + String(r.target || '').trim();
+          return _normT(r.title) + '||' + String(r.target || '').trim();
         }
         var _seen = {};
         NC.items.forEach(function(r){ _seen[_dkey(r)] = r.created_at ? Date.parse(r.created_at) || 0 : 0; });
