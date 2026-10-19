@@ -1,5 +1,17 @@
 [
   {
+    "date": "19/10/2026",
+    "orderNo": 73,
+    "client": "فالتور",
+    "buyPrice": 40100,
+    "sellPrice": 40400,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 5934599.5,
+    "sellTotal": 5978998.0,
+    "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم"
+  },
+  {
     "date": "18/10/2026",
     "orderNo": 72,
     "client": "الامين",
