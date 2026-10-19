@@ -5,9 +5,9 @@
     "client": "الامين",
     "buyPrice": 39800,
     "sellPrice": 41000,
-    "buyPrice2": 0,
+    "buyPrice2": 3960,
     "sellPrice2": 0,
-    "buyTotal": 2373274.0,
+    "buyTotal": 2947474.0,
     "sellTotal": 2444830.0,
     "paymentMethod": "كاش 50 % - اجل 50% كاش"
   },
@@ -91,8 +91,8 @@
     "sellPrice": 40100,
     "buyPrice2": 0,
     "sellPrice2": 0,
-    "buyTotal": 7116637.999999999,
-    "sellTotal": 7170280.999999999,
+    "buyTotal": 7117832.0,
+    "sellTotal": 7171484.0,
     "paymentMethod": "كاش 25 % - باقي اجل 30 يوم"
   },
   {
