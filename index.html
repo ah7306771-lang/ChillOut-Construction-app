@@ -1779,6 +1779,8 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" id="loginAbsentBtn" class="login-fab-btn" aria-label="الغياب النهارده">🚫<span class="fab-label" aria-hidden="true">الغياب</span></button>
       <button type="button" id="loginLateBtn" class="login-fab-btn" aria-label="التأخير النهارده">⏰<span class="fab-label" aria-hidden="true">التأخير</span></button>
       <button type="button" id="appRefreshBtn" class="login-fab-btn app-refresh-btn" aria-label="تحديث البيانات" title="تحديث البيانات"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg><span class="fab-label" aria-hidden="true">تحديث</span></button>
+      <!-- زرار "تحديث كاش السيرفر" — للأدمن فقط (مخفي للموظفين دايمًا من JS). -->
+      <button type="button" id="loginClearGasCacheBtn" class="login-fab-btn" aria-label="تحديث كاش السيرفر" title="تحديث كاش السيرفر" style="display:none;">♻️<span class="fab-label" aria-hidden="true">تحديث الكاش</span></button>
     </div>
   </div>
   <div class="login-fabs-col login-fabs-col-left">
@@ -2340,12 +2342,7 @@ body.cg-compact .wa-float-btn{display:none !important}
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
         <span class="home-tile-label">إعدادات الإشعارات</span>
       </button>
-      <button type="button" class="home-tile" id="clearGasCacheTileBtn">
-        <span class="home-tile-icon" style="font-size:26px;">♻️</span>
-        <span class="home-tile-label">تحديث الكاش</span>
-      </button>
     </div>
-    <div class="status-msg" id="clearGasCacheStatus" style="margin-top:10px;"></div>
   </div>
 </div>
 
@@ -10032,32 +10029,37 @@ window.safeFileName = function(str){
     showScreen('home');
   });
 
-  // زرار "تحديث الكاش": بينادي GAS يمسح كاش الـ 5 دقائق بتاع ملفات GitHub
-  // (installments / overdue / checks ...)، فأي إشعار أو تقرير بعد كده بيقرا
-  // أحدث نسخة من JSON فورًا بدل ما يستنى انتهاء الكاش.
+  // زرار "تحديث كاش السيرفر" في صفحة الدخول (login FABs) — ظاهر للأدمن
+  // فقط دايمًا، ما بيعتمدش على EMPLOYEE_HIDDEN_ICONS_ ولا على Supabase،
+  // عشان ما يبوّظش صلاحيات الموظفين لو حد غيّر شيء في "إدارة الشاشات".
   (function(){
-    var btn = document.getElementById('clearGasCacheTileBtn');
-    var st = document.getElementById('clearGasCacheStatus');
+    var btn = document.getElementById('loginClearGasCacheBtn');
     if (!btn) return;
+    function syncVisibility(){ btn.style.display = isEmployeeSession ? 'none' : ''; }
+    syncVisibility();
+    // لو حصل تسجيل دخول أو خروج، نحدّث الظهور
+    document.addEventListener('visibilitychange', syncVisibility);
+    setInterval(syncVisibility, 2000);
     btn.addEventListener('click', function(){
-      if (!ATTENDANCE_SCRIPT_URL) { st.textContent = 'الرابط مش متظبط'; st.className = 'status-msg err'; return; }
+      if (!ATTENDANCE_SCRIPT_URL) { alert('رابط السيرفر مش متظبط'); return; }
       btn.disabled = true;
-      st.textContent = 'جارٍ تحديث الكاش…';
-      st.className = 'status-msg';
+      var oldLabel = btn.querySelector('.fab-label');
+      var oldTxt = oldLabel ? oldLabel.textContent : '';
+      if (oldLabel) oldLabel.textContent = 'جارٍ المسح…';
       fetch(ATTENDANCE_SCRIPT_URL + '?action=clearCache&_=' + Date.now(), { cache: 'no-store' })
         .then(function(r){ return r.json().catch(function(){ return { ok: false }; }); })
         .then(function(res){
           if (res && res.ok) {
-            st.textContent = '✅ تم تحديث الكاش — الإشعارات والتقارير هتقرا أحدث نسخة.';
-            st.className = 'status-msg';
+            if (oldLabel) oldLabel.textContent = '✅ اتحدّث';
+            setTimeout(function(){ if (oldLabel) oldLabel.textContent = oldTxt; }, 2500);
           } else {
-            st.textContent = '⚠ الرد: ' + JSON.stringify(res || {});
-            st.className = 'status-msg err';
+            if (oldLabel) oldLabel.textContent = '⚠ فشل';
+            setTimeout(function(){ if (oldLabel) oldLabel.textContent = oldTxt; }, 2500);
           }
         })
-        .catch(function(e){
-          st.textContent = '❌ تعذّر تحديث الكاش: ' + e;
-          st.className = 'status-msg err';
+        .catch(function(){
+          if (oldLabel) oldLabel.textContent = '❌ خطأ';
+          setTimeout(function(){ if (oldLabel) oldLabel.textContent = oldTxt; }, 2500);
         })
         .then(function(){ btn.disabled = false; });
     });
