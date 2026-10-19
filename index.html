@@ -2340,7 +2340,12 @@ body.cg-compact .wa-float-btn{display:none !important}
         <span class="home-tile-icon" style="font-size:26px;">🔔</span>
         <span class="home-tile-label">إعدادات الإشعارات</span>
       </button>
+      <button type="button" class="home-tile" id="clearGasCacheTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">♻️</span>
+        <span class="home-tile-label">تحديث الكاش</span>
+      </button>
     </div>
+    <div class="status-msg" id="clearGasCacheStatus" style="margin-top:10px;"></div>
   </div>
 </div>
 
@@ -7948,6 +7953,73 @@ window.safeFileName = function(str){
   setInterval(refreshChecksDueBadge_, 60000);
 
   // ---------- شيكات علينا (نفس فكرة الشيكات بس من شيت "شيكات علينا") ----------
+  // مصدرها الأساسي checksAgainstUs.json. لو مش موجود (الـ workflow ما اشتغلش
+  // لسه)، بيقرا APP.xlsx مباشرة بـ SheetJS من شيت "شيكات علينا".
+  function loadChecksAgainstUsRaw_(){
+    return fetchAppJson_('checksAgainstUs').then(function(data){
+      if (!Array.isArray(data)) throw new Error('empty json');
+      return data;
+    }).catch(function(){
+      if (!window.XLSX) throw new Error('SheetJS not loaded');
+      return fetch('APP.xlsx?v=' + Date.now(), {cache:'no-store'})
+        .then(function(r){ if (!r.ok) throw new Error('APP.xlsx not found'); return r.arrayBuffer(); })
+        .then(function(buf){
+          var wb = XLSX.read(buf, {type:'array', cellDates:true});
+          var sh = wb.Sheets['شيكات علينا'];
+          if (!sh) throw new Error('Sheet شيكات علينا not found');
+          var range = XLSX.utils.decode_range(sh['!ref'] || 'A1:I1');
+          function cv(r,c){
+            var cell = sh[XLSX.utils.encode_cell({r:r,c:c})]; var v = cell ? cell.v : null;
+            if (v instanceof Date) {
+              var d = new Date(v.getTime() + 60000);
+              v = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+            }
+            return v;
+          }
+          // ندوّر على صف الـ header: فيه "تاريخ الاستحقاق" + أي واحد من
+          // (العميل / المورد / المستفيد / اسم العميل / اسم المورد).
+          var nameHeaders = ['العميل','اسم العميل','المورد','اسم المورد','المستفيد'];
+          var hdrRow = -1, cols = {};
+          var maxScan = Math.min(range.e.r, 12);
+          for (var hr = range.s.r; hr <= maxScan; hr++) {
+            var tmp = {};
+            for (var c = range.s.c; c <= range.e.c; c++) {
+              var vh = String(cv(hr, c) || '').trim();
+              if (vh) tmp[vh] = c;
+            }
+            if (tmp['تاريخ الاستحقاق'] !== undefined &&
+                nameHeaders.some(function(h){ return tmp[h] !== undefined; })) {
+              hdrRow = hr; cols = tmp; break;
+            }
+          }
+          if (hdrRow < 0) return [];
+          function pickCol(){ for (var i=0;i<arguments.length;i++){ if (cols[arguments[i]] !== undefined) return cols[arguments[i]]; } return -1; }
+          var cClient = pickCol('العميل','اسم العميل','المورد','اسم المورد','المستفيد');
+          var cValue  = pickCol('القيمة','القيمه');
+          var cDue    = pickCol('تاريخ الاستحقاق');
+          var cBank   = pickCol('البنك','البنك المسحوب عليه');
+          var cType   = pickCol('الموقف','النوع','نوع الشيك');
+          var cNotes  = pickCol('ملاحظات');
+          var out = [];
+          for (var r2 = hdrRow + 1; r2 <= range.e.r; r2++) {
+            var client = cClient > -1 ? cv(r2, cClient) : null;
+            var cs = (client == null) ? '' : String(client).trim();
+            if (!cs || ['الاجمالي','الإجمالي','الصافي'].indexOf(cs) > -1) continue;
+            var due = cDue > -1 ? cv(r2, cDue) : null;
+            if (!due) continue;
+            out.push({
+              client: cs,
+              value: cValue > -1 ? cv(r2, cValue) : '',
+              dueDate: String(due).trim(),
+              bank: cBank > -1 && cv(r2, cBank) != null ? String(cv(r2, cBank)).trim() : '',
+              type: cType > -1 && cv(r2, cType) != null ? String(cv(r2, cType)).trim() : '',
+              notes: cNotes > -1 && cv(r2, cNotes) != null ? String(cv(r2, cNotes)).trim() : ''
+            });
+          }
+          return out;
+        });
+    });
+  }
   function loadChecksAgainstUsStatus_(){
     var titleEl = document.getElementById('quickStatusTitle');
     var subtitleEl = document.getElementById('quickStatusSubtitle');
@@ -7958,7 +8030,7 @@ window.safeFileName = function(str){
     listWrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     document.getElementById('quickStatusOverlay').style.display = 'flex';
     setQuickStatusPaperMode_(true);
-    fetchAppJson_('checksAgainstUs')
+    loadChecksAgainstUsRaw_()
       .then(function(checks){
         var rows = buildChecksAllRows_(checks);
         if (!rows.length) {
@@ -7982,13 +8054,13 @@ window.safeFileName = function(str){
         listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>المستفيد</th><th>القيمة</th><th>الاستحقاق</th><th>البنك</th><th>النوع</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>' + rowsHtml + '</tbody><tfoot><tr class="qs-total-row" style="font-weight:bold;border-top:2px solid #999;"><td colspan="2">الإجمالي</td><td>' + totalTxt + '</td><td colspan="5"></td></tr></tfoot></table></div>';
       })
       .catch(function(){
-        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر أو ملف checksAgainstUs.json لسه ما تولّدش.</div>';
+        listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر أو قراءة شيت "شيكات علينا" من APP.xlsx.</div>';
       });
   }
   function refreshChecksAgainstUsBadge_(){
     var badge = document.getElementById('loginChecksAgainstUsBadge');
     if (!badge) return;
-    fetchAppJson_('checksAgainstUs')
+    loadChecksAgainstUsRaw_()
       .then(function(checks){
         var count = buildChecksAllRows_(checks).filter(function(it){ return it.daysRemaining <= 2; }).length;
         if (count > 0) {
@@ -9389,12 +9461,23 @@ window.safeFileName = function(str){
       var empsUrl = SUPABASE_URL + '/rest/v1/employees?active=eq.true&select=name';
       var attUrl  = SUPABASE_URL + '/rest/v1/attendance?date=eq.' + encodeURIComponent(date)
         + '&select=name,in_time,out_time&limit=2000';
+      // الإجازات المعتمدة اللي النهاردة واقع في مداها → الموظف دا متجاهل
+      // تماماً من حسابات الغياب والتأخير.
+      var vacUrl = SUPABASE_URL + '/rest/v1/requests?type=eq.' + encodeURIComponent('إجازة')
+        + '&status=eq.' + encodeURIComponent('موافق')
+        + '&leave_from=lte.' + encodeURIComponent(date)
+        + '&leave_to=gte.' + encodeURIComponent(date)
+        + '&select=name&limit=500';
       Promise.all([
         fetch(empsUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }),
-        fetch(attUrl,  { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; })
+        fetch(attUrl,  { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }),
+        fetch(vacUrl,  { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; })
       ]).then(function(res){
         var emps = res[0] || [];
         var att  = res[1] || [];
+        var vacs = res[2] || [];
+        var onVacation = {};
+        vacs.forEach(function(v){ if (v && v.name) onVacation[v.name] = true; });
         var checkedIn = {}, checkedOut = {};
         att.forEach(function(r){
           if (r.name && r.in_time) {
@@ -9409,6 +9492,7 @@ window.safeFileName = function(str){
         function toMin_(t){ var q = String(t || '').match(/(\d{1,2}):(\d{2})/); return q ? (+q[1]) * 60 + (+q[2]) : null; }
         emps.forEach(function(e){
           var name = e.name;
+          if (onVacation[name]) return; // في إجازة معتمدة → لا غياب ولا تأخير
           var tIn = checkedIn[name];
           if (!tIn) { absent.push(name); return; }
           // بالإشارة: موجب = تأخير / انصراف مبكر | سالب = حضر بدري / مشي بعد ميعاده
@@ -9947,6 +10031,37 @@ window.safeFileName = function(str){
   document.getElementById('backHomeBtnSettingsMenu').addEventListener('click', function(){
     showScreen('home');
   });
+
+  // زرار "تحديث الكاش": بينادي GAS يمسح كاش الـ 5 دقائق بتاع ملفات GitHub
+  // (installments / overdue / checks ...)، فأي إشعار أو تقرير بعد كده بيقرا
+  // أحدث نسخة من JSON فورًا بدل ما يستنى انتهاء الكاش.
+  (function(){
+    var btn = document.getElementById('clearGasCacheTileBtn');
+    var st = document.getElementById('clearGasCacheStatus');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      if (!ATTENDANCE_SCRIPT_URL) { st.textContent = 'الرابط مش متظبط'; st.className = 'status-msg err'; return; }
+      btn.disabled = true;
+      st.textContent = 'جارٍ تحديث الكاش…';
+      st.className = 'status-msg';
+      fetch(ATTENDANCE_SCRIPT_URL + '?action=clearCache&_=' + Date.now(), { cache: 'no-store' })
+        .then(function(r){ return r.json().catch(function(){ return { ok: false }; }); })
+        .then(function(res){
+          if (res && res.ok) {
+            st.textContent = '✅ تم تحديث الكاش — الإشعارات والتقارير هتقرا أحدث نسخة.';
+            st.className = 'status-msg';
+          } else {
+            st.textContent = '⚠ الرد: ' + JSON.stringify(res || {});
+            st.className = 'status-msg err';
+          }
+        })
+        .catch(function(e){
+          st.textContent = '❌ تعذّر تحديث الكاش: ' + e;
+          st.className = 'status-msg err';
+        })
+        .then(function(){ btn.disabled = false; });
+    });
+  })();
 
   // "إدارة الموظفين" بقت قايمة فيها أيقونتين: بيانات الموظفين + لائحة الحضور والانصراف.
   function openEmployeeHubFlow_(){
