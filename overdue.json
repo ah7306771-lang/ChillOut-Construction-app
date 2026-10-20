@@ -9,14 +9,14 @@
     {
       "client": "بينتاكون",
       "count": 1,
-      "amount": 517305,
+      "amount": 17305,
       "avgDelay": 5
     },
     {
       "client": "فالتور",
-      "count": 4,
-      "amount": 27875899.978947368,
-      "avgDelay": 8
+      "count": 6,
+      "amount": 33802450.628070176,
+      "avgDelay": 5.666666666664241
     },
     {
       "client": "ويكادي",
@@ -26,8 +26,8 @@
     }
   ],
   "grandTotal": {
-    "count": 14,
-    "amount": 39631311.97894737,
-    "avgDelay": 6.214285714282596
+    "count": 16,
+    "amount": 45057862.628070176,
+    "avgDelay": 5.5625
   }
 }
