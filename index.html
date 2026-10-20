@@ -4562,28 +4562,68 @@ window.safeFileName = function(str){
     // ندمج الـ topics القديمة لو الجهاز مسجل قبل كده، عشان مانمسحش اشتراكات
     // كان مفعّلها (زي "checks" أو "overdue") لما يفعّل نوع تاني.
     function upsertToSupabase(){
-      var getUrl = SUPABASE_URL + '/rest/v1/push_tokens?select=employee,topics&token=eq.' + encodeURIComponent(token);
+      // قاعدة ثابتة لمنع تكرار الصفوف لنفس الجهاز في push_tokens:
+      //  (1) نقرا كل الصفوف اللي ليها نفس التوكن، أو نفس الـ employee،
+      //      أو أي توكن قديم محفوظ على نفس الجهاز في localStorage،
+      //      أو ليها نفس "device prefix" (الجزء قبل : في FCM token).
+      //  (2) ندمج كل topics في مجموعة واحدة.
+      //  (3) نحذف الصفوف القديمة ونحتفظ بصف واحد بالتوكن الحالي.
+      var who = (employeeName || '').trim();
+      // اجمع التوكنات القديمة المحفوظة على نفس الجهاز في localStorage
+      var oldTokens = {};
+      try {
+        ['fcmTokenRegistered','fcmEmployeeTokenRegistered','fcmChecksTokenRegistered',
+         'fcmOrderTokenRegistered','fcmOverdueTokenRegistered','fcmApprovalTokenRegistered',
+         'fcmApprovalAdminTokenRegistered','fcmVaultTokenRegistered','fcmAllEventsTokenRegistered']
+          .forEach(function(k){
+            var v = localStorage.getItem(k);
+            if (v && v !== token) oldTokens[v] = true;
+          });
+      } catch(e){}
+      // بادئة الجهاز = الجزء قبل : في التوكن (ثابتة لنفس الجهاز رغم تغيّر التسجيل)
+      var devicePrefix = String(token).split(':')[0];
+      var orParts = ['token.eq.' + encodeURIComponent(token)];
+      if (who) orParts.push('employee.eq.' + encodeURIComponent(who));
+      Object.keys(oldTokens).forEach(function(t){ orParts.push('token.eq.' + encodeURIComponent(t)); });
+      if (devicePrefix && devicePrefix.length > 20) orParts.push('token.like.' + encodeURIComponent(devicePrefix + '%'));
+      var getUrl = SUPABASE_URL + '/rest/v1/push_tokens?select=id,employee,topics,token&or=(' + orParts.join(',') + ')';
       return fetch(getUrl, { headers: sbHeaders() }).then(function(r){ return r.ok ? r.json() : []; }).then(function(existing){
-        var oldTopics = '', oldEmployee = '';
-        if (existing && existing.length) {
-          oldTopics = existing[0].topics || '';
-          oldEmployee = existing[0].employee || '';
-        }
-        var topicsArr = oldTopics ? oldTopics.split(',').map(function(s){ return s.trim(); }).filter(Boolean) : [];
-        if (topic && topicsArr.indexOf(topic) === -1) topicsArr.push(topic);
-        // المراقب (all_events) لازم يستلم كمان topic=approval_admin عشان يوصله
-        // إشعارات طلبات الاعتماد والقرارات. الأدمن بيضيفها بزرار منفصل.
-        if (topic === 'all_events' && topicsArr.indexOf('approval_admin') === -1) topicsArr.push('approval_admin');
+        existing = existing || [];
+        // جمع كل الـ topics من كل الصفوف المتعلقة
+        var topicsSet = {};
+        var bestEmployee = '';
+        existing.forEach(function(row){
+          var t = String(row.topics || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+          t.forEach(function(x){ topicsSet[x] = true; });
+          if (!bestEmployee && row.employee) bestEmployee = row.employee;
+        });
+        if (topic) topicsSet[topic] = true;
+        if (topic === 'all_events') topicsSet['approval_admin'] = true;
+        var topicsArr = Object.keys(topicsSet);
+        var finalEmployee = who || bestEmployee || '';
+
+        // احذف الصفوف القديمة (باستثناء الصف الحالي بنفس التوكن)
+        var staleIds = existing
+          .filter(function(row){ return String(row.token) !== String(token); })
+          .map(function(row){ return row.id; });
+        var deletePromise = staleIds.length
+          ? fetch(SUPABASE_URL + '/rest/v1/push_tokens?id=in.(' + staleIds.join(',') + ')', {
+              method: 'DELETE', headers: sbHeaders({ 'Prefer': 'return=minimal' })
+            }).catch(function(){})
+          : Promise.resolve();
+
         var row = {
           token: token,
-          employee: employeeName || oldEmployee || '',
+          employee: finalEmployee,
           topics: topicsArr.join(','),
           updated_at: new Date().toISOString()
         };
-        return fetch(SUPABASE_URL + '/rest/v1/push_tokens?on_conflict=token', {
-          method: 'POST',
-          headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
-          body: JSON.stringify(row)
+        return deletePromise.then(function(){
+          return fetch(SUPABASE_URL + '/rest/v1/push_tokens?on_conflict=token', {
+            method: 'POST',
+            headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+            body: JSON.stringify(row)
+          });
         });
       });
     }
