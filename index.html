@@ -2122,6 +2122,45 @@ body.cg-compact .wa-float-btn{display:none !important}
   </div>
 </div>
 
+<!-- VAULT ACCESS: صلاحيات رؤية خزن الموظفين -->
+<div id="vaultAccessScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backSettingsBtnVaultAccess" class="back-btn cg-back" aria-label="رجوع">→</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card" style="max-width:520px;">
+    <h1 class="gate-title">صلاحيات الخزن</h1>
+    <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;line-height:1.6;">
+      كل موظف ليه خزنته الخاصة. دوس "👁️ الصلاحيات" جنب اسمه عشان تختار مين من الموظفين التانيين يقدر يفتح/يشوف خزنته + يستلم إشعار تقفيلها.
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button type="button" class="btn btn-secondary" id="vaAllowAll" style="flex:1;min-width:140px;font-size:12.5px;">✓ تحديد الكل للجميع</button>
+      <button type="button" class="btn btn-secondary" id="vaRevokeAll" style="flex:1;min-width:140px;font-size:12.5px;">✕ إلغاء كل الصلاحيات</button>
+    </div>
+    <div class="status-msg" id="vaStatus"></div>
+    <div id="vaList"></div>
+  </div>
+</div>
+
+<!-- Vault Access Modal -->
+<div id="vaultAccessOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:14px;max-width:460px;width:100%;max-height:85vh;overflow:auto;padding:18px;">
+    <h2 style="margin:0 0 6px;font-size:17px;">👁️ صلاحيات خزنة</h2>
+    <div style="font-size:13.5px;color:#555;margin-bottom:12px;">اختر الموظفين اللي يشوفوا خزنة <b id="vamOwnerName">—</b></div>
+    <div id="vamList" style="display:grid;gap:8px;max-height:50vh;overflow:auto;border:1px solid #eee;border-radius:8px;padding:10px;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button type="button" class="btn btn-secondary" id="vamSelectAll" style="flex:1;">تحديد الكل</button>
+      <button type="button" class="btn btn-secondary" id="vamClearAll" style="flex:1;">إلغاء الكل</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button type="button" class="btn btn-primary" id="vamSave" style="flex:1;">💾 حفظ</button>
+      <button type="button" class="btn btn-secondary" id="vamCancel" style="flex:1;">إلغاء</button>
+    </div>
+    <div class="status-msg" id="vamStatus" style="margin-top:8px;"></div>
+  </div>
+</div>
+
 <!-- NOTIFICATIONS CENTER (مركز الإشعارات) -->
 <div id="notifCenterScreen" class="gate-screen shifted-bar-screen" style="display:none;">
   <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
@@ -2333,6 +2372,10 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="home-tile" id="openCustodyProjectsTileBtn">
         <span class="home-tile-icon" style="font-size:26px;">🏗️</span>
         <span class="home-tile-label">مشاريع العهد</span>
+      </button>
+      <button type="button" class="home-tile" id="openVaultAccessTileBtn">
+        <span class="home-tile-icon" style="font-size:26px;">🔑</span>
+        <span class="home-tile-label">صلاحيات الخزن</span>
       </button>
       <button type="button" class="home-tile" id="openCustodyReportTileBtn">
         <span class="home-tile-icon" style="font-size:26px;">🧾</span>
@@ -4255,7 +4298,7 @@ window.safeFileName = function(str){
     appScreenPermission.style.display = (name === 'permission')   ? '' : 'none';
     appScreenAdvance.style.display    = (name === 'advance')      ? '' : 'none';
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
-    [['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects'],['custodyReportScreen','custody-report'],['notifCenterScreen','notif-center']].forEach(function(p){
+    [['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects'],['vaultAccessScreen','vault-access'],['custodyReportScreen','custody-report'],['notifCenterScreen','notif-center']].forEach(function(p){
       var e = document.getElementById(p[0]); if (e) e.style.display = (name === p[1]) ? '' : 'none';
     });
     window.__notifScreen = name;
@@ -13776,7 +13819,17 @@ window.safeFileName = function(str){
   var S = { rows: [], projects: [], emp: '' };
   function H(x){ var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }; for (var k in (x||{})) h[k] = x[k]; return h; }
   function ctx(){ return window.custodyCtx_ ? window.custodyCtx_() : { isEmp: false, name: '', employees: [] }; }
-  function who(){ var c = ctx(); return c.isEmp ? c.name : S.emp; }
+  // الموظف العادي يشوف خزنته هو. لو عنده صلاحيات رؤية خزن تانية + اختار واحدة
+  // من الدروب داون، نرجّع المختارة. الأدمن دايمًا يرجّع S.emp.
+  function who(){
+    var c = ctx();
+    if (!c.isEmp) return S.emp;
+    if (S.emp && typeof window.allowedVaultsFor_ === 'function') {
+      var allowed = window.allowedVaultsFor_(c.name);
+      if (allowed.indexOf(S.emp) > -1) return S.emp;
+    }
+    return c.name;
+  }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
   function fmt(n){ return (+n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   function today(){ var d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
@@ -13906,6 +13959,120 @@ window.safeFileName = function(str){
   });
   $('openCustodyProjectsTileBtn').addEventListener('click', function(){ window.showScreen_('custody-projects'); st('cpStatus', ''); loadProjects().then(renderProjects); });
   $('backSettingsBtnCustodyProjects').addEventListener('click', function(){ window.showScreen_('settings-menu'); });
+
+  // ---------- صلاحيات الخزن (vault_viewers) ----------
+  // جدول Supabase: vault_viewers(owner TEXT PRIMARY KEY, viewers TEXT CSV)
+  // كل موظف ليه خزنته الخاصة. الصف هنا بيحدد مين من الموظفين التانيين
+  // يقدر يفتح/يشوف هذه الخزنة. الأدمن دايمًا يشوف الكل.
+  var VV_URL = SB + '/rest/v1/vault_viewers';
+  S.vv = {};  // owner -> [viewer, ...]
+  function loadVaultViewers(){
+    return fetch(VV_URL + '?select=owner,viewers', { headers: H() })
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .then(function(rows){
+        S.vv = {};
+        (rows || []).forEach(function(r){
+          S.vv[String(r.owner || '').trim()] = String(r.viewers || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        });
+      })
+      .catch(function(){ S.vv = {}; });
+  }
+  function renderVaultAccessList(){
+    var employees = (typeof window.custodyCtx_ === 'function' ? (window.custodyCtx_().employees || []) : []);
+    if (!employees.length) { $('vaList').innerHTML = '<div class="cg-empty">مفيش موظفين</div>'; return; }
+    $('vaList').innerHTML = employees.map(function(name){
+      var viewers = S.vv[name] || [];
+      return '<div class="cp-item">' +
+        '<span><b style="color:var(--steel)">🧰</b> &nbsp;' + esc(name) + '</span>' +
+        '<span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+          '<button type="button" class="btn btn-secondary va-open" data-owner="' + esc(name) + '" style="padding:4px 10px;font-size:12px;">👁️ الصلاحيات (' + viewers.length + ')</button>' +
+        '</span>' +
+      '</div>';
+    }).join('');
+  }
+  $('openVaultAccessTileBtn').addEventListener('click', function(){
+    window.showScreen_('vault-access');
+    st('vaStatus', '');
+    loadVaultViewers().then(renderVaultAccessList);
+  });
+  $('backSettingsBtnVaultAccess').addEventListener('click', function(){ window.showScreen_('settings-menu'); });
+
+  var vaCurrentOwner = null;
+  function openVaultAccess_(owner){
+    vaCurrentOwner = owner;
+    $('vamOwnerName').textContent = owner;
+    $('vamStatus').textContent = '';
+    var allowed = S.vv[owner] || [];
+    var employees = (typeof window.custodyCtx_ === 'function' ? (window.custodyCtx_().employees || []) : []).filter(function(n){ return n !== owner; });
+    $('vamList').innerHTML = employees.length ? employees.map(function(n){
+      var chk = allowed.indexOf(n) > -1 ? ' checked' : '';
+      return '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 2px;">' +
+        '<input type="checkbox" class="vam-emp" value="' + esc(n) + '"' + chk + '>' +
+        '<span>' + esc(n) + '</span></label>';
+    }).join('') : '<div style="color:#999;font-size:13px;">مفيش موظفين تانيين</div>';
+    $('vaultAccessOverlay').style.display = 'flex';
+  }
+  function closeVaultAccess_(){ $('vaultAccessOverlay').style.display = 'none'; vaCurrentOwner = null; }
+  $('vaList').addEventListener('click', function(e){
+    var b = e.target.closest('.va-open'); if (!b) return;
+    openVaultAccess_(b.getAttribute('data-owner'));
+  });
+  $('vamCancel').addEventListener('click', closeVaultAccess_);
+  $('vamSelectAll').addEventListener('click', function(){
+    document.querySelectorAll('#vamList .vam-emp').forEach(function(cb){ cb.checked = true; });
+  });
+  $('vamClearAll').addEventListener('click', function(){
+    document.querySelectorAll('#vamList .vam-emp').forEach(function(cb){ cb.checked = false; });
+  });
+  $('vamSave').addEventListener('click', function(){
+    if (!vaCurrentOwner) return;
+    var picked = [];
+    document.querySelectorAll('#vamList .vam-emp:checked').forEach(function(cb){ picked.push(cb.value); });
+    var csv = picked.join(',');
+    $('vamStatus').textContent = 'جارٍ الحفظ…';
+    fetch(VV_URL + '?on_conflict=owner', {
+      method: 'POST',
+      headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({ owner: vaCurrentOwner, viewers: csv, updated_at: new Date().toISOString() })
+    }).then(function(r){ if (!r.ok) throw 0; return loadVaultViewers(); })
+      .then(function(){ renderVaultAccessList(); closeVaultAccess_(); st('vaStatus', 'تم حفظ صلاحيات الخزنة ✓'); })
+      .catch(function(){ $('vamStatus').textContent = 'تعذّر الحفظ — اتأكد إن جدول vault_viewers موجود في Supabase'; });
+  });
+  // Bulk apply
+  function bulkVaultAccess_(giveAll){
+    var employees = (typeof window.custodyCtx_ === 'function' ? (window.custodyCtx_().employees || []) : []);
+    if (!employees.length) { st('vaStatus', 'مفيش موظفين', true); return; }
+    if (!window.confirm(giveAll ? 'هيتم تحديد كل الموظفين لكل الخزن. تمام؟' : 'هيتم إلغاء كل صلاحيات رؤية الخزن. تمام؟')) return;
+    st('vaStatus', 'جارٍ التحديث…');
+    var jobs = employees.map(function(owner){
+      var csv = giveAll ? employees.filter(function(n){ return n !== owner; }).join(',') : '';
+      return fetch(VV_URL + '?on_conflict=owner', {
+        method: 'POST',
+        headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify({ owner: owner, viewers: csv, updated_at: new Date().toISOString() })
+      }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+    });
+    Promise.all(jobs).then(function(res){
+      var ok = res.filter(Boolean).length;
+      loadVaultViewers().then(function(){
+        renderVaultAccessList();
+        st('vaStatus', (giveAll ? 'تم تفعيل كل الصلاحيات ' : 'تم إلغاء كل الصلاحيات ') + '(' + ok + '/' + employees.length + ') ✓');
+      });
+    });
+  }
+  $('vaAllowAll').addEventListener('click', function(){ bulkVaultAccess_(true); });
+  $('vaRevokeAll').addEventListener('click', function(){ bulkVaultAccess_(false); });
+
+  // Filter: اللي الموظف يشوفه = خزنته + أي خزنة اسمه موجود في viewers.
+  //  الأدمن يشوف الكل. ده بيستخدم في الدروب داون الحضور + تقرير العهد.
+  window.allowedVaultsFor_ = function(viewerName){
+    if (!viewerName) return [];
+    var out = [viewerName]; // نفسه دايماً
+    Object.keys(S.vv || {}).forEach(function(owner){
+      if ((S.vv[owner] || []).indexOf(viewerName) > -1 && out.indexOf(owner) === -1) out.push(owner);
+    });
+    return out;
+  };
   $('cpAdd').addEventListener('click', function(){
     var v = $('cpName').value.trim(), code = parseInt($('cpCode').value, 10);
     if (!v || !(code > 0)) { st('cpStatus', 'اكتب رقم واسم المشروع', true); return; }
@@ -13946,14 +14113,24 @@ window.safeFileName = function(str){
     if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
     window.showScreen_('custody-ledger'); closeRep();
     $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = '';
-    $('cgEmpWrap').style.display = c.isEmp ? 'none' : '';
-    if (!c.isEmp) {
+    loadVaultViewers().then(function(){
+      // الأدمن يشوف كل الخزن. الموظف يشوف خزنته + أي خزنة اسمه موجود في viewers.
       var sel = $('cgEmp'), cur = sel.value;
-      sel.innerHTML = c.employees.map(function(n){ return '<option>' + esc(n) + '</option>'; }).join('');
-      if (cur) sel.value = cur; S.emp = sel.value;
-    }
-    $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
-    loadProjects().then(loadRows);
+      var vaults;
+      if (!c.isEmp) {
+        vaults = c.employees.slice();
+      } else {
+        vaults = (typeof window.allowedVaultsFor_ === 'function') ? window.allowedVaultsFor_(c.name) : [c.name];
+      }
+      // الدروب داون يظهر لو عنده أكتر من خزنة (أو للأدمن دايمًا).
+      $('cgEmpWrap').style.display = (!c.isEmp || vaults.length > 1) ? '' : 'none';
+      sel.innerHTML = vaults.map(function(n){ return '<option>' + esc(n) + '</option>'; }).join('');
+      if (cur && vaults.indexOf(cur) > -1) sel.value = cur;
+      else if (c.isEmp) sel.value = c.name;
+      S.emp = sel.value;
+      $('cgWho').textContent = '🔒 خزنة: ' + (who() || '—');
+      loadProjects().then(loadRows);
+    });
   });
   $('backHomeBtnCustodyLedger').addEventListener('click', function(){ window.showScreen_('home'); });
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
@@ -14388,8 +14565,14 @@ window.safeFileName = function(str){
     return go(0);
   }
   function vaultNames(){
-    var n = ctx().employees.slice();
+    var c = ctx();
+    var n = c.employees.slice();
     R.rows.forEach(function(r){ if (n.indexOf(r.employee) < 0) n.push(r.employee); });
+    // الموظف يشوف خزنته + اللي اتسمحله يراها فقط. الأدمن يشوف الكل.
+    if (c.isEmp && c.name && typeof window.allowedVaultsFor_ === 'function') {
+      var allowed = window.allowedVaultsFor_(c.name);
+      n = n.filter(function(x){ return allowed.indexOf(x) > -1; });
+    }
     return n;
   }
   function rview(emp){ return viewOf(R.rows.filter(function(r){ return r.employee === emp; }), $('crFrom').value, $('crTo').value, $('crProj').value); }
@@ -14427,7 +14610,7 @@ window.safeFileName = function(str){
     if (!ctx().canReport) return;
     reportBack_ = from;
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
-    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks()]).then(function(res){
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(), loadVaultViewers()]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
       var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
       S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
