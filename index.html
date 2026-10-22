@@ -5074,6 +5074,32 @@ window.safeFileName = function(str){
 
   // ---- مودال طلب إذن / مأمورية (بيتعمل مرة واحدة وبيتعاد استخدامه) ----
   var attendanceReqEls = null;
+  // ---- نوع الإجازة (اعتيادي / عارضة / مرضي / بدون مرتب) ----
+  // بيتخزّن كبادئة في أول خانة السبب بالشكل: "[مرضي] السبب..." — كده من غير أي تعديل
+  // في الداتا بيز أو الشيت، ويظهر في شاشة الاعتماد والطباعة وتقرير الحضور.
+  // الجمعة إجازة رسمية دائمًا: مش بتتحسب في أيام الإجازات، ومفيش غياب ولا تأخير فيها.
+  function isOfficialHoliday_(key){
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(key || ''));
+    return !!m && new Date(+m[1], +m[2] - 1, +m[3]).getDay() === 5;
+  }
+  // عدد أيام العمل بين تاريخين (شاملين) من غير أيام الجمعة
+  function countWorkDays_(from, to){
+    var a = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(from || '')), b = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(to || from || ''));
+    if (!a || !b) return 0;
+    var d = new Date(+a[1], +a[2] - 1, +a[3]), e = new Date(+b[1], +b[2] - 1, +b[3]), n = 0;
+    for (var i = 0; d <= e && i < 800; i++, d.setDate(d.getDate() + 1)) if (d.getDay() !== 5) n++;
+    return n;
+  }
+  var LEAVE_KINDS_ = ['اعتيادي', 'عارضة', 'مرضي', 'بدون مرتب'];
+  function leaveKindParse_(reason){
+    var m = /^\[(اعتيادي|عارضة|عارض|مرضي|بدون مرتب)\]\s*/.exec(String(reason || ''));
+    return m ? { kind: (m[1] === 'عارض' ? 'عارضة' : m[1]), text: String(reason).slice(m[0].length) } : { kind: '', text: String(reason || '') };
+  }
+  function leaveKindWrap_(kind, reason){
+    reason = String(reason || '').trim();
+    return kind ? ('[' + kind + ']' + (reason ? ' ' + reason : '')) : reason;
+  }
+
   function ensureAttendanceRequestModal(){
     if (attendanceReqEls) return attendanceReqEls;
 
@@ -5115,6 +5141,23 @@ window.safeFileName = function(str){
     timesRow.appendChild(fromWrap);
     timesRow.appendChild(toWrap);
 
+    // نوع الإجازة — بيظهر في طلب الإجازة بس
+    var kindWrap = document.createElement('div');
+    kindWrap.className = 'attendance-req-time-field';
+    kindWrap.style.cssText = 'display:none;width:100%;margin-bottom:10px;';
+    var kindLabel = document.createElement('label');
+    kindLabel.textContent = 'نوع الإجازة';
+    var kindSelect = document.createElement('select');
+    kindSelect.className = 'attendance-req-time-input';
+    kindSelect.style.cssText = 'width:100%;';
+    var ph = document.createElement('option'); ph.value = ''; ph.textContent = '— اختر نوع الإجازة —'; kindSelect.appendChild(ph);
+    [['اعتيادي', 'إجازة اعتيادي'], ['عارضة', 'إجازة عارضة'], ['مرضي', 'إجازة مرضي'], ['بدون مرتب', 'إجازة بدون مرتب']].forEach(function(k){
+      var o = document.createElement('option'); o.value = k[0]; o.textContent = k[1]; kindSelect.appendChild(o);
+    });
+    kindWrap.appendChild(kindLabel);
+    kindWrap.appendChild(kindSelect);
+    kindSelect.addEventListener('change', function(){ kindSelect.style.outline = ''; });
+
     var textarea = document.createElement('textarea');
     textarea.className = 'attendance-req-textarea';
     textarea.placeholder = 'اكتب السبب / الوجهة هنا (اختياري)...';
@@ -5135,6 +5178,7 @@ window.safeFileName = function(str){
     actions.appendChild(confirmBtn);
     actions.appendChild(cancelBtn);
     card.appendChild(title);
+    card.appendChild(kindWrap);
     card.appendChild(timesRow);
     card.appendChild(textarea);
     card.appendChild(actions);
@@ -5149,7 +5193,7 @@ window.safeFileName = function(str){
     attendanceReqEls = {
       overlay: overlay, title: title, textarea: textarea,
       fromInput: fromInput, toInput: toInput,
-      fromLabel: fromLabel, toLabel: toLabel, onSubmit: null
+      fromLabel: fromLabel, toLabel: toLabel, kindWrap: kindWrap, kindSelect: kindSelect, onSubmit: null
     };
     confirmBtn.addEventListener('click', function(){
       var els = attendanceReqEls;
@@ -5157,8 +5201,15 @@ window.safeFileName = function(str){
       var reason = els.textarea.value.trim();
       var from = els.fromInput.value;
       var to = els.toInput.value;
+      var kind = els.kindSelect.value;
+      // طلب الإجازة لازم يتحدد نوعها قبل الإرسال
+      if (els.kindWrap.style.display !== 'none' && !kind) {
+        els.kindSelect.style.outline = '2px solid #b3261e';
+        els.kindSelect.focus();
+        return;
+      }
       hideAttendanceRequestModal();
-      if (cb) cb(from, to, reason);
+      if (cb) cb(from, to, reason, kind);
     });
     return attendanceReqEls;
   }
@@ -5182,6 +5233,9 @@ window.safeFileName = function(str){
     els.toLabel.textContent = isDate ? 'إلى تاريخ' : 'إلى الساعة';
     els.fromInput.value = '';
     els.toInput.value = '';
+    els.kindWrap.style.display = isDate ? '' : 'none';
+    els.kindSelect.value = '';
+    els.kindSelect.style.outline = '';
     els.onSubmit = onSubmit;
     els.overlay.style.display = 'flex';
     setTimeout(function(){ els.fromInput.focus(); }, 0);
@@ -5322,7 +5376,8 @@ window.safeFileName = function(str){
     attendanceRequestsFor_(name).forEach(function(req){
       var what;
       if (req.type === 'إجازة') {
-        what = 'تم تسجيل الإجازة' + (req.leaveFrom ? ' من ' + req.leaveFrom : '') + (req.leaveTo ? ' إلى ' + req.leaveTo : '');
+        var lk_ = leaveKindParse_(req.reason).kind;
+        what = 'تم تسجيل الإجازة' + (lk_ ? ' (' + lk_ + ')' : '') + (req.leaveFrom ? ' من ' + req.leaveFrom : '') + (req.leaveTo ? ' إلى ' + req.leaveTo : '');
       } else {
         what = 'تم تسجيل ' + (req.type === 'إذن' ? 'الإذن' : (req.type === 'مأمورية' ? 'المأمورية' : req.type)) + (req.from ? ' من الساعة ' + hhmm_(req.from) : '') + (req.to ? ' إلى ' + hhmm_(req.to) : '');
       }
@@ -5335,10 +5390,10 @@ window.safeFileName = function(str){
       badge.style.whiteSpace = 'normal'; badge.style.borderRadius = '14px';
       badge.textContent = icon + ' ' + what + ' — ' + st;
       el.appendChild(badge);
-      if (req.reason) {
+      if (req.reason && (req.type !== 'إجازة' || leaveKindParse_(req.reason).text)) {
         var d = document.createElement('span');
         d.className = 'req-status-detail';
-        d.textContent = req.reason;
+        d.textContent = (req.type === 'إجازة') ? leaveKindParse_(req.reason).text : req.reason;
         el.appendChild(d);
       }
       if (req.unsynced) {
@@ -5957,8 +6012,9 @@ window.safeFileName = function(str){
     // بنفس دورة الاعتماد بتاعة الإذن والمأمورية بالظبط (تاب Requests نفسه).
     vacationBtn.addEventListener('click', function(){
       withAttendancePw_(function(){
-        showAttendanceRequestModal('طلب إجازة — ' + name, 'date', function(from, to, reason){
+        showAttendanceRequestModal('طلب إجازة — ' + name, 'date', function(from, to, reason, kind){
           if (!from) { return; }
+          reason = leaveKindWrap_(kind, reason);
           submitAttendanceRequest(name, 'إجازة', '', '', reason, reqStatus, {
             dateOverride: from, leaveFrom: from, leaveTo: to || from
           });
@@ -6167,7 +6223,7 @@ window.safeFileName = function(str){
         var rq = reqs.filter(function(r){ return r.name === n; }), dates = Object.keys(byDate);
         rq.forEach(function(r){
           if (r.type === 'إجازة' && r.status === 'موافق' && r.leave_from && r.leave_to) {
-            for (var d = 1; d <= last; d++) { var k = month + '-' + attendancePad(d); if (k >= r.leave_from && k <= r.leave_to && k <= todayK && dates.indexOf(k) < 0) dates.push(k); }
+            for (var d = 1; d <= last; d++) { var k = month + '-' + attendancePad(d); if (k >= r.leave_from && k <= r.leave_to && k <= todayK && !isOfficialHoliday_(k) && dates.indexOf(k) < 0) dates.push(k); }
           }
         });
         dates.sort();
@@ -6175,20 +6231,23 @@ window.safeFileName = function(str){
         dates.forEach(function(k){
           var b = byDate[k] || { i: '', o: '', x: {} }, notes = [], rng = [], rT = [], rS = [], rW = [], rH = [];
           rq.forEach(function(r){
-            var onDay = (r.type === 'إجازة') ? (r.leave_from && r.leave_to && k >= r.leave_from && k <= r.leave_to) : (r.date === k);
+            var onDay = (r.type === 'إجازة') ? (r.leave_from && r.leave_to && k >= r.leave_from && k <= r.leave_to && !isOfficialHoliday_(k)) : (r.date === k);
             if (!onDay) return;
             var ok = r.status === 'موافق', st = ok ? '' : (r.status === 'مرفوض' ? ' (مرفوض)' : ' (قيد المراجعة)');
-            rT.push(r.type); rS.push(r.status || 'قيد المراجعة'); if (r.reason) rW.push(r.reason);
-            if (r.type === 'إجازة') { notes.push('إجازة' + st); rH.push((r.leave_from || '') + ' → ' + (r.leave_to || '')); if (ok) rng.push([0, 1440]); return; }
+            var lkp_ = (r.type === 'إجازة') ? leaveKindParse_(r.reason) : null;
+            rT.push(lkp_ && lkp_.kind ? 'إجازة ' + lkp_.kind : r.type); rS.push(r.status || 'قيد المراجعة');
+            var why_ = lkp_ ? lkp_.text : r.reason; if (why_) rW.push(why_);
+            if (r.type === 'إجازة') { notes.push('إجازة' + (lkp_.kind ? ' ' + lkp_.kind : '') + (lkp_.kind === 'بدون مرتب' && ok ? ' (خصم يوم)' : '') + st); rH.push((r.leave_from || '') + ' → ' + (r.leave_to || '')); if (ok) rng.push([0, 1440]); return; }
             var f = attMin_(r.from_time), t = attMin_(r.to_time);
             notes.push(r.type + (f != null && t != null ? ' ' + attHM_(r.from_time) + '–' + attHM_(r.to_time) : '') + st);
             rH.push(f != null || t != null ? (attHM_(r.from_time) || '…') + '–' + (attHM_(r.to_time) || '…') : 'يوم كامل');
             if (ok) rng.push([f != null ? f : 0, t != null ? t : 1440]);   // معتمد: من–إلى، وناقص وقت = لحد آخر/من أول اليوم
           });
           // كل واحد بيتحسب لوحده: الحضور على ميعاد الحضور، والانصراف على ميعاد الانصراف
-          var inM = attMin_(b.i), outM = attMin_(b.o), lateIn = null, exIn = 0, early = null, exOut = 0, raw;
-          if (inM != null && offI != null) { raw = inM - offI; exIn = raw > 0 ? attOverlap_(rng, offI, inM) : 0; lateIn = raw - exIn; }
-          if (outM != null && offO != null) { raw = offO - outM; exOut = raw > 0 ? attOverlap_(rng, outM, offO) : 0; early = raw - exOut; }
+          var inM = attMin_(b.i), outM = attMin_(b.o), lateIn = null, exIn = 0, early = null, exOut = 0, raw, hol = isOfficialHoliday_(k);
+          if (hol) notes.unshift('جمعة — إجازة رسمية' + (b.i ? ' (حضر)' : ''));
+          if (!hol && inM != null && offI != null) { raw = inM - offI; exIn = raw > 0 ? attOverlap_(rng, offI, inM) : 0; lateIn = raw - exIn; }
+          if (!hol && outM != null && offO != null) { raw = offO - outM; exOut = raw > 0 ? attOverlap_(rng, outM, offO) : 0; early = raw - exOut; }
           if (b.i) present++;
           if (lateIn != null) { if (lateIn > 0) { lateDays++; tLate += lateIn; } else if (lateIn < 0) tExtra += -lateIn; }
           if (early != null) { if (early > 0) { earlyDays++; tEarly += early; } else if (early < 0) tExtra += -early; }
@@ -6198,14 +6257,15 @@ window.safeFileName = function(str){
             note: notes.join('، '), rType: rT.join(' + '), rStatus: rS.join(' + '), rTime: rH.join(' ، '), rWhy: rW.join(' | '), x: x });
         });
         // إحصائيات الطلبات في الشهر
-        var rs = { perm: 0, miss: 0, leaveDays: 0, rej: 0, pend: 0 };
+        var rs = { perm: 0, miss: 0, leaveDays: 0, rej: 0, pend: 0, kd: { 'اعتيادي': 0, 'عارضة': 0, 'مرضي': 0, 'بدون مرتب': 0, 'غير محدد': 0 } };
         rq.forEach(function(r){
           if (r.status === 'مرفوض') rs.rej++;
           else if (r.status !== 'موافق') rs.pend++;
           else if (r.type === 'إذن') rs.perm++;
           else if (r.type === 'مأمورية') rs.miss++;
           else if (r.type === 'إجازة' && r.leave_from && r.leave_to) {
-            for (var d = 1; d <= last; d++) { var kk = month + '-' + attendancePad(d); if (kk >= r.leave_from && kk <= r.leave_to) rs.leaveDays++; }
+            var kk_kind = leaveKindParse_(r.reason).kind || 'غير محدد';
+            for (var d = 1; d <= last; d++) { var kk = month + '-' + attendancePad(d); if (kk >= r.leave_from && kk <= r.leave_to && !isOfficialHoliday_(kk)) { rs.leaveDays++; rs.kd[kk_kind]++; } }
           }
         });
         if (days.length || empFilter) emps.push({ name: n, off: off, days: days, present: present, lateDays: lateDays, tLate: tLate, earlyDays: earlyDays, tEarly: tEarly, tExtra: tExtra, net: tLate + tEarly - tExtra, rs: rs });
@@ -6240,9 +6300,10 @@ window.safeFileName = function(str){
         '<table style="width:100%;border-collapse:collapse;margin-bottom:2px;font-size:13px;line-height:1.25"><tr>' +
           attBoxPdf_('ميعاد الحضور (اللائحة)', e.off.i || '—') + attBoxPdf_('ميعاد الانصراف (اللائحة)', e.off.o || '—') + attBoxPdf_('أيام الحضور', e.present) + attBoxPdf_('أيام التأخير / الانصراف المبكر', e.lateDays + ' / ' + e.earlyDays) + '</tr><tr>' +
           attBoxPdf_('إجمالي تأخير الحضور', attSigned_(e.tLate), e.tLate ? ATT_RED : '') + attBoxPdf_('إجمالي الانصراف المبكر', attSigned_(e.tEarly), e.tEarly ? ATT_RED : '') +
-          attBoxPdf_('زيادة (حضر بدري / مشي متأخر)', e.tExtra ? attSigned_(-e.tExtra) : '0:00', e.tExtra ? ATT_GREEN : '') + attBoxPdf_('الصافي (موجب = عليه / سالب = له)', attSigned_(e.net), netColor) + '</tr></table>' +
+          attBoxPdf_('زيادة (حضر بدري / مشي متأخر)', e.tExtra ? attSigned_(-e.tExtra) : '0:00', e.tExtra ? ATT_GREEN : '') + attBoxPdf_('الصافي (موجب = عليه / سالب = له)', attSigned_(e.net), netColor) + '</tr>' +
+          (e.rs.leaveDays ? '<tr>' + attBoxPdf_('أيام إجازة اعتيادي', e.rs.kd['اعتيادي']) + attBoxPdf_('أيام إجازة عارضة', e.rs.kd['عارضة']) + attBoxPdf_('أيام إجازة مرضي', e.rs.kd['مرضي']) + attBoxPdf_('أيام بدون مرتب (خصم)', e.rs.kd['بدون مرتب'], e.rs.kd['بدون مرتب'] ? ATT_RED : '') + '</tr>' : '') + '</table>' +
         '';
-      var chunks = [], cur = '', w = 0, cap = 38;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
+      var chunks = [], cur = '', w = 0, cap = e.rs.leaveDays ? 36 : 38;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
       rows.forEach(function(r){ if (cur && w + r.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 38; } cur += r.h; w += r.w; });
       chunks.push(cur);
       chunks.forEach(function(c, idx){
@@ -6266,14 +6327,14 @@ window.safeFileName = function(str){
   function attXlsData_(rep){
     var sum = [['الموظف', 'الحضور الرسمي', 'الانصراف الرسمي', 'أيام الحضور', 'أيام تأخير الحضور', 'إجمالي تأخير الحضور (دقيقة)', 'إجمالي تأخير الحضور (س:د)',
       'أيام الانصراف المبكر', 'إجمالي الانصراف المبكر (دقيقة)', 'إجمالي الانصراف المبكر (س:د)', 'زيادة: حضر بدري / مشي متأخر (دقيقة)', 'زيادة (س:د)',
-      'الصافي (دقيقة) موجب = عليه / سالب = له', 'الصافي (س:د)', 'أذونات معتمدة', 'مأموريات معتمدة', 'أيام إجازة معتمدة', 'طلبات مرفوضة', 'طلبات قيد المراجعة']];
+      'الصافي (دقيقة) موجب = عليه / سالب = له', 'الصافي (س:د)', 'أذونات معتمدة', 'مأموريات معتمدة', 'أيام إجازة معتمدة', 'منها اعتيادي', 'منها عارضة', 'منها مرضي', 'منها بدون مرتب (خصم)', 'طلبات مرفوضة', 'طلبات قيد المراجعة']];
     var det = [['الموظف', 'التاريخ', 'اليوم', 'الحضور الرسمي', 'الانصراف الرسمي', 'حضور', 'انصراف',
       'تأخير الحضور (دقيقة)', 'تأخير الحضور (س:د)', 'انصراف مبكر (دقيقة)', 'انصراف مبكر (س:د)', 'مغطّى بطلب صباحًا (دقيقة)', 'مغطّى بطلب انصرافًا (دقيقة)',
       'نوع الطلب', 'حالة الطلب', 'وقت الطلب', 'سبب الطلب', 'ملاحظات']];
     rep.extraCols.forEach(function(c){ det[0].push(ATT_AR_COLS_[c] || c); });
     rep.emps.forEach(function(e){
       sum.push([e.name, e.off.i, e.off.o, e.present, e.lateDays, e.tLate, attSigned_(e.tLate), e.earlyDays, e.tEarly, attSigned_(e.tEarly),
-        e.tExtra, attSigned_(e.tExtra), e.net, attSigned_(e.net), e.rs.perm, e.rs.miss, e.rs.leaveDays, e.rs.rej, e.rs.pend]);
+        e.tExtra, attSigned_(e.tExtra), e.net, attSigned_(e.net), e.rs.perm, e.rs.miss, e.rs.leaveDays, e.rs.kd['اعتيادي'], e.rs.kd['عارضة'], e.rs.kd['مرضي'], e.rs.kd['بدون مرتب'], e.rs.rej, e.rs.pend]);
       e.days.forEach(function(r){
         var row = [e.name, r.d, r.day, e.off.i, e.off.o, r.i, r.o,
           r.lateIn == null ? '' : r.lateIn, attSigned_(r.lateIn), r.early == null ? '' : r.early, attSigned_(r.early), r.exIn, r.exOut,
@@ -7079,7 +7140,8 @@ window.safeFileName = function(str){
       statusText = 'قيد المراجعة';
     }
     span.className = 'dash-req-badge ' + cls;
-    span.textContent = icon + ' ' + requestRecord.type + ' ' + statusText + timeRange;
+    var dk_ = (requestRecord.type === 'إجازة') ? leaveKindParse_(requestRecord.reason).kind : '';
+    span.textContent = icon + ' ' + requestRecord.type + (dk_ ? ' ' + dk_ : '') + ' ' + statusText + timeRange;
     return span;
   }
 
@@ -7639,14 +7701,14 @@ window.safeFileName = function(str){
     }
     addRow('اسم الموظف', req.name || '—');
     addRow('نوع الطلب', typeIcon + ' ' + req.type);
+    if (req.type === 'إجازة' && leaveKindParse_(req.reason).kind) addRow('نوع الإجازة', leaveKindParse_(req.reason).kind);
 
     if (req.type === 'إجازة') {
       if (req.leaveFrom && req.leaveTo && req.leaveFrom !== req.leaveTo) {
         addRow('الفترة', fmtDate_(req.leaveFrom) + ' <span class="rp-sep">→</span> ' + fmtDate_(req.leaveTo));
         try {
-          var d1 = new Date(req.leaveFrom), d2 = new Date(req.leaveTo);
-          var diff = Math.round((d2 - d1) / 86400000) + 1;
-          if (diff > 0) addRow('عدد الأيام', diff + ' يوم');
+          var diff = countWorkDays_(req.leaveFrom, req.leaveTo);
+          addRow('عدد الأيام', diff + ' يوم (من غير الجمع)');
         } catch (e) {}
       } else {
         addRow('التاريخ', fmtDate_(req.leaveFrom || req.leaveTo || req.date) || '—');
@@ -7672,8 +7734,9 @@ window.safeFileName = function(str){
     addRow('الحالة', '<span class="rp-status ' + statusCls + '">' + statusTxt + '</span>');
     if (req.submittedAt) addRow('تاريخ التقديم', fmtDateTime_(req.submittedAt));
 
-    var reasonBlock = req.reason
-      ? '<div class="rp-reason"><div class="rp-reason-title">' + (req.type === 'مأمورية' ? 'تفاصيل المأمورية / السبب' : 'السبب') + '</div><div class="rp-reason-text">' + String(req.reason).replace(/</g, '&lt;') + '</div></div>'
+    var printWhy_ = (req.type === 'إجازة') ? leaveKindParse_(req.reason).text : req.reason;
+    var reasonBlock = printWhy_
+      ? '<div class="rp-reason"><div class="rp-reason-title">' + (req.type === 'مأمورية' ? 'تفاصيل المأمورية / السبب' : 'السبب') + '</div><div class="rp-reason-text">' + String(printWhy_).replace(/</g, '&lt;') + '</div></div>'
       : '';
 
     var overlay = document.createElement('div');
@@ -7724,7 +7787,9 @@ window.safeFileName = function(str){
         lines.push('التاريخ: ' + (req.date || '—'));
         if (req.from || req.to) lines.push('الوقت: ' + (req.from || '') + ' — ' + (req.to || ''));
       }
-      if (req.reason) lines.push('السبب: ' + req.reason);
+      if (req.type === 'إجازة' && leaveKindParse_(req.reason).kind) lines.push('نوع الإجازة: ' + leaveKindParse_(req.reason).kind);
+      var shareWhy_ = (req.type === 'إجازة') ? leaveKindParse_(req.reason).text : req.reason;
+      if (shareWhy_) lines.push('السبب: ' + shareWhy_);
       lines.push('الحالة: ' + statusTxt);
       var text = lines.join('\n');
 
@@ -7784,7 +7849,11 @@ window.safeFileName = function(str){
       var timeRange = attendanceRequestTimeRange(req);
       detailsText = 'بتاريخ ' + req.date + (timeRange ? timeRange : '');
     }
-    if (req.reason) detailsText += ' — ' + req.reason;
+    if (req.type === 'إجازة') {
+      var ak_ = leaveKindParse_(req.reason);
+      if (ak_.kind) detailsText = 'إجازة ' + ak_.kind + ' — ' + detailsText;
+      if (ak_.text) detailsText += ' — ' + ak_.text;
+    } else if (req.reason) detailsText += ' — ' + req.reason;
     details.textContent = detailsText;
 
     var actions = document.createElement('div');
@@ -9586,6 +9655,8 @@ window.safeFileName = function(str){
               minutes: Math.max(lateIn, 0), early: Math.max(early, 0), net: lateIn + early });
           }
         });
+        // الجمعة إجازة رسمية → مفيش غياب ولا تأخير
+        if (isOfficialHoliday_(date)) { absent = []; late = []; }
         renderQuickStatus_({ ok: true, absent: absent, late: late });
       }).catch(function(){
         loadFromLiveSheet_();
@@ -9598,7 +9669,10 @@ window.safeFileName = function(str){
       }
       fetch(ATTENDANCE_SCRIPT_URL + '?action=attendanceQuickStatus&date=' + encodeURIComponent(date))
         .then(function(r){ return r.json(); })
-        .then(renderQuickStatus_)
+        .then(function(d){
+          if (d && isOfficialHoliday_(date)) { d.absent = []; d.late = []; }
+          renderQuickStatus_(d);
+        })
         .catch(function(){
           listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>';
         });
