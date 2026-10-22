@@ -7,12 +7,6 @@
       "avgDelay": 5
     },
     {
-      "client": "الشركة المتحده",
-      "count": 1,
-      "amount": 17745354,
-      "avgDelay": 1
-    },
-    {
       "client": "بينتاكون",
       "count": 1,
       "amount": 17305,
@@ -32,8 +26,8 @@
     }
   ],
   "grandTotal": {
-    "count": 14,
-    "amount": 58871733.10921052,
-    "avgDelay": 7
+    "count": 13,
+    "amount": 41126379.10921052,
+    "avgDelay": 7.461538461539021
   }
 }
