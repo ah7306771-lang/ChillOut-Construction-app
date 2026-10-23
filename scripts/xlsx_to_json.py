@@ -307,6 +307,8 @@ def convert_all_sales(ws):
     c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
     c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء', default=6)
     c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع', default=7)
+    # الوزن الفعلي: عمود I في الشيت (index 8) — بنجمعه لكل أمر لأن الأمر ممكن يبقى له صف لكل صنف
+    c_weight = col('الوزن الفعلي', 'الوزن الفعلى', default=8)
 
     # Group by (client + orderNo) — كل مفتاح فيه: totals مُجمَّعة + أول سعر
     # شراء/بيع لقيته + مجموعة الأسعار المختلفة (لو الأمر فيه أصناف بأسعار
@@ -329,6 +331,7 @@ def convert_all_sales(ws):
                 'sell_prices': [],
                 'buyTotal': 0.0,
                 'sellTotal': 0.0,
+                'actualWeight': 0.0,
                 'paymentMethod': '',
             }
             order_list.append(key)
@@ -338,6 +341,8 @@ def convert_all_sales(ws):
         st = to_number(row[c_sell_total_col]) if c_sell_total_col < len(row) else 0
         g['buyTotal'] += bt
         g['sellTotal'] += st
+        wt = to_number(row[c_weight]) if c_weight < len(row) else 0
+        g['actualWeight'] += wt or 0
         # لو الأمر بأكتر من سعر (أصناف مختلفة)، نجمع الأسعار المتميزة
         bp = to_number(row[c_buy]) if c_buy < len(row) else 0
         sp = to_number(row[c_sell]) if c_sell < len(row) else 0
@@ -376,6 +381,7 @@ def convert_all_sales(ws):
             'sellPrice2': sell_price2,
             'buyTotal': g['buyTotal'],
             'sellTotal': g['sellTotal'],
+            'actualWeight': round(g['actualWeight'], 3),
             'paymentMethod': g['paymentMethod'],
         })
 

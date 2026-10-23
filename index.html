@@ -1711,6 +1711,13 @@ body.cg-compact .wa-float-btn{display:none !important}
 /* الوارد: 3 صفوف بالظبط + scroll للباقي. المنصرف: يمتد لآخر الصفحة. */
 #cgListIn{max-height:125px !important;overflow-y:auto !important}
 #cgListOut{max-height:calc(100vh - 360px) !important;min-height:220px !important;overflow-y:auto !important}
+/* إصلاح الاسكرول لما الحركات تكتر: ما نحبسش اللمس جوه القايمة (كان overscroll contain)،
+   ونسمح بالسحب الرأسي، ونستخدم dvh عشان شريط المتصفح في الموبايل ما يقصش آخر القايمة. */
+#cgListIn,#cgListOut{overflow-y:auto !important;-webkit-overflow-scrolling:touch;overscroll-behavior-y:auto !important;touch-action:pan-y;}
+@supports (height:100dvh){ #cgListOut{max-height:calc(100dvh - 360px) !important;} }
+#custodyLedgerScreen .cg-sec{overflow:visible !important}
+#custodyLedgerScreen .cg-sec .cg-add{border-radius:10px 10px 0 0}
+#custodyLedgerScreen .cg-sec.in .cg-head-row,#custodyLedgerScreen .cg-sec.out .cg-head-row{border-radius:10px 10px 0 0;overflow:hidden}
 /* صف الهيدر للوارد/المنصرف: زرار الإضافة + checkbox "المقفلة" على يساره */
 .cg-head-row{display:flex;align-items:stretch;gap:4px}
 .cg-head-row .cg-add{flex:1;margin:0}
@@ -2031,7 +2038,7 @@ body.cg-compact .wa-float-btn{display:none !important}
   <div class="gate-card home-card" style="max-width:640px;">
     <h1 class="gate-title">العهد</h1>
     <div class="field" id="cgEmpWrap" style="display:none;"><label for="cgEmp">اختر الموظف</label><select id="cgEmp"></select></div>
-    <div class="cg-top"><button type="button" class="cg-rep" id="cgRepBtn">📄 تقرير</button><button type="button" class="cg-refresh" id="cgRefreshBtn" title="تحديث البيانات">🔄</button><div class="cg-who" id="cgWho"></div></div>
+    <div class="cg-top"><button type="button" class="cg-rep" id="cgRepBtn">📄 تقرير</button><div class="cg-who" id="cgWho"></div></div>
     <div class="cg-cards">
       <div class="cg-card in">وارد اليوم<b id="cgTin">0</b></div>
       <div class="cg-card out">منصرف اليوم<b id="cgTout">0</b></div>
@@ -2053,6 +2060,7 @@ body.cg-compact .wa-float-btn{display:none !important}
   </div>
   <div class="gate-card home-card" style="max-width:560px;">
     <h1 class="gate-title">تقرير العهد</h1>
+    <div class="cg-top" style="justify-content:flex-end;"><button type="button" class="cg-refresh" id="crRefreshBtn" title="تحديث البيانات">🔄</button></div>
     <div class="cg-filters">
       <div><label>من تاريخ</label><input type="date" id="crFrom"></div>
       <div><label>إلى تاريخ</label><input type="date" id="crTo"></div>
@@ -8519,8 +8527,24 @@ window.safeFileName = function(str){
       if (dd !== 0) return dd;
       return parseOrder_(b.orderNo) - parseOrder_(a.orderNo);
     });
-    var totalBuy = 0, totalSell = 0;
+    // الوزن الفعلي: بنقرأه من أول مفتاح موجود في الـ JSON (أسماء محتملة) — لو مفيش بيطلع —
+    function getWeight_(it){
+      var ks = ['actualWeight','actual_weight','actWeight','weightActual','الوزن الفعلي','الوزن_الفعلي','weight'];
+      for (var k = 0; k < ks.length; k++){
+        var v = it[ks[k]];
+        if (v !== undefined && v !== null && v !== '') return v;
+      }
+      return null;
+    }
+    function fmtWeight_(v){
+      if (v === null) return '—';
+      var n = (typeof v === 'number') ? v : parseFloat(String(v).replace(/,/g,''));
+      return isNaN(n) ? escQuick_(v) : n.toLocaleString('en-US', {maximumFractionDigits: 3});
+    }
+    var totalBuy = 0, totalSell = 0, totalWeight = 0;
     var rowsHtml = filtered.map(function(it, i){
+      var wv = getWeight_(it);
+      if (wv !== null){ var wn = (typeof wv === 'number') ? wv : parseFloat(String(wv).replace(/,/g,'')); if (!isNaN(wn)) totalWeight += wn; }
       var buy = (typeof it.buyTotal === 'number') ? it.buyTotal : 0;
       var sell = (typeof it.sellTotal === 'number') ? it.sellTotal : 0;
       totalBuy += buy; totalSell += sell;
@@ -8531,10 +8555,10 @@ window.safeFileName = function(str){
       var sp = (typeof it.sellPrice === 'number' && it.sellPrice > 0) ? fmtAmt_(it.sellPrice) : '—';
       if (typeof it.buyPrice2 === 'number' && it.buyPrice2 > 0) bp += ' / ' + fmtAmt_(it.buyPrice2);
       if (typeof it.sellPrice2 === 'number' && it.sellPrice2 > 0) sp += ' / ' + fmtAmt_(it.sellPrice2);
-      return '<tr><td>' + (i+1) + '</td><td dir="ltr">' + escQuick_(it.date || '—') + '</td><td dir="ltr">' + escQuick_(it.orderNo || '—') + '</td><td>' + escQuick_(it.client) + '</td><td>' + bp + '</td><td>' + sp + '</td><td>' + fmtAmt_(buy) + '</td><td>' + fmtAmt_(sell) + '</td><td>' + escQuick_(it.paymentMethod || '') + '</td></tr>';
+      return '<tr><td>' + (i+1) + '</td><td dir="ltr">' + escQuick_(it.date || '—') + '</td><td dir="ltr">' + escQuick_(it.orderNo || '—') + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtWeight_(wv) + '</td><td>' + bp + '</td><td>' + sp + '</td><td>' + fmtAmt_(buy) + '</td><td>' + fmtAmt_(sell) + '</td><td>' + escQuick_(it.paymentMethod || '') + '</td></tr>';
     }).join('');
-    var totalRowHtml = '<tr class="qs-net-row"><td></td><td></td><td></td><td></td><td></td><td><strong>الإجمالي</strong></td><td><strong>' + fmtAmt_(totalBuy) + '</strong></td><td><strong>' + fmtAmt_(totalSell) + '</strong></td><td></td></tr>';
-    var emptyRow = filtered.length ? '' : '<tr><td colspan="9" style="text-align:center;color:#888;">مفيش أوامر بيع للعميل ده</td></tr>';
+    var totalRowHtml = '<tr class="qs-net-row"><td></td><td></td><td></td><td></td><td><strong>' + (totalWeight ? fmtWeight_(totalWeight) : '') + '</strong></td><td></td><td><strong>الإجمالي</strong></td><td><strong>' + fmtAmt_(totalBuy) + '</strong></td><td><strong>' + fmtAmt_(totalSell) + '</strong></td><td></td></tr>';
+    var emptyRow = filtered.length ? '' : '<tr><td colspan="10" style="text-align:center;color:#888;">مفيش أوامر بيع للعميل ده</td></tr>';
     var options = '<option value="">— كل العملاء —</option>' + clientList.map(function(n){
       return '<option value="' + n.replace(/"/g,'&quot;') + '"' + (n === selectedClient ? ' selected' : '') + '>' + escQuick_(n) + '</option>';
     }).join('');
@@ -8545,7 +8569,7 @@ window.safeFileName = function(str){
       (selectedClient ? '<button type="button" id="allSalesClearBtn" style="padding:6px 10px;border:1px solid #ccc;background:#f5f5f5;border-radius:6px;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;">مسح الفلتر</button>' : '') +
     '</div>';
     listWrap.innerHTML = filterHtml +
-      '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>التاريخ</th><th>رقم الأمر</th><th>العميل</th><th>سعر شراء</th><th>سعر بيع</th><th>إجمالي الشراء</th><th>إجمالي البيع</th><th>طريقة السداد</th></tr></thead><tbody>' + rowsHtml + emptyRow + totalRowHtml + '</tbody></table></div>';
+      '<div class="qs-table-scroll"><table class="dtable"><thead><tr><th>#</th><th>التاريخ</th><th>رقم الأمر</th><th>العميل</th><th>الوزن الفعلي</th><th>سعر شراء</th><th>سعر بيع</th><th>إجمالي الشراء</th><th>إجمالي البيع</th><th>طريقة السداد</th></tr></thead><tbody>' + rowsHtml + emptyRow + totalRowHtml + '</tbody></table></div>';
     var applyBtn = document.getElementById('allSalesApplyBtn');
     if (applyBtn) applyBtn.addEventListener('click', function(){
       var picker = document.getElementById('allSalesClientPicker');
@@ -8568,10 +8592,11 @@ window.safeFileName = function(str){
           return;
         }
         function fmtAmt_(n){ return (typeof n === 'number') ? n.toLocaleString('en-US') : escQuick_(n); }
+        function lw_(it){ var ks = ['actualWeight','actual_weight','lastActualWeight','الوزن الفعلي','weight']; for (var k = 0; k < ks.length; k++){ var v = it[ks[k]]; if (v !== undefined && v !== null && v !== '') return (typeof v === 'number') ? v.toLocaleString('en-US', {maximumFractionDigits: 3}) : escQuick_(v); } return '—'; }
         var rowsHtml = rows.map(function(it, i){
-          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + fmtAmt_(it.lastBuyPrice) + '</td><td>' + fmtAmt_(it.lastSellPrice) + '</td><td>' + escQuick_(it.paymentMethod) + '</td><td>' + escQuick_(it.lastInvoiceDate) + '</td></tr>';
+          return '<tr><td>' + (i+1) + '</td><td>' + escQuick_(it.client) + '</td><td>' + lw_(it) + '</td><td>' + fmtAmt_(it.lastBuyPrice) + '</td><td>' + fmtAmt_(it.lastSellPrice) + '</td><td>' + escQuick_(it.paymentMethod) + '</td><td>' + escQuick_(it.lastInvoiceDate) + '</td></tr>';
         }).join('');
-        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable lp-table"><thead><tr><th>#</th><th>العميل</th><th>اخر سعر شراء</th><th>اخر سعر بيع</th><th>اخر طريقة السداد</th><th>تاريخ اخر فاتورة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
+        listWrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable lp-table"><thead><tr><th>#</th><th>العميل</th><th>الوزن الفعلي</th><th>اخر سعر شراء</th><th>اخر سعر بيع</th><th>اخر طريقة السداد</th><th>تاريخ اخر فاتورة</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div>';
       })
       .catch(function(){ listWrap.innerHTML = '<div class="empty-note">تعذّر الاتصال بالسيرفر.</div>'; });
   }
@@ -14480,13 +14505,6 @@ window.safeFileName = function(str){
   }
   function closeRep(){ $('cgRepModal').style.display = 'none'; }
   $('cgRepBtn').addEventListener('click', openRep);
-  // زرار 🔄 يعيد تحميل حركات العهدة من Supabase ويحدث العرض بآخر البيانات.
-  $('cgRefreshBtn').addEventListener('click', function(){
-    var b = this; b.classList.add('spin'); b.disabled = true;
-    Promise.resolve(loadRows()).catch(function(){}).then(function(){
-      setTimeout(function(){ b.classList.remove('spin'); b.disabled = false; }, 500);
-    });
-  });
   $('rpClose').addEventListener('click', closeRep);
   $('cgRepModal').addEventListener('click', function(e){ if (e.target === this) closeRep(); });
   async function repPdf(mode){
@@ -14692,6 +14710,22 @@ window.safeFileName = function(str){
       $('crProj').innerHTML = opts; renderVaults();
     }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
   }
+  // زرار 🔄 في شاشة تقرير العهد: يعيد تحميل الحركات والأقفال من Supabase ويحدّث قايمة الخزن
+  // مع الحفاظ على التواريخ والمشروع والخزنة المختارة.
+  $('crRefreshBtn').addEventListener('click', function(){
+    var b = this; if (b.disabled) return; b.classList.add('spin'); b.disabled = true; st('crStatus', 'جارٍ التحديث…');
+    var keepProj = $('crProj').value;
+    Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(), loadVaultViewers()]).then(function(res){
+      R.rows = res[1]; st('crStatus', '');
+      var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
+      S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
+      R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
+      $('crProj').innerHTML = opts; $('crProj').value = keepProj; if ($('crProj').value !== keepProj) $('crProj').value = '*';
+      renderVaults(); st('crStatus', 'تم التحديث ✓');
+    }).catch(function(){ st('crStatus', 'تعذّر التحديث', true); }).then(function(){
+      setTimeout(function(){ b.classList.remove('spin'); b.disabled = false; }, 400);
+    });
+  });
   $('openCustodyReportTileBtn').addEventListener('click', function(){ openReport_('settings-menu'); });
   $('openCustodyReportHomeBtn').addEventListener('click', function(){ openReport_('home'); });
   $('backSettingsBtnCustodyReport').addEventListener('click', function(){ window.showScreen_(reportBack_); });
