@@ -14210,7 +14210,7 @@ window.safeFileName = function(str){
   $('openCustodyLedgerBtn').addEventListener('click', function(){
     var c = ctx();
     if (c.isEmp && !c.name) { alert('تعذّر تحديد الموظف، سجّل الدخول من جديد'); return; }
-    window.showScreen_('custody-ledger'); closeRep();
+    ledgerBack_ = 'home'; window.showScreen_('custody-ledger'); closeRep();
     $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = '';
     loadVaultViewers().then(function(){
       // الأدمن يشوف كل الخزن. الموظف يشوف خزنته + أي خزنة اسمه موجود في viewers.
@@ -14231,7 +14231,9 @@ window.safeFileName = function(str){
       loadProjects().then(loadRows);
     });
   });
-  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ window.showScreen_('home'); });
+  // الرجوع من شاشة العهد: لو دخلناها من تقرير العهد (badge "حركة غير مقفلة") نرجع لتقرير العهد، غير كده للرئيسية.
+  var ledgerBack_ = 'home';
+  $('backHomeBtnCustodyLedger').addEventListener('click', function(){ var to = ledgerBack_; ledgerBack_ = 'home'; window.showScreen_(to); });
   $('cgEmp').addEventListener('change', function(){ S.emp = this.value; $('cgWho').textContent = '🔒 خزنة: ' + S.emp; $('cgDraftIn').innerHTML = $('cgDraftOut').innerHTML = ''; loadRows(); });
 
   function loadRows(){
@@ -14739,6 +14741,7 @@ window.safeFileName = function(str){
     var name = btn.getAttribute('data-cr-goto');
     if (!name) return;
     try {
+      ledgerBack_ = 'custody-report';
       window.showScreen_('custody-ledger');
       var sel = document.getElementById('cgEmp');
       if (sel) {
