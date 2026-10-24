@@ -1918,6 +1918,62 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-t.sk-day tfoot td.nm{z-index:6;inset-inline-start:0;width:auto;max-width:none;box-shadow:none}
 #sarrakiScreen .sk-t.sk-day td.sk-empty{position:static;white-space:normal}
 
+
+/* تقرير الإجمالي حسب البند (PDF) */
+.skp .ih{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;color:#1a237e;font-weight:700;font-size:14px}
+.skp .ih b{color:#000}
+.skp .ihl{text-align:right;line-height:1.5}
+.skp .ihl div{white-space:nowrap}
+.skp .ib{font-size:19px;font-weight:800;color:#1a237e;margin:10px 0 10px}
+.skp .ib b{color:#8b0000}
+.skp .ib small{font-size:13px;color:#555;font-weight:700}
+.skp table.it{width:100%;border-collapse:collapse;table-layout:fixed;font-size:15px}
+.skp table.it th{background:#e9e9e9;color:#1a237e;border:1.5px solid #000;padding:4px 3px;font-size:13px;font-weight:700;line-height:1.35;height:46px;vertical-align:middle;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;overflow:hidden}
+.skp table.it td{border:1.5px solid #000;padding:3px 4px;height:29px;font-weight:700;text-align:center;color:#000;font-size:15.5px}
+.skp table.it td.nm{font-size:15px}
+.skp table.it .y{background:#fffbe0}
+.skp table.it th.y{background:#e9e9e9}
+.skp table.it tr.tot td{background:#fff59d;color:#8b0000;font-size:16px}
+.skp table.it tr.tot td.lb{text-align:right;font-size:14px;padding-inline-end:8px}
+
+/* ===== السراكي: تخطيط تطبيق (app-shell) — الجدول ياخد كل المساحة المتاحة وبيتسكرول جواه ===== */
+#sarrakiScreen{height:100vh;height:100dvh;min-height:0 !important;overflow:hidden;padding:60px 3px 4px !important;box-sizing:border-box}
+#sarrakiScreen .gate-card{display:flex;flex-direction:column;height:100%;min-height:0;margin:0 auto !important;max-width:min(98vw,1180px) !important;padding:4px 6px 4px !important;box-sizing:border-box}
+#sarrakiScreen .gate-card > *{flex:none}
+#sarrakiScreen .gate-card > #skBody{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+#sarrakiScreen #skBody.dayv{display:flex;flex-direction:column;overflow:hidden}
+#sarrakiScreen #skBody.dayv > *{flex:none}
+#sarrakiScreen #skBody.dayv > .sk-wrap.day{flex:1 1 auto;min-height:0;max-height:none}
+#sarrakiScreen .sk-head{margin:0 0 3px}
+#sarrakiScreen .gate-title{font-size:15px}
+#sarrakiScreen .sk-head-r{display:flex;align-items:center;gap:6px}
+#sarrakiScreen .sk-coll{border:1px solid var(--panel-line);background:#fff;border-radius:7px;width:26px;height:24px;font-size:13px;line-height:1;cursor:pointer;padding:0;color:var(--ink)}
+#sarrakiScreen.mcoll .sk-master{display:none}
+#sarrakiScreen .sk-master{padding:5px 7px;gap:4px}
+#sarrakiScreen .sk-f label{font-size:9.5px;margin-bottom:1px}
+#sarrakiScreen .sk-f input,#sarrakiScreen .sk-f select,#sarrakiScreen .sk-f .sk-badge{height:26px}
+#sarrakiScreen .sk-master .btn{height:26px}
+#sarrakiScreen .sk-tabs{margin:3px 0 4px}
+#sarrakiScreen .sk-tab{font-size:12px;padding:5px 12px}
+#sarrakiScreen .sk-days{padding:1px 0 4px;gap:4px}
+#sarrakiScreen .sk-chip{flex:1 0 60px;padding:2px 3px;line-height:1.2}
+#sarrakiScreen .sk-chip b,#sarrakiScreen .sk-chip span{display:inline;font-size:10.5px}
+#sarrakiScreen .sk-chip span{margin-inline-start:4px}
+#sarrakiScreen .sk-chip i{display:block;margin-top:0;font-size:9.5px;padding:0 6px}
+#sarrakiScreen .sk-tools{margin:0 0 4px}
+#sarrakiScreen .sk-tools button{padding:3px 7px;font-size:11px}
+#sarrakiScreen .sk-tools button.on{background:#e2621f;color:#fff;border-color:#e2621f}
+#sarrakiScreen .sk-add{margin-bottom:4px;padding:5px}
+/* كثافة الصفوف */
+#sarrakiScreen .sk-t.sk-day th{padding:3px 3px;font-size:10.5px}
+#sarrakiScreen .sk-t.sk-day td{padding:1px 3px}
+#sarrakiScreen .sk-t.sk-day .sk-in{height:24px;font-size:11.5px;padding:0 4px}
+#sarrakiScreen .sk-t.sk-day td.n{font-size:10px}
+/* شريط الإجماليات: صغير وثابت أسفل الجدول */
+.sk-fix{position:static;transform:none;width:auto;margin-top:4px;gap:5px;padding:3px 6px;border-radius:9px;box-shadow:none;flex:none}
+.sk-fix > div{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:2px 7px;border-radius:7px}
+.sk-fix span{display:inline;font-size:10px}
+.sk-fix b{display:inline;font-size:12.5px;margin-top:0}
 /* شريط الإجماليات الثابت */
 #sarrakiScreen{padding-bottom:78px}
 .sk-fix{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100vw,1180px);z-index:60;display:flex;gap:6px;background:#3a3f45;color:#fff;padding:7px 10px calc(7px + env(safe-area-inset-bottom,0px));border-radius:14px 14px 0 0;box-shadow:0 -4px 14px rgba(0,0,0,.25);box-sizing:border-box}
@@ -2426,7 +2482,7 @@ body.cg-compact .wa-float-btn{display:none !important}
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card">
-    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-sync" id="skSync">…</span></div>
+    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-head-r"><span class="sk-sync" id="skSync">…</span><button type="button" class="sk-coll" id="skColl" title="إخفاء / إظهار بيانات الفترة">▾</button></span></div>
     <div class="sk-master">
       <div class="mrow">
         <div class="sk-f w-year"><label>السنة</label><input id="skYear" readonly></div>
@@ -15870,7 +15926,7 @@ window.safeFileName = function(str){
     $('#skfxD').textContent = fmt(T.days); $('#skfxA').textContent = fmt(T.adv); $('#skfxG').textContent = fmt(T.gross);
     bar.style.display = '';
   }
-  function renderAll(){ renderAllInner(); paintFix(); }
+  function renderAll(){ renderAllInner(); var b = $('#skBody'); if (b) b.classList.toggle('dayv', S.view === 'day' && !!P() && !S.loading); paintFix(); }
   function renderAllInner(){
     renderMaster(); ensureDay();
     var body = $('#skBody'), p = P();
@@ -15887,6 +15943,7 @@ window.safeFileName = function(str){
     var m = {}; S.workers.forEach(function(w){ m[w.name] = w; });
     return Object.keys(m).map(function(k){ return m[k]; });
   }
+  function addOpenNow(ws){ return S.addOpen == null ? !(ws || WK().filter(function(w){ return DM().get(w.id + '|' + S.day); })).length : !!S.addOpen; }
   function renderDay(){
     var p = P(), closed = isClosed(), wd = weekDates(p, S.week), all = WK(), dm = DM(), t = todayS();
     var ws = all.filter(function(w){ return dm.get(w.id + '|' + S.day); });
@@ -15896,11 +15953,12 @@ window.safeFileName = function(str){
     }).join('') + '</div>';
     if (closed) h += '<div class="sk-lock">🔒 الفترة مقفلة — العرض فقط. لإعادة فتحها: الإعدادات ← إعدادات السراكي.</div>';
     else {
-      h += '<div class="sk-tools"><button type="button" data-t="copy">📋 نسخ حضور اليوم السابق</button><button type="button" data-t="clear" class="red">✖ مسح حضور اليوم</button></div>';
-      h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
+      var addOpen = addOpenNow(ws);
+      h += '<div class="sk-tools"><button type="button" data-t="copy">📋 نسخ اليوم السابق</button><button type="button" data-t="clear" class="red">✖ مسح اليوم</button><button type="button" data-t="add" class="' + (addOpen ? 'on' : '') + '">' + (addOpen ? '▲ إخفاء الإضافة' : '＋ إضافة عامل') + '</button></div>';
+      if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>سهرات</th><th>سلفة</th><th>المشروع</th><th></th></tr></thead><tbody>';
+    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>المشروع</th><th>سهرات</th><th>سلفة</th><th></th></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -15908,9 +15966,9 @@ window.safeFileName = function(str){
         '<td class="c-item"><select class="sk-in" data-f="item_id"' + dis + '>' + itemOpts(w.item_id || '') + '</select></td>' +
         '<td class="c-prof"><input class="sk-in" data-f="profession" value="' + esc(w.profession || '') + '"' + dis + '></td>' +
         '<td class="c-rate"><input class="sk-in" data-f="daily_rate" inputmode="decimal" value="' + esc(w.daily_rate || '') + '"' + dis + '></td>' +
+        '<td class="c-proj"><select class="sk-in" data-d="project"' + dis + '></select></td>' +
         '<td class="c-ot"><input class="sk-in" data-d="overtime" inputmode="decimal"' + dis + '></td>' +
         '<td class="c-adv"><input class="sk-in" data-d="advance" inputmode="decimal"' + dis + '></td>' +
-        '<td class="c-proj"><select class="sk-in" data-d="project"' + dis + '></select></td>' +
         '<td class="act">' + (closed ? '' : '<button type="button" class="sk-cp" data-cp title="نسخ العامل (مشروع + سهرات) ليوم تاني — من غير السلفة">📋</button><button type="button" class="sk-x" data-del title="إزالة العامل">✕</button>') + '</td></tr>';
     });
     if (!ws.length) h += '<tr><td colspan="9" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
@@ -16000,6 +16058,7 @@ window.safeFileName = function(str){
     var r = dayObj(w, S.day, true);
     if (r.present) { toast('العامل ده مضاف بالفعل في اليوم ده'); return; }
     r.present = true; r.project_id = pj.value; commitDay(r);
+    S.addOpen = true;
     renderDay(); var n2 = $('#skaName'); if (n2) n2.focus();
   }
   function onBodyClick(e){
@@ -16075,6 +16134,8 @@ window.safeFileName = function(str){
       var prev = addD(d, -1), n = 0;
       ws.forEach(function(w){ var pr = dayRow(w.id, prev); if (pr && pr.present) { var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = pr.project_id || w.project_id || null; commitDay(r); n++; } } });
       toast(n ? 'تم نسخ ' + n + ' عامل' : 'مفيش حاجة تتنسخ');
+    } else if (a === 'add') {
+      S.addOpen = !addOpenNow(); renderDay(); var nf = $('#skaName'); if (nf) nf.focus(); return;
     } else if (a === 'clear') {
       var rs = []; ws.forEach(function(w){ var r = dayRow(w.id, d); if (r) rs.push(r); });
       if (!rs.length) { toast('مفيش حاجة تتمسح'); return; }
@@ -16265,10 +16326,11 @@ window.safeFileName = function(str){
     modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
       '<label class="l">العامل</label><select id="rpW"><option value="">كل العمال</option>' + ws.map(function(w){ return '<option value="' + w.id + '">' + esc(w.name) + '</option>'; }).join('') + '</select>' +
       '<label class="chk"><input type="checkbox" id="rpS" checked> إرفاق كشف تفصيلي لكل عامل (يوم بيوم) في PDF / الطباعة</label>' +
-      '<p class="msg" id="rpM"></p><div class="btns"><button class="btn btn-primary" id="rpX">📊 Excel</button><button class="btn btn-primary" id="rpP">⬇ PDF</button><button class="btn btn-secondary" id="rpR">🖨 طباعة</button><button class="btn btn-secondary" id="rpC">إغلاق</button></div>', function(el, close){
+      '<p class="msg" id="rpM"></p><div class="btns"><button class="btn btn-primary" id="rpI" style="flex:1 1 100%">📑 تقرير إجمالي حسب البند (PDF)</button><button class="btn btn-primary" id="rpX">📊 Excel</button><button class="btn btn-primary" id="rpP">⬇ PDF</button><button class="btn btn-secondary" id="rpR">🖨 طباعة</button><button class="btn btn-secondary" id="rpC">إغلاق</button></div>', function(el, close){
       var msg = function(t){ el.querySelector('#rpM').textContent = t || ''; };
       var opt = function(){ return { worker: el.querySelector('#rpW').value, slips: el.querySelector('#rpS').checked }; };
       el.querySelector('#rpC').onclick = close;
+      el.querySelector('#rpI').onclick = function(){ msg('جارٍ إنشاء تقرير الإجمالي حسب البند… (ممكن ياخد لحظات)'); buildPdf(p, { type: 'items' }).then(function(){ msg('تم تنزيل الملف ✔'); }).catch(function(e){ msg('تعذّر إنشاء PDF: ' + e.message); }); };
       el.querySelector('#rpX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); buildExcel(p, opt()).then(function(){ msg('تم تنزيل الملف ✔'); }).catch(function(e){ msg('تعذّر إنشاء الملف: ' + e.message); }); };
       el.querySelector('#rpP').onclick = function(){ msg('جارٍ إنشاء PDF… (ممكن ياخد لحظات)'); buildPdf(p, opt()).then(function(){ msg('تم تنزيل الملف ✔'); }).catch(function(e){ msg('تعذّر إنشاء PDF: ' + e.message); }); };
       el.querySelector('#rpR').onclick = function(){ close(); printPages(p, opt()); };
@@ -16400,6 +16462,70 @@ window.safeFileName = function(str){
     });
     return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
   }
+  // ---------- تقرير الإجمالي حسب البند (PDF): كل عامل مرة واحدة تحت بنده، مجمّع على كل المشاريع ----------
+  function fdmy(d){ return d.slice(8, 10) + '-' + d.slice(5, 7) + '-' + d.slice(0, 4); }
+  function itemSortOf(id){ for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return S.items[i].sort || i; return 1e8; }
+  function itemsData(p){
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), groups = {};
+    WK(p.id).forEach(function(w){
+      var rate = +w.daily_rate || 0, days = 0, otd = 0, a1 = 0, a2 = 0;
+      dates.forEach(function(d){
+        var r = m.get(w.id + '|' + d); if (!r) return;
+        if (r.present) days++; otd += +r.overtime || 0;
+        var a = +r.advance || 0; if (d < w2) a1 += a; else a2 += a;
+      });
+      if (!days && !otd && !a1 && !a2) return;
+      var k = w.item_id || '', g = groups[k] || (groups[k] = { key: k, rows: [], map: {} }), nm = String(w.name || '').trim();
+      var x = g.map[nm];
+      if (!x) { x = g.map[nm] = { name: nm, rate: rate, days: 0, otd: 0, extra: 0, before: 0, a1: 0, a2: 0 }; g.rows.push(x); }
+      x.days += days; x.otd += otd; x.extra += otd * rate; x.before += (days + otd) * rate; x.a1 += a1; x.a2 += a2;
+    });
+    var keys = Object.keys(groups).sort(function(a, b){ if (a === '') return 1; if (b === '') return -1; return itemSortOf(a) - itemSortOf(b); });
+    return keys.map(function(k){
+      var g = groups[k]; g.rows.forEach(function(x){ x.tot = x.days + x.otd; x.net = x.before - x.a1 - x.a2; });
+      g.name = k ? itemName(k) : 'بدون بند'; g.tot = sumRows(g.rows); return g;
+    });
+  }
+  function sumRows(rows){
+    var t = { n: rows.length, days: 0, otd: 0, tot: 0, extra: 0, before: 0, a1: 0, a2: 0, net: 0 };
+    rows.forEach(function(x){ for (var k in t) if (k !== 'n') t[k] += x[k] || 0; });
+    return t;
+  }
+  function buildItemsPages(p){
+    var gs = itemsData(p), pages = [], per = 15;
+    if (!gs.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
+    var z = function(v){ return v ? fmt(v) : ''; };
+    function head(seq, line){
+      return '<div class="ih"><div class="ihr"><span>البيان : </span><b>سراكي عمال — تقرير إجمالي حسب البند</b></div>' +
+        '<div class="ihl"><div><span>السنة : </span><b>' + p.year + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;مسلسل : </span><b>' + seq + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;الفترة : </span><b>' + p.period_no + '</b></div>' +
+        '<div style="margin-top:4px"><span>من </span><b>' + fdmy(p.from_date) + '</b><span>&nbsp;&nbsp;&nbsp;الى&nbsp;&nbsp;&nbsp;</span><b>' + fdmy(p.to_date) + '</b></div></div></div>' + line;
+    }
+    function th(first, second){
+      return '<colgroup><col style="width:20%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:9%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"></colgroup>' +
+        '<thead><tr><th>' + first + '</th><th>' + second + '</th><th>عدد<br>الأيام</th><th>سهرات</th><th>إجمالي<br>الأيام</th><th>قيمة<br>الإضافي</th><th class="y">القبض قبل<br>السلف</th><th>سلف الأسبوع<br>الأول</th><th>سلف الأسبوع<br>الثاني</th><th class="y">القبض</th></tr></thead>';
+    }
+    function cells(x, lead2){
+      return '<td>' + lead2 + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td>' + x.tot + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td>';
+    }
+    gs.forEach(function(g, gi){
+      var chunks = []; for (var i = 0; i < g.rows.length; i += per) chunks.push(g.rows.slice(i, i + per));
+      chunks.forEach(function(ch, ci){
+        var last = ci === chunks.length - 1, cont = ci > 0 ? ' <small>(تابع)</small>' : '';
+        var h = head(gi + 1, '<div class="ib">البند التحليلي : <b>' + esc(g.name) + '</b>' + cont + '</div>') + '<table class="it">' + th('اسم العامل', 'قيمة اليومية') + '<tbody>';
+        ch.forEach(function(x){ h += '<tr><td class="nm">' + esc(x.name) + '</td>' + cells(x, fmt(x.rate)) + '</tr>'; });
+        if (last) { var t = g.tot; h += '<tr class="tot"><td colspan="2" class="lb">إجمالي على مستوى البند التحليلي</td><td>' + t.days + '</td><td>' + z(t.otd) + '</td><td>' + t.tot + '</td><td>' + z(t.extra) + '</td><td>' + fmt(t.before) + '</td><td>' + z(t.a1) + '</td><td>' + z(t.a2) + '</td><td>' + fmt(t.net) + '</td></tr>'; }
+        h += '</tbody></table>';
+        pages.push({ orient: 'land', html: h });
+      });
+    });
+    // صفحة أخيرة: إجمالي الفترة على مستوى كل البنود
+    var all = sumRows(gs.map(function(g){ return g.tot; }));
+    var hs = head(gs.length + 1, '<div class="ib">إجمالي الفترة على مستوى كل <b>البنود التحليلية</b></div>') + '<table class="it">' + th('البند التحليلي', 'عدد العمال') + '<tbody>';
+    gs.forEach(function(g){ hs += '<tr><td class="nm">' + esc(g.name) + '</td>' + cells(g.tot, g.rows.length) + '</tr>'; });
+    hs += '<tr class="tot"><td class="lb">الإجمالي العام</td><td>' + gs.reduce(function(m, g){ return m + g.rows.length; }, 0) + '</td><td>' + all.days + '</td><td>' + z(all.otd) + '</td><td>' + all.tot + '</td><td>' + z(all.extra) + '</td><td>' + fmt(all.before) + '</td><td>' + z(all.a1) + '</td><td>' + z(all.a2) + '</td><td>' + fmt(all.net) + '</td></tr></tbody></table>';
+    pages.push({ orient: 'land', html: hs });
+    return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
+  }
   function pagesToDom(pages, host){
     host.innerHTML = pages.map(function(pg){ return '<div class="skp ' + pg.orient + '">' + pg.html + '</div>'; }).join('');
     return Array.prototype.slice.call(host.children);
@@ -16408,7 +16534,8 @@ window.safeFileName = function(str){
   function buildPdf(p, o){
     if (!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)) return Promise.reject(new Error('مكتبات PDF غير محمّلة'));
     var stage = $('#skStage', document); stage = document.getElementById('skStage');
-    var els = pagesToDom(buildPages(p, o), stage), doc = null, chain = fontsReady();
+    var pgs; try { pgs = o.type === 'items' ? buildItemsPages(p) : buildPages(p, o); } catch (e) { return Promise.reject(e); }
+    var els = pagesToDom(pgs, stage), doc = null, chain = fontsReady();
     els.forEach(function(el, i){
       chain = chain.then(function(){ return html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }); }).then(function(cv){
         var land = el.classList.contains('land');
@@ -16417,7 +16544,7 @@ window.safeFileName = function(str){
         doc.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, land ? 297 : 210, land ? 210 : 297);
       });
     });
-    return chain.then(function(){ download(doc.output('blob'), repName(p, 'pdf')); stage.innerHTML = ''; }, function(e){ stage.innerHTML = ''; throw e; });
+    return chain.then(function(){ download(doc.output('blob'), o.type === 'items' ? 'سراكي-إجمالي-حسب-البند-فترة-' + p.period_no + '-' + p.year + '.pdf' : repName(p, 'pdf')); stage.innerHTML = ''; }, function(e){ stage.innerHTML = ''; throw e; });
   }
   function printPages(p, o){
     var host = document.getElementById('skPrintRoot'); pagesToDom(buildPages(p, o), host);
@@ -16442,6 +16569,8 @@ window.safeFileName = function(str){
   }
   $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
   $('#skRep').addEventListener('click', reportModal);
+  $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
+  if (LS.get('sk_mcoll', 0)) { root.classList.add('mcoll'); $('#skColl').textContent = '▸'; }
   Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.addEventListener('click', function(){ S.view = b.getAttribute('data-v'); renderAll(); }); });
   $('#backHomeBtnSarraki').addEventListener('click', function(){ window.showScreen_('home'); });
 
