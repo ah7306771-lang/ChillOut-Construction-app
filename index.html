@@ -1842,6 +1842,90 @@ select.sk-in{padding:0 4px;min-width:130px}
   #skBody .sk-t.cards .sk-in{font-size:11px;padding:0 2px}
   #skBody .sk-t.cards td.act .sk-cp,#skBody .sk-t.cards td.act .sk-x{padding:2px 4px;font-size:13px}
 }
+
+/* ===== السراكي: ماستر سطرين + حقول رقمية صغيرة + ألوان ===== */
+#sarrakiScreen .sk-master{display:flex;flex-direction:column;gap:5px;padding:7px 9px}
+#sarrakiScreen .sk-master .mrow{display:flex;gap:6px;align-items:flex-end;flex-wrap:nowrap}
+#sarrakiScreen .sk-master .sk-f{min-width:0;flex:none}
+#sarrakiScreen .sk-master .sk-f.grow{flex:1 1 0}
+#sarrakiScreen .sk-master .sk-f label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#sarrakiScreen .sk-master .w-year{width:46px}
+#sarrakiScreen .sk-master .w-per{width:42px}
+#sarrakiScreen .sk-master .w-week{width:62px}
+#sarrakiScreen .sk-master .w-st{width:30px}
+#sarrakiScreen .sk-master .sk-f input,#sarrakiScreen .sk-master .sk-f select{padding:0 3px;font-size:12px;min-width:0}
+#sarrakiScreen .sk-master .sk-f input[type=date]{font-size:11.5px;padding:0 2px}
+#sarrakiScreen .sk-master select{-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center;background-image:none}
+#sarrakiScreen .sk-master .sk-f .sk-badge,#sarrakiScreen .sk-master .sk-f .sk-badge.closed{background:transparent;border-color:transparent;font-size:17px;padding:0}
+#sarrakiScreen .sk-master .btn{width:auto;margin-inline-start:auto;height:29px;padding:0 12px;font-size:11.5px;border-radius:8px;white-space:nowrap}
+#sarrakiScreen .sk-tools{flex-wrap:nowrap}
+#sarrakiScreen .sk-tools button{flex:1;white-space:nowrap}
+#sarrakiScreen .sk-tools button.red{color:#b3261e;background:#fdeceb;border-color:#f3c0bc}
+#sarrakiScreen .sk-chip.has:not(.on){background:#eefaf2;border-color:#b7e0c8}
+#sarrakiScreen .sk-chip.has:not(.on) i{background:#d6f2e0;color:#1f7a4c}
+#sarrakiScreen .sk-chip.fri:not(.on){background:#f3effc;border-color:#d4c8f0}
+#sarrakiScreen .sk-chip.fri:not(.on) b{color:#6a4bb0}
+#sarrakiScreen .sk-chip.today:not(.on){border-color:var(--steel);box-shadow:inset 0 0 0 1px var(--steel)}
+#sarrakiScreen .sk-t td.nm{border-inline-start:4px solid var(--ic,transparent)}
+#sarrakiScreen .sk-t tr.sk-np td{background:#fff6e0 !important}
+#sarrakiScreen .sk-in.has-adv{background:#fdeceb;border-color:#f3c0bc;color:#b3261e;font-weight:800}
+#sarrakiScreen .sk-in.has-ot{background:#e8f1fd;border-color:#bcd3f3;color:#1f5fae;font-weight:800}
+#sarrakiScreen .sk-bad,#sarrakiScreen .sk-in.sk-bad,#sarrakiScreen .sk-add .sk-bad{border-color:#d93025 !important;background:#fff4f3 !important}
+@media (min-width:861px){
+  #skBody .sk-t td.c-rate{width:76px}
+  #skBody .sk-t td.c-ot{width:48px}
+  #skBody .sk-t td.c-adv{width:76px}
+  #skBody .sk-t td.c-ot .sk-in{padding:0 2px}
+}
+@media (max-width:860px){
+  #skBody .sk-t.cards tr{grid-template-columns:1.7fr 1fr 1.2fr .7fr 1.2fr .35fr .7fr auto;border-inline-start:4px solid var(--ic,transparent)}
+  #skBody .sk-t.cards td.nm{border-inline-start:none}
+  #skBody .sk-t.cards td.c-ot .sk-in{text-align:center;padding:0 1px}
+}
+@media (max-width:600px){
+  #skBody .sk-t.cards tr{grid-template-columns:repeat(12,1fr)}
+  #skBody .sk-t.cards td.nm{grid-column:1 / span 4;grid-row:1}
+  #skBody .sk-t.cards td.c-prof{grid-column:5 / span 3;grid-row:1}
+  #skBody .sk-t.cards td.c-item{grid-column:8 / span 3;grid-row:1}
+  #skBody .sk-t.cards td.act{grid-column:11 / span 2;grid-row:1}
+  #skBody .sk-t.cards td.c-proj{grid-column:1 / span 5;grid-row:2}
+  #skBody .sk-t.cards td.c-rate{grid-column:6 / span 2;grid-row:2}
+  #skBody .sk-t.cards td.c-ot{grid-column:8 / span 2;grid-row:2}
+  #skBody .sk-t.cards td.c-adv{grid-column:10 / span 3;grid-row:2}
+}
+
+/* ===== السراكي: سطر واحد لكل عامل — الترقيم والاسم ثابتين والباقي بيتسكرول، والمشروع في الآخر ===== */
+#sarrakiScreen .sk-wrap.day{max-height:68vh;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:10px}
+#sarrakiScreen .sk-t.sk-day{min-width:720px;border-collapse:separate;border-spacing:0;font-size:12px}
+#sarrakiScreen .sk-t.sk-day th{position:sticky;top:0;z-index:3;background:#3a3f45;color:#fff;padding:6px 4px;font-size:11px;white-space:nowrap}
+#sarrakiScreen .sk-t.sk-day td{padding:3px 3px;border-bottom:1px solid #f2e7da;background:#fff}
+#sarrakiScreen .sk-t.sk-day tbody tr:nth-child(even) td{background:#fffaf5}
+#sarrakiScreen .sk-t.sk-day tbody tr:hover td,#sarrakiScreen .sk-t.sk-day tbody tr:focus-within td{background:#fff1e3}
+#sarrakiScreen .sk-t.sk-day tr.sk-np td{background:#fff6e0}
+#sarrakiScreen .sk-t.sk-day th.n,#sarrakiScreen .sk-t.sk-day td.n{position:sticky;inset-inline-start:0;width:30px;min-width:30px;max-width:30px;z-index:2;text-align:center;font-size:11px;font-weight:800;color:var(--ink-soft);box-shadow:inset -4px 0 0 var(--ic,transparent)}
+#sarrakiScreen .sk-t.sk-day th.n{z-index:5;box-shadow:none;color:#fff}
+#sarrakiScreen .sk-t.sk-day th.nm,#sarrakiScreen .sk-t.sk-day td.nm{position:sticky;inset-inline-start:30px;width:118px;min-width:118px;max-width:118px;z-index:2;border-inline-start:none;box-shadow:-5px 0 5px -4px rgba(0,0,0,.18)}
+#sarrakiScreen .sk-t.sk-day th.nm{z-index:5;box-shadow:none;text-align:right}
+#sarrakiScreen .sk-t.sk-day td.c-prof{width:92px;min-width:92px}
+#sarrakiScreen .sk-t.sk-day td.c-rate{width:64px;min-width:64px}
+#sarrakiScreen .sk-t.sk-day td.c-item{width:112px;min-width:112px}
+#sarrakiScreen .sk-t.sk-day td.c-ot{width:46px;min-width:46px}
+#sarrakiScreen .sk-t.sk-day td.c-adv{width:66px;min-width:66px}
+#sarrakiScreen .sk-t.sk-day td.c-proj{width:140px;min-width:140px}
+#sarrakiScreen .sk-t.sk-day td.act{width:64px;min-width:64px;white-space:nowrap}
+#sarrakiScreen .sk-t.sk-day td.c-ot .sk-in{text-align:center;padding:0 2px}
+#sarrakiScreen .sk-t.sk-day tfoot td{position:sticky;bottom:0;z-index:3;background:#fff0e0;font-weight:800;border-top:2px solid var(--steel);padding:5px 4px;font-size:11.5px}
+#sarrakiScreen .sk-t.sk-day tfoot td.nm{z-index:6;inset-inline-start:0;width:auto;max-width:none;box-shadow:none}
+#sarrakiScreen .sk-t.sk-day td.sk-empty{position:static;white-space:normal}
+
+/* شريط الإجماليات الثابت */
+#sarrakiScreen{padding-bottom:78px}
+.sk-fix{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100vw,1180px);z-index:60;display:flex;gap:6px;background:#3a3f45;color:#fff;padding:7px 10px calc(7px + env(safe-area-inset-bottom,0px));border-radius:14px 14px 0 0;box-shadow:0 -4px 14px rgba(0,0,0,.25);box-sizing:border-box}
+.sk-fix > div{flex:1;text-align:center;background:rgba(255,255,255,.08);border-radius:10px;padding:4px 6px;min-width:0}
+.sk-fix span{display:block;font-size:10.5px;font-weight:700;opacity:.8;white-space:nowrap}
+.sk-fix b{display:block;font-size:15px;font-weight:800;margin-top:1px}
+.sk-fix .g{background:linear-gradient(135deg,#e2621f,#b8471a)}
+.sk-fix .g span{opacity:.95}
 </style>
 <style>
 .cg-who{text-align:center;font-weight:800;margin:2px 0 12px;color:var(--steel-dark)}
@@ -2344,15 +2428,17 @@ body.cg-compact .wa-float-btn{display:none !important}
   <div class="gate-card home-card">
     <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-sync" id="skSync">…</span></div>
     <div class="sk-master">
-      <div class="sk-f"><label>السنة</label><input id="skYear" readonly></div>
-      <div class="sk-f"><label>رقم الفترة</label><select id="skPeriod"></select></div>
-      <div class="sk-f"><label>من تاريخ</label><input type="date" id="skFrom"></div>
-      <div class="sk-f"><label>إلى تاريخ</label><input type="date" id="skTo"></div>
-      <div class="sk-f"><label>الأسبوع</label><select id="skWeek"><option value="1">الأسبوع الأول</option><option value="2">الأسبوع الثاني</option></select></div>
-      <div class="sk-f"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
-    </div>
-    <div class="sk-actions">
-      <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
+      <div class="mrow">
+        <div class="sk-f w-year"><label>السنة</label><input id="skYear" readonly></div>
+        <div class="sk-f w-per"><label>الفترة</label><select id="skPeriod"></select></div>
+        <div class="sk-f grow"><label>من</label><input type="date" id="skFrom"></div>
+        <div class="sk-f grow"><label>إلى</label><input type="date" id="skTo"></div>
+      </div>
+      <div class="mrow">
+        <div class="sk-f w-week"><label>الأسبوع</label><select id="skWeek"><option value="1">الأول</option><option value="2">الثاني</option></select></div>
+        <div class="sk-f w-st"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
+        <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
+      </div>
     </div>
     <div class="sk-banner" id="skBanner"></div>
     <div class="sk-tabs">
@@ -2361,6 +2447,11 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="sk-tab" data-v="period">حساب الفترة</button>
     </div>
     <div id="skBody"></div>
+    <div class="sk-fix" id="skFix" style="display:none">
+      <div><span>إجمالي الأيام</span><b id="skfxD">0</b></div>
+      <div><span>إجمالي السلف</span><b id="skfxA">0</b></div>
+      <div class="g"><span>إجمالي القبض</span><b id="skfxG">0</b></div>
+    </div>
   </div>
 </div>
 <div id="skStage"></div>
@@ -10805,7 +10896,8 @@ window.safeFileName = function(str){
   var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
   var EXTRA_PERMS_ = [
     { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
-    { id: 'sarraki', label: 'سراكي عمال 👷', defaultOn: false }
+    { id: 'sarraki', label: 'سراكي عمال 👷', defaultOn: false },
+    { id: 'sarrakiSettings', label: 'إعدادات السراكي 🛠️', defaultOn: false }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
@@ -10868,7 +10960,10 @@ window.safeFileName = function(str){
     var cpTile = document.getElementById('openCustodyProjectsTileBtn');
     if (cpTile) cpTile.style.display = isEmployeeSession ? 'none' : '';
     var skSetTile = document.getElementById('openSarrakiSettingsTileBtn');
-    if (skSetTile) skSetTile.style.display = isEmployeeSession ? 'none' : '';
+    if (skSetTile) {
+      var skSetList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
+      skSetTile.style.display = (!isEmployeeSession || (!pendingPerms_ && skSetList_.indexOf('allow_sarrakiSettings') > -1)) ? '' : 'none';
+    }
     var crHome = document.getElementById('openCustodyReportHomeBtn');
     if (crHome) {
       var crList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
@@ -10990,7 +11085,7 @@ window.safeFileName = function(str){
     list.appendChild(xtag);
     var xhint = document.createElement('div');
     xhint.style.cssText = 'font-size:12px;opacity:.75;margin:0 0 6px;line-height:1.6;';
-    xhint.textContent = 'مخفية عن الموظفين تلقائي. علّم عليها عشان تظهر للموظف ده أيقونة "تقرير العهد" في الصفحة الرئيسية.';
+    xhint.textContent = 'مخفية عن الموظفين تلقائي. علّم على اللي عايزه يظهر للموظف ده: تقرير العهد / سراكي عمال (الرئيسية) وإعدادات السراكي (الإعدادات).';
     list.appendChild(xhint);
     EXTRA_PERMS_.forEach(function(p){
       var xrow = document.createElement('label');
@@ -15682,10 +15777,17 @@ window.safeFileName = function(str){
       S.items.push(it); enqueue('up', 'wl_items', it);
     });
   }
-  function projOpts(sel){
-    var h = '<option value="">— بدون —</option>';
+  function projOpts(sel, req){
+    var h = (req && sel) ? '' : '<option value="">' + (req ? '— المشروع * —' : '— بدون —') + '</option>';
     S.projects.forEach(function(p){ if (!p.is_stopped || p.id === sel) h += '<option value="' + p.id + '"' + (p.id === sel ? ' selected' : '') + '>' + esc(p.name) + '</option>'; });
     return h;
+  }
+  // لون ثابت لكل بند (شريط جنب اسم العامل) عشان يتفرزوا بالعين
+  var IPAL = ['#e2621f', '#1f7a4c', '#2b6cb0', '#8e44ad', '#c0392b', '#16a085', '#b8860b', '#546e7a'];
+  function itemColor(id){
+    if (!id) return '#cfc6bb';
+    var n = itemName(id) || String(id), h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0;
+    return IPAL[h % IPAL.length];
   }
   function rangeDates(p){ var out = [], d = p.from_date, n = 0; while (d <= p.to_date && n < 62) { out.push(d); d = addD(d, 1); n++; } return out; }
   function weekDates(p, w){
@@ -15703,7 +15805,7 @@ window.safeFileName = function(str){
         var r = m.get(w.id + '|' + d); if (!r) return;
         var pj = r.project_id || w.project_id || '';
         if (r.present) { if (d < w2) d1++; else d2++; var o = proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0 }); o.days++; o.wages += rate; }
-        if (+r.overtime) { ot += +r.overtime; (proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0 })).ot += +r.overtime; }
+        if (+r.overtime) { var ow = (+r.overtime) * rate; ot += ow; (proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0 })).ot += ow; }
         adv += +r.advance || 0;
       });
       var days = d1 + d2, wages = days * rate, gross = wages + ot;
@@ -15745,12 +15847,12 @@ window.safeFileName = function(str){
   function renderMaster(){
     var p = P(), sel = $('#skPeriod');
     var list = S.periods.slice().sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); });
-    sel.innerHTML = list.length ? list.map(function(x){ return '<option value="' + x.id + '"' + (x.id === S.cur ? ' selected' : '') + '>' + x.period_no + (x.status === 'closed' ? ' 🔒' : '') + ' — ' + x.year + '</option>'; }).join('') : '<option value="">— لا توجد فترات —</option>';
+    sel.innerHTML = list.length ? list.map(function(x){ return '<option value="' + x.id + '"' + (x.id === S.cur ? ' selected' : '') + '>' + x.period_no + '</option>'; }).join('') : '<option value="">—</option>';
     $('#skYear').value = p ? p.year : '';
     $('#skFrom').value = p ? p.from_date : ''; $('#skTo').value = p ? p.to_date : '';
     $('#skFrom').disabled = $('#skTo').disabled = isClosed();
     $('#skWeek').value = String(S.week); $('#skWeek').disabled = !p;
-    var st = $('#skState'); st.textContent = !p ? '—' : p.status === 'closed' ? '🔒 مقفلة' : '🟢 مفتوحة'; st.className = 'sk-badge' + (p && p.status === 'closed' ? ' closed' : '');
+    var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
     Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-v') === S.view); b.style.display = p ? '' : 'none'; });
   }
@@ -15759,7 +15861,17 @@ window.safeFileName = function(str){
     var wd = weekDates(p, S.week);
     if (!S.day || wd.indexOf(S.day) < 0) { var t = todayS(); S.day = wd.indexOf(t) > -1 ? t : wd[0]; }
   }
-  function renderAll(){
+  // شريط الإجماليات الثابت تحت الشاشة: إجمالي الأيام + إجمالي السلف + إجمالي القبض للفترة المفتوحة
+  function paintFix(){
+    var bar = $('#skFix'); if (!bar) return;
+    var p = P();
+    if (!p || S.loading || S.view === 'period') { bar.style.display = 'none'; return; }
+    var T = compute(p).tot;
+    $('#skfxD').textContent = fmt(T.days); $('#skfxA').textContent = fmt(T.adv); $('#skfxG').textContent = fmt(T.gross);
+    bar.style.display = '';
+  }
+  function renderAll(){ renderAllInner(); paintFix(); }
+  function renderAllInner(){
     renderMaster(); ensureDay();
     var body = $('#skBody'), p = P();
     if (!p) {
@@ -15776,34 +15888,33 @@ window.safeFileName = function(str){
     return Object.keys(m).map(function(k){ return m[k]; });
   }
   function renderDay(){
-    var p = P(), closed = isClosed(), wd = weekDates(p, S.week), ws = WK(), dm = DM(), t = todayS();
+    var p = P(), closed = isClosed(), wd = weekDates(p, S.week), all = WK(), dm = DM(), t = todayS();
+    var ws = all.filter(function(w){ return dm.get(w.id + '|' + S.day); });
     var h = '<div class="sk-days">' + wd.map(function(d){
-      var c = 0; ws.forEach(function(w){ var r = dm.get(w.id + '|' + d); if (r && r.present) c++; });
-      return '<button type="button" class="sk-chip' + (d === S.day ? ' on' : '') + (d === t ? ' today' : '') + '" data-day="' + d + '"><b>' + dayName(d) + '</b><span>' + short(d) + '</span><i data-cnt="' + d + '">' + c + ' حاضر</i></button>';
+      var c = 0; all.forEach(function(w){ var r = dm.get(w.id + '|' + d); if (r && r.present) c++; });
+      return '<button type="button" class="sk-chip' + (d === S.day ? ' on' : '') + (d === t ? ' today' : '') + (c ? ' has' : '') + (pd(d).getDay() === 5 ? ' fri' : '') + '" data-day="' + d + '"><b>' + dayName(d) + '</b><span>' + short(d) + '</span><i data-cnt="' + d + '">' + c + ' حاضر</i></button>';
     }).join('') + '</div>';
     if (closed) h += '<div class="sk-lock">🔒 الفترة مقفلة — العرض فقط. لإعادة فتحها: الإعدادات ← إعدادات السراكي.</div>';
     else {
-      h += '<div class="sk-tools"><button type="button" data-t="copy">📋 نسخ حضور اليوم السابق</button><button type="button" data-t="all">✔ تحديد الكل حاضر</button><button type="button" data-t="clear">✖ مسح حضور اليوم</button></div>';
-      h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل" autocomplete="off"><input id="skaProf" placeholder="المهنة"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية"><select id="skaProj">' + projOpts('') + '</select><button type="button" id="skaBtn">＋ إضافة عامل</button></div>';
+      h += '<div class="sk-tools"><button type="button" data-t="copy">📋 نسخ حضور اليوم السابق</button><button type="button" data-t="clear" class="red">✖ مسح حضور اليوم</button></div>';
+      h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div class="sk-wrap"><table class="sk-t cards"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th><th>اليومية</th><th>حضور</th><th>المشروع</th><th>سهرات</th><th>سلفة</th><th></th></tr></thead><tbody>';
+    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>سهرات</th><th>سلفة</th><th>المشروع</th><th></th></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
-      h += '<tr data-w="' + w.id + '"><td class="n">' + (i + 1) + '</td>' +
-        '<td class="nm" data-l="اسم العامل"><input class="sk-in l" data-f="name" value="' + esc(w.name) + '"' + dis + '></td>' +
-        '<td data-l="المهنة" class="c-prof"><input class="sk-in" data-f="profession" value="' + esc(w.profession || '') + '"' + dis + '></td>' +
-        '<td data-l="البند" class="c-item"><select class="sk-in" data-f="item_id"' + dis + '>' + itemOpts(w.item_id || '') + '</select></td>' +
-        '<td data-l="اليومية" class="c-rate"><input class="sk-in" data-f="daily_rate" inputmode="decimal" value="' + esc(w.daily_rate || '') + '"' + dis + '></td>' +
-        '<td data-l="حضور" class="c-pres"><label class="sk-chk"><input type="checkbox" data-d="present"' + dis + '></label></td>' +
-        '<td data-l="المشروع" class="c-proj"><select class="sk-in" data-d="project"' + dis + '></select></td>' +
-        '<td data-l="سهرات" class="c-ot"><input class="sk-in" data-d="overtime" inputmode="decimal"' + dis + '></td>' +
-        '<td data-l="سلفة" class="c-adv"><input class="sk-in" data-d="advance" inputmode="decimal"' + dis + '></td>' +
-        '<td class="act">' + (closed ? '' : '<button type="button" class="sk-cp" data-cp title="نسخ بيانات العامل (حضور + مشروع + سهرات) ليوم تاني — من غير السلفة">📋</button><button type="button" class="sk-x" data-del title="حذف العامل">✕</button>') + '</td></tr>';
+      h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
+        '<td class="nm"><input class="sk-in l" data-f="name" value="' + esc(w.name) + '"' + dis + '></td>' +
+        '<td class="c-item"><select class="sk-in" data-f="item_id"' + dis + '>' + itemOpts(w.item_id || '') + '</select></td>' +
+        '<td class="c-prof"><input class="sk-in" data-f="profession" value="' + esc(w.profession || '') + '"' + dis + '></td>' +
+        '<td class="c-rate"><input class="sk-in" data-f="daily_rate" inputmode="decimal" value="' + esc(w.daily_rate || '') + '"' + dis + '></td>' +
+        '<td class="c-ot"><input class="sk-in" data-d="overtime" inputmode="decimal"' + dis + '></td>' +
+        '<td class="c-adv"><input class="sk-in" data-d="advance" inputmode="decimal"' + dis + '></td>' +
+        '<td class="c-proj"><select class="sk-in" data-d="project"' + dis + '></select></td>' +
+        '<td class="act">' + (closed ? '' : '<button type="button" class="sk-cp" data-cp title="نسخ العامل (مشروع + سهرات) ليوم تاني — من غير السلفة">📋</button><button type="button" class="sk-x" data-del title="إزالة العامل">✕</button>') + '</td></tr>';
     });
-    if (!ws.length) h += '<tr><td colspan="10" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه ثم سجّل حضورهم كل يوم.</td></tr>';
-    h += '</tbody><tfoot><tr><td colspan="5" style="text-align:right">إجمالي اليوم</td><td id="skfP">0</td><td id="skfW">—</td><td id="skfO">0</td><td id="skfA">0</td><td></td></tr></tfoot></table></div>';
-    h += '<div class="sk-sum" id="skDaySum"></div>';
+    if (!ws.length) h += '<tr><td colspan="9" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
+    h += '</tbody></table></div>';
     $('#skBody').innerHTML = h;
     Array.prototype.forEach.call($('#skBody').querySelectorAll('tbody tr[data-w]'), paintRow);
     paintFoot();
@@ -15812,22 +15923,27 @@ window.safeFileName = function(str){
   function paintRow(tr){
     var wid = tr.getAttribute('data-w'), w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
     var r = dayRow(wid, S.day), pj = (r && r.project_id) || w.project_id || '';
-    var chk = tr.querySelector('[data-d=present]'); chk.checked = !!(r && r.present);
-    tr.classList.toggle('sk-on', chk.checked);
-    var sel = tr.querySelector('[data-d=project]'); sel.innerHTML = projOpts(pj);
-    if (document.activeElement !== tr.querySelector('[data-d=overtime]')) tr.querySelector('[data-d=overtime]').value = r && r.overtime ? r.overtime : '';
-    if (document.activeElement !== tr.querySelector('[data-d=advance]')) tr.querySelector('[data-d=advance]').value = r && r.advance ? r.advance : '';
+    tr.classList.toggle('sk-np', !!(r && !r.present));
+    var sel = tr.querySelector('[data-d=project]'); sel.innerHTML = projOpts(pj, true);
+    var ot = tr.querySelector('[data-d=overtime]'), ad = tr.querySelector('[data-d=advance]');
+    if (document.activeElement !== ot) ot.value = r && r.overtime ? r.overtime : '';
+    if (document.activeElement !== ad) ad.value = r && r.advance ? r.advance : '';
+    ot.classList.toggle('has-ot', !!(r && +r.overtime)); ad.classList.toggle('has-adv', !!(r && +r.advance));
+    var bad = function(q, c){ var e = tr.querySelector(q); if (e) e.classList.toggle('sk-bad', !!c); };
+    bad('[data-f=name]', !w.name); bad('[data-f=profession]', !w.profession); bad('[data-f=daily_rate]', !(+w.daily_rate > 0)); bad('[data-d=project]', !pj);
   }
   function paintFoot(){
+    paintFix();
     if (S.view !== 'day') return;
     var ws = WK(), c = 0, ot = 0, adv = 0, wages = 0;
-    ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; if (r.present) { c++; wages += +w.daily_rate || 0; } ot += +r.overtime || 0; adv += +r.advance || 0; });
+    ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; var rate = +w.daily_rate || 0; if (r.present) { c++; wages += rate; } ot += +r.overtime || 0; wages += (+r.overtime || 0) * rate; adv += +r.advance || 0; });
     var set = function(id, v){ var e = $('#' + id); if (e) e.textContent = v; };
-    set('skfP', c); set('skfO', fmt(ot)); set('skfA', fmt(adv));
+    set('skfP', c + ' حاضر'); set('skfO', fmt(ot)); set('skfA', fmt(adv));
     var s = $('#skDaySum');
-    if (s) s.innerHTML = '<div>حاضرين اليوم<b>' + c + ' / ' + ws.length + '</b></div><div>أجور اليوم<b>' + fmt(wages) + '</b></div><div>سهرات اليوم<b>' + fmt(ot) + '</b></div><div class="net">سلف اليوم<b>' + fmt(adv) + '</b></div>';
+    if (s) s.innerHTML = '<div>حاضرين اليوم<b>' + c + '</b></div><div>أجور اليوم<b>' + fmt(wages) + '</b></div><div>سهرات اليوم (أيام)<b>' + fmt(ot) + '</b></div><div class="net">سلف اليوم<b>' + fmt(adv) + '</b></div>';
     Array.prototype.forEach.call(root.querySelectorAll('[data-cnt]'), function(e){
       var d = e.getAttribute('data-cnt'), n = 0; ws.forEach(function(w){ var r = dayRow(w.id, d); if (r && r.present) n++; }); e.textContent = n + ' حاضر';
+      if (e.parentNode) e.parentNode.classList.toggle('has', n > 0);
     });
   }
   function dayObj(w, d, create){
@@ -15846,33 +15962,45 @@ window.safeFileName = function(str){
   function saveWorker(w){ enqueue('up', 'wl_workers', { id: w.id, period_id: w.period_id, name: w.name, profession: w.profession || null, daily_rate: +w.daily_rate || 0, project_id: w.project_id || null, item_id: w.item_id || null, sort: w.sort || 0 }); }
 
   function onBodyChange(e){
-    var el = e.target; if (isClosed()) return;
+    var el = e.target;
+    if (el.closest && el.closest('.sk-add')) { el.classList.remove('sk-bad'); return; }
+    if (isClosed()) return;
     var tr = el.closest('tr[data-w]'); if (!tr) return;
     var w = S.workers.filter(function(x){ return x.id === tr.getAttribute('data-w'); })[0]; if (!w) return;
     var f = el.getAttribute('data-f'), d = el.getAttribute('data-d');
     if (f) {
-      if (f === 'name') { var v = el.value.trim(); if (!v) { el.value = w.name; return; } w.name = v; }
-      else if (f === 'daily_rate') { w.daily_rate = num(el.value); el.value = w.daily_rate || ''; }
+      if (f === 'name') { var v = el.value.trim(); if (!v) { el.value = w.name; toast('اسم العامل إجباري'); return; } w.name = v; }
+      else if (f === 'profession') { var pv = el.value.trim(); if (!pv) { el.value = w.profession || ''; toast('المهنة إجبارية'); return; } w.profession = pv; }
+      else if (f === 'daily_rate') { var rv = num(el.value); if (!(rv > 0)) { el.value = w.daily_rate || ''; toast('اليومية إجبارية'); return; } w.daily_rate = rv; el.value = rv; }
       else w[f] = el.value.trim();
-      saveWorker(w); paintFoot(); return;
+      saveWorker(w); paintRow(tr); paintFoot(); return;
     }
-    if (d === 'present') {
-      var pj = tr.querySelector('[data-d=project]').value || null;
-      var r = dayObj(w, S.day, true); r.present = el.checked; r.project_id = el.checked ? (pj || w.project_id || null) : r.project_id;
-      commitDay(r);
-    } else if (d === 'project') {
-      var r2 = dayObj(w, S.day, true); r2.project_id = el.value || null; if (el.value) r2.present = true; commitDay(r2);
+    if (d === 'project') {
+      if (!el.value) { paintRow(tr); toast('المشروع إجباري'); return; }
+      var r2 = dayObj(w, S.day, true); r2.project_id = el.value; r2.present = true; commitDay(r2);
     } else if (d === 'overtime' || d === 'advance') {
-      var val = num(el.value); el.value = val || '';
-      var r3 = dayObj(w, S.day, !!val) ; if (!r3) return; r3[d] = val; commitDay(r3);
+      var val = num(el.value); if (val < 0) val = 0; el.value = val || '';
+      var r3 = dayObj(w, S.day, false); if (!r3) return; r3[d] = val; commitDay(r3);
     }
     paintRow(tr); paintFoot();
   }
+  // إضافة عامل لليوم المفتوح: الاسم والمهنة واليومية والمشروع إجباريين، والعامل بيتسجل حاضر تلقائي
   function addWorker(){
-    var name = $('#skaName').value.trim(); if (!name) { $('#skaName').focus(); return; }
-    var ws = WK(); var mx = ws.reduce(function(m, w){ return Math.max(m, w.sort || 0); }, 0);
-    var w = { id: uid(), period_id: S.cur, name: name, profession: $('#skaProf').value.trim(), daily_rate: num($('#skaRate').value), project_id: $('#skaProj').value || null, item_id: $('#skaItem').value || null, sort: mx + 1 };
-    S.workers.push(w); saveWorker(w); renderDay(); $('#skaName').focus();
+    var nm = $('#skaName'), pf = $('#skaProf'), rt = $('#skaRate'), pj = $('#skaProj'), it = $('#skaItem');
+    var chk = [[nm, 'الاسم', nm.value.trim()], [pf, 'المهنة', pf.value.trim()], [rt, 'اليومية', num(rt.value) > 0], [pj, 'المشروع', pj.value]], miss = [], first = null;
+    chk.forEach(function(c){ var bad = !c[2]; c[0].classList.toggle('sk-bad', bad); if (bad) { miss.push(c[1]); if (!first) first = c[0]; } });
+    if (miss.length) { toast('الحقول دي إجبارية: ' + miss.join(' - ')); first.focus(); return; }
+    var name = nm.value.trim(), ws = WK();
+    var w = ws.filter(function(x){ return String(x.name).trim() === name; })[0];
+    if (!w) {
+      var mx = ws.reduce(function(m, x){ return Math.max(m, x.sort || 0); }, 0);
+      w = { id: uid(), period_id: S.cur, name: name, profession: pf.value.trim(), daily_rate: num(rt.value), project_id: pj.value, item_id: it.value || null, sort: mx + 1 };
+      S.workers.push(w); saveWorker(w);
+    }
+    var r = dayObj(w, S.day, true);
+    if (r.present) { toast('العامل ده مضاف بالفعل في اليوم ده'); return; }
+    r.present = true; r.project_id = pj.value; commitDay(r);
+    renderDay(); var n2 = $('#skaName'); if (n2) n2.focus();
   }
   function onBodyClick(e){
     var el = e.target;
@@ -15884,15 +16012,7 @@ window.safeFileName = function(str){
     var cp = el.closest('[data-cp]');
     if (cp && !isClosed()) { copyWorkerModal(cp.closest('tr').getAttribute('data-w')); return; }
     var del = el.closest('[data-del]');
-    if (del && !isClosed()) {
-      var tr = del.closest('tr'), w = S.workers.filter(function(x){ return x.id === tr.getAttribute('data-w'); })[0];
-      ask('حذف عامل', 'هيتم حذف <b>' + esc(w.name) + '</b> وكل أيامه وسلفه في هذه الفترة. متأكد؟', 'حذف').then(function(ok){
-        if (!ok) return;
-        S.workers = S.workers.filter(function(x){ return x.id !== w.id; });
-        var dm = DM(); Array.from(dm.keys()).forEach(function(k){ if (k.indexOf(w.id + '|') === 0) { delete Q['wl_days:' + dm.get(k).id]; dm.delete(k); } });
-        enqueue('del', 'wl_workers', w.id); renderDay();
-      });
-    }
+    if (del && !isClosed()) { removeWorkerModal(del.closest('tr').getAttribute('data-w')); return; }
   }
   function onBodyInput(e){
     if (e.target.id === 'skaName') {
@@ -15904,7 +16024,7 @@ window.safeFileName = function(str){
   function copyWorkerModal(wid){
     var w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
     var src = dayRow(w.id, S.day);
-    if (!src || (!src.present && !(+src.overtime))) { toast('مفيش حضور أو سهرات للعامل في اليوم ده عشان تتنسخ'); return; }
+    if (!src) { toast('العامل مش مسجّل في اليوم ده'); return; }
     var p = P(), nxt = addD(S.day, 1), dm = DM();
     var dates = rangeDates(p).filter(function(d){ return d !== S.day; });
     if (!dates.length) { toast('مفيش أيام تانية في الفترة'); return; }
@@ -15912,7 +16032,7 @@ window.safeFileName = function(str){
       var ex = dm.get(w.id + '|' + d), has = ex && (ex.present || +ex.overtime || +ex.advance);
       return '<label class="skd' + (has ? ' has' : '') + '"><input type="checkbox" value="' + d + '"' + (d === nxt ? ' checked' : '') + '><span>' + dayName(d) + ' ' + short(d) + (has ? '<small>مسجّل</small>' : '') + '</span></label>';
     }).join('');
-    modal('<h3>📋 نسخ بيانات ' + esc(w.name) + '</h3><p class="msg">من يوم <b>' + dayName(S.day) + ' ' + short(S.day) + '</b>: بيتنسخ <b>الحضور + المشروع + السهرات</b>. <b>السلفة مش بتتنسخ</b> (واللي مسجّل عليها في اليوم الهدف بتفضل زي ما هي). الأيام اللي عليها «مسجّل» هتتكتب فوقها.</p>' +
+    modal('<h3>📋 نسخ بيانات ' + esc(w.name) + '</h3><p class="msg">من يوم <b>' + dayName(S.day) + ' ' + short(S.day) + '</b>: العامل بيتضاف حاضر في الأيام المختارة بنفس <b>المشروع + السهرات</b>. <b>السلفة مش بتتنسخ</b> (واللي مسجّل عليها في اليوم الهدف بتفضل زي ما هي). الأيام اللي عليها «مسجّل» هتتكتب فوقها.</p>' +
       '<div class="skq"><button type="button" class="btn btn-secondary" data-q="week">باقي الأسبوع</button><button type="button" class="btn btn-secondary" data-q="all">كل الأيام</button><button type="button" class="btn btn-secondary" data-q="none">مسح</button></div>' +
       '<div class="skdg">' + grid + '</div><div class="btns"><button class="btn btn-primary" data-y>نسخ</button><button class="btn btn-secondary" data-n>إلغاء</button></div>', function(el, close){
       var cbs = function(){ return Array.prototype.slice.call(el.querySelectorAll('.skdg input')); };
@@ -15924,9 +16044,27 @@ window.safeFileName = function(str){
       el.querySelector('[data-y]').onclick = function(){
         var sel = cbs().filter(function(c){ return c.checked; }).map(function(c){ return c.value; });
         if (!sel.length) { toast('اختار يوم واحد على الأقل'); return; }
-        var present = !!src.present, proj = src.project_id || w.project_id || null, ot = +src.overtime || 0;
-        sel.forEach(function(d){ var r = dayObj(w, d, true); r.present = present; r.project_id = proj; r.overtime = ot; commitDay(r); });
+        var proj = src.project_id || w.project_id || null, ot = +src.overtime || 0;
+        sel.forEach(function(d){ var r = dayObj(w, d, true); r.present = true; r.project_id = proj; r.overtime = ot; commitDay(r); });
         close(); toast('تم نسخ بيانات ' + w.name + ' لـ ' + sel.length + ' يوم (من غير السلفة)'); renderAll();
+      };
+    });
+  }
+  // ✕ جنب العامل: إزالته من اليوم المفتوح بس، أو حذفه نهائي من الفترة كلها
+  function removeWorkerModal(wid){
+    var w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
+    var r = dayRow(w.id, S.day), extra = r && (+r.advance || +r.overtime) ? '<br>⚠ مسجّل عليه في اليوم ده' + (+r.advance ? ' سلفة <b>' + fmt(r.advance) + '</b>' : '') + (+r.overtime ? ' سهرات <b>' + fmt(r.overtime) + '</b>' : '') + ' وهتتشال معاه.' : '';
+    modal('<h3>إزالة ' + esc(w.name) + '</h3><p class="msg">إزالته من يوم <b>' + dayName(S.day) + ' ' + short(S.day) + '</b> بس، ولا حذفه نهائي من الفترة كلها (بكل أيامه وسلفه)؟' + extra + '</p>' +
+      '<div class="sks"><button class="btn btn-secondary" data-day>إزالة من اليوم ده بس</button><button class="btn btn-secondary" data-all style="color:#b3261e">🗑 حذف العامل نهائيًا من الفترة</button></div><div class="btns"><button class="btn btn-secondary" data-n>إلغاء</button></div>', function(el, close){
+      el.querySelector('[data-n]').onclick = close;
+      el.querySelector('[data-day]').onclick = function(){
+        close(); if (r) { DM().delete(w.id + '|' + S.day); enqueue('del', 'wl_days', r.id); } renderDay();
+      };
+      el.querySelector('[data-all]').onclick = function(){
+        close();
+        S.workers = S.workers.filter(function(x){ return x.id !== w.id; });
+        var dm = DM(); Array.from(dm.keys()).forEach(function(k){ if (k.indexOf(w.id + '|') === 0) { delete Q['wl_days:' + dm.get(k).id]; dm.delete(k); } });
+        enqueue('del', 'wl_workers', w.id); renderDay();
       };
     });
   }
@@ -15937,10 +16075,16 @@ window.safeFileName = function(str){
       var prev = addD(d, -1), n = 0;
       ws.forEach(function(w){ var pr = dayRow(w.id, prev); if (pr && pr.present) { var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = pr.project_id || w.project_id || null; commitDay(r); n++; } } });
       toast(n ? 'تم نسخ ' + n + ' عامل' : 'مفيش حاجة تتنسخ');
-    } else if (a === 'all') {
-      ws.forEach(function(w){ var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = r.project_id || w.project_id || null; commitDay(r); } });
     } else if (a === 'clear') {
-      ws.forEach(function(w){ var r = dayRow(w.id, d); if (r && r.present) { r.present = false; commitDay(r); } });
+      var rs = []; ws.forEach(function(w){ var r = dayRow(w.id, d); if (r) rs.push(r); });
+      if (!rs.length) { toast('مفيش حاجة تتمسح'); return; }
+      var adv = rs.reduce(function(m, r){ return m + (+r.advance || 0); }, 0);
+      ask('مسح حضور اليوم', 'هيتم إزالة <b>' + rs.length + '</b> عامل من يوم <b>' + dayName(d) + ' ' + short(d) + '</b>' + (adv ? ' — وفيهم سلف بإجمالي <b>' + fmt(adv) + '</b> هتتمسح كمان' : '') + '. متأكد؟', 'مسح').then(function(ok){
+        if (!ok) return;
+        rs.forEach(function(r){ DM().delete(r.worker_id + '|' + r.work_date); enqueue('del', 'wl_days', r.id); });
+        renderDay();
+      });
+      return;
     }
     renderDay();
   }
@@ -15948,7 +16092,7 @@ window.safeFileName = function(str){
   // ---------- ملخص الأسبوع ----------
   function renderWeek(){
     var p = P(), wd = weekDates(p, S.week), ws = WK(), dm = DM();
-    var h = '<div class="sk-wrap"><table class="sk-t"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th>' + wd.map(function(d){ return '<th class="sk-hd" data-goday="' + d + '">' + dayName(d) + '<br><small>' + short(d) + '</small></th>'; }).join('') + '<th>الأيام</th><th>سهرات</th><th>سلف</th><th>مستحق الأسبوع</th></tr></thead><tbody>';
+    var h = '<div class="sk-wrap"><table class="sk-t"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th>' + wd.map(function(d){ return '<th class="sk-hd" data-goday="' + d + '">' + dayName(d) + '<br><small>' + short(d) + '</small></th>'; }).join('') + '<th>الأيام</th><th>سهرات (أيام)</th><th>سلف</th><th>مستحق الأسبوع</th></tr></thead><tbody>';
     var T = { d: 0, o: 0, a: 0, g: 0 };
     ws.forEach(function(w, i){
       var days = 0, ot = 0, adv = 0, rate = +w.daily_rate || 0;
@@ -15958,7 +16102,7 @@ window.safeFileName = function(str){
         var pn = r.project_id || w.project_id ? projName(r.project_id || w.project_id) : '';
         return '<td>' + (r.present ? '<span class="sk-mark">✔' + (pn ? '<small>' + esc(pn) + '</small>' : '') + '</span>' : '') + '</td>';
       }).join('');
-      var g = days * rate + ot; T.d += days; T.o += ot; T.a += adv; T.g += g;
+      var g = (days + ot) * rate; T.d += days; T.o += ot; T.a += adv; T.g += g;
       h += '<tr><td class="n">' + (i + 1) + '</td><td class="nm">' + esc(w.name) + '</td><td>' + esc(w.profession || '') + '</td><td>' + esc(itemName(w.item_id)) + '</td>' + cells + '<td class="c">' + days + '</td><td>' + fmt(ot) + '</td><td>' + fmt(adv) + '</td><td class="big">' + fmt(g) + '</td></tr>';
     });
     if (!ws.length) h += '<tr><td colspan="' + (wd.length + 8) + '" class="sk-empty">لا يوجد عمال في هذه الفترة.</td></tr>';
@@ -16186,7 +16330,7 @@ window.safeFileName = function(str){
     c.dates.forEach(function(d){
       c.rows.forEach(function(r){
         var x = dm.get(r.w.id + '|' + d); if (!x) return;
-        var row = ws3.addRow([d, dayName(d), r.w.name, r.w.profession || '', itemName(r.item), projName(x.project_id || r.w.project_id), x.present ? 1 : 0, x.present ? r.rate : 0, +x.overtime || 0, +x.advance || 0]);
+        var row = ws3.addRow([d, dayName(d), r.w.name, r.w.profession || '', itemName(r.item), projName(x.project_id || r.w.project_id), x.present ? 1 : 0, x.present ? r.rate : 0, (+x.overtime || 0) * r.rate, +x.advance || 0]);
         row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; });
       });
     });
@@ -16247,7 +16391,7 @@ window.safeFileName = function(str){
       h3 += '<table><thead><tr><th>التاريخ</th><th>اليوم</th><th>المشروع</th><th>حضور</th><th>اليومية</th><th>السهرات</th><th>السلفة</th></tr></thead><tbody>';
       c.dates.forEach(function(d){
         var x = dm.get(r.w.id + '|' + d), pr = x && x.present;
-        h3 += '<tr><td>' + d + '</td><td>' + dayName(d) + '</td><td>' + esc(x ? projName(x.project_id || r.w.project_id) : '') + '</td><td>' + (pr ? '✔' : '') + '</td><td>' + (pr ? fmt(r.rate) : '') + '</td><td>' + (x && +x.overtime ? fmt(x.overtime) : '') + '</td><td>' + (x && +x.advance ? fmt(x.advance) : '') + '</td></tr>';
+        h3 += '<tr><td>' + d + '</td><td>' + dayName(d) + '</td><td>' + esc(x ? projName(x.project_id || r.w.project_id) : '') + '</td><td>' + (pr ? '✔' : '') + '</td><td>' + (pr ? fmt(r.rate) : '') + '</td><td>' + (x && +x.overtime ? fmt(+x.overtime * r.rate) : '') + '</td><td>' + (x && +x.advance ? fmt(x.advance) : '') + '</td></tr>';
       });
       h3 += '<tr class="tot"><td colspan="3" style="text-align:right">الإجمالي</td><td>' + r.days + '</td><td>' + fmt(r.wages) + '</td><td>' + fmt(r.ot) + '</td><td>' + fmt(r.adv) + '</td></tr></tbody></table>';
       h3 += '<div class="box"><div>إجمالي القبض<b>' + fmt(r.gross) + '</b></div><div>السلف<b>' + fmt(r.adv) + '</b></div><div class="net">صافي القبض<b>' + fmt(r.net) + '</b></div></div>';
