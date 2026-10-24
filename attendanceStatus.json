@@ -1,7 +1,7 @@
 {
   "ok": true,
   "date": "2026-10-24",
-  "updatedAt": "2026-10-24T14:47:43.389295+00:00",
+  "updatedAt": "2026-10-24T17:40:23.644089+00:00",
   "absent": [
     "محمود كارم",
     "سيد كارم",
@@ -220,7 +220,7 @@
     {
       "name": "محمد عويس",
       "pass": "22",
-      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginChecksAgainstUsBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openAdvanceBtn,openEmployeeManageTileBtn,openIconManageTileBtn,allow_notifApprovals,allow_notifVault,allow_custodyReport,allow_sarraki,allow_sarrakiSettings",
+      "hiddenIcons": "",
       "birthday": ""
     },
     {
