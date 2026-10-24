@@ -1,7 +1,7 @@
 {
   "ok": true,
   "date": "2026-10-24",
-  "updatedAt": "2026-10-24T11:27:07.018002+00:00",
+  "updatedAt": "2026-10-24T14:47:43.389295+00:00",
   "absent": [
     "محمود كارم",
     "سيد كارم",
@@ -51,6 +51,16 @@
       "device": ""
     },
     {
+      "name": "صبري يحي",
+      "type": "انصراف",
+      "date": "2026-10-24",
+      "time": "16:54:57",
+      "lat": "29.9797542",
+      "lng": "",
+      "map": "https://maps.google.com/?q=29.9797542,31.0672637",
+      "device": ""
+    },
+    {
       "name": "أحمد مفرح",
       "type": "حضور",
       "date": "2026-10-24",
@@ -58,6 +68,16 @@
       "lat": "30.0188267",
       "lng": "31.00867",
       "map": "https://maps.google.com/?q=30.0188267,31.00867",
+      "device": ""
+    },
+    {
+      "name": "أحمد مفرح",
+      "type": "انصراف",
+      "date": "2026-10-24",
+      "time": "16:54:01",
+      "lat": "29.9884333",
+      "lng": "",
+      "map": "https://maps.google.com/?q=29.9884333,31.0595583",
       "device": ""
     },
     {
@@ -79,9 +99,32 @@
       "lng": "30.9834906",
       "map": "https://maps.google.com/?q=30.0075208,30.9834906",
       "device": ""
+    },
+    {
+      "name": "مني محمد",
+      "type": "انصراف",
+      "date": "2026-10-24",
+      "time": "16:56:22",
+      "lat": "30.0076374",
+      "lng": "",
+      "map": "https://maps.google.com/?q=30.0076374,30.9836337",
+      "device": ""
     }
   ],
   "dashboardRequestRows": [
+    {
+      "id": "mvmdrelq-s12mhk",
+      "name": "محمود كارم",
+      "type": "إجازة",
+      "date": "2026-10-24",
+      "from": "",
+      "to": "",
+      "reason": "[بدون مرتب]",
+      "status": "موافق",
+      "submittedAt": "2026-10-24T12:33:52.000Z",
+      "leaveFrom": "2026-10-24",
+      "leaveTo": "2026-10-26"
+    },
     {
       "id": "mvm42fcr-oaasbs",
       "name": "محمود رجب",
@@ -177,7 +220,7 @@
     {
       "name": "محمد عويس",
       "pass": "22",
-      "hiddenIcons": "",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginChecksAgainstUsBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openAdvanceBtn,openEmployeeManageTileBtn,openIconManageTileBtn,allow_notifApprovals,allow_notifVault,allow_custodyReport,allow_sarraki,allow_sarrakiSettings",
       "birthday": ""
     },
     {
