@@ -265,6 +265,7 @@ def convert_last_prices(ws):
     c_order = 3
     c_payment = 4
     c_date = 5
+    c_weight = 8  # عمود I = الوزن الفعلي
 
     out = []
     for row in rows[header_i + 1:]:
@@ -278,6 +279,7 @@ def convert_last_prices(ws):
             'saleOrderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
             'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
             'lastInvoiceDate': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
+            'actualWeight': to_number(row[c_weight]) if c_weight < len(row) else 0,
         })
     return out
 
@@ -312,6 +314,7 @@ def convert_all_sales(ws):
     c_date = 5
     c_buy_total_col = 6
     c_sell_total_col = 7
+    c_weight = 8  # عمود I = الوزن الفعلي (طن)
 
     # Group by (client + orderNo) — كل مفتاح فيه: totals مُجمَّعة + أول سعر
     # شراء/بيع لقيته + مجموعة الأسعار المختلفة (لو الأمر فيه أصناف بأسعار
@@ -334,15 +337,18 @@ def convert_all_sales(ws):
                 'sell_prices': [],
                 'buyTotal': 0.0,
                 'sellTotal': 0.0,
+                'actualWeight': 0.0,
                 'paymentMethod': '',
             }
             order_list.append(key)
         g = grouped[key]
-        # جمع الإجماليات
+        # جمع الإجماليات والوزن الفعلي
         bt = to_number(row[c_buy_total_col]) if c_buy_total_col < len(row) else 0
         st = to_number(row[c_sell_total_col]) if c_sell_total_col < len(row) else 0
+        wt = to_number(row[c_weight]) if c_weight < len(row) else 0
         g['buyTotal'] += bt
         g['sellTotal'] += st
+        g['actualWeight'] += wt
         # لو الأمر بأكتر من سعر (أصناف مختلفة)، نجمع الأسعار المتميزة
         bp = to_number(row[c_buy]) if c_buy < len(row) else 0
         sp = to_number(row[c_sell]) if c_sell < len(row) else 0
@@ -381,6 +387,7 @@ def convert_all_sales(ws):
             'sellPrice2': sell_price2,
             'buyTotal': g['buyTotal'],
             'sellTotal': g['sellTotal'],
+            'actualWeight': g['actualWeight'],
             'paymentMethod': g['paymentMethod'],
         })
 
