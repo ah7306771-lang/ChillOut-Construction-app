@@ -4361,6 +4361,8 @@ window.safeFileName = function(str){
     return { isAdmin: !isEmployeeSession, isMonitor: isMonitor, canCustody: canCustody, name: currentSessionEmployeeName || '', topics: topics };
   };
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
+    // authed: فيه جلسة دخول فعلية؟ موظف باسم معروف، أو أدمن جلسته محفوظة (تذكرني/بصمة). غير كده = زائر على صفحة الدخول.
+    authed: isEmployeeSession ? !!currentSessionEmployeeName : (function(){ try { return localStorage.getItem(AUTH_KEY) === '1' && localStorage.getItem(ROLE_KEY) === 'admin'; } catch(e){ return false; } })(),
     canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
 
   // Clone the brand logo (defined once in the app header) into the
@@ -14855,11 +14857,20 @@ window.safeFileName = function(str){
     $('quickStatusSubtitle').textContent = today();
     wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
     $('quickStatusOverlay').style.display = 'flex';
+    // مفيش جلسة دخول → مفيش بيانات عهدة (ولا حتى طلب للسيرفر)
+    if (!ctx().authed) { wrap.innerHTML = '<div class="empty-note">🔒 سجّل الدخول أولًا لعرض العهد.</div>'; return; }
     Promise.all([
       fetchAll(T + '?deleted_at=is.null&select=employee,entry_type,amount&order=created_at.asc,id.asc'),
-      loadLocks()
+      loadLocks(),
+      loadVaultViewers()
     ]).then(function(res){
       var rows = res[0] || [];
+      // الموظف يشوف خزنته + الخزن اللي اتسمحله بيها فقط (vault_viewers). الأدمن يشوف الكل.
+      var c = ctx();
+      if (c.isEmp) {
+        var allowed = (c.name && typeof window.allowedVaultsFor_ === 'function') ? window.allowedVaultsFor_(c.name) : [];
+        rows = rows.filter(function(r){ return allowed.indexOf(r.employee) > -1; });
+      }
       var bal = {};
       rows.forEach(function(r){ bal[r.employee] = (bal[r.employee] || 0) + (r.entry_type === 'in' ? 1 : -1) * (+r.amount); });
       var list = Object.keys(bal).map(function(n){ return { n: n, b: Math.round(bal[n] * 100) / 100 }; })
@@ -15173,6 +15184,34 @@ window.safeFileName = function(str){
       })
       .catch(function(){ st('تعذّر التمييز', true); });
   });
+})();
+</script>
+<script>
+// ===== حماية أيقونات صفحة الدخول: مفيش بيانات لحد ما يكون فيه جلسة دخول فعلية =====
+(function(){
+  var GUARDED = ['loginChecksBtn','loginChecksAgainstUsBtn','loginPartiesBtn','loginOverdueBtn','loginInstallmentsBtn','loginLastPricesBtn'];
+  var BADGES = ['loginChecksBadge','loginChecksAgainstUsBadge','loginOverdueBadge','loginInstallmentsBadge','loginLastPricesBadge'];
+  function authed(){ try { return !!(window.custodyCtx_ && window.custodyCtx_().authed); } catch(e){ return false; } }
+  var css = document.createElement('style');
+  css.textContent = BADGES.map(function(b){ return 'body.login-guest #' + b; }).join(',') + '{display:none !important}';
+  document.head.appendChild(css);
+  function sync(){ document.body.classList.toggle('login-guest', !authed()); }
+  sync(); setInterval(sync, 1000);
+  // capture على الـ document: بيشتغل قبل أي handler على الزرار نفسه
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('#' + GUARDED.join(',#'));
+    if (!b || authed()) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var m = document.querySelector('.quick-status-modal');
+    if (m) m.classList.remove('qsm-wide', 'installments-modal');
+    var t = document.getElementById('quickStatusTitle'), w = document.getElementById('quickStatusListWrap'),
+        sub = document.getElementById('quickStatusSubtitle'), o = document.getElementById('quickStatusOverlay');
+    if (!t || !w || !o) return;
+    t.textContent = b.getAttribute('aria-label') || '';
+    if (sub) sub.textContent = '';
+    w.innerHTML = '<div class="empty-note">🔒 سجّل الدخول أولًا لعرض البيانات.</div>';
+    o.style.display = 'flex';
+  }, true);
 })();
 </script>
 </body>
