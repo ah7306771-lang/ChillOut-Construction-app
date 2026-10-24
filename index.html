@@ -2225,6 +2225,9 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" id="loginCustodyBtn" class="login-fab-btn" aria-label="العهد">
         💼<span class="fab-label" aria-hidden="true">العهد</span>
       </button>
+      <button type="button" id="loginSarrakyPeriodBtn" class="login-fab-btn" aria-label="قبض فترة السراكي">
+        👷<span class="fab-label" aria-hidden="true">قبض السراكي</span>
+      </button>
     </div>
   </div>
 </div>
@@ -10983,7 +10986,8 @@ window.safeFileName = function(str){
   var EXTRA_PERMS_ = [
     { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
     { id: 'sarraki', label: 'سراكي عمال 👷', defaultOn: false },
-    { id: 'sarrakiSettings', label: 'إعدادات السراكي 🛠️', defaultOn: false }
+    { id: 'sarrakiSettings', label: 'إعدادات السراكي 🛠️', defaultOn: false },
+    { id: 'loginSarrakyPeriod', label: 'قبض فترة السراكي (شاشة الدخول) 👷', defaultOn: false }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
@@ -11059,6 +11063,13 @@ window.safeFileName = function(str){
     if (skTile) {
       var skList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
       skTile.style.display = (!isEmployeeSession || (!pendingPerms_ && skList_.indexOf('allow_sarraki') > -1)) ? '' : 'none';
+    }
+    // زرار "قبض فترة السراكي" في شاشة الدخول: مخفي عن الكل افتراضيًا (الأدمن
+    // بس يشوفه)، ويظهر للموظف لو عنده صلاحية allow_loginSarrakyPeriod.
+    var skPdFab = document.getElementById('loginSarrakyPeriodBtn');
+    if (skPdFab) {
+      var skPdList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
+      skPdFab.style.display = (!isEmployeeSession || (!pendingPerms_ && skPdList_.indexOf('allow_loginSarrakyPeriod') > -1)) ? '' : 'none';
     }
     var crTile = document.getElementById('openCustodyReportTileBtn');
     if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
@@ -15314,6 +15325,124 @@ window.safeFileName = function(str){
     } catch (e) { st('crStatus', 'تعذّر إنشاء الملف', true); }
   });
 
+
+  // ---------- أيقونة "قبض فترة السراكي" في إشعارات صفحة الدخول ----------
+  // زرار 👷 في فابس الشمال — لما يتدوس بيفتح مودال فيه آخر فترة سراكي (اللي
+  // مفتوحة دلوقتي، وإلا آخر فترة مقفلة) مع جدول صف لكل مشروع وفيه 3 أعمدة:
+  //   • إجمالي القبض قبل السلف
+  //   • إجمالي السلف
+  //   • صافي القبض
+  // وفي الآخر صف إجمالي عام. الصلاحية (allow_loginSarrakyPeriod) بيتحكم فيها
+  // الأدمن من "إدارة الشاشات" (قسم: صلاحيات خاصة) — افتراضيًا محدش يشوفها.
+  (function(){
+    function fa(n){ return (Math.round((+n || 0) * 100) / 100).toLocaleString('ar-EG', { maximumFractionDigits: 2 }); }
+    function esc(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : String(s)); return d.innerHTML; }
+    function short(d){ if (!d) return ''; var p = String(d).split('-'); return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : d; }
+    function sbGet(path){
+      return fetch(SUPABASE_URL + '/rest/v1/' + path, { headers: sbHeaders() })
+        .then(function(r){ if (!r.ok) throw new Error('sb ' + r.status); return r.json(); });
+    }
+    function pickPeriod(periods){
+      // الأحدث حسب (year, period_no) — المفتوحة أولوية، وإلا آخر مقفلة
+      var cmp = function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); };
+      var open = periods.filter(function(x){ return x.status === 'open'; }).sort(cmp)[0];
+      return open || periods.slice().sort(cmp)[0] || null;
+    }
+    function computeByProject(workers, days, projects){
+      var wmap = {}; workers.forEach(function(w){ wmap[w.id] = w; });
+      var pname = {}; projects.forEach(function(p){ pname[p.id] = p.name; });
+      var ord = {}; projects.forEach(function(p, i){ ord[p.id] = i; });
+      var buckets = {};
+      days.forEach(function(r){
+        var w = wmap[r.worker_id]; if (!w) return;
+        var rate = +w.daily_rate || 0;
+        var pj = r.project_id || w.project_id || '__none__';
+        var b = buckets[pj] || (buckets[pj] = { gross: 0, adv: 0 });
+        if (r.present) b.gross += rate;
+        if (+r.overtime) b.gross += (+r.overtime) * rate;
+        if (+r.extra_amt) b.gross += +r.extra_amt;
+        if (+r.advance) b.adv += +r.advance;
+      });
+      var keys = Object.keys(buckets).sort(function(a, b){
+        var oa = ord[a] == null ? 1e9 : ord[a], ob = ord[b] == null ? 1e9 : ord[b];
+        return oa - ob;
+      });
+      var rows = [], T = { gross: 0, adv: 0, net: 0 };
+      keys.forEach(function(k){
+        var b = buckets[k], nm = k === '__none__' ? '(بدون مشروع)' : (pname[k] || '(بدون اسم)');
+        var net = b.gross - b.adv;
+        rows.push({ name: nm, gross: b.gross, adv: b.adv, net: net });
+        T.gross += b.gross; T.adv += b.adv; T.net += net;
+      });
+      return { rows: rows, tot: T };
+    }
+    var btn = document.getElementById('loginSarrakyPeriodBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      var wrap = document.getElementById('quickStatusListWrap');
+      var m = document.querySelector('.quick-status-modal');
+      if (m) m.classList.remove('installments-modal');
+      if (m) m.classList.add('qsm-wide');
+      document.getElementById('quickStatusTitle').textContent = '👷 قبض فترة السراكي';
+      document.getElementById('quickStatusSubtitle').textContent = (new Date()).toLocaleDateString('ar-EG');
+      wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+      document.getElementById('quickStatusOverlay').style.display = 'flex';
+      // لازم جلسة دخول (أدمن أو موظف عنده الصلاحية). زرار الفابس نفسه مخفي
+      // بالفعل في applyIconVisibility_ لو مفيش صلاحية، فده بس حماية إضافية.
+      var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : { authed: false };
+      if (!c.authed) { wrap.innerHTML = '<div class="empty-note">🔒 سجّل الدخول أولًا لعرض البيانات.</div>'; return; }
+      // الموظف لازم يبقى عنده allow_loginSarrakyPeriod — الأدمن مش محتاج.
+      if (c.isEmp && c.name) {
+        var pl = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
+        if (pl.indexOf('allow_loginSarrakyPeriod') === -1) { wrap.innerHTML = '<div class="empty-note">🔒 ليس لديك صلاحية عرض هذه البيانات.</div>'; return; }
+      }
+      Promise.all([
+        sbGet('wl_periods?select=id,year,period_no,from_date,to_date,status,closed_at'),
+        sbGet('wl_projects?select=id,name,code,is_stopped&order=code.asc.nullslast'),
+        sbGet('wl_workers?select=id,period_id,daily_rate,project_id')
+      ]).then(function(res){
+        var periods = res[0] || [], projects = res[1] || [], workers = res[2] || [];
+        var p = pickPeriod(periods);
+        if (!p) { wrap.innerHTML = '<div class="empty-note">مفيش فترات مسجّلة بعد.</div>'; return; }
+        var pWorkers = workers.filter(function(w){ return w.period_id === p.id; });
+        return sbGet('wl_days?select=worker_id,project_id,present,overtime,advance,extra_amt&period_id=eq.' + encodeURIComponent(p.id))
+          .then(function(days){
+            var r = computeByProject(pWorkers, days || [], projects);
+            var statusTxt = p.status === 'open' ? '🟢 مفتوحة' : '🔒 مقفلة';
+            var sub = 'الفترة ' + p.period_no + ' — ' + p.year + '  •  ' + short(p.from_date) + ' → ' + short(p.to_date) + '  •  ' + statusTxt;
+            document.getElementById('quickStatusSubtitle').textContent = sub;
+            if (!r.rows.length) { wrap.innerHTML = '<div class="empty-note">مفيش حركات في الفترة دي لحد دلوقتي.</div>'; return; }
+            var tbody = r.rows.map(function(x, i){
+              return '<tr>' +
+                '<td>' + (i + 1) + '</td>' +
+                '<td style="font-weight:700">' + esc(x.name) + '</td>' +
+                '<td dir="ltr" style="font-weight:700;color:#0f766e">' + fa(x.gross) + '</td>' +
+                '<td dir="ltr" style="font-weight:700;color:#c0392b">' + fa(x.adv) + '</td>' +
+                '<td dir="ltr" style="font-weight:800;color:' + (x.net >= 0 ? '#1f7a4c' : '#c0392b') + '">' + fa(x.net) + '</td>' +
+                '</tr>';
+            }).join('');
+            var tfoot =
+              '<tr class="qs-net-row">' +
+                '<td colspan="2" style="font-weight:800">💰 الإجمالي العام</td>' +
+                '<td dir="ltr" style="font-weight:800;color:#0f766e">' + fa(r.tot.gross) + '</td>' +
+                '<td dir="ltr" style="font-weight:800;color:#c0392b">' + fa(r.tot.adv) + '</td>' +
+                '<td dir="ltr" style="font-weight:900;color:' + (r.tot.net >= 0 ? '#1f7a4c' : '#c0392b') + '">' + fa(r.tot.net) + '</td>' +
+              '</tr>';
+            wrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable">' +
+              '<thead><tr>' +
+                '<th style="width:34px">#</th>' +
+                '<th>المشروع</th>' +
+                '<th>إجمالي القبض<br>قبل السلف</th>' +
+                '<th>إجمالي السلف</th>' +
+                '<th>صافي القبض</th>' +
+              '</tr></thead>' +
+              '<tbody>' + tbody + '</tbody>' +
+              '<tfoot>' + tfoot + '</tfoot>' +
+            '</table></div>';
+          });
+      }).catch(function(){ wrap.innerHTML = '<div class="empty-note">تعذّر تحميل بيانات السراكي.</div>'; });
+    });
+  })();
 
   // ---------- أيقونة "العهد" في إشعارات صفحة الدخول: متبقي العهدة لكل موظف (اللي عليه رصيد بس) ----------
   function faNum(n){ return n.toLocaleString('ar-EG', { maximumFractionDigits: 2 }); }
