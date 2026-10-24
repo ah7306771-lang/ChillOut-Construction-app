@@ -14100,7 +14100,7 @@ window.safeFileName = function(str){
   function openVaultAccess_(owner){
     vaCurrentOwner = owner;
     $('vamOwnerName').textContent = owner;
-    $('vamStatus').textContent = '';
+    $('vamStatus').textContent = ''; $('vamStatus').style.color = '';
     var allowed = S.vv[owner] || [];
     var employees = (typeof window.custodyCtx_ === 'function' ? (window.custodyCtx_().employees || []) : []).filter(function(n){ return n !== owner; });
     $('vamList').innerHTML = employees.length ? employees.map(function(n){
@@ -14133,9 +14133,16 @@ window.safeFileName = function(str){
       method: 'POST',
       headers: H({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
       body: JSON.stringify({ owner: vaCurrentOwner, viewers: csv, updated_at: new Date().toISOString() })
-    }).then(function(r){ if (!r.ok) throw 0; return loadVaultViewers(); })
+    }).then(function(r){
+      if (r.ok) return loadVaultViewers();
+      // نجيب سبب الرفض الحقيقي من Supabase عشان نعرف المشكلة (جدول ناقص / صلاحيات RLS / عمود غلط)
+      return r.text().then(function(t){ var e = new Error('HTTP ' + r.status + ' — ' + String(t || '').slice(0, 160)); e.detail = true; throw e; });
+    })
       .then(function(){ renderVaultAccessList(); closeVaultAccess_(); st('vaStatus', 'تم حفظ صلاحيات الخزنة ✓'); })
-      .catch(function(){ $('vamStatus').textContent = 'تعذّر الحفظ — اتأكد إن جدول vault_viewers موجود في Supabase'; });
+      .catch(function(err){
+        var el = $('vamStatus'); el.style.color = '#c0392b';
+        el.textContent = 'تعذّر الحفظ — ' + (err && err.detail ? err.message : 'اتأكد من الاتصال وإن جدول vault_viewers موجود في Supabase');
+      });
   });
   // Bulk apply
   function bulkVaultAccess_(giveAll){
@@ -14699,6 +14706,21 @@ window.safeFileName = function(str){
     });
     $('crList').innerHTML = h;
   }
+  // قايمة المشاريع في التقرير مربوطة بصلاحيات الموظف: الموظف يشوف بس المشاريع المسموحة له
+  // (S.projects = غير موقوفة + اسمه في allowed_employees)، والأدمن يشوف كل المشاريع + أي مشروع ظاهر في الحركات.
+  function projOptionsHtml_(){
+    var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
+    var c = ctx(), names = [], known = {};
+    function add(n){ if (n && !known[n]) { known[n] = 1; names.push(n); } }
+    if (c.isEmp && c.name) {
+      (S.projects || []).forEach(add);
+    } else {
+      S.cc.forEach(function(x){ add(x.name); });
+      R.rows.forEach(function(r){ add(r.project); });
+    }
+    names.forEach(function(n){ opts += '<option>' + esc(n) + '</option>'; });
+    return opts;
+  }
   var reportBack_ = 'settings-menu';
   function openReport_(from){
     if (!ctx().canReport) return;
@@ -14706,9 +14728,7 @@ window.safeFileName = function(str){
     window.showScreen_('custody-report'); st('crStatus', 'جارٍ التحميل…'); $('crFrom').value = monthStart(); $('crTo').value = today();
     Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(), loadVaultViewers()]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
-      var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
-      S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
-      R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
+      var opts = projOptionsHtml_();
       $('crProj').innerHTML = opts; renderVaults();
     }).catch(function(){ st('crStatus', 'تعذّر تحميل العهد — اتأكد من تشغيل ملفات SQL في Supabase', true); });
   }
@@ -14719,9 +14739,7 @@ window.safeFileName = function(str){
     var keepProj = $('crProj').value;
     Promise.all([loadProjects(), fetchAll(T + '?deleted_at=is.null&select=*&order=entry_date.asc,created_at.asc'), loadLocks(), loadVaultViewers()]).then(function(res){
       R.rows = res[1]; st('crStatus', '');
-      var known = {}; var opts = '<option value="*">كل المشاريع</option><option value="">عام (بدون مشروع)</option>';
-      S.cc.forEach(function(c){ known[c.name] = 1; opts += '<option>' + esc(c.name) + '</option>'; });
-      R.rows.forEach(function(r){ if (r.project && !known[r.project]) { known[r.project] = 1; opts += '<option>' + esc(r.project) + '</option>'; } });
+      var opts = projOptionsHtml_();
       $('crProj').innerHTML = opts; $('crProj').value = keepProj; if ($('crProj').value !== keepProj) $('crProj').value = '*';
       renderVaults(); st('crStatus', 'تم التحديث ✓');
     }).catch(function(){ st('crStatus', 'تعذّر التحديث', true); }).then(function(){
