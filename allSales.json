@@ -9,6 +9,7 @@
     "sellPrice2": 0,
     "buyTotal": 5934599.5,
     "sellTotal": 5978998.0,
+    "actualWeight": 147.995,
     "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم"
   },
   {
@@ -21,6 +22,7 @@
     "sellPrice2": 4200,
     "buyTotal": 2947474.0,
     "sellTotal": 3053830.0,
+    "actualWeight": 204.63,
     "paymentMethod": "كاش 50 % - اجل 50% كاش"
   },
   {
@@ -33,6 +35,7 @@
     "sellPrice2": 0,
     "buyTotal": 1153264.0,
     "sellTotal": 1156206.0,
+    "actualWeight": 29.419999999999998,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -45,6 +48,7 @@
     "sellPrice2": 0,
     "buyTotal": 1774358.0,
     "sellTotal": 1783434.0,
+    "actualWeight": 45.38,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -57,6 +61,7 @@
     "sellPrice2": 0,
     "buyTotal": 2017173.0,
     "sellTotal": 2083350.0,
+    "actualWeight": 49.02,
     "paymentMethod": "اجل  60 يوم"
   },
   {
@@ -69,6 +74,7 @@
     "sellPrice2": 0,
     "buyTotal": 1158142.0,
     "sellTotal": 1164066.0,
+    "actualWeight": 29.62,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -81,6 +87,7 @@
     "sellPrice2": 0,
     "buyTotal": 537540.5,
     "sellTotal": 542902.5,
+    "actualWeight": 13.405000000000001,
     "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم"
   },
   {
@@ -93,6 +100,7 @@
     "sellPrice2": 0,
     "buyTotal": 1236884.5,
     "sellTotal": 1249222.5,
+    "actualWeight": 30.845,
     "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم"
   },
   {
@@ -105,6 +113,7 @@
     "sellPrice2": 0,
     "buyTotal": 7117832.0,
     "sellTotal": 7171484.0,
+    "actualWeight": 178.83999999999997,
     "paymentMethod": "كاش 25 % - باقي اجل 30 يوم"
   },
   {
@@ -117,6 +126,7 @@
     "sellPrice2": 0,
     "buyTotal": 3776821.0,
     "sellTotal": 3795800.0,
+    "actualWeight": 94.89500000000001,
     "paymentMethod": "كاش 25 % - باقي اجل 30 يوم"
   },
   {
@@ -129,6 +139,7 @@
     "sellPrice2": 0,
     "buyTotal": 1610752.0,
     "sellTotal": 1626240.0,
+    "actualWeight": 38.72,
     "paymentMethod": "100% كاش"
   },
   {
@@ -141,6 +152,7 @@
     "sellPrice2": 0,
     "buyTotal": 26403885.0,
     "sellTotal": 26504280.0,
+    "actualWeight": 669.3,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -153,6 +165,7 @@
     "sellPrice2": 0,
     "buyTotal": 12228856.0,
     "sellTotal": 12398748.0,
+    "actualWeight": 307.28000000000003,
     "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم"
   },
   {
@@ -165,6 +178,7 @@
     "sellPrice2": 0,
     "buyTotal": 1166040.0,
     "sellTotal": 1170468.0,
+    "actualWeight": 29.52,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -177,6 +191,7 @@
     "sellPrice2": 0,
     "buyTotal": 4027762.0,
     "sellTotal": 4062020.0,
+    "actualWeight": 97.88,
     "paymentMethod": "كاش 100 %"
   },
   {
@@ -189,6 +204,7 @@
     "sellPrice2": 0,
     "buyTotal": 4550614.0,
     "sellTotal": 4791465.0,
+    "actualWeight": 116.865,
     "paymentMethod": "كاش 50% - 50 % شيك اجل 30 يوم"
   },
   {
@@ -201,6 +217,7 @@
     "sellPrice2": 0,
     "buyTotal": 5115560.0,
     "sellTotal": 5384800.0,
+    "actualWeight": 134.62,
     "paymentMethod": "كاش 50% - 50 % شيك اجل 30 يوم"
   },
   {
@@ -213,6 +230,7 @@
     "sellPrice2": 0,
     "buyTotal": 4376600.0,
     "sellTotal": 4576040.0,
+    "actualWeight": 110.79999999999998,
     "paymentMethod": "شيك 30 يوم 50 % - شيك 60 يوم 50%"
   },
   {
@@ -225,6 +243,7 @@
     "sellPrice2": 0,
     "buyTotal": 3910584.0,
     "sellTotal": 3915716.0,
+    "actualWeight": 102.64,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -237,6 +256,7 @@
     "sellPrice2": 0,
     "buyTotal": 1830430.0,
     "sellTotal": 1923110.0,
+    "actualWeight": 46.34,
     "paymentMethod": "اجل 60 يوم"
   },
   {
@@ -249,6 +269,7 @@
     "sellPrice2": 0,
     "buyTotal": 1823466.0,
     "sellTotal": 1825859.0,
+    "actualWeight": 47.86,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -261,6 +282,7 @@
     "sellPrice2": 0,
     "buyTotal": 4554028.0,
     "sellTotal": 4577624.0,
+    "actualWeight": 117.97999999999999,
     "paymentMethod": "كاش 25% - شيك اجل 30 يوم"
   },
   {
@@ -273,6 +295,7 @@
     "sellPrice2": 0,
     "buyTotal": 9783540.0,
     "sellTotal": 9934056.0,
+    "actualWeight": 250.86,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
@@ -285,6 +308,7 @@
     "sellPrice2": 0,
     "buyTotal": 2393531.0,
     "sellTotal": 2393531.0,
+    "actualWeight": 62.74,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -297,6 +321,7 @@
     "sellPrice2": 0,
     "buyTotal": 7134916.0,
     "sellTotal": 7243060.0,
+    "actualWeight": 176.66,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
@@ -309,6 +334,7 @@
     "sellPrice2": 0,
     "buyTotal": 17612430.0,
     "sellTotal": 17745354.0,
+    "actualWeight": 443.08000000000004,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
@@ -321,6 +347,7 @@
     "sellPrice2": 0,
     "buyTotal": 2768680.0,
     "sellTotal": 2772323.0,
+    "actualWeight": 72.86,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -333,6 +360,7 @@
     "sellPrice2": 0,
     "buyTotal": 3905760.0,
     "sellTotal": 4014528.0,
+    "actualWeight": 98.88,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
@@ -345,6 +373,7 @@
     "sellPrice2": 0,
     "buyTotal": 2057075.0,
     "sellTotal": 2075800.0,
+    "actualWeight": 53.5,
     "paymentMethod": "كاش 25% - شيك اجل شهر"
   },
   {
@@ -357,6 +386,7 @@
     "sellPrice2": 0,
     "buyTotal": 1967495.0,
     "sellTotal": 2017305.0,
+    "actualWeight": 49.81,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
@@ -369,6 +399,7 @@
     "sellPrice2": 0,
     "buyTotal": 1857440.0,
     "sellTotal": 1859884.0,
+    "actualWeight": 48.88,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -381,6 +412,7 @@
     "sellPrice2": 0,
     "buyTotal": 8767368.0,
     "sellTotal": 8878488.0,
+    "actualWeight": 222.24,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
@@ -393,6 +425,7 @@
     "sellPrice2": 0,
     "buyTotal": 5090628.0,
     "sellTotal": 5174504.0,
+    "actualWeight": 129.04,
     "paymentMethod": "شيك اجل 60 يوم"
   },
   {
@@ -405,6 +438,7 @@
     "sellPrice2": 0,
     "buyTotal": 2470950.0,
     "sellTotal": 2496790.0,
+    "actualWeight": 64.6,
     "paymentMethod": "كاش 50% - شيك اجل شهر"
   },
   {
@@ -417,6 +451,7 @@
     "sellPrice2": 0,
     "buyTotal": 2646000.0,
     "sellTotal": 2660112.0,
+    "actualWeight": 70.55999999999999,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -429,6 +464,7 @@
     "sellPrice2": 0,
     "buyTotal": 2253996.0,
     "sellTotal": 2268786.0,
+    "actualWeight": 59.160000000000004,
     "paymentMethod": "كاش 50% - شيك اجل شهر"
   },
   {
@@ -441,6 +477,7 @@
     "sellPrice2": 0,
     "buyTotal": 20754250.5,
     "sellTotal": 21017295.5,
+    "actualWeight": 526.0899999999999,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
@@ -453,6 +490,7 @@
     "sellPrice2": 0,
     "buyTotal": 3712600.0,
     "sellTotal": 3746795.0,
+    "actualWeight": 97.7,
     "paymentMethod": "كاش 25% - شيك شهر"
   },
   {
@@ -465,6 +503,7 @@
     "sellPrice2": 0,
     "buyTotal": 3804728.0,
     "sellTotal": 3971430.0,
+    "actualWeight": 98.06,
     "paymentMethod": "شيك 60 يوم"
   },
   {
@@ -477,6 +516,7 @@
     "sellPrice2": 0,
     "buyTotal": 7041765.0,
     "sellTotal": 7140063.75,
+    "actualWeight": 178.725,
     "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم"
   },
   {
@@ -489,6 +529,7 @@
     "sellPrice2": 0,
     "buyTotal": 2971500.0,
     "sellTotal": 2987348.0,
+    "actualWeight": 79.24,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -501,6 +542,7 @@
     "sellPrice2": 0,
     "buyTotal": 5361384.0,
     "sellTotal": 5623926.0,
+    "actualWeight": 138.18,
     "paymentMethod": "شيك 45 يوم"
   },
   {
@@ -513,6 +555,7 @@
     "sellPrice2": 0,
     "buyTotal": 1477980.0,
     "sellTotal": 1534675.0,
+    "actualWeight": 39.099999999999994,
     "paymentMethod": "شيك اجل 60  يوم"
   },
   {
@@ -525,6 +568,7 @@
     "sellPrice2": 0,
     "buyTotal": 33189750.0,
     "sellTotal": 33278256.0,
+    "actualWeight": 885.06,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -537,6 +581,7 @@
     "sellPrice2": 0,
     "buyTotal": 5223750.0,
     "sellTotal": 5237680.0,
+    "actualWeight": 139.3,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -549,6 +594,7 @@
     "sellPrice2": 0,
     "buyTotal": 4594860.0,
     "sellTotal": 4594860.0,
+    "actualWeight": 120.60000000000001,
     "paymentMethod": "كاش 25% - شيك شهر"
   },
   {
@@ -561,6 +607,7 @@
     "sellPrice2": 0,
     "buyTotal": 3573375.0,
     "sellTotal": 3582904.0,
+    "actualWeight": 95.29,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -573,6 +620,7 @@
     "sellPrice2": 0,
     "buyTotal": 10995000.0,
     "sellTotal": 11024320.0,
+    "actualWeight": 293.20000000000005,
     "paymentMethod": "كاش 100%"
   },
   {
@@ -585,6 +633,7 @@
     "sellPrice2": 0,
     "buyTotal": 7818800.0,
     "sellTotal": 7857894.0,
+    "actualWeight": 195.47000000000003,
     "paymentMethod": "شيك 90 يوم"
   },
   {
@@ -597,6 +646,7 @@
     "sellPrice2": 0,
     "buyTotal": 2961840.0,
     "sellTotal": 3070200.0,
+    "actualWeight": 72.24,
     "paymentMethod": "شيك 60يوم"
   },
   {
@@ -609,6 +659,7 @@
     "sellPrice2": 0,
     "buyTotal": 1922004.0000000002,
     "sellTotal": 1963416.0000000002,
+    "actualWeight": 48.720000000000006,
     "paymentMethod": "شيك 60يوم"
   }
 ]
