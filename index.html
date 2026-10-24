@@ -1605,6 +1605,137 @@
     #attendanceDashboardScreen .dash-controls-buttons{grid-column:1/-1;justify-content:center;}
     #attendanceDashboardScreen .dash-list{grid-template-columns:1fr;}
   }
+
+/* ================= سراكي عمال ================= */
+#sarrakiScreen{align-items:flex-start;padding:70px 10px 40px}
+#sarrakiScreen .back-bar{top:30px !important;padding:6px 12px !important}
+#sarrakiScreen .gate-card{max-width:min(98vw,1180px);text-align:right}
+#sarrakiScreen .gate-title{font-size:20px;margin:0;text-align:right}
+.sk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+.sk-sync{font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#eaf6ef;color:#1f7a4c;border:1px solid #b7e0c8;white-space:nowrap}
+.sk-sync.saving{background:#fff6e0;color:#946200;border-color:#f0d9a0}
+.sk-sync.off{background:#fdeceb;color:#b3261e;border-color:#f3c0bc}
+.sk-master{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;background:#fff;border:1px solid var(--panel-line);border-radius:14px;padding:12px;box-shadow:0 3px 12px rgba(226,98,31,.08)}
+.sk-f label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px}
+.sk-f input,.sk-f select,.sk-f .sk-badge{width:100%;height:40px;border:1px solid var(--panel-line);border-radius:9px;padding:0 10px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;background:#fffaf5;color:var(--ink);text-align:center}
+.sk-f input[readonly]{background:#f3eee8}
+.sk-f .sk-badge{display:flex;align-items:center;justify-content:center;background:#eaf6ef;color:#1f7a4c;border-color:#b7e0c8}
+.sk-f .sk-badge.closed{background:#f1f1f1;color:#666;border-color:#ddd}
+.sk-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.sk-actions .btn{width:auto;padding:9px 14px;font-size:13px}
+.sk-banner{margin:6px 0;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:700;background:#fdeceb;color:#b3261e;border:1px solid #f3c0bc;display:none;line-height:1.7}
+.sk-banner.show{display:block}
+.sk-banner code{background:#fff;padding:1px 6px;border-radius:5px;direction:ltr;display:inline-block}
+.sk-tabs{display:flex;gap:6px;margin:8px 0;border-bottom:2px solid var(--panel-line)}
+.sk-tab{border:none;background:transparent;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;color:var(--ink-soft);padding:10px 16px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.sk-tab.on{color:var(--steel);border-bottom-color:var(--steel)}
+.sk-days{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px}
+.sk-chip{flex:1 0 92px;border:1px solid var(--panel-line);background:#fff;border-radius:12px;padding:7px 6px;text-align:center;cursor:pointer;font-family:'Cairo',sans-serif;color:var(--ink)}
+.sk-chip b{display:block;font-size:13.5px}
+.sk-chip span{display:block;font-size:11.5px;color:var(--ink-soft)}
+.sk-chip i{display:inline-block;font-style:normal;margin-top:3px;font-size:11.5px;font-weight:800;background:#fff0e0;color:var(--steel);border-radius:10px;padding:0 8px}
+.sk-chip.on{background:linear-gradient(135deg,var(--steel),#b8471a);color:#fff;border-color:var(--steel)}
+.sk-chip.on span{color:#ffe9d6}
+.sk-chip.on i{background:#fff;color:var(--steel)}
+.sk-chip.today:not(.on){border-color:var(--steel);box-shadow:inset 0 0 0 1px var(--steel)}
+.sk-tools{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px}
+.sk-tools button{border:1px solid var(--panel-line);background:#fff0e0;border-radius:9px;padding:7px 12px;font-family:'Cairo',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
+.sk-tools button:hover{background:#ffe4cc}
+.sk-add{display:grid;grid-template-columns:1.6fr 1.1fr 1.2fr .8fr 1.3fr auto;gap:6px;background:#fff8f0;border:1px dashed var(--steel);border-radius:12px;padding:8px;margin-bottom:8px}
+.sk-add input,.sk-add select{height:38px;border:1px solid var(--panel-line);border-radius:8px;padding:0 8px;font-family:'Cairo',sans-serif;font-size:13.5px;background:#fff;min-width:0;width:100%}
+.sk-add button{height:38px;border:none;border-radius:8px;background:var(--steel);color:#fff;font-family:'Cairo',sans-serif;font-weight:800;padding:0 16px;cursor:pointer}
+.sk-wrap{overflow-x:auto;border:1px solid var(--panel-line);border-radius:12px;background:#fff}
+.sk-t{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+.sk-t th{background:#3a3f45;color:#fff;font-weight:700;padding:9px 6px;font-size:12.5px;white-space:nowrap;position:sticky;top:0}
+.sk-t td{padding:4px;border-bottom:1px solid #f2e7da;text-align:center}
+.sk-t tr:nth-child(even) td{background:#fffaf5}
+.sk-t tr.sk-on td{background:#eefaf2}
+.sk-t td.n{width:34px;color:var(--ink-soft);font-weight:700}
+.sk-t td.nm{text-align:right;font-weight:700;padding-inline-start:8px}
+.sk-t td.c{font-weight:800}
+.sk-t td.big{font-weight:800;color:var(--steel)}
+.sk-t tfoot td{background:#fff0e0 !important;font-weight:800;border-top:2px solid var(--steel);padding:9px 6px}
+.sk-in{width:100%;height:36px;border:1px solid #eadcca;border-radius:7px;padding:0 7px;font-family:'Cairo',sans-serif;font-size:13.5px;background:#fff;text-align:center;color:var(--ink)}
+.sk-in:hover{border-color:var(--panel-line);background:#fff}
+.sk-in:focus{outline:none;border-color:var(--steel);background:#fff;box-shadow:0 0 0 2px rgba(226,98,31,.15)}
+.sk-in.l{text-align:right}
+select.sk-in{padding:0 4px;min-width:130px}
+.sk-chk{display:flex;justify-content:center}
+.sk-chk input{width:24px;height:24px;accent-color:#1f7a4c;cursor:pointer}
+.sk-x{border:none;background:transparent;color:#b3261e;font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.sk-x:hover{background:#fdeceb}
+.sk-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.sk-sum div{background:#fff;border:1px solid var(--panel-line);border-radius:12px;padding:8px 10px;text-align:center;font-size:12px;color:var(--ink-soft);font-weight:700}
+.sk-sum b{display:block;font-size:18px;color:var(--ink);margin-top:2px}
+.sk-sum .net b{color:var(--ok)}
+.sk-empty{text-align:center;padding:36px 12px;color:var(--ink-soft);font-weight:700}
+.sk-empty .btn{width:auto;margin:14px auto 0;padding:11px 22px}
+.sk-sec{font-weight:800;margin:16px 0 6px;color:var(--steel-dark)}
+.sk-lock{background:#f1f1f1;color:#555;border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;margin:6px 0;text-align:center}
+.sk-mark{color:#1f7a4c;font-weight:800;font-size:16px}
+.sk-mark small{display:block;font-size:10px;color:var(--ink-soft);font-weight:600}
+.sk-hd{cursor:pointer}
+/* نوافذ */
+.sk-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10050;display:flex;align-items:center;justify-content:center;padding:14px}
+.sk-md{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:18px;direction:rtl;font-family:'Cairo',sans-serif;color:var(--ink)}
+.sk-md h3{margin:0 0 12px;font-size:17px}
+.sk-md .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.sk-md label.l{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:3px}
+.sk-md input[type=text],.sk-md input[type=number],.sk-md input[type=date],.sk-md select{width:100%;height:38px;border:1px solid var(--panel-line);border-radius:8px;padding:0 8px;font-family:'Cairo',sans-serif;font-size:14px}
+.sk-md .chk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;margin:8px 0}
+.sk-md .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sk-md .btns .btn{flex:1;min-width:110px;padding:10px 12px;font-size:13.5px}
+.sk-md .pj{display:grid;grid-template-columns:52px 1fr auto;gap:6px;align-items:center;margin-bottom:6px}
+.sk-md .pj input[type=text],.sk-md .pj input[type=number]{height:34px}
+.sk-md .msg{font-size:13px;color:var(--ink-soft);line-height:1.8;margin:0 0 6px}
+/* صفحات التقارير (بتتحوّل PDF / طباعة) */
+#skStage{position:fixed;left:-20000px;top:0;direction:rtl}
+#skPrintRoot{display:none}
+.skp{background:#fff;color:#1a1a1a;font-family:'Cairo',sans-serif;box-sizing:border-box;position:relative;direction:rtl;overflow:hidden}
+.skp.land{width:1123px;height:794px;padding:26px 32px}
+.skp.port{width:794px;height:1123px;padding:34px 40px}
+.skp .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #e2621f;padding-bottom:8px;margin-bottom:10px}
+.skp .ph h1{margin:0;font-size:24px;color:#3a3f45;font-weight:800}
+.skp .ph .sub{font-size:13px;color:#555;font-weight:600;text-align:left;line-height:1.6}
+.skp table{width:100%;border-collapse:collapse;font-size:12.5px}
+.skp th{background:#3a3f45;color:#fff;padding:7px 4px;font-weight:700;border:1px solid #3a3f45}
+.skp td{padding:6px 4px;border:1px solid #d9cfc3;text-align:center}
+.skp td.nm{text-align:right;font-weight:700;padding-inline-start:8px}
+.skp tr.tot td{background:#fff0e0;font-weight:800;border-top:2px solid #e2621f}
+.skp td.hl{background:#eefaf2;font-weight:800}
+.skp .foot{position:absolute;bottom:14px;left:32px;right:32px;display:flex;justify-content:space-between;font-size:11px;color:#777}
+.skp .sig{display:flex;gap:30px;margin-top:26px}
+.skp .sig div{flex:1;border-top:1px solid #333;text-align:center;padding-top:5px;font-size:12.5px;font-weight:700}
+.skp .box{display:flex;gap:10px;margin:10px 0}
+.skp .box div{flex:1;border:1px solid #d9cfc3;border-radius:8px;padding:8px;text-align:center;font-size:12px;color:#555;font-weight:700}
+.skp .box b{display:block;font-size:18px;color:#1a1a1a}
+.skp .box .net b{color:#1f7a4c}
+@media print{
+  body.sk-printing > *:not(#skPrintRoot){display:none !important}
+  body.sk-printing #skPrintRoot{display:block !important}
+  body.sk-printing .skp{page-break-after:always;break-after:page;margin:0}
+  .skp.land{page:skland}.skp.port{page:skport}
+  @page skland{size:A4 landscape;margin:0}
+  @page skport{size:A4 portrait;margin:0}
+}
+@media (max-width:860px){
+  .sk-master{grid-template-columns:repeat(2,1fr)}
+  .sk-add{grid-template-columns:1fr 1fr}
+  .sk-add button{grid-column:1/-1}
+  .sk-sum{grid-template-columns:repeat(2,1fr)}
+  #skBody .sk-t.cards{min-width:0}
+  #skBody .sk-t.cards thead{display:none}
+  #skBody .sk-t.cards tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;padding:8px;border-bottom:6px solid #f6efe6}
+  #skBody .sk-t.cards td{border:none;display:block;text-align:right;background:transparent !important}
+  #skBody .sk-t.cards td::before{content:attr(data-l);display:block;font-size:10.5px;color:var(--ink-soft);font-weight:700}
+  #skBody .sk-t.cards td.n{display:none}
+  #skBody .sk-t.cards td.nm,#skBody .sk-t.cards td.full{grid-column:1/-1}
+  #skBody .sk-t.cards .sk-in{text-align:right;border-color:var(--panel-line);background:#fff}
+  #skBody .sk-t.cards .sk-chk{justify-content:flex-start}
+  #skBody .sk-t.cards tfoot{display:block}
+  #skBody .sk-t.cards tfoot tr{display:flex;flex-wrap:wrap;gap:6px}
+  #skBody .sk-t.cards tfoot td::before{content:none}
+}
 </style>
 <style>
 .cg-who{text-align:center;font-weight:800;margin:2px 0 12px;color:var(--steel-dark)}
@@ -2017,6 +2148,10 @@ body.cg-compact .wa-float-btn{display:none !important}
       <span class="home-tile-icon" style="font-size:26px;">🧾</span>
       <span class="home-tile-label">تقرير العهد</span>
     </button>
+    <button type="button" class="home-tile" id="openSarrakiBtn" style="display:none;">
+      <span class="home-tile-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="7.5" r="3" stroke="#e2621f" stroke-width="1.6"/><path d="M3.5 19c0-3.2 2.4-5.2 5.5-5.2s5.5 2 5.5 5.2" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/><rect x="14.5" y="6" width="6" height="7.5" rx="1" stroke="#e2621f" stroke-width="1.5"/><path d="M16 9h3M16 11.3h3" stroke="#3a3f45" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="home-tile-label">سراكي عمال</span>
+    </button>
 
     </div>
     <div style="text-align:center;margin:20px 0 0;">
@@ -2091,6 +2226,43 @@ body.cg-compact .wa-float-btn{display:none !important}
 </div></div>
 
 <div id="cgViewer" class="cg-viewer"><div class="cg-vbar"><button type="button" id="vwClose">✕</button><span id="vwTitle"></span><button type="button" id="vwPrint">🖨</button><button type="button" id="vwShare">↗ مشاركة</button><button type="button" id="vwDown">⬇ PDF</button></div><div id="vwBody"></div></div>
+
+
+<!-- سراكي عمال: ماستر (فترة / من-إلى / أسبوع) + ديتيل (عمال وحضور يومي) — نظام مستقل بجداول wl_ في Supabase -->
+<div id="sarrakiScreen" class="gate-screen shifted-bar-screen" style="display:none;">
+  <div class="home-footer-byline top-byline">BY/ Ahmed Hamdy</div>
+  <div class="back-bar" style="position:absolute;top:36px;left:0;right:0;background:transparent;border-bottom:none;padding:18px 24px;">
+    <button type="button" id="backHomeBtnSarraki" class="back-btn cg-back" aria-label="رجوع">→</button>
+    <div class="back-bar-datetime live-datetime">—</div>
+  </div>
+  <div class="gate-card home-card">
+    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-sync" id="skSync">…</span></div>
+    <div class="sk-master">
+      <div class="sk-f"><label>السنة</label><input id="skYear" readonly></div>
+      <div class="sk-f"><label>رقم الفترة</label><select id="skPeriod"></select></div>
+      <div class="sk-f"><label>من تاريخ</label><input type="date" id="skFrom"></div>
+      <div class="sk-f"><label>إلى تاريخ</label><input type="date" id="skTo"></div>
+      <div class="sk-f"><label>الأسبوع</label><select id="skWeek"><option value="1">الأسبوع الأول</option><option value="2">الأسبوع الثاني</option></select></div>
+      <div class="sk-f"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
+    </div>
+    <div class="sk-actions">
+      <button type="button" class="btn btn-primary" id="skNew">＋ فترة جديدة</button>
+      <button type="button" class="btn btn-secondary" id="skClose">🔒 إقفال الفترة</button>
+      <button type="button" class="btn btn-secondary" id="skProj">🏗 المشاريع</button>
+      <button type="button" class="btn btn-secondary" id="skItems">🗂 البنود</button>
+      <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
+    </div>
+    <div class="sk-banner" id="skBanner"></div>
+    <div class="sk-tabs">
+      <button type="button" class="sk-tab on" data-v="day">التسجيل اليومي</button>
+      <button type="button" class="sk-tab" data-v="week">ملخص الأسبوع</button>
+      <button type="button" class="sk-tab" data-v="period">حساب الفترة</button>
+    </div>
+    <div id="skBody"></div>
+  </div>
+</div>
+<div id="skStage"></div>
+<div id="skPrintRoot"></div>
 
 <!-- CUSTODY PROJECTS: قايمة المشاريع اللي بتظهر في قايمة العهد -->
 <div id="custodyProjectsScreen" class="gate-screen shifted-bar-screen" style="display:none;">
@@ -4306,7 +4478,7 @@ window.safeFileName = function(str){
     appScreenPermission.style.display = (name === 'permission')   ? '' : 'none';
     appScreenAdvance.style.display    = (name === 'advance')      ? '' : 'none';
     appScreenCustody.style.display    = (name === 'custody')      ? '' : 'none';
-    [['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects'],['vaultAccessScreen','vault-access'],['custodyReportScreen','custody-report'],['notifCenterScreen','notif-center']].forEach(function(p){
+    [['sarrakiScreen','sarraki'],['custodyLedgerScreen','custody-ledger'],['custodyProjectsScreen','custody-projects'],['vaultAccessScreen','vault-access'],['custodyReportScreen','custody-report'],['notifCenterScreen','notif-center']].forEach(function(p){
       var e = document.getElementById(p[0]); if (e) e.style.display = (name === p[1]) ? '' : 'none';
     });
     window.__notifScreen = name;
@@ -10526,7 +10698,8 @@ window.safeFileName = function(str){
   //  - defaultOn:false → مخفي عن الموظفين تلقائي، ولما المسؤول يعلّم عليه بيتسجل allow_ + الاسم.
   var EXTRA_PERMS_GROUP_ = 'صلاحيات خاصة';
   var EXTRA_PERMS_ = [
-    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false }
+    { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
+    { id: 'sarraki', label: 'سراكي عمال 👷', defaultOn: false }
   ];
   function notifPermById_(id){
     for (var i = 0; i < NOTIF_PERMS_.length; i++) if (NOTIF_PERMS_[i].id === id) return NOTIF_PERMS_[i];
@@ -10592,6 +10765,11 @@ window.safeFileName = function(str){
     if (crHome) {
       var crList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
       crHome.style.display = (!isEmployeeSession || (!pendingPerms_ && crList_.indexOf('allow_custodyReport') > -1)) ? '' : 'none';
+    }
+    var skTile = document.getElementById('openSarrakiBtn');
+    if (skTile) {
+      var skList_ = (isEmployeeSession && currentSessionEmployeeName && EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName]) || [];
+      skTile.style.display = (!isEmployeeSession || (!pendingPerms_ && skList_.indexOf('allow_sarraki') > -1)) ? '' : 'none';
     }
     var crTile = document.getElementById('openCustodyReportTileBtn');
     if (crTile) crTile.style.display = isEmployeeSession ? 'none' : '';
@@ -15214,5 +15392,752 @@ window.safeFileName = function(str){
   }, true);
 })();
 </script>
+
+<script>
+/* ================= سراكي عمال =================
+   نظام مستقل عن الحضور والانصراف. الجداول في Supabase: wl_projects / wl_periods / wl_workers / wl_days
+   (ملف sarraki_schema.sql). الحفظ فوري على الجهاز + طابور مزامنة مع Supabase يعيد المحاولة تلقائيًا. */
+(function(){
+  'use strict';
+  var SB = 'https://jezqnjrnjshruxavwnbd.supabase.co', KEY = 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
+  var root = document.getElementById('sarrakiScreen');
+  if (!root) return;
+  var $ = function(s, r){ return (r || root).querySelector(s); };
+  var DAYN = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+
+  // ---------- أدوات ----------
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function num(v){
+    if (v == null) return 0;
+    var s = String(v).replace(/[٠-٩]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[٬,]/g, '').replace(/٫/g, '.').replace(/[^\d.\-]/g, '');
+    var n = parseFloat(s); return isNaN(n) ? 0 : n;
+  }
+  function fmt(n){ return (Math.round((+n || 0) * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function uid(){
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){ var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+  }
+  function pd(s){ var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function fd(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function addD(s, n){ var d = pd(s); d.setDate(d.getDate() + n); return fd(d); }
+  function dayName(s){ return DAYN[pd(s).getDay()]; }
+  function short(s){ return s.slice(8, 10) + '/' + s.slice(5, 7); }
+  function todayS(){ return fd(new Date()); }
+  var LS = {
+    get: function(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+
+  // ---------- الحالة ----------
+  var S = { items: [], projects: [], periods: [], workers: [], dm: {}, cur: null, week: 1, day: null, view: 'day', online: null, missing: false, loading: false };
+  var Q = LS.get('sk_q', {}), ver = 0, flushing = false, again = false, flushTimer = null, retryTimer = null, cacheTimer = null;
+
+  // ---------- Supabase ----------
+  function api(path, o){
+    o = o || {};
+    var h = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+    for (var k in (o.headers || {})) h[k] = o.headers[k];
+    return fetch(SB + '/rest/v1/' + path, { method: o.method || 'GET', headers: h, body: o.body }).then(function(r){
+      if (!r.ok) return r.text().then(function(t){ var e = new Error(t || r.status); e.status = r.status; throw e; });
+      return r.status === 204 ? null : r.text().then(function(t){ return t ? JSON.parse(t) : null; });
+    });
+  }
+  function selectAll(table, q){
+    var out = [], size = 1000;
+    function page(from){
+      return api(table + '?' + q, { headers: { 'Range-Unit': 'items', Range: from + '-' + (from + size - 1) } }).then(function(rows){
+        rows = rows || []; out = out.concat(rows);
+        return rows.length >= size ? page(from + size) : out;
+      });
+    }
+    return page(0);
+  }
+  function setSync(kind){
+    var el = $('#skSync'), n = Object.keys(Q).length;
+    el.className = 'sk-sync' + (kind === 'saving' ? ' saving' : (kind === 'off' || kind === 'missing') ? ' off' : '');
+    el.textContent = kind === 'saving' ? '◌ جارٍ الحفظ…' : kind === 'missing' ? '⚠ الجداول غير موجودة — محفوظ على الجهاز (' + n + ')'
+      : kind === 'off' ? '⚠ غير متصل — محفوظ على الجهاز (' + n + ' بانتظار الرفع)' : kind === 'pending' ? '◌ بانتظار الرفع (' + n + ')' : '● تم الحفظ على قاعدة البيانات';
+    var b = $('#skBanner');
+    if (kind === 'missing') {
+      b.className = 'sk-banner show';
+      b.innerHTML = 'جداول Supabase الخاصة بسراكي عمال لسه ماتعملتش. شغّل ملف <code>sarraki_schema.sql</code> في Supabase ← SQL Editor مرة واحدة. لحد ما تتعمل، كل اللي بتسجله محفوظ على الجهاز ويترفع تلقائي بعدها.';
+    } else b.className = 'sk-banner';
+  }
+  function schedule(ms){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, ms == null ? 500 : ms); }
+  function handleErr(e){
+    var m = String((e && e.message) || e);
+    if (e && (e.status === 404 || /PGRST205|PGRST200|does not exist|relation/i.test(m))) { S.missing = true; setSync('missing'); }
+    else { S.online = false; setSync('off'); }
+    clearTimeout(retryTimer); retryTimer = setTimeout(flush, 20000);
+  }
+  function flush(){
+    if (flushing) { again = true; return Promise.resolve(); }
+    var keys = Object.keys(Q);
+    if (!keys.length) { setSync('ok'); return Promise.resolve(); }
+    flushing = true; setSync('saving');
+    var snap = keys.map(function(k){ return Q[k]; });
+    var chain = Promise.resolve();
+    ['wl_items','wl_projects','wl_periods','wl_workers','wl_days'].forEach(function(t){
+      var ups = snap.filter(function(o){ return o.op === 'up' && o.table === t; });
+      if (ups.length) chain = chain.then(function(){ return api(t + '?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(ups.map(function(o){ return o.row; })) }); });
+    });
+    ['wl_days','wl_workers','wl_periods','wl_projects','wl_items'].forEach(function(t){
+      var ds = snap.filter(function(o){ return o.op === 'del' && o.table === t; });
+      if (ds.length) chain = chain.then(function(){ return api(t + '?id=in.(' + ds.map(function(o){ return o.id; }).join(',') + ')', { method: 'DELETE' }); });
+    });
+    return chain.then(function(){
+      snap.forEach(function(o){ var k = o.table + ':' + (o.id || o.row.id); if (Q[k] && Q[k].v === o.v) delete Q[k]; });
+      LS.set('sk_q', Q); S.online = true; S.missing = false; setSync(Object.keys(Q).length ? 'pending' : 'ok');
+      if (Object.keys(Q).length) schedule(300);
+    }).catch(handleErr).then(function(){ flushing = false; if (again) { again = false; schedule(100); } });
+  }
+  function enqueue(op, table, rowOrId){
+    var id = op === 'up' ? rowOrId.id : rowOrId;
+    Q[table + ':' + id] = { op: op, table: table, row: op === 'up' ? rowOrId : null, id: id, v: ++ver };
+    LS.set('sk_q', Q); setSync('pending'); schedule(); saveCache();
+  }
+  function saveCache(){
+    clearTimeout(cacheTimer);
+    cacheTimer = setTimeout(function(){
+      var days = []; Object.keys(S.dm).forEach(function(p){ S.dm[p].forEach(function(r){ days.push(r); }); });
+      LS.set('sk_cache', { items: S.items, projects: S.projects, periods: S.periods, workers: S.workers, days: days });
+    }, 250);
+  }
+  function loadCache(){
+    var c = LS.get('sk_cache', null); if (!c) return;
+    S.items = c.items || []; S.projects = c.projects || []; S.periods = c.periods || []; S.workers = c.workers || [];
+    S.dm = {}; (c.days || []).forEach(function(r){ (S.dm[r.period_id] = S.dm[r.period_id] || new Map()).set(r.worker_id + '|' + r.work_date, r); });
+  }
+  function loadServer(){
+    return flush().then(function(){
+      if (Object.keys(Q).length) throw new Error('pending');
+      return Promise.all([selectAll('wl_items', 'select=*&order=sort.asc'), selectAll('wl_projects', 'select=*&order=code.asc'), selectAll('wl_periods', 'select=*&order=year.asc,period_no.asc'), selectAll('wl_workers', 'select=*&order=sort.asc,created_at.asc')]);
+    }).then(function(r){
+      S.items = r[0]; S.projects = r[1]; S.periods = r[2]; S.workers = r[3]; S.online = true; S.missing = false; setSync('ok'); saveCache();
+    });
+  }
+  function loadDays(pid){
+    if (Object.keys(Q).length) return Promise.resolve();
+    return selectAll('wl_days', 'select=*&period_id=eq.' + pid).then(function(rows){
+      var m = new Map(); rows.forEach(function(r){ r.overtime = +r.overtime || 0; r.advance = +r.advance || 0; m.set(r.worker_id + '|' + r.work_date, r); });
+      S.dm[pid] = m; saveCache();
+    });
+  }
+
+  // ---------- مساعدات البيانات ----------
+  function P(){ for (var i = 0; i < S.periods.length; i++) if (S.periods[i].id === S.cur) return S.periods[i]; return null; }
+  function isClosed(){ var p = P(); return !p || p.status === 'closed'; }
+  function DM(){ return S.dm[S.cur] || (S.dm[S.cur] = new Map()); }
+  function WK(pid){ return S.workers.filter(function(w){ return w.period_id === (pid || S.cur); }).sort(function(a, b){ return (a.sort || 0) - (b.sort || 0); }); }
+  function projName(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return S.projects[i].name; return ''; }
+  function itemName(id){ for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return S.items[i].name; return ''; }
+  function itemOpts(sel){
+    var h = '<option value="">— البند —</option>';
+    S.items.slice().sort(function(a, b){ return (a.sort || 0) - (b.sort || 0); }).forEach(function(p){ if (!p.is_stopped || p.id === sel) h += '<option value="' + p.id + '"' + (p.id === sel ? ' selected' : '') + '>' + esc(p.name) + '</option>'; });
+    return h;
+  }
+  // البنود الافتراضية (ids ثابتة عشان المزامنة من أكتر من جهاز ما تكرّرش)
+  var DEFAULT_ITEMS = ['مباني','بياض','خرسانات','سيراميك','رخام','دهانات','نجارة مسلح','الوميتال','تأجير سيارات','عمالة','ونش تشوينات','نحاتة','تزريع','اكراميات','وقود وزيوت','مرتبات ادارية'];
+  function seedItems(){
+    if (S.items.length) return;
+    DEFAULT_ITEMS.forEach(function(n, i){
+      var it = { id: '00000000-0000-4000-8000-' + String(100000000000 + i + 1).slice(-12), name: n, sort: i + 1, is_stopped: false };
+      S.items.push(it); enqueue('up', 'wl_items', it);
+    });
+  }
+  function projOpts(sel){
+    var h = '<option value="">— بدون —</option>';
+    S.projects.forEach(function(p){ if (!p.is_stopped || p.id === sel) h += '<option value="' + p.id + '"' + (p.id === sel ? ' selected' : '') + '>' + esc(p.name) + '</option>'; });
+    return h;
+  }
+  function rangeDates(p){ var out = [], d = p.from_date, n = 0; while (d <= p.to_date && n < 62) { out.push(d); d = addD(d, 1); n++; } return out; }
+  function weekDates(p, w){
+    var s = addD(p.from_date, (w - 1) * 7), out = [];
+    for (var i = 0; i < 7; i++) { var d = addD(s, i); if (d <= p.to_date) out.push(d); }
+    return out;
+  }
+  function pmap(p){ return S.dm[p.id] || new Map(); }
+  // حساب الفترة لكل عامل
+  function compute(p, onlyWorker){
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), proj = {};
+    var rows = WK(p.id).filter(function(w){ return !onlyWorker || w.id === onlyWorker; }).map(function(w){
+      var d1 = 0, d2 = 0, ot = 0, adv = 0, rate = +w.daily_rate || 0;
+      dates.forEach(function(d){
+        var r = m.get(w.id + '|' + d); if (!r) return;
+        var pj = r.project_id || w.project_id || '';
+        if (r.present) { if (d < w2) d1++; else d2++; var o = proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0 }); o.days++; o.wages += rate; }
+        if (+r.overtime) { ot += +r.overtime; (proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0 })).ot += +r.overtime; }
+        adv += +r.advance || 0;
+      });
+      var days = d1 + d2, wages = days * rate, gross = wages + ot;
+      return { w: w, item: w.item_id || '', d1: d1, d2: d2, days: days, rate: rate, wages: wages, ot: ot, gross: gross, adv: adv, net: gross - adv };
+    });
+    var t = { d1: 0, d2: 0, days: 0, wages: 0, ot: 0, gross: 0, adv: 0, net: 0 }, items = {};
+    rows.forEach(function(r){
+      for (var k in t) t[k] += r[k];
+      var o = items[r.item] || (items[r.item] = { workers: 0, days: 0, wages: 0, ot: 0, gross: 0, adv: 0, net: 0 });
+      o.workers++; ['days','wages','ot','gross','adv','net'].forEach(function(k){ o[k] += r[k]; });
+    });
+    return { rows: rows, tot: t, proj: proj, items: items, dates: dates };
+  }
+
+  // ---------- نوافذ ----------
+  function modal(html, onMount){
+    var ov = document.createElement('div'); ov.className = 'sk-ov';
+    ov.innerHTML = '<div class="sk-md">' + html + '</div>'; document.body.appendChild(ov);
+    function close(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.addEventListener('mousedown', function(e){ if (e.target === ov) close(); });
+    if (onMount) onMount(ov.firstChild, close);
+    return close;
+  }
+  function ask(title, msg, ok){
+    return new Promise(function(res){
+      modal('<h3>' + esc(title) + '</h3><p class="msg">' + msg + '</p><div class="btns"><button class="btn btn-primary" data-y>' + esc(ok || 'تأكيد') + '</button><button class="btn btn-secondary" data-n>إلغاء</button></div>', function(el, close){
+        el.querySelector('[data-y]').onclick = function(){ close(); res(true); };
+        el.querySelector('[data-n]').onclick = function(){ close(); res(false); };
+      });
+    });
+  }
+  function toast(m){
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3a3f45;color:#fff;padding:10px 18px;border-radius:24px;z-index:10100;font:700 13.5px Cairo,sans-serif';
+    t.textContent = m; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2200);
+  }
+
+  // ---------- الماستر ----------
+  function renderMaster(){
+    var p = P(), sel = $('#skPeriod');
+    var list = S.periods.slice().sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); });
+    sel.innerHTML = list.length ? list.map(function(x){ return '<option value="' + x.id + '"' + (x.id === S.cur ? ' selected' : '') + '>' + x.period_no + (x.status === 'closed' ? ' 🔒' : '') + ' — ' + x.year + '</option>'; }).join('') : '<option value="">— لا توجد فترات —</option>';
+    $('#skYear').value = p ? p.year : '';
+    $('#skFrom').value = p ? p.from_date : ''; $('#skTo').value = p ? p.to_date : '';
+    $('#skFrom').disabled = $('#skTo').disabled = isClosed();
+    $('#skWeek').value = String(S.week); $('#skWeek').disabled = !p;
+    var st = $('#skState'); st.textContent = !p ? '—' : p.status === 'closed' ? '🔒 مقفلة' : '🟢 مفتوحة'; st.className = 'sk-badge' + (p && p.status === 'closed' ? ' closed' : '');
+    $('#skClose').textContent = p && p.status === 'closed' ? '🔓 إعادة فتح الفترة' : '🔒 إقفال الفترة';
+    $('#skClose').style.display = p ? '' : 'none'; $('#skRep').style.display = p ? '' : 'none';
+    Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-v') === S.view); b.style.display = p ? '' : 'none'; });
+  }
+  function ensureDay(){
+    var p = P(); if (!p) return;
+    var wd = weekDates(p, S.week);
+    if (!S.day || wd.indexOf(S.day) < 0) { var t = todayS(); S.day = wd.indexOf(t) > -1 ? t : wd[0]; }
+  }
+  function renderAll(){
+    renderMaster(); ensureDay();
+    var body = $('#skBody'), p = P();
+    if (!p) {
+      body.innerHTML = '<div class="sk-empty">لا توجد فترات بعد.<br>ابدأ بفتح أول فترة حساب للعمال.<br><button class="btn btn-primary" id="skNew2">＋ فترة جديدة</button></div>';
+      $('#skNew2').onclick = newPeriod; return;
+    }
+    if (S.loading) { body.innerHTML = '<div class="sk-empty">جارٍ التحميل…</div>'; return; }
+    if (S.view === 'day') renderDay(); else if (S.view === 'week') renderWeek(); else renderPeriod();
+  }
+
+  // ---------- التسجيل اليومي ----------
+  function dirList(){
+    var m = {}; S.workers.forEach(function(w){ m[w.name] = w; });
+    return Object.keys(m).map(function(k){ return m[k]; });
+  }
+  function renderDay(){
+    var p = P(), closed = isClosed(), wd = weekDates(p, S.week), ws = WK(), dm = DM(), t = todayS();
+    var h = '<div class="sk-days">' + wd.map(function(d){
+      var c = 0; ws.forEach(function(w){ var r = dm.get(w.id + '|' + d); if (r && r.present) c++; });
+      return '<button type="button" class="sk-chip' + (d === S.day ? ' on' : '') + (d === t ? ' today' : '') + '" data-day="' + d + '"><b>' + dayName(d) + '</b><span>' + short(d) + '</span><i data-cnt="' + d + '">' + c + ' حاضر</i></button>';
+    }).join('') + '</div>';
+    if (closed) h += '<div class="sk-lock">🔒 الفترة مقفلة — العرض فقط. اضغط «إعادة فتح الفترة» لو محتاج تعدّل.</div>';
+    else {
+      h += '<div class="sk-tools"><button type="button" data-t="copy">📋 نسخ حضور اليوم السابق</button><button type="button" data-t="all">✔ تحديد الكل حاضر</button><button type="button" data-t="clear">✖ مسح حضور اليوم</button></div>';
+      h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل" autocomplete="off"><input id="skaProf" placeholder="المهنة"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية"><select id="skaProj">' + projOpts('') + '</select><button type="button" id="skaBtn">＋ إضافة عامل</button></div>';
+      h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
+    }
+    h += '<div class="sk-wrap"><table class="sk-t cards"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th><th>اليومية</th><th>حضور</th><th>المشروع</th><th>سهرات</th><th>سلفة</th><th></th></tr></thead><tbody>';
+    var dis = closed ? ' disabled' : '';
+    ws.forEach(function(w, i){
+      h += '<tr data-w="' + w.id + '"><td class="n">' + (i + 1) + '</td>' +
+        '<td class="nm" data-l="اسم العامل"><input class="sk-in l" data-f="name" value="' + esc(w.name) + '"' + dis + '></td>' +
+        '<td data-l="المهنة"><input class="sk-in" data-f="profession" value="' + esc(w.profession || '') + '"' + dis + '></td>' +
+        '<td data-l="البند" class="full"><select class="sk-in" data-f="item_id"' + dis + '>' + itemOpts(w.item_id || '') + '</select></td>' +
+        '<td data-l="اليومية"><input class="sk-in" data-f="daily_rate" inputmode="decimal" value="' + esc(w.daily_rate || '') + '"' + dis + '></td>' +
+        '<td data-l="حضور"><label class="sk-chk"><input type="checkbox" data-d="present"' + dis + '></label></td>' +
+        '<td data-l="المشروع" class="full"><select class="sk-in" data-d="project"' + dis + '></select></td>' +
+        '<td data-l="سهرات"><input class="sk-in" data-d="overtime" inputmode="decimal"' + dis + '></td>' +
+        '<td data-l="سلفة"><input class="sk-in" data-d="advance" inputmode="decimal"' + dis + '></td>' +
+        '<td>' + (closed ? '' : '<button type="button" class="sk-x" data-del title="حذف العامل">✕</button>') + '</td></tr>';
+    });
+    if (!ws.length) h += '<tr><td colspan="10" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه ثم سجّل حضورهم كل يوم.</td></tr>';
+    h += '</tbody><tfoot><tr><td colspan="5" style="text-align:right">إجمالي اليوم</td><td id="skfP">0</td><td id="skfW">—</td><td id="skfO">0</td><td id="skfA">0</td><td></td></tr></tfoot></table></div>';
+    h += '<div class="sk-sum" id="skDaySum"></div>';
+    $('#skBody').innerHTML = h;
+    Array.prototype.forEach.call($('#skBody').querySelectorAll('tbody tr[data-w]'), paintRow);
+    paintFoot();
+  }
+  function dayRow(w, d){ return DM().get(w + '|' + d); }
+  function paintRow(tr){
+    var wid = tr.getAttribute('data-w'), w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
+    var r = dayRow(wid, S.day), pj = (r && r.project_id) || w.project_id || '';
+    var chk = tr.querySelector('[data-d=present]'); chk.checked = !!(r && r.present);
+    tr.classList.toggle('sk-on', chk.checked);
+    var sel = tr.querySelector('[data-d=project]'); sel.innerHTML = projOpts(pj);
+    if (document.activeElement !== tr.querySelector('[data-d=overtime]')) tr.querySelector('[data-d=overtime]').value = r && r.overtime ? r.overtime : '';
+    if (document.activeElement !== tr.querySelector('[data-d=advance]')) tr.querySelector('[data-d=advance]').value = r && r.advance ? r.advance : '';
+  }
+  function paintFoot(){
+    if (S.view !== 'day') return;
+    var ws = WK(), c = 0, ot = 0, adv = 0, wages = 0;
+    ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; if (r.present) { c++; wages += +w.daily_rate || 0; } ot += +r.overtime || 0; adv += +r.advance || 0; });
+    var set = function(id, v){ var e = $('#' + id); if (e) e.textContent = v; };
+    set('skfP', c); set('skfO', fmt(ot)); set('skfA', fmt(adv));
+    var s = $('#skDaySum');
+    if (s) s.innerHTML = '<div>حاضرين اليوم<b>' + c + ' / ' + ws.length + '</b></div><div>أجور اليوم<b>' + fmt(wages) + '</b></div><div>سهرات اليوم<b>' + fmt(ot) + '</b></div><div class="net">سلف اليوم<b>' + fmt(adv) + '</b></div>';
+    Array.prototype.forEach.call(root.querySelectorAll('[data-cnt]'), function(e){
+      var d = e.getAttribute('data-cnt'), n = 0; ws.forEach(function(w){ var r = dayRow(w.id, d); if (r && r.present) n++; }); e.textContent = n + ' حاضر';
+    });
+  }
+  function dayObj(w, d, create){
+    var dm = DM(), k = w.id + '|' + d, r = dm.get(k);
+    if (!r && create) {
+      r = { id: uid(), period_id: S.cur, worker_id: w.id, work_date: d, present: false, project_id: null, overtime: 0, advance: 0, note: null };
+      dm.set(k, r);
+    }
+    return r;
+  }
+  function commitDay(r){
+    var dm = DM(), k = r.worker_id + '|' + r.work_date;
+    if (!r.present && !(+r.overtime) && !(+r.advance)) { dm.delete(k); enqueue('del', 'wl_days', r.id); }
+    else enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, note: r.note || null });
+  }
+  function saveWorker(w){ enqueue('up', 'wl_workers', { id: w.id, period_id: w.period_id, name: w.name, profession: w.profession || null, daily_rate: +w.daily_rate || 0, project_id: w.project_id || null, item_id: w.item_id || null, sort: w.sort || 0 }); }
+
+  function onBodyChange(e){
+    var el = e.target; if (isClosed()) return;
+    var tr = el.closest('tr[data-w]'); if (!tr) return;
+    var w = S.workers.filter(function(x){ return x.id === tr.getAttribute('data-w'); })[0]; if (!w) return;
+    var f = el.getAttribute('data-f'), d = el.getAttribute('data-d');
+    if (f) {
+      if (f === 'name') { var v = el.value.trim(); if (!v) { el.value = w.name; return; } w.name = v; }
+      else if (f === 'daily_rate') { w.daily_rate = num(el.value); el.value = w.daily_rate || ''; }
+      else w[f] = el.value.trim();
+      saveWorker(w); paintFoot(); return;
+    }
+    if (d === 'present') {
+      var pj = tr.querySelector('[data-d=project]').value || null;
+      var r = dayObj(w, S.day, true); r.present = el.checked; r.project_id = el.checked ? (pj || w.project_id || null) : r.project_id;
+      commitDay(r);
+    } else if (d === 'project') {
+      var r2 = dayObj(w, S.day, true); r2.project_id = el.value || null; if (el.value) r2.present = true; commitDay(r2);
+    } else if (d === 'overtime' || d === 'advance') {
+      var val = num(el.value); el.value = val || '';
+      var r3 = dayObj(w, S.day, !!val) ; if (!r3) return; r3[d] = val; commitDay(r3);
+    }
+    paintRow(tr); paintFoot();
+  }
+  function addWorker(){
+    var name = $('#skaName').value.trim(); if (!name) { $('#skaName').focus(); return; }
+    var ws = WK(); var mx = ws.reduce(function(m, w){ return Math.max(m, w.sort || 0); }, 0);
+    var w = { id: uid(), period_id: S.cur, name: name, profession: $('#skaProf').value.trim(), daily_rate: num($('#skaRate').value), project_id: $('#skaProj').value || null, item_id: $('#skaItem').value || null, sort: mx + 1 };
+    S.workers.push(w); saveWorker(w); renderDay(); $('#skaName').focus();
+  }
+  function onBodyClick(e){
+    var el = e.target;
+    var chip = el.closest('[data-day]'); if (chip) { S.day = chip.getAttribute('data-day'); renderAll(); return; }
+    var hd = el.closest('[data-goday]'); if (hd) { S.day = hd.getAttribute('data-goday'); S.view = 'day'; renderAll(); return; }
+    if (el.id === 'skaBtn') { addWorker(); return; }
+    var t = el.closest('[data-t]');
+    if (t && !isClosed()) { dayTool(t.getAttribute('data-t')); return; }
+    var del = el.closest('[data-del]');
+    if (del && !isClosed()) {
+      var tr = del.closest('tr'), w = S.workers.filter(function(x){ return x.id === tr.getAttribute('data-w'); })[0];
+      ask('حذف عامل', 'هيتم حذف <b>' + esc(w.name) + '</b> وكل أيامه وسلفه في هذه الفترة. متأكد؟', 'حذف').then(function(ok){
+        if (!ok) return;
+        S.workers = S.workers.filter(function(x){ return x.id !== w.id; });
+        var dm = DM(); Array.from(dm.keys()).forEach(function(k){ if (k.indexOf(w.id + '|') === 0) { delete Q['wl_days:' + dm.get(k).id]; dm.delete(k); } });
+        enqueue('del', 'wl_workers', w.id); renderDay();
+      });
+    }
+  }
+  function onBodyInput(e){
+    if (e.target.id === 'skaName') {
+      var v = e.target.value.trim(), m = dirList().filter(function(w){ return w.name === v; })[0];
+      if (m) { if (!$('#skaProf').value) $('#skaProf').value = m.profession || ''; if (!$('#skaRate').value) $('#skaRate').value = m.daily_rate || ''; if (m.project_id) $('#skaProj').value = m.project_id; if (m.item_id) $('#skaItem').value = m.item_id; }
+    }
+  }
+  function dayTool(a){
+    var ws = WK(), d = S.day;
+    if (a === 'copy') {
+      var p = P(); if (d <= p.from_date) { toast('ده أول يوم في الفترة'); return; }
+      var prev = addD(d, -1), n = 0;
+      ws.forEach(function(w){ var pr = dayRow(w.id, prev); if (pr && pr.present) { var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = pr.project_id || w.project_id || null; commitDay(r); n++; } } });
+      toast(n ? 'تم نسخ ' + n + ' عامل' : 'مفيش حاجة تتنسخ');
+    } else if (a === 'all') {
+      ws.forEach(function(w){ var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = r.project_id || w.project_id || null; commitDay(r); } });
+    } else if (a === 'clear') {
+      ws.forEach(function(w){ var r = dayRow(w.id, d); if (r && r.present) { r.present = false; commitDay(r); } });
+    }
+    renderDay();
+  }
+
+  // ---------- ملخص الأسبوع ----------
+  function renderWeek(){
+    var p = P(), wd = weekDates(p, S.week), ws = WK(), dm = DM();
+    var h = '<div class="sk-wrap"><table class="sk-t"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th>' + wd.map(function(d){ return '<th class="sk-hd" data-goday="' + d + '">' + dayName(d) + '<br><small>' + short(d) + '</small></th>'; }).join('') + '<th>الأيام</th><th>سهرات</th><th>سلف</th><th>مستحق الأسبوع</th></tr></thead><tbody>';
+    var T = { d: 0, o: 0, a: 0, g: 0 };
+    ws.forEach(function(w, i){
+      var days = 0, ot = 0, adv = 0, rate = +w.daily_rate || 0;
+      var cells = wd.map(function(d){
+        var r = dm.get(w.id + '|' + d); if (!r) return '<td></td>';
+        if (r.present) days++; ot += +r.overtime || 0; adv += +r.advance || 0;
+        var pn = r.project_id || w.project_id ? projName(r.project_id || w.project_id) : '';
+        return '<td>' + (r.present ? '<span class="sk-mark">✔' + (pn ? '<small>' + esc(pn) + '</small>' : '') + '</span>' : '') + '</td>';
+      }).join('');
+      var g = days * rate + ot; T.d += days; T.o += ot; T.a += adv; T.g += g;
+      h += '<tr><td class="n">' + (i + 1) + '</td><td class="nm">' + esc(w.name) + '</td><td>' + esc(w.profession || '') + '</td><td>' + esc(itemName(w.item_id)) + '</td>' + cells + '<td class="c">' + days + '</td><td>' + fmt(ot) + '</td><td>' + fmt(adv) + '</td><td class="big">' + fmt(g) + '</td></tr>';
+    });
+    if (!ws.length) h += '<tr><td colspan="' + (wd.length + 8) + '" class="sk-empty">لا يوجد عمال في هذه الفترة.</td></tr>';
+    h += '</tbody><tfoot><tr><td colspan="' + (wd.length + 4) + '" style="text-align:right">الإجمالي</td><td>' + T.d + '</td><td>' + fmt(T.o) + '</td><td>' + fmt(T.a) + '</td><td>' + fmt(T.g) + '</td></tr></tfoot></table></div>';
+    $('#skBody').innerHTML = h;
+  }
+
+  // ---------- حساب الفترة ----------
+  function renderPeriod(){
+    var p = P(), c = compute(p), T = c.tot;
+    var h = '<div class="sk-sum"><div>إجمالي الأيام<b>' + T.days + '</b></div><div>إجمالي القبض<b>' + fmt(T.gross) + '</b></div><div>إجمالي السلف<b>' + fmt(T.adv) + '</b></div><div class="net">صافي القبض<b>' + fmt(T.net) + '</b></div></div>';
+    h += '<div class="sk-wrap" style="margin-top:10px"><table class="sk-t"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th><th>اليومية</th><th>أيام أ1</th><th>أيام أ2</th><th>إجمالي الأيام</th><th>أجر الأيام</th><th>سهرات</th><th>إجمالي القبض</th><th>السلف</th><th>صافي القبض</th></tr></thead><tbody>';
+    c.rows.forEach(function(r, i){
+      h += '<tr><td class="n">' + (i + 1) + '</td><td class="nm">' + esc(r.w.name) + '</td><td>' + esc(r.w.profession || '') + '</td><td>' + esc(itemName(r.item)) + '</td><td>' + fmt(r.rate) + '</td><td>' + r.d1 + '</td><td>' + r.d2 + '</td><td class="c">' + r.days + '</td><td>' + fmt(r.wages) + '</td><td>' + fmt(r.ot) + '</td><td class="c">' + fmt(r.gross) + '</td><td>' + fmt(r.adv) + '</td><td class="big">' + fmt(r.net) + '</td></tr>';
+    });
+    if (!c.rows.length) h += '<tr><td colspan="13" class="sk-empty">لا يوجد عمال في هذه الفترة.</td></tr>';
+    h += '</tbody><tfoot><tr><td colspan="5" style="text-align:right">الإجمالي</td><td>' + T.d1 + '</td><td>' + T.d2 + '</td><td>' + T.days + '</td><td>' + fmt(T.wages) + '</td><td>' + fmt(T.ot) + '</td><td>' + fmt(T.gross) + '</td><td>' + fmt(T.adv) + '</td><td>' + fmt(T.net) + '</td></tr></tfoot></table></div>';
+    var ik = Object.keys(c.items);
+    if (ik.length) {
+      h += '<div class="sk-sec">توزيع التكلفة على البنود</div><div class="sk-wrap"><table class="sk-t"><thead><tr><th>البند</th><th>عدد العمال</th><th>أيام العمل</th><th>أجر الأيام</th><th>السهرات</th><th>إجمالي القبض</th><th>السلف</th><th>صافي القبض</th></tr></thead><tbody>';
+      ik.forEach(function(k){ var o = c.items[k]; h += '<tr><td class="nm">' + esc(k ? itemName(k) : 'بدون بند') + '</td><td>' + o.workers + '</td><td>' + o.days + '</td><td>' + fmt(o.wages) + '</td><td>' + fmt(o.ot) + '</td><td class="c">' + fmt(o.gross) + '</td><td>' + fmt(o.adv) + '</td><td class="big">' + fmt(o.net) + '</td></tr>'; });
+      h += '</tbody></table></div>';
+    }
+    var pk = Object.keys(c.proj);
+    if (pk.length) {
+      h += '<div class="sk-sec">توزيع التكلفة على المشاريع</div><div class="sk-wrap"><table class="sk-t"><thead><tr><th>المشروع</th><th>أيام العمل</th><th>الأجور</th><th>السهرات</th><th>الإجمالي</th></tr></thead><tbody>';
+      pk.forEach(function(k){ var o = c.proj[k]; h += '<tr><td class="nm">' + esc(k ? projName(k) : 'بدون مشروع') + '</td><td>' + o.days + '</td><td>' + fmt(o.wages) + '</td><td>' + fmt(o.ot) + '</td><td class="big">' + fmt(o.wages + o.ot) + '</td></tr>'; });
+      h += '</tbody></table></div>';
+    }
+    $('#skBody').innerHTML = h;
+  }
+
+  // ---------- الفترات ----------
+  function selectPeriod(id){
+    S.cur = id; LS.set('sk_cur', id); S.week = 1; S.day = null;
+    var need = S.online !== false && !S.missing && !Object.keys(Q).length && id;
+    S.loading = !!need && !S.dm[id]; renderAll();
+    if (need) loadDays(id).catch(function(){}).then(function(){ S.loading = false; if (S.cur === id) renderAll(); });
+  }
+  function newPeriod(){
+    var sorted = S.periods.slice().sort(function(a, b){ return (a.year - b.year) || (a.period_no - b.period_no); });
+    var last = sorted[sorted.length - 1];
+    var from = last ? addD(last.to_date, 1) : todayS(), to = addD(from, 13);
+    var year = pd(from).getFullYear(), no = last ? last.period_no + 1 : 1;
+    modal('<h3>＋ فترة جديدة</h3>' +
+      '<div class="row"><div><label class="l">السنة</label><input type="number" id="npY" value="' + year + '"></div><div><label class="l">رقم الفترة</label><input type="number" id="npN" value="' + no + '"></div></div>' +
+      '<div class="row"><div><label class="l">من تاريخ</label><input type="date" id="npF" value="' + from + '"></div><div><label class="l">إلى تاريخ</label><input type="date" id="npT" value="' + to + '"></div></div>' +
+      (last ? '<label class="chk"><input type="checkbox" id="npC" checked> نسخ العمال (الاسم والمهنة واليومية والمشروع) من الفترة ' + last.period_no + '</label>' : '') +
+      (last && last.status === 'open' ? '<label class="chk"><input type="checkbox" id="npX" checked> إقفال الفترة ' + last.period_no + ' (ما زالت مفتوحة)</label>' : '') +
+      '<p class="msg" id="npM" style="color:#b3261e"></p><div class="btns"><button class="btn btn-primary" id="npOk">إنشاء الفترة</button><button class="btn btn-secondary" id="npNo">إلغاء</button></div>', function(el, close){
+      el.querySelector('#npF').onchange = function(){ el.querySelector('#npT').value = addD(this.value, 13); };
+      el.querySelector('#npNo').onclick = close;
+      el.querySelector('#npOk').onclick = function(){
+        var y = +el.querySelector('#npY').value, n = +el.querySelector('#npN').value, f = el.querySelector('#npF').value, t = el.querySelector('#npT').value, m = el.querySelector('#npM');
+        if (!y || !n || !f || !t) { m.textContent = 'كمّل كل البيانات'; return; }
+        if (t < f) { m.textContent = 'تاريخ النهاية قبل البداية'; return; }
+        if (S.periods.some(function(x){ return x.year === y && x.period_no === n; })) { m.textContent = 'رقم الفترة موجود بالفعل في نفس السنة'; return; }
+        var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null };
+        var copy = el.querySelector('#npC') && el.querySelector('#npC').checked;
+        if (el.querySelector('#npX') && el.querySelector('#npX').checked) { last.status = 'closed'; last.closed_at = new Date().toISOString(); enqueue('up', 'wl_periods', last); }
+        S.periods.push(np); enqueue('up', 'wl_periods', np); S.dm[np.id] = new Map();
+        if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1 }; S.workers.push(nw); saveWorker(nw); });
+        close(); selectPeriod(np.id); toast('تم فتح الفترة ' + n);
+      };
+    });
+  }
+  function toggleClose(){
+    var p = P(); if (!p) return;
+    if (p.status === 'open') {
+      var c = compute(p).tot;
+      ask('إقفال الفترة ' + p.period_no, 'إجمالي القبض <b>' + fmt(c.gross) + '</b> — السلف <b>' + fmt(c.adv) + '</b> — صافي القبض <b>' + fmt(c.net) + '</b><br>بعد الإقفال ما يتعدّلش حضور ولا سلف. تقدر تعيد فتحها لو احتجت.', 'إقفال').then(function(ok){
+        if (!ok) return;
+        p.status = 'closed'; p.closed_at = new Date().toISOString(); enqueue('up', 'wl_periods', p); renderAll();
+        ask('فترة جديدة', 'تم إقفال الفترة. تفتح فترة جديدة دلوقتي؟', 'فتح فترة جديدة').then(function(y){ if (y) newPeriod(); });
+      });
+    } else {
+      ask('إعادة فتح', 'إعادة فتح الفترة ' + p.period_no + ' للتعديل؟', 'إعادة فتح').then(function(ok){
+        if (!ok) return; p.status = 'open'; p.closed_at = null; enqueue('up', 'wl_periods', p); renderAll();
+      });
+    }
+  }
+
+  // ---------- المشاريع ----------
+  function projectsModal(){
+    function body(){
+      var mx = S.projects.reduce(function(m, x){ return Math.max(m, x.code || 0); }, 0);
+      return '<h3>🏗 المشاريع</h3><div class="pj"><input type="number" id="pjC" value="' + (mx + 1) + '"><input type="text" id="pjN" placeholder="اسم مشروع جديد"><button class="btn btn-primary" id="pjA" style="padding:8px 14px">＋</button></div>' +
+        '<div id="pjL">' + (S.projects.length ? S.projects.map(function(x){ return '<div class="pj" data-id="' + x.id + '"><input type="number" data-k="code" value="' + (x.code || '') + '"><input type="text" data-k="name" value="' + esc(x.name) + '"><label style="font-size:12.5px;white-space:nowrap"><input type="checkbox" data-k="stop"' + (x.is_stopped ? ' checked' : '') + '> إيقاف</label></div>'; }).join('') : '<p class="msg">لا توجد مشاريع بعد.</p>') + '</div>' +
+        '<div class="btns"><button class="btn btn-secondary" id="pjX">إغلاق</button></div>';
+    }
+    modal(body(), function(el, close){
+      function rebind(){
+        el.innerHTML = body();
+        el.querySelector('#pjX').onclick = function(){ close(); renderAll(); };
+        el.querySelector('#pjA').onclick = function(){
+          var n = el.querySelector('#pjN').value.trim(); if (!n) return;
+          var x = { id: uid(), code: +el.querySelector('#pjC').value || null, name: n, is_stopped: false };
+          S.projects.push(x); enqueue('up', 'wl_projects', x); rebind();
+        };
+        el.querySelector('#pjL').onchange = function(e){
+          var row = e.target.closest('.pj'), x = S.projects.filter(function(z){ return z.id === row.getAttribute('data-id'); })[0]; if (!x) return;
+          var k = e.target.getAttribute('data-k');
+          if (k === 'code') x.code = +e.target.value || null; else if (k === 'name') x.name = e.target.value.trim() || x.name; else x.is_stopped = e.target.checked;
+          enqueue('up', 'wl_projects', x);
+        };
+      }
+      rebind();
+    });
+  }
+
+  // ---------- البنود ----------
+  function itemsModal(){
+    function body(){
+      var mx = S.items.reduce(function(m, x){ return Math.max(m, x.sort || 0); }, 0);
+      return '<h3>🗂 البنود</h3><p class="msg">البند بيتحدد لكل عامل، ويظهر في الكشوفات والتقارير.</p><div class="pj" style="grid-template-columns:1fr auto"><input type="text" id="itN" placeholder="اسم بند جديد"><button class="btn btn-primary" id="itA" style="padding:8px 14px">＋</button></div>' +
+        '<div id="itL">' + S.items.slice().sort(function(a, b){ return (a.sort || 0) - (b.sort || 0); }).map(function(x){ return '<div class="pj" data-id="' + x.id + '" style="grid-template-columns:1fr auto"><input type="text" data-k="name" value="' + esc(x.name) + '"><label style="font-size:12.5px;white-space:nowrap"><input type="checkbox" data-k="stop"' + (x.is_stopped ? ' checked' : '') + '> إيقاف</label></div>'; }).join('') + '</div>' +
+        '<div class="btns"><button class="btn btn-secondary" id="itX">إغلاق</button></div><input type="hidden" id="itMx" value="' + mx + '">';
+    }
+    modal(body(), function(el, close){
+      function rebind(){
+        el.innerHTML = body();
+        el.querySelector('#itX').onclick = function(){ close(); renderAll(); };
+        el.querySelector('#itA').onclick = function(){
+          var n = el.querySelector('#itN').value.trim(); if (!n) return;
+          var x = { id: uid(), name: n, sort: (+el.querySelector('#itMx').value || 0) + 1, is_stopped: false };
+          S.items.push(x); enqueue('up', 'wl_items', x); rebind();
+        };
+        el.querySelector('#itL').onchange = function(e){
+          var row = e.target.closest('.pj'), x = S.items.filter(function(z){ return z.id === row.getAttribute('data-id'); })[0]; if (!x) return;
+          var k = e.target.getAttribute('data-k');
+          if (k === 'name') x.name = e.target.value.trim() || x.name; else x.is_stopped = e.target.checked;
+          enqueue('up', 'wl_items', x);
+        };
+      }
+      rebind();
+    });
+  }
+
+  // ---------- التقارير ----------
+  var BRAND = '#e2621f';
+  function repName(p, ext){ return 'سراكي-عمال-فترة-' + p.period_no + '-' + p.year + '.' + ext; }
+  function reportModal(){
+    var p = P(); if (!p) return;
+    var ws = WK();
+    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
+      '<label class="l">العامل</label><select id="rpW"><option value="">كل العمال</option>' + ws.map(function(w){ return '<option value="' + w.id + '">' + esc(w.name) + '</option>'; }).join('') + '</select>' +
+      '<label class="chk"><input type="checkbox" id="rpS" checked> إرفاق كشف تفصيلي لكل عامل (يوم بيوم) في PDF / الطباعة</label>' +
+      '<p class="msg" id="rpM"></p><div class="btns"><button class="btn btn-primary" id="rpX">📊 Excel</button><button class="btn btn-primary" id="rpP">⬇ PDF</button><button class="btn btn-secondary" id="rpR">🖨 طباعة</button><button class="btn btn-secondary" id="rpC">إغلاق</button></div>', function(el, close){
+      var msg = function(t){ el.querySelector('#rpM').textContent = t || ''; };
+      var opt = function(){ return { worker: el.querySelector('#rpW').value, slips: el.querySelector('#rpS').checked }; };
+      el.querySelector('#rpC').onclick = close;
+      el.querySelector('#rpX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); buildExcel(p, opt()).then(function(){ msg('تم تنزيل الملف ✔'); }).catch(function(e){ msg('تعذّر إنشاء الملف: ' + e.message); }); };
+      el.querySelector('#rpP').onclick = function(){ msg('جارٍ إنشاء PDF… (ممكن ياخد لحظات)'); buildPdf(p, opt()).then(function(){ msg('تم تنزيل الملف ✔'); }).catch(function(e){ msg('تعذّر إنشاء PDF: ' + e.message); }); };
+      el.querySelector('#rpR').onclick = function(){ close(); printPages(p, opt()); };
+    });
+  }
+  function download(blob, name){
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  function buildExcel(p, o){
+    if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
+    var c = compute(p, o.worker), dm = pmap(p), wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال';
+    var hdrFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3A3F45' } }, accent = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF0E0' } };
+    var thin = { style: 'thin', color: { argb: 'FFD9CFC3' } }, border = { top: thin, left: thin, bottom: thin, right: thin };
+    function title(ws, text, cols){
+      ws.mergeCells(1, 1, 1, cols); ws.getCell(1, 1).value = text; ws.getCell(1, 1).font = { bold: true, size: 16, color: { argb: 'FFE2621F' } }; ws.getCell(1, 1).alignment = { horizontal: 'center' };
+      ws.mergeCells(2, 1, 2, cols); ws.getCell(2, 1).value = 'من ' + p.from_date + ' إلى ' + p.to_date; ws.getCell(2, 1).alignment = { horizontal: 'center' }; ws.getCell(2, 1).font = { bold: true, color: { argb: 'FF555555' } };
+    }
+    function head(row){ row.eachCell(function(cell){ cell.fill = hdrFill; cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; cell.border = border; }); row.height = 30; }
+    // 1) كشف الفترة
+    var ws1 = wb.addWorksheet('كشف الفترة', { views: [{ rightToLeft: true }], pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+    title(ws1, 'سراكي عمال — كشف الفترة رقم ' + p.period_no + ' / ' + p.year, 14);
+    ws1.addRow([]);
+    head(ws1.addRow(['م', 'اسم العامل', 'المهنة', 'البند', 'اليومية', 'أيام الأسبوع الأول', 'أيام الأسبوع الثاني', 'إجمالي الأيام', 'أجر الأيام', 'السهرات', 'إجمالي القبض', 'السلف', 'صافي القبض', 'التوقيع']));
+    var first = 5;
+    c.rows.forEach(function(r, i){
+      var n = first + i, row = ws1.addRow([i + 1, r.w.name, r.w.profession || '', itemName(r.item), r.rate, r.d1, r.d2, null, null, r.ot, null, r.adv, null, '']);
+      row.getCell(8).value = { formula: 'F' + n + '+G' + n, result: r.days };
+      row.getCell(9).value = { formula: 'H' + n + '*E' + n, result: r.wages };
+      row.getCell(11).value = { formula: 'I' + n + '+J' + n, result: r.gross };
+      row.getCell(13).value = { formula: 'K' + n + '-L' + n, result: r.net };
+      row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center', vertical: 'middle' }; });
+      row.getCell(2).alignment = { horizontal: 'right' };
+      [5, 9, 10, 11, 12, 13].forEach(function(k){ row.getCell(k).numFmt = '#,##0.00'; });
+      row.getCell(11).font = { bold: true }; row.getCell(13).font = { bold: true, color: { argb: 'FF1F7A4C' } };
+    });
+    var lastR = first + c.rows.length - 1, tr = ws1.addRow(['', 'الإجمالي', '', '', '', '', '', '', '', '', '', '', '', '']);
+    var T = c.tot;
+    [[6, 'F', T.d1], [7, 'G', T.d2], [8, 'H', T.days], [9, 'I', T.wages], [10, 'J', T.ot], [11, 'K', T.gross], [12, 'L', T.adv], [13, 'M', T.net]].forEach(function(x){
+      tr.getCell(x[0]).value = c.rows.length ? { formula: 'SUM(' + x[1] + first + ':' + x[1] + lastR + ')', result: x[2] } : 0; tr.getCell(x[0]).numFmt = '#,##0.00';
+    });
+    tr.eachCell({ includeEmpty: true }, function(cell){ cell.fill = accent; cell.font = { bold: true }; cell.border = border; cell.alignment = { horizontal: 'center' }; });
+    [6, 6, 20, 14, 14, 10, 10, 10, 12, 12, 14, 12, 14, 18].forEach(function(w, i){ ws1.getColumn(i + 1).width = w + (i === 1 ? 6 : 0); });
+    // 2) الحضور اليومي
+    var ws2 = wb.addWorksheet('الحضور اليومي', { views: [{ rightToLeft: true }] });
+    title(ws2, 'الحضور اليومي — الفترة ' + p.period_no + ' / ' + p.year, c.dates.length + 5);
+    ws2.addRow([]);
+    head(ws2.addRow(['م', 'اسم العامل', 'المهنة', 'البند'].concat(c.dates.map(function(d){ return dayName(d) + '\n' + short(d); })).concat(['الأيام'])));
+    c.rows.forEach(function(r, i){
+      var row = ws2.addRow([i + 1, r.w.name, r.w.profession || '', itemName(r.item)].concat(c.dates.map(function(d){ var x = dm.get(r.w.id + '|' + d); return x && x.present ? '✔' : ''; })).concat([r.days]));
+      row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; }); row.getCell(2).alignment = { horizontal: 'right' };
+    });
+    ws2.getColumn(2).width = 24; ws2.getColumn(3).width = 14; ws2.getColumn(4).width = 16; for (var q = 5; q <= c.dates.length + 5; q++) ws2.getColumn(q).width = 8.5;
+    // 3) التفصيل اليومي
+    var ws3 = wb.addWorksheet('التفصيل اليومي', { views: [{ rightToLeft: true }] });
+    title(ws3, 'التفصيل اليومي — الفترة ' + p.period_no + ' / ' + p.year, 10);
+    ws3.addRow([]);
+    head(ws3.addRow(['التاريخ', 'اليوم', 'اسم العامل', 'المهنة', 'البند', 'المشروع', 'حضور', 'اليومية', 'السهرات', 'السلفة']));
+    c.dates.forEach(function(d){
+      c.rows.forEach(function(r){
+        var x = dm.get(r.w.id + '|' + d); if (!x) return;
+        var row = ws3.addRow([d, dayName(d), r.w.name, r.w.profession || '', itemName(r.item), projName(x.project_id || r.w.project_id), x.present ? 1 : 0, x.present ? r.rate : 0, +x.overtime || 0, +x.advance || 0]);
+        row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; });
+      });
+    });
+    [12, 11, 24, 14, 16, 22, 8, 10, 10, 10].forEach(function(w, i){ ws3.getColumn(i + 1).width = w; });
+    // 4) المشاريع
+    var ws4 = wb.addWorksheet('المشاريع', { views: [{ rightToLeft: true }] });
+    title(ws4, 'توزيع التكلفة على المشاريع — الفترة ' + p.period_no + ' / ' + p.year, 5);
+    ws4.addRow([]);
+    head(ws4.addRow(['المشروع', 'أيام العمل', 'الأجور', 'السهرات', 'الإجمالي']));
+    Object.keys(c.proj).forEach(function(k){
+      var o = c.proj[k], row = ws4.addRow([k ? projName(k) : 'بدون مشروع', o.days, o.wages, o.ot, o.wages + o.ot]);
+      row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; }); [3, 4, 5].forEach(function(z){ row.getCell(z).numFmt = '#,##0.00'; });
+    });
+    [28, 12, 14, 14, 14].forEach(function(w, i){ ws4.getColumn(i + 1).width = w; });
+    var ws5 = wb.addWorksheet('البنود', { views: [{ rightToLeft: true }] });
+    title(ws5, 'توزيع التكلفة على البنود — الفترة ' + p.period_no + ' / ' + p.year, 8);
+    ws5.addRow([]);
+    head(ws5.addRow(['البند', 'عدد العمال', 'أيام العمل', 'أجر الأيام', 'السهرات', 'إجمالي القبض', 'السلف', 'صافي القبض']));
+    Object.keys(c.items).forEach(function(k){
+      var o = c.items[k], row = ws5.addRow([k ? itemName(k) : 'بدون بند', o.workers, o.days, o.wages, o.ot, o.gross, o.adv, o.net]);
+      row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; }); [4, 5, 6, 7, 8].forEach(function(z){ row.getCell(z).numFmt = '#,##0.00'; });
+    });
+    [24, 12, 12, 14, 14, 14, 14, 14].forEach(function(w, i){ ws5.getColumn(i + 1).width = w; });
+    return wb.xlsx.writeBuffer().then(function(buf){ download(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), repName(p, 'xlsx')); });
+  }
+
+  function pageHead(p, title){
+    return '<div class="ph"><h1>' + esc(title) + '</h1><div class="sub">الفترة رقم <b>' + p.period_no + '</b> — سنة <b>' + p.year + '</b><br>من ' + p.from_date + ' إلى ' + p.to_date + '</div></div>';
+  }
+  function pageFoot(i, n){ return '<div class="foot"><span>سراكي عمال</span><span>صفحة ' + i + ' / ' + n + '</span><span>' + todayS() + '</span></div>'; }
+  function buildPages(p, o){
+    var c = compute(p, o.worker), pages = [], T = c.tot, per = 13, dm = pmap(p);
+    var chunks = []; for (var i = 0; i < c.rows.length; i += per) chunks.push(c.rows.slice(i, i + per)); if (!chunks.length) chunks.push([]);
+    chunks.forEach(function(ch, ci){
+      var last = ci === chunks.length - 1;
+      var h = pageHead(p, 'سراكي عمال — كشف الفترة') + '<table><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th><th>اليومية</th><th>أيام أ1</th><th>أيام أ2</th><th>إجمالي الأيام</th><th>أجر الأيام</th><th>السهرات</th><th>إجمالي القبض</th><th>السلف</th><th>صافي القبض</th><th>التوقيع</th></tr></thead><tbody>';
+      ch.forEach(function(r, k){ h += '<tr><td>' + (ci * per + k + 1) + '</td><td class="nm">' + esc(r.w.name) + '</td><td>' + esc(r.w.profession || '') + '</td><td>' + esc(itemName(r.item)) + '</td><td>' + fmt(r.rate) + '</td><td>' + r.d1 + '</td><td>' + r.d2 + '</td><td><b>' + r.days + '</b></td><td>' + fmt(r.wages) + '</td><td>' + fmt(r.ot) + '</td><td><b>' + fmt(r.gross) + '</b></td><td>' + fmt(r.adv) + '</td><td class="hl">' + fmt(r.net) + '</td><td style="width:90px"></td></tr>'; });
+      if (last) h += '<tr class="tot"><td colspan="5" style="text-align:right">الإجمالي</td><td>' + T.d1 + '</td><td>' + T.d2 + '</td><td>' + T.days + '</td><td>' + fmt(T.wages) + '</td><td>' + fmt(T.ot) + '</td><td>' + fmt(T.gross) + '</td><td>' + fmt(T.adv) + '</td><td>' + fmt(T.net) + '</td><td></td></tr>';
+      h += '</tbody></table>';
+      if (last) h += '<div class="sig"><div>المحاسب</div><div>مدير المشروع</div><div>المدير المالي</div></div>';
+      pages.push({ orient: 'land', html: h });
+    });
+    var ik = Object.keys(c.items);
+    if (ik.length && !o.worker) {
+      var h4 = pageHead(p, 'توزيع التكلفة على البنود') + '<table><thead><tr><th>البند</th><th>عدد العمال</th><th>أيام العمل</th><th>أجر الأيام</th><th>السهرات</th><th>إجمالي القبض</th><th>السلف</th><th>صافي القبض</th></tr></thead><tbody>';
+      ik.forEach(function(k){ var x = c.items[k]; h4 += '<tr><td class="nm">' + esc(k ? itemName(k) : 'بدون بند') + '</td><td>' + x.workers + '</td><td>' + x.days + '</td><td>' + fmt(x.wages) + '</td><td>' + fmt(x.ot) + '</td><td>' + fmt(x.gross) + '</td><td>' + fmt(x.adv) + '</td><td class="hl">' + fmt(x.net) + '</td></tr>'; });
+      h4 += '<tr class="tot"><td style="text-align:right">الإجمالي</td><td>' + c.rows.length + '</td><td>' + T.days + '</td><td>' + fmt(T.wages) + '</td><td>' + fmt(T.ot) + '</td><td>' + fmt(T.gross) + '</td><td>' + fmt(T.adv) + '</td><td>' + fmt(T.net) + '</td></tr></tbody></table>';
+      pages.push({ orient: 'land', html: h4 });
+    }
+    var pk = Object.keys(c.proj);
+    if (pk.length && !o.worker) {
+      var h2 = pageHead(p, 'توزيع التكلفة على المشاريع') + '<table><thead><tr><th>المشروع</th><th>أيام العمل</th><th>الأجور</th><th>السهرات</th><th>الإجمالي</th></tr></thead><tbody>';
+      pk.forEach(function(k){ var x = c.proj[k]; h2 += '<tr><td class="nm">' + esc(k ? projName(k) : 'بدون مشروع') + '</td><td>' + x.days + '</td><td>' + fmt(x.wages) + '</td><td>' + fmt(x.ot) + '</td><td class="hl">' + fmt(x.wages + x.ot) + '</td></tr>'; });
+      h2 += '</tbody></table>'; pages.push({ orient: 'land', html: h2 });
+    }
+    if (o.slips) c.rows.forEach(function(r){
+      var h3 = pageHead(p, 'كشف حساب عامل') + '<div class="box"><div>الاسم<b style="font-size:16px">' + esc(r.w.name) + '</b></div><div>المهنة<b style="font-size:16px">' + esc(r.w.profession || '—') + '</b></div><div>البند<b style="font-size:16px">' + esc(itemName(r.item) || '—') + '</b></div><div>اليومية<b>' + fmt(r.rate) + '</b></div><div>أيام العمل<b>' + r.days + '</b></div></div>';
+      h3 += '<table><thead><tr><th>التاريخ</th><th>اليوم</th><th>المشروع</th><th>حضور</th><th>اليومية</th><th>السهرات</th><th>السلفة</th></tr></thead><tbody>';
+      c.dates.forEach(function(d){
+        var x = dm.get(r.w.id + '|' + d), pr = x && x.present;
+        h3 += '<tr><td>' + d + '</td><td>' + dayName(d) + '</td><td>' + esc(x ? projName(x.project_id || r.w.project_id) : '') + '</td><td>' + (pr ? '✔' : '') + '</td><td>' + (pr ? fmt(r.rate) : '') + '</td><td>' + (x && +x.overtime ? fmt(x.overtime) : '') + '</td><td>' + (x && +x.advance ? fmt(x.advance) : '') + '</td></tr>';
+      });
+      h3 += '<tr class="tot"><td colspan="3" style="text-align:right">الإجمالي</td><td>' + r.days + '</td><td>' + fmt(r.wages) + '</td><td>' + fmt(r.ot) + '</td><td>' + fmt(r.adv) + '</td></tr></tbody></table>';
+      h3 += '<div class="box"><div>إجمالي القبض<b>' + fmt(r.gross) + '</b></div><div>السلف<b>' + fmt(r.adv) + '</b></div><div class="net">صافي القبض<b>' + fmt(r.net) + '</b></div></div>';
+      h3 += '<div class="sig"><div>توقيع العامل</div><div>المحاسب</div></div>';
+      pages.push({ orient: 'port', html: h3 });
+    });
+    return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
+  }
+  function pagesToDom(pages, host){
+    host.innerHTML = pages.map(function(pg){ return '<div class="skp ' + pg.orient + '">' + pg.html + '</div>'; }).join('');
+    return Array.prototype.slice.call(host.children);
+  }
+  function fontsReady(){ try { return Promise.all([document.fonts.load('700 14px Cairo'), document.fonts.load('400 14px Cairo')]).then(function(){ return document.fonts.ready; }); } catch (e) { return Promise.resolve(); } }
+  function buildPdf(p, o){
+    if (!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)) return Promise.reject(new Error('مكتبات PDF غير محمّلة'));
+    var stage = $('#skStage', document); stage = document.getElementById('skStage');
+    var els = pagesToDom(buildPages(p, o), stage), doc = null, chain = fontsReady();
+    els.forEach(function(el, i){
+      chain = chain.then(function(){ return html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }); }).then(function(cv){
+        var land = el.classList.contains('land');
+        if (!doc) doc = new window.jspdf.jsPDF({ orientation: land ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+        else doc.addPage('a4', land ? 'landscape' : 'portrait');
+        doc.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, land ? 297 : 210, land ? 210 : 297);
+      });
+    });
+    return chain.then(function(){ download(doc.output('blob'), repName(p, 'pdf')); stage.innerHTML = ''; }, function(e){ stage.innerHTML = ''; throw e; });
+  }
+  function printPages(p, o){
+    var host = document.getElementById('skPrintRoot'); pagesToDom(buildPages(p, o), host);
+    fontsReady().then(function(){
+      document.body.classList.add('sk-printing');
+      var done = function(){ document.body.classList.remove('sk-printing'); host.innerHTML = ''; window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done); setTimeout(function(){ window.print(); }, 150);
+    });
+  }
+
+  // ---------- ربط الأحداث ----------
+  var body = $('#skBody');
+  body.addEventListener('change', onBodyChange); body.addEventListener('click', onBodyClick); body.addEventListener('input', onBodyInput);
+  body.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.closest('.sk-add')) { e.preventDefault(); addWorker(); } });
+  $('#skPeriod').addEventListener('change', function(){ if (this.value) selectPeriod(this.value); });
+  $('#skWeek').addEventListener('change', function(){ S.week = +this.value; S.day = null; renderAll(); });
+  function dateChange(){
+    var p = P(); if (!p || isClosed()) return;
+    var f = $('#skFrom').value, t = $('#skTo').value; if (!f || !t) return;
+    if (t < f) { toast('تاريخ النهاية قبل البداية'); renderMaster(); return; }
+    p.from_date = f; p.to_date = t; enqueue('up', 'wl_periods', p); S.day = null; renderAll();
+  }
+  $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
+  $('#skNew').addEventListener('click', newPeriod); $('#skClose').addEventListener('click', toggleClose);
+  $('#skProj').addEventListener('click', projectsModal); $('#skItems').addEventListener('click', itemsModal); $('#skRep').addEventListener('click', reportModal);
+  Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.addEventListener('click', function(){ S.view = b.getAttribute('data-v'); renderAll(); }); });
+  $('#backHomeBtnSarraki').addEventListener('click', function(){ window.showScreen_('home'); });
+
+  // ---------- فتح الشاشة ----------
+  var opened = false;
+  function open(){
+    window.showScreen_('sarraki');
+    loadCache(); if (!S.cur) S.cur = LS.get('sk_cur', null);
+    if (!P()) { var o = S.periods.filter(function(x){ return x.status === 'open'; }).sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0] || S.periods.slice().sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0]; S.cur = o ? o.id : null; }
+    setSync(Object.keys(Q).length ? 'pending' : 'ok'); renderAll();
+    loadServer().then(function(){ seedItems();
+      if (!P()) { var o2 = S.periods.filter(function(x){ return x.status === 'open'; }).sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0] || S.periods[S.periods.length - 1]; S.cur = o2 ? o2.id : null; }
+      if (S.cur) return loadDays(S.cur).catch(function(){});
+    }).catch(function(e){ if (String(e.message) !== 'pending') handleErr(e); else schedule(100); seedItems(); }).then(function(){ opened = true; renderAll(); });
+  }
+  window.openSarraki_ = open;
+  var tile = document.getElementById('openSarrakiBtn');
+  if (tile) tile.addEventListener('click', open);
+  window.addEventListener('online', function(){ if (Object.keys(Q).length) schedule(200); });
+  if (Object.keys(Q).length) schedule(3000);
+})();
+</script>
+
 </body>
 </html>
