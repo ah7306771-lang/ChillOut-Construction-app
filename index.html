@@ -16,6 +16,7 @@
 <link rel="manifest" href="manifest.json">
 <title>CHILLOUT For Construction</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://jezqnjrnjshruxavwnbd.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -15338,15 +15339,63 @@ window.safeFileName = function(str){
     function fa(n){ return (Math.round((+n || 0) * 100) / 100).toLocaleString('ar-EG', { maximumFractionDigits: 2 }); }
     function esc(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : String(s)); return d.innerHTML; }
     function short(d){ if (!d) return ''; var p = String(d).split('-'); return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : d; }
+    // نستخدم SB/KEY من الـ IIFE نفسها (المعرَّفة أعلى الكود) — السكريبت
+    // ده في IIFE منفصل عن اللي فيه SUPABASE_URL.
+    var _SB = (typeof SB !== 'undefined') ? SB : 'https://jezqnjrnjshruxavwnbd.supabase.co';
+    var _KEY = (typeof KEY !== 'undefined') ? KEY : 'sb_publishable_pO-ZPiOrOO5jnRzS7s3VHg_Qy5cotVa';
     function sbGet(path){
-      return fetch(SUPABASE_URL + '/rest/v1/' + path, { headers: sbHeaders() })
+      return fetch(_SB + '/rest/v1/' + path, { headers: { apikey: _KEY, Authorization: 'Bearer ' + _KEY, 'Content-Type': 'application/json' } })
         .then(function(r){ if (!r.ok) throw new Error('sb ' + r.status); return r.json(); });
     }
+    // كاش بطول عمر مختلف لكل مصدر — المشاريع نادرًا تتغيّر، العمال في
+    // الفترة الواحدة شبه ثابت، الأيام هي اللي بتتحرك دايمًا.
+    var PROJ_KEY = 'sk_proj_cache_v2', PROJ_TTL = 24 * 60 * 60 * 1000;      // 24 ساعة
+    var WRK_KEY_PFX = 'sk_wrk_cache_v2_', WRK_TTL = 10 * 60 * 1000;         // 10 دقايق
+    function readLS(k){ try { var o = JSON.parse(localStorage.getItem(k) || 'null'); return (o && (Date.now() - o.ts) < o.ttl) ? o.v : null; } catch (e) { return null; } }
+    function writeLS(k, v, ttl){ try { localStorage.setItem(k, JSON.stringify({ ts: Date.now(), ttl: ttl, v: v })); } catch (e) {} }
+    // In-flight dedup: لو في طلب شغّال لنفس المصدر، أي استدعاء جديد يستنى نفس
+    // الـ promise بدل ما يبعت طلب مكرر. ده بيخلّي prewarm الفعال 100% —
+    // الـ click يقعد يستنى نفس الـ fetch اللي ابتدت على hover.
+    var _inflight = {};
+    function dedup(key, maker){
+      if (_inflight[key]) return _inflight[key];
+      var p = maker().then(function(v){ delete _inflight[key]; return v; }, function(e){ delete _inflight[key]; throw e; });
+      _inflight[key] = p;
+      return p;
+    }
+    function getProjects(){
+      var cached = readLS(PROJ_KEY);
+      if (cached) {
+        // تحديث صامت في الخلفية
+        dedup('proj', function(){ return sbGet('wl_projects?select=id,name,code&order=code.asc.nullslast').then(function(v){ if (v) writeLS(PROJ_KEY, v, PROJ_TTL); return v; }); }).catch(function(){});
+        return Promise.resolve(cached);
+      }
+      return dedup('proj', function(){ return sbGet('wl_projects?select=id,name,code&order=code.asc.nullslast').then(function(v){ v = v || []; writeLS(PROJ_KEY, v, PROJ_TTL); return v; }); });
+    }
+    function getWorkers(pid){
+      var k = WRK_KEY_PFX + pid, cached = readLS(k);
+      if (cached) {
+        dedup('wrk:' + pid, function(){ return sbGet('wl_workers?select=id,daily_rate,project_id&period_id=eq.' + encodeURIComponent(pid)).then(function(v){ if (v) writeLS(k, v, WRK_TTL); return v; }); }).catch(function(){});
+        return Promise.resolve(cached);
+      }
+      return dedup('wrk:' + pid, function(){ return sbGet('wl_workers?select=id,daily_rate,project_id&period_id=eq.' + encodeURIComponent(pid)).then(function(v){ v = v || []; writeLS(k, v, WRK_TTL); return v; }); });
+    }
+    function getDays(pid){
+      // لا كاش للأيام — بس in-flight dedup عشان prewarm يفيد
+      return dedup('days:' + pid, function(){ return sbGet('wl_days?select=worker_id,project_id,present,overtime,advance,extra_amt&period_id=eq.' + encodeURIComponent(pid)); });
+    }
+    function todayISO_(){
+      var t = new Date();
+      var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+      return t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+    }
     function pickPeriod(periods){
-      // الأحدث حسب (year, period_no) — المفتوحة أولوية، وإلا آخر مقفلة
+      // لو السيرفر رجّع أكتر من فترة شاملة اليوم (حالة نادرة)، نفضّل المفتوحة
+      // ثم الأحدث. السيرفر أصلاً بيفلتر على التاريخ، فالعادة ترجع فترة واحدة بس.
       var cmp = function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); };
+      if (!periods || !periods.length) return null;
       var open = periods.filter(function(x){ return x.status === 'open'; }).sort(cmp)[0];
-      return open || periods.slice().sort(cmp)[0] || null;
+      return open || periods.slice().sort(cmp)[0];
     }
     function computeByProject(workers, days, projects){
       var wmap = {}; workers.forEach(function(w){ wmap[w.id] = w; });
@@ -15378,6 +15427,36 @@ window.safeFileName = function(str){
     }
     var btn = document.getElementById('loginSarrakyPeriodBtn');
     if (!btn) return;
+
+    // Prewarm — تسخين الكاش في الخلفية:
+    //   • على كل تحميل للصفحة، لو عندنا period id محفوظ وتاريخ اليوم جوّه
+    //     المدى، نكمل تسخين المشاريع والعمال (ما بنعملش طلب الأيام هنا
+    //     عشان ما نرفعش ضغط من غير داعي). ده بيخلّي الفتح الأول للمودال
+    //     يحتاج طلب واحد بس (الأيام) بدل تلاتة.
+    //   • على mouseenter/touchstart، نسخّن الأيام كمان — المستخدم بيضغط
+    //     عادةً خلال 100-300ms من ما يلمس الزرار، فده بيخلي الداتا جاهزة
+    //     فعلاً وقت الكليك.
+    try {
+      var prewarmPeriod = (function(){
+        try {
+          var o = JSON.parse(localStorage.getItem('sk_period_pid_v1') || 'null');
+          var t = new Date(), pad = function(n){ return (n < 10 ? '0' : '') + n; };
+          var td = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
+          return (o && o.id && o.from_date && o.to_date && o.from_date <= td && td <= o.to_date) ? o : null;
+        } catch (e) { return null; }
+      })();
+      var idle = window.requestIdleCallback || function(cb){ return setTimeout(cb, 800); };
+      idle(function(){
+        getProjects();                                   // طلب 1 صامت (24h cache)
+        if (prewarmPeriod) getWorkers(prewarmPeriod.id); // طلب 2 صامت (10m cache)
+      });
+      // dedup بيمنع التكرار، فمفيش داعي لفلاج warmedDays
+      function warmDays(){ if (prewarmPeriod) getDays(prewarmPeriod.id).catch(function(){}); }
+      btn.addEventListener('mouseenter', warmDays);
+      btn.addEventListener('touchstart', warmDays, { passive: true });
+      btn.addEventListener('pointerdown', warmDays);
+    } catch (e) {}
+
     btn.addEventListener('click', function(){
       var wrap = document.getElementById('quickStatusListWrap');
       var m = document.querySelector('.quick-status-modal');
@@ -15385,7 +15464,6 @@ window.safeFileName = function(str){
       if (m) m.classList.add('qsm-wide');
       document.getElementById('quickStatusTitle').textContent = '👷 قبض فترة السراكي';
       document.getElementById('quickStatusSubtitle').textContent = (new Date()).toLocaleDateString('ar-EG');
-      wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
       document.getElementById('quickStatusOverlay').style.display = 'flex';
       // لازم جلسة دخول (أدمن أو موظف عنده الصلاحية). زرار الفابس نفسه مخفي
       // بالفعل في applyIconVisibility_ لو مفيش صلاحية، فده بس حماية إضافية.
@@ -15396,17 +15474,44 @@ window.safeFileName = function(str){
         var pl = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
         if (pl.indexOf('allow_loginSarrakyPeriod') === -1) { wrap.innerHTML = '<div class="empty-note">🔒 ليس لديك صلاحية عرض هذه البيانات.</div>'; return; }
       }
-      Promise.all([
-        sbGet('wl_periods?select=id,year,period_no,from_date,to_date,status,closed_at'),
-        sbGet('wl_projects?select=id,name,code,is_stopped&order=code.asc.nullslast'),
-        sbGet('wl_workers?select=id,period_id,daily_rate,project_id')
-      ]).then(function(res){
-        var periods = res[0] || [], projects = res[1] || [], workers = res[2] || [];
-        var p = pickPeriod(periods);
-        if (!p) { wrap.innerHTML = '<div class="empty-note">مفيش فترات مسجّلة بعد.</div>'; return; }
-        var pWorkers = workers.filter(function(w){ return w.period_id === p.id; });
-        return sbGet('wl_days?select=worker_id,project_id,present,overtime,advance,extra_amt&period_id=eq.' + encodeURIComponent(p.id))
-          .then(function(days){
+      // كاش بسيط لمدة 60 ثانية في الـ sessionStorage: لو المودال اتفتح
+      // مؤخرًا نعرض نتيجة محفوظة فورًا ونحدّث في الخلفية — بيخلّي الفتح
+      // اللحظي شبه فوري بدل ما يستنى 3 طلبات Supabase كل مرة.
+      var CACHE_KEY = 'sk_period_cache_v1', CACHE_TTL = 60 * 1000, hasCache = false;
+      try {
+        var cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+        if (cached && (Date.now() - cached.ts) < CACHE_TTL && cached.html) {
+          document.getElementById('quickStatusSubtitle').textContent = cached.sub || '';
+          wrap.innerHTML = cached.html;
+          hasCache = true;
+        }
+      } catch (e) {}
+      if (!hasCache) wrap.innerHTML = '<div class="empty-note">جاري التحميل...</div>';
+
+      // كاش دائم للفترة الحالية في localStorage: بنحفظ (id, from, to, year,
+      // period_no, status) أول مرة نلاقي الفترة الشاملة النهاردة، وبعدين
+      // طول ما اليوم لسه بين from و to — نستعمل الكاش مباشرة ونقفز
+      // استعلام الفترات نهائي (فيه بس 3 طلبات متوازية بدل 4).
+      var _today = todayISO_();
+      var PID_KEY = 'sk_period_pid_v1';
+      function loadCachedPeriod(){
+        try {
+          var o = JSON.parse(localStorage.getItem(PID_KEY) || 'null');
+          if (o && o.id && o.from_date && o.to_date && o.from_date <= _today && _today <= o.to_date) return o;
+        } catch (e) {}
+        return null;
+      }
+      function saveCachedPeriod(p){ try { localStorage.setItem(PID_KEY, JSON.stringify(p)); } catch (e) {} }
+
+      function fetchData(p){
+        // المشاريع والعمال من الكاش فورًا لو موجودين (طلب في الخلفية للتحديث).
+        // الأيام دايمًا طلب حي عشان نضمن أحدث قيم. يعني في الغالب طلب HTTP
+        // واحد بس وقت الفتح — ده أقصى سرعة ممكنة بدون server-side RPC.
+        return Promise.all([ getProjects(), getWorkers(p.id), getDays(p.id) ])
+          .then(function(res){ return render(p, res[0] || [], res[1] || [], res[2] || []); });
+      }
+
+      function render(p, projects, pWorkers, days){
             var r = computeByProject(pWorkers, days || [], projects);
             var statusTxt = p.status === 'open' ? '🟢 مفتوحة' : '🔒 مقفلة';
             var sub = 'الفترة ' + p.period_no + ' — ' + p.year + '  •  ' + short(p.from_date) + ' → ' + short(p.to_date) + '  •  ' + statusTxt;
@@ -15428,7 +15533,8 @@ window.safeFileName = function(str){
                 '<td dir="ltr" style="font-weight:800;color:#c0392b">' + fa(r.tot.adv) + '</td>' +
                 '<td dir="ltr" style="font-weight:900;color:' + (r.tot.net >= 0 ? '#1f7a4c' : '#c0392b') + '">' + fa(r.tot.net) + '</td>' +
               '</tr>';
-            wrap.innerHTML = '<div class="qs-table-scroll"><table class="dtable">' +
+            var html = '<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" id="skPdExcelBtn" class="btn btn-secondary" style="padding:8px 16px;font-weight:700">📊 تحميل Excel</button></div>' +
+              '<div class="qs-table-scroll"><table class="dtable">' +
               '<thead><tr>' +
                 '<th style="width:34px">#</th>' +
                 '<th>المشروع</th>' +
@@ -15439,8 +15545,97 @@ window.safeFileName = function(str){
               '<tbody>' + tbody + '</tbody>' +
               '<tfoot>' + tfoot + '</tfoot>' +
             '</table></div>';
-          });
-      }).catch(function(){ wrap.innerHTML = '<div class="empty-note">تعذّر تحميل بيانات السراكي.</div>'; });
+            wrap.innerHTML = html;
+            try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), html: html, sub: sub })); } catch (e) {}
+            // زرار تحميل Excel — بيبني ملف ملخص (مشروع في كل صف) بنفس
+            // تنسيق تقرير السراكي التفصيلي.
+            var ebtn = document.getElementById('skPdExcelBtn');
+            if (ebtn) ebtn.onclick = function(){ exportSummaryExcel(p, r); };
+      }
+
+      function exportSummaryExcel(p, r){
+        if (!window.ExcelJS) { alert('مكتبة Excel غير محمّلة'); return; }
+        var wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال';
+        var hdrFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3A3F45' } };
+        var accent  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF0E0' } };
+        var thin = { style: 'thin', color: { argb: 'FFD9CFC3' } };
+        var border = { top: thin, left: thin, bottom: thin, right: thin };
+        var ws = wb.addWorksheet('ملخص القبض', { views: [{ rightToLeft: true }], pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+        // العنوان
+        ws.mergeCells(1, 1, 1, 5);
+        var tc = ws.getCell(1, 1);
+        tc.value = 'سراكي عمال — ملخص القبض للفترة رقم ' + p.period_no + ' / ' + p.year;
+        tc.font = { bold: true, size: 16, color: { argb: 'FFE2621F' } };
+        tc.alignment = { horizontal: 'center' };
+        ws.mergeCells(2, 1, 2, 5);
+        var tc2 = ws.getCell(2, 1);
+        tc2.value = 'من ' + p.from_date + ' إلى ' + p.to_date + '   —   ' + (p.status === 'open' ? '🟢 مفتوحة' : '🔒 مقفلة');
+        tc2.alignment = { horizontal: 'center' }; tc2.font = { bold: true, color: { argb: 'FF555555' } };
+        ws.addRow([]);
+        // الهيدر
+        var hRow = ws.addRow(['م', 'المشروع', 'إجمالي القبض قبل السلف', 'إجمالي السلف', 'صافي القبض']);
+        hRow.eachCell(function(cell){ cell.fill = hdrFill; cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; cell.border = border; });
+        hRow.height = 30;
+        var first = 5;
+        r.rows.forEach(function(x, i){
+          var row = ws.addRow([i + 1, x.name, +x.gross || 0, +x.adv || 0, null]);
+          var n = first + i;
+          row.getCell(5).value = { formula: 'C' + n + '-D' + n, result: +x.net || 0 };
+          row.eachCell({ includeEmpty: true }, function(cell){ cell.border = border; cell.alignment = { horizontal: 'center', vertical: 'middle' }; });
+          row.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' };
+          [3, 4, 5].forEach(function(k){ row.getCell(k).numFmt = '#,##0.00'; });
+          row.getCell(3).font = { bold: true, color: { argb: 'FF0F766E' } };
+          row.getCell(4).font = { bold: true, color: { argb: 'FFC0392B' } };
+          row.getCell(5).font = { bold: true, color: { argb: 'FF1F7A4C' } };
+        });
+        var lastR = first + r.rows.length - 1;
+        var tr = ws.addRow(['', 'الإجمالي العام', null, null, null]);
+        tr.getCell(3).value = r.rows.length ? { formula: 'SUM(C' + first + ':C' + lastR + ')', result: +r.tot.gross || 0 } : 0;
+        tr.getCell(4).value = r.rows.length ? { formula: 'SUM(D' + first + ':D' + lastR + ')', result: +r.tot.adv || 0 } : 0;
+        tr.getCell(5).value = r.rows.length ? { formula: 'SUM(E' + first + ':E' + lastR + ')', result: +r.tot.net || 0 } : 0;
+        [3, 4, 5].forEach(function(k){ tr.getCell(k).numFmt = '#,##0.00'; });
+        tr.eachCell({ includeEmpty: true }, function(cell){ cell.fill = accent; cell.font = { bold: true }; cell.border = border; cell.alignment = { horizontal: 'center', vertical: 'middle' }; });
+        tr.getCell(2).alignment = { horizontal: 'right', vertical: 'middle' };
+        // عرض الأعمدة
+        [6, 32, 22, 18, 20].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
+        // تنزيل الملف
+        wb.xlsx.writeBuffer().then(function(buf){
+          var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          var name = 'ملخص قبض السراكي — فترة ' + p.period_no + '-' + p.year + '.xlsx';
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+          document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        }).catch(function(){ alert('تعذّر إنشاء ملف Excel'); });
+      }
+
+      function onErr(){
+        // لو عندنا كاش قديم معروض بالفعل، نسيبه بدل ما نمسحه بـ "تعذّر".
+        if (wrap.innerHTML.indexOf('qs-table-scroll') === -1) {
+          wrap.innerHTML = '<div class="empty-note">تعذّر تحميل بيانات السراكي.</div>';
+        }
+      }
+
+      // المسار السريع: لو عندنا كاش فترة لسه ساري (اليوم جوّه from..to)،
+      // نروح على طول للطلبات التلاتة بدون استعلام wl_periods.
+      var cp = loadCachedPeriod();
+      if (cp) {
+        fetchData(cp).catch(function(){
+          // الكاش قديم أو الـ period id اتغيّر — نرجع للمسار العادي.
+          try { localStorage.removeItem(PID_KEY); } catch (e) {}
+          lookupAndFetch();
+        });
+      } else {
+        lookupAndFetch();
+      }
+
+      function lookupAndFetch(){
+        sbGet('wl_periods?select=id,year,period_no,from_date,to_date,status&from_date=lte.' + _today + '&to_date=gte.' + _today + '&limit=2')
+          .then(function(periods){
+            var p = pickPeriod(periods || []);
+            if (!p) { wrap.innerHTML = '<div class="empty-note">مفيش فترة سراكي شاملة تاريخ النهاردة.</div>'; return; }
+            saveCachedPeriod({ id: p.id, from_date: p.from_date, to_date: p.to_date, year: p.year, period_no: p.period_no, status: p.status });
+            return fetchData(p);
+          }).catch(onErr);
+      }
     });
   })();
 
@@ -16494,7 +16689,7 @@ window.safeFileName = function(str){
     var ws = WK();
     modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
       '<div class="rpsec">① الشيت الإجمالي (حسب البند)</div>' +
-      '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة</button></div>' +
+      '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-primary" id="rpIX">📊 Excel</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpIXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">② شيت العمالة التفصيلي (سطر لكل عامل / أسبوع / مشروع)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpD">📋 PDF</button><button class="btn btn-primary" id="rpDX">📊 Excel</button><button class="btn btn-secondary" id="rpDS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpDXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">③ كشف الفترة (يومي / أسبوعي)</div>' +
@@ -16508,6 +16703,7 @@ window.safeFileName = function(str){
       var opt = function(){ return { worker: q('#rpW').value, slips: q('#rpS').checked }; };
       var fail = function(pre){ return function(e){ msg(pre + ': ' + ((e && e.message) || e)); }; };
       var xlsDetail = function(){ return detailExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'شيت-تفصيلي', 'xlsx') }; }); };
+      var xlsItems  = function(){ return itemsExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'إجمالي-حسب-البند', 'xlsx') }; }); };
       // مشاركة: بنجهّز الملف وبعدين Web Share (لو الجهاز بيرفض لأن الضغطة قديمة بنطلب ضغطة تانية)
       function share(job, label){
         msg('جارٍ تجهيز الملف… (ممكن ياخد لحظات)');
@@ -16527,7 +16723,9 @@ window.safeFileName = function(str){
       q('#rpC').onclick = close;
       // ① الإجمالي حسب البند
       q('#rpI').onclick = function(){ msg('جارٍ إنشاء تقرير الإجمالي حسب البند… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, { type: 'items' }); }); };
+      q('#rpIX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(xlsItems); };
       q('#rpIS').onclick = function(){ share(function(){ return pdfBlob(p, { type: 'items' }); }, 'سراكي عمال — الشيت الإجمالي حسب البند'); };
+      q('#rpIXS').onclick = function(){ share(xlsItems, 'سراكي عمال — الشيت الإجمالي حسب البند (Excel)'); };
       // ② التفصيلي
       q('#rpD').onclick = function(){ msg('جارٍ إنشاء الشيت التفصيلي… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, { type: 'detail' }); }); };
       q('#rpDX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(xlsDetail); };
@@ -16878,6 +17076,196 @@ window.safeFileName = function(str){
     ws.autoFilter = { from: { row: HR, column: 1 }, to: { row: LAST, column: NC } };
     return wb.xlsx.writeBuffer().then(function(buf){ return new Blob([buf], { type: XLSX_MIME }); });
   }
+
+  // ---------- Excel: الشيت الإجمالي حسب البند (نفس شكل الـ PDF items) ----------
+  // كل بند في section خاص بيه (عنوان + جدول عمال + صف إجمالي)، وفي الآخر
+  // section "الإجمالي العام" بيلخّص كل البنود. الصافي عمود معادلة.
+  function itemsExcelBlob(p){
+    if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
+    var gs; try { gs = itemsData(p); } catch (e) { return Promise.reject(e); }
+    if (!gs.length) return Promise.reject(new Error('مفيش حضور أو سلف مسجّل في الفترة دي'));
+    var wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال'; wb.created = new Date();
+    var INK = 'FF1A237E', RED = 'FF8B0000', YELLOW = 'FFFFF59D', HEADBG = 'FFE9E9E9', TOTALBG = 'FFFFF0C8';
+    var blk = { style: 'thin', color: { argb: 'FF000000' } };
+    var border = { top: blk, bottom: blk, left: blk, right: blk };
+    var MONEY = '#,##0.00', BLANK0 = '[=0]"";#,##0.00';
+    var ws = wb.addWorksheet('إجمالي حسب البند', {
+      views: [{ rightToLeft: true, showGridLines: false }],
+      pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.6, header: 0.2, footer: 0.3 } }
+    });
+    ws.headerFooter.oddFooter = '&C&9صفحة &P من &N';
+    // 10 أعمدة
+    var widths = [24, 12, 10, 9, 11, 12, 15, 14, 14, 13];
+    widths.forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
+
+    // ====== العنوان الرئيسي ======
+    ws.mergeCells(1, 1, 1, 10);
+    var tc = ws.getCell(1, 1);
+    tc.value = 'سراكي عمال — تقرير إجمالي حسب البند';
+    tc.font = { name: 'Arial', size: 18, bold: true, color: { argb: RED } };
+    tc.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(1).height = 32;
+    var dbl = { style: 'double', color: { argb: RED } };
+    for (var c1 = 1; c1 <= 10; c1++) {
+      var bc = ws.getCell(1, c1);
+      bc.border = { top: dbl, bottom: dbl, left: c1 === 1 ? dbl : undefined, right: c1 === 10 ? dbl : undefined };
+    }
+    // سطر معلومات الفترة
+    ws.mergeCells(2, 1, 2, 10);
+    var inf = ws.getCell(2, 1);
+    inf.value = 'الفترة : ' + p.period_no + '   •   السنة : ' + p.year + '   •   من : ' + fdmy(p.from_date) + '   إلى : ' + fdmy(p.to_date);
+    inf.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
+    inf.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(2).height = 22;
+
+    var cursor = 4;
+    var HEADER = ['اسم العامل', 'قيمة اليومية', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض'];
+    function writeHeader(rowIdx){
+      HEADER.forEach(function(h, i){
+        var c = ws.getCell(rowIdx, i + 1);
+        c.value = h; c.font = { name: 'Arial', size: 10, bold: true, color: { argb: INK } };
+        c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEADBG } };
+        c.border = border;
+      });
+      ws.getRow(rowIdx).height = 32;
+    }
+    function fillRow(rowIdx, vals, bold, fillColor){
+      for (var k = 1; k <= 10; k++) {
+        var cell = ws.getCell(rowIdx, k);
+        cell.value = vals[k - 1];
+        cell.font = { name: 'Arial', size: 10, bold: !!bold, color: { argb: k === 7 || k === 10 ? RED : 'FF000000' } };
+        cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
+        cell.border = border;
+        if (fillColor) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+        if (k >= 2 && k !== 11) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
+      }
+    }
+
+    // ====== Section لكل بند ======
+    gs.forEach(function(g, gi){
+      // عنوان البند
+      ws.mergeCells(cursor, 1, cursor, 10);
+      var bc = ws.getCell(cursor, 1);
+      bc.value = 'البند التحليلي ' + (gi + 1) + ' : ' + g.name;
+      bc.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+      bc.alignment = { horizontal: 'center', vertical: 'middle' };
+      bc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: INK } };
+      ws.getRow(cursor).height = 24;
+      cursor++;
+      // الهيدر
+      writeHeader(cursor); cursor++;
+      var firstRow = cursor;
+      // صفوف العمال
+      g.rows.forEach(function(x){
+        var n = cursor;
+        var row = ws.getRow(n);
+        row.getCell(1).value = x.name;
+        row.getCell(2).value = x.rate;
+        row.getCell(3).value = x.days;
+        row.getCell(4).value = x.otd || null;
+        row.getCell(5).value = { formula: 'C' + n + '+D' + n, result: x.tot };
+        row.getCell(6).value = x.extra || null;
+        row.getCell(7).value = { formula: 'E' + n + '*B' + n + '+F' + n, result: x.before };
+        row.getCell(8).value = x.a1 || null;
+        row.getCell(9).value = x.a2 || null;
+        row.getCell(10).value = { formula: 'G' + n + '-H' + n + '-I' + n, result: x.net };
+        for (var k = 1; k <= 10; k++) {
+          var cell = row.getCell(k);
+          cell.font = { name: 'Arial', size: 10, color: { argb: k === 7 || k === 10 ? RED : 'FF000000' }, bold: (k === 7 || k === 10) };
+          cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
+          cell.border = border;
+          if (k >= 2) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
+          if (k === 7 || k === 10) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: YELLOW } };
+        }
+        cursor++;
+      });
+      // صف إجمالي البند (SUM formulas)
+      var lastRow = cursor - 1, totN = cursor;
+      var tr = ws.getRow(totN);
+      tr.getCell(1).value = 'إجمالي البند';
+      [2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(function(col){
+        var letter = String.fromCharCode(64 + col);
+        tr.getCell(col).value = { formula: 'SUM(' + letter + firstRow + ':' + letter + lastRow + ')' };
+      });
+      for (var k2 = 1; k2 <= 10; k2++) {
+        var tc2 = tr.getCell(k2);
+        tc2.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
+        tc2.alignment = { horizontal: k2 === 1 ? 'right' : 'center', vertical: 'middle' };
+        tc2.border = border;
+        tc2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: TOTALBG } };
+        if (k2 >= 2) tc2.numFmt = (k2 === 7 || k2 === 10) ? MONEY : BLANK0;
+      }
+      tr.height = 24;
+      cursor++;
+      // سطر فاصل
+      cursor++;
+    });
+
+    // ====== الإجمالي العام (كل البنود) ======
+    ws.mergeCells(cursor, 1, cursor, 10);
+    var allc = ws.getCell(cursor, 1);
+    allc.value = 'إجمالي الفترة على مستوى كل البنود التحليلية';
+    allc.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+    allc.alignment = { horizontal: 'center', vertical: 'middle' };
+    allc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: RED } };
+    ws.getRow(cursor).height = 24;
+    cursor++;
+    // هيدر إجمالي: البند / عدد العمال / باقي الأعمدة
+    var SUM_HEADER = ['البند التحليلي', 'عدد العمال', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض'];
+    SUM_HEADER.forEach(function(h, i){
+      var c = ws.getCell(cursor, i + 1);
+      c.value = h; c.font = { name: 'Arial', size: 10, bold: true, color: { argb: INK } };
+      c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEADBG } };
+      c.border = border;
+    });
+    ws.getRow(cursor).height = 32;
+    cursor++;
+    var sumFirst = cursor;
+    gs.forEach(function(g){
+      var row = ws.getRow(cursor);
+      row.getCell(1).value = g.name;
+      row.getCell(2).value = g.rows.length;
+      row.getCell(3).value = g.tot.days;
+      row.getCell(4).value = g.tot.otd || null;
+      row.getCell(5).value = g.tot.tot;
+      row.getCell(6).value = g.tot.extra || null;
+      row.getCell(7).value = g.tot.before;
+      row.getCell(8).value = g.tot.a1 || null;
+      row.getCell(9).value = g.tot.a2 || null;
+      row.getCell(10).value = g.tot.net;
+      for (var k = 1; k <= 10; k++) {
+        var cell = row.getCell(k);
+        cell.font = { name: 'Arial', size: 10, bold: (k === 7 || k === 10), color: { argb: k === 7 || k === 10 ? RED : 'FF000000' } };
+        cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
+        cell.border = border;
+        if (k >= 3) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
+        if (k === 7 || k === 10) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: YELLOW } };
+      }
+      cursor++;
+    });
+    // صف الإجمالي العام (SUM)
+    var sumLast = cursor - 1, grandN = cursor;
+    var gr = ws.getRow(grandN);
+    gr.getCell(1).value = 'الإجمالي العام';
+    [2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(function(col){
+      var letter = String.fromCharCode(64 + col);
+      gr.getCell(col).value = { formula: 'SUM(' + letter + sumFirst + ':' + letter + sumLast + ')' };
+    });
+    for (var k3 = 1; k3 <= 10; k3++) {
+      var gc = gr.getCell(k3);
+      gc.font = { name: 'Arial', size: 12, bold: true, color: { argb: RED } };
+      gc.alignment = { horizontal: k3 === 1 ? 'right' : 'center', vertical: 'middle' };
+      gc.border = { top: dbl, bottom: dbl, left: k3 === 1 ? dbl : blk, right: k3 === 10 ? dbl : blk };
+      gc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: TOTALBG } };
+      if (k3 >= 3) gc.numFmt = (k3 === 7 || k3 === 10) ? MONEY : BLANK0;
+    }
+    gr.height = 28;
+
+    return wb.xlsx.writeBuffer().then(function(buf){ return new Blob([buf], { type: XLSX_MIME }); });
+  }
+
   function pagesToDom(pages, host){
     host.innerHTML = pages.map(function(pg){ return '<div class="skp ' + pg.orient + '">' + pg.html + '</div>'; }).join('');
     return Array.prototype.slice.call(host.children);
