@@ -250,18 +250,21 @@ def convert_last_prices(ws):
     'اخر طريقة السداد'/'تاريخ اخر فاتورة') وتحته صفوف البيانات (عميل واحد
     في كل صف — آخر عملية توريد ليه)."""
     rows = list(ws.iter_rows(values_only=True))
-    header_i, cols = find_header_row(
-        rows, ['اسم العميل', 'اخر سعر شراء', 'اخر سعر بيع']
-    )
+    # نقبل أي header يبدأ بـ "اسم العميل" أو "العميل".
+    header_i, cols = find_header_row(rows, ['اسم العميل'])
+    if header_i == -1:
+        header_i, cols = find_header_row(rows, ['العميل'])
     if header_i == -1:
         return []
 
-    c_client = cols.get('اسم العميل', 0)
-    c_buy = cols.get('اخر سعر شراء', 1)
-    c_sell = cols.get('اخر سعر بيع', 2)
-    c_order = cols.get('رقم امر البيع', 3)
-    c_payment = cols.get('اخر طريقة السداد', 4)
-    c_date = cols.get('تاريخ اخر فاتورة', 5)
+    # نفس منطق convert_all_sales: المواضع ثابتة من الماكرو، نتجاهل نصوص الهيدر
+    # لأنها ممكن تكون غير مطابقة لمواضع البيانات الفعلية.
+    c_client = 0
+    c_buy = 1
+    c_sell = 2
+    c_order = 3
+    c_payment = 4
+    c_date = 5
 
     out = []
     for row in rows[header_i + 1:]:
@@ -289,26 +292,26 @@ def convert_all_sales(ws):
     القديمة والجديدة (يعني اخر سعر شراء / سعر شراء / إلخ) عشان يشتغل قبل
     وبعد أي تغيير في أسماء الهيدر."""
     rows = list(ws.iter_rows(values_only=True))
+    # نقبل "اسم العميل" أو "العميل" كـ header للعمود الأول (في APP.xlsx الاسم
+    # بقى "العميل" بس بعد تعديل الماكرو، فما نجيبش -1).
     header_i, cols = find_header_row(rows, ['اسم العميل'])
+    if header_i == -1:
+        header_i, cols = find_header_row(rows, ['العميل'])
     if header_i == -1:
         return []
 
-    def col(*names, default=None):
-        for n in names:
-            if n in cols:
-                return cols[n]
-        return default
-
-    c_client = col('اسم العميل', default=0)
-    c_buy = col('سعر شراء', 'اخر سعر شراء', default=1)
-    c_sell = col('سعر بيع', 'اخر سعر بيع', default=2)
-    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=3)
-    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=4)
-    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
-    c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء', default=6)
-    c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع', default=7)
-    # الوزن الفعلي: عمود I في الشيت (index 8) — بنجمعه لكل أمر لأن الأمر ممكن يبقى له صف لكل صنف
-    c_weight = col('الوزن الفعلي', 'الوزن الفعلى', default=8)
+    # هيدرز الأعمدة في الشيت ممكن تبقى غلط (مش مطابقة لمواضع الداتا)،
+    # فبنعتمد على المواضع الثابتة اللي بيكتبها الماكرو مش على نصوص الهيدر:
+    # A=العميل, B=سعر الشراء, C=سعر البيع, D=رقم أمر البيع, E=طريقة السداد,
+    # F=التاريخ, G=إجمالي الشراء, H=إجمالي البيع.
+    c_client = 0
+    c_buy = 1
+    c_sell = 2
+    c_order = 3
+    c_payment = 4
+    c_date = 5
+    c_buy_total_col = 6
+    c_sell_total_col = 7
 
     # Group by (client + orderNo) — كل مفتاح فيه: totals مُجمَّعة + أول سعر
     # شراء/بيع لقيته + مجموعة الأسعار المختلفة (لو الأمر فيه أصناف بأسعار
@@ -331,7 +334,6 @@ def convert_all_sales(ws):
                 'sell_prices': [],
                 'buyTotal': 0.0,
                 'sellTotal': 0.0,
-                'actualWeight': 0.0,
                 'paymentMethod': '',
             }
             order_list.append(key)
@@ -341,8 +343,6 @@ def convert_all_sales(ws):
         st = to_number(row[c_sell_total_col]) if c_sell_total_col < len(row) else 0
         g['buyTotal'] += bt
         g['sellTotal'] += st
-        wt = to_number(row[c_weight]) if c_weight < len(row) else 0
-        g['actualWeight'] += wt or 0
         # لو الأمر بأكتر من سعر (أصناف مختلفة)، نجمع الأسعار المتميزة
         bp = to_number(row[c_buy]) if c_buy < len(row) else 0
         sp = to_number(row[c_sell]) if c_sell < len(row) else 0
@@ -381,7 +381,6 @@ def convert_all_sales(ws):
             'sellPrice2': sell_price2,
             'buyTotal': g['buyTotal'],
             'sellTotal': g['sellTotal'],
-            'actualWeight': round(g['actualWeight'], 3),
             'paymentMethod': g['paymentMethod'],
         })
 
