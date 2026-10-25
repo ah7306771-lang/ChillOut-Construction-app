@@ -1,11 +1,10 @@
 {
   "ok": true,
-  "date": "2026-10-24",
-  "updatedAt": "2026-10-24T14:47:43.389295+00:00",
+  "date": "2026-10-25",
+  "updatedAt": "2026-10-25T09:48:28.920269+00:00",
   "absent": [
     "محمود كارم",
     "سيد كارم",
-    "محمود رجب",
     "بكر",
     "عماد",
     "محمود شعبان",
@@ -16,98 +15,72 @@
   "late": [
     {
       "name": "أحمد مفرح",
-      "time": "08:44:55",
+      "time": "09:07:14",
       "official": "08:30",
-      "minutes": 14
+      "minutes": 37
     },
     {
-      "name": "مني محمد",
-      "time": "10:12:55",
-      "official": "10:00",
-      "minutes": 12
-    },
-    {
-      "name": "شهد خالد",
-      "time": "09:31:12",
-      "official": "09:30",
-      "minutes": 1
+      "name": "محمود رجب",
+      "time": "10:19:15",
+      "official": "09:00",
+      "minutes": 79
     },
     {
       "name": "صبري يحي",
-      "time": "08:38:37",
+      "time": "08:48:37",
       "official": "08:30",
-      "minutes": 8
+      "minutes": 18
     }
   ],
   "dashboardRows": [
     {
       "name": "صبري يحي",
       "type": "حضور",
-      "date": "2026-10-24",
-      "time": "08:38:37",
-      "lat": "29.9809401",
-      "lng": "31.0650169",
-      "map": "https://maps.google.com/?q=29.9809401,31.0650169",
-      "device": ""
-    },
-    {
-      "name": "صبري يحي",
-      "type": "انصراف",
-      "date": "2026-10-24",
-      "time": "16:54:57",
-      "lat": "29.9797542",
-      "lng": "",
-      "map": "https://maps.google.com/?q=29.9797542,31.0672637",
+      "date": "2026-10-25",
+      "time": "08:48:37",
+      "lat": "29.98087",
+      "lng": "31.0727433",
+      "map": "https://maps.google.com/?q=29.98087,31.0727433",
       "device": ""
     },
     {
       "name": "أحمد مفرح",
       "type": "حضور",
-      "date": "2026-10-24",
-      "time": "08:44:55",
-      "lat": "30.0188267",
-      "lng": "31.00867",
-      "map": "https://maps.google.com/?q=30.0188267,31.00867",
-      "device": ""
-    },
-    {
-      "name": "أحمد مفرح",
-      "type": "انصراف",
-      "date": "2026-10-24",
-      "time": "16:54:01",
-      "lat": "29.9884333",
-      "lng": "",
-      "map": "https://maps.google.com/?q=29.9884333,31.0595583",
+      "date": "2026-10-25",
+      "time": "09:07:14",
+      "lat": "29.9829038",
+      "lng": "31.0412143",
+      "map": "https://maps.google.com/?q=29.9829038,31.0412143",
       "device": ""
     },
     {
       "name": "شهد خالد",
       "type": "حضور",
-      "date": "2026-10-24",
-      "time": "09:31:12",
-      "lat": "29.9849467",
-      "lng": "30.9529936",
-      "map": "https://maps.google.com/?q=29.9849467,30.9529936",
+      "date": "2026-10-25",
+      "time": "09:09:27",
+      "lat": "29.9849779",
+      "lng": "30.952875",
+      "map": "https://maps.google.com/?q=29.9849779,30.952875",
       "device": ""
     },
     {
       "name": "مني محمد",
       "type": "حضور",
-      "date": "2026-10-24",
-      "time": "10:12:55",
-      "lat": "30.0075208",
-      "lng": "30.9834906",
-      "map": "https://maps.google.com/?q=30.0075208,30.9834906",
+      "date": "2026-10-25",
+      "time": "09:59:18",
+      "lat": "30.0078492",
+      "lng": "30.9836799",
+      "map": "https://maps.google.com/?q=30.0078492,30.9836799",
       "device": ""
     },
     {
-      "name": "مني محمد",
-      "type": "انصراف",
-      "date": "2026-10-24",
-      "time": "16:56:22",
-      "lat": "30.0076374",
-      "lng": "",
-      "map": "https://maps.google.com/?q=30.0076374,30.9836337",
+      "name": "محمود رجب",
+      "type": "حضور",
+      "date": "2026-10-25",
+      "time": "10:19:15",
+      "lat": "29.9833161",
+      "lng": "31.0406398",
+      "map": "https://maps.google.com/?q=29.9833161,31.0406398",
       "device": ""
     }
   ],
@@ -124,19 +97,6 @@
       "submittedAt": "2026-10-24T12:33:52.000Z",
       "leaveFrom": "2026-10-24",
       "leaveTo": "2026-10-26"
-    },
-    {
-      "id": "mvm42fcr-oaasbs",
-      "name": "محمود رجب",
-      "type": "إجازة",
-      "date": "2026-10-24",
-      "from": "",
-      "to": "",
-      "reason": "[اعتيادي] ظروف العمل وعدم وجود مقاولين بالموقع اليوم، وبموافقة المدير. م/محمد طلبة",
-      "status": "موافق",
-      "submittedAt": "2026-10-24T08:02:30.000Z",
-      "leaveFrom": "2026-10-24",
-      "leaveTo": "2026-10-24"
     }
   ],
   "dashboardOfficialOut": {
@@ -220,7 +180,7 @@
     {
       "name": "محمد عويس",
       "pass": "22",
-      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginChecksAgainstUsBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openAdvanceBtn,openEmployeeManageTileBtn,openIconManageTileBtn,allow_notifApprovals,allow_notifVault,allow_custodyReport,allow_sarraki,allow_sarrakiSettings",
+      "hiddenIcons": "",
       "birthday": ""
     },
     {

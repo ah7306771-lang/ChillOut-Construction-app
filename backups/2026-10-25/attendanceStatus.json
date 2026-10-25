@@ -1,0 +1,128 @@
+{
+  "ok": true,
+  "date": "2026-10-25",
+  "updatedAt": "2026-10-25T00:23:27.314770+00:00",
+  "absent": [
+    "أحمد مفرح",
+    "محمود كارم",
+    "مني محمد",
+    "شهد خالد",
+    "سيد كارم",
+    "محمود رجب",
+    "صبري يحي",
+    "بكر",
+    "عماد",
+    "محمود شعبان",
+    "25",
+    "محمد عويس",
+    "YOSRY"
+  ],
+  "late": [],
+  "dashboardRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mvmdrelq-s12mhk",
+      "name": "محمود كارم",
+      "type": "إجازة",
+      "date": "2026-10-24",
+      "from": "",
+      "to": "",
+      "reason": "[بدون مرتب]",
+      "status": "موافق",
+      "submittedAt": "2026-10-24T12:33:52.000Z",
+      "leaveFrom": "2026-10-24",
+      "leaveTo": "2026-10-26"
+    }
+  ],
+  "dashboardOfficialOut": {
+    "أحمد مفرح": "16:00",
+    "بكر": "16:00",
+    "سيد كارم": "17:00",
+    "شهد خالد": "17:00",
+    "صبري يحي": "16:00",
+    "محمود رجب": "17:00",
+    "محمود كارم": "17:00",
+    "مني محمد": "17:00"
+  },
+  "pendingRequestsCount": 0,
+  "employees": [
+    {
+      "name": "أحمد مفرح",
+      "pass": "11",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "محمود كارم",
+      "pass": "12",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "مني محمد",
+      "pass": "13",
+      "hiddenIcons": "loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "شهد خالد",
+      "pass": "14",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "سيد كارم",
+      "pass": "15",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "محمود رجب",
+      "pass": "16",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "صبري يحي",
+      "pass": "17",
+      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "بكر",
+      "pass": "18",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "عماد",
+      "pass": "19",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "محمود شعبان",
+      "pass": "20",
+      "hiddenIcons": "",
+      "birthday": "1999-06-24"
+    },
+    {
+      "name": "25",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "محمد عويس",
+      "pass": "22",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "YOSRY",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    }
+  ]
+}
