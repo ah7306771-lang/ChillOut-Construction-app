@@ -1,23 +1,5 @@
 [
   {
-    "client": "فالتور",
-    "number": 307384,
-    "value": 13300000,
-    "dueDate": "26/10/2026",
-    "bank": "NBE",
-    "notes": "متبقي 12,071,894",
-    "type": "أ.ق"
-  },
-  {
-    "client": "سامكريت مصر",
-    "number": 13249953,
-    "value": 7167694.63,
-    "dueDate": "26/10/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
     "client": "ويكادي",
     "number": 551298792,
     "value": 3433000,
@@ -45,12 +27,66 @@
     "type": "أ.ق"
   },
   {
+    "client": "فالتور",
+    "number": 307384,
+    "value": 13300000,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
+    "notes": "متبقي 12,071,894",
+    "type": "أ.ق"
+  },
+  {
+    "client": "سامكريت مصر",
+    "number": 13249953,
+    "value": 7167694.63,
+    "dueDate": "26/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
     "client": "ويكادي",
     "number": 532070,
     "value": 1500000,
     "dueDate": "28/10/2026",
     "bank": "WAFA",
     "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "الامين",
+    "number": 74668,
+    "value": 1400000,
+    "dueDate": "30/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "الامين",
+    "number": 74669,
+    "value": 1200000,
+    "dueDate": "30/10/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "الامين",
+    "number": 74675,
+    "value": 2395732.5,
+    "dueDate": "06/11/2026",
+    "bank": "NBE",
+    "notes": "",
+    "type": "أ.ق"
+  },
+  {
+    "client": "بينتاكون",
+    "number": null,
+    "value": 1923110,
+    "dueDate": "22/11/2026",
+    "bank": "",
+    "notes": "في ترانس",
     "type": "أ.ق"
   },
   {
@@ -77,42 +113,6 @@
     "value": 855540,
     "dueDate": "28/11/2026",
     "bank": "CIB",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
-    "client": "الامين",
-    "number": 74668,
-    "value": 1400000,
-    "dueDate": "30/10/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
-    "client": "الامين",
-    "number": 74669,
-    "value": 1200000,
-    "dueDate": "30/10/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
-    "client": "بينتاكون",
-    "number": null,
-    "value": 1923110,
-    "dueDate": "22/11/2026",
-    "bank": "",
-    "notes": "في ترانس",
-    "type": "أ.ق"
-  },
-  {
-    "client": "الامين",
-    "number": 74675,
-    "value": 2395732.5,
-    "dueDate": "06/11/2026",
-    "bank": "NBE",
     "notes": "",
     "type": "أ.ق"
   }
