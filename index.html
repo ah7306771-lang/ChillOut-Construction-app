@@ -2074,6 +2074,11 @@ select.sk-in{padding:0 4px;min-width:130px}
 .cg-modal-card{width:100%;max-width:480px;background:#fff;border-radius:16px 16px 0 0;padding:14px 14px 18px}
 .cg-modal-card h3{margin:0 0 10px;font-size:16px;display:flex;justify-content:space-between;align-items:center}
 .cg-mbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+/* محدد نوع تقرير الحضور: تفصيلي / ملخص */
+.att-kind{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#f3ece4;border-radius:11px;padding:3px}
+.att-kind-btn{border:0;background:transparent;border-radius:9px;padding:8px 6px;font-family:inherit;font-weight:800;font-size:13.5px;color:var(--ink-soft);cursor:pointer;transition:background .15s,color .15s}
+.att-kind-btn.on{background:var(--steel);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.att-kind-hint{margin-top:5px;font-size:11.5px;color:var(--ink-soft);line-height:1.55}
 </style>
 <style>
 #custodyLedgerScreen,#custodyReportScreen,#custodyProjectsScreen{align-items:flex-start;padding:76px 10px 20px}
@@ -2668,6 +2673,13 @@ body.cg-compact .wa-float-btn{display:none !important}
 <div id="attRepModal" class="cg-modal"><div class="cg-modal-card">
   <h3><span>📊 تقرير الحضور والانصراف</span><button type="button" id="attRepClose" class="cg-del" style="font-size:18px">✕</button></h3>
   <div class="cg-filters">
+    <div class="full"><label>نوع التقرير</label>
+      <div class="att-kind" id="attRepKind" role="radiogroup" aria-label="نوع التقرير">
+        <button type="button" class="att-kind-btn on" data-kind="detail" role="radio" aria-checked="true">📋 تفصيلي</button>
+        <button type="button" class="att-kind-btn" data-kind="summary" role="radio" aria-checked="false">🧾 ملخص</button>
+      </div>
+      <div class="att-kind-hint" id="attRepKindHint"></div>
+    </div>
     <div class="full"><label>الشهر</label><input type="month" id="attRepMonth"></div>
     <div class="full" id="attRepEmpWrap"><label>الموظف</label><select id="attRepEmp"></select></div>
   </div>
@@ -6657,7 +6669,7 @@ window.safeFileName = function(str){
   }
   var ATT_KNOWN_ = { name: 1, date: 1, in_time: 1, out_time: 1 };
 
-  function attBuildReport_(month, empFilter){
+  function attBuildReport_(month, empFilter, includeEmpty){
     var pr = month.split('-'), last = new Date(+pr[0], +pr[1], 0).getDate();
     var S = month + '-01', E = month + '-' + attendancePad(last), todayK = attendanceTodayKey();
     var names = empFilter ? [empFilter] : ATTENDANCE_EMPLOYEES.filter(function(n){ return !attIsExempt_(n); });
@@ -6737,7 +6749,7 @@ window.safeFileName = function(str){
             for (var d = 1; d <= last; d++) { var kk = month + '-' + attendancePad(d); if (kk >= r.leave_from && kk <= r.leave_to && !isOfficialHoliday_(kk)) { rs.leaveDays++; rs.kd[kk_kind]++; } }
           }
         });
-        if (days.length || empFilter) emps.push({ name: n, off: off, days: days, present: present, lateDays: lateDays, tLate: tLate, earlyDays: earlyDays, tEarly: tEarly, tExtra: tExtra, net: tLate + tEarly - tExtra, rs: rs });
+        if (days.length || empFilter || includeEmpty) emps.push({ name: n, off: off, days: days, present: present, lateDays: lateDays, tLate: tLate, earlyDays: earlyDays, tEarly: tEarly, tExtra: tExtra, net: tLate + tEarly - tExtra, rs: rs });
       });
       return { month: month, emps: emps, reqFail: reqFail, extraCols: extraCols, reqs: reqs };
     });
@@ -6783,6 +6795,99 @@ window.safeFileName = function(str){
       });
     });
     return pages;
+  }
+
+  // ---- تقرير الملخص: سطر واحد لكل موظف (ميعاد الحضور/الانصراف حسب اللائحة + ملخص الشهر) — A4 أفقي ----
+  var attRepKind_ = 'detail';   // detail (الافتراضي) | summary
+  var ATT_KIND_HINT_ = {
+    detail: 'كل يوم في سطر: الحضور والانصراف والتأخير والملاحظات لكل موظف.',
+    summary: 'سطر واحد لكل موظف: ميعاد حضوره وانصرافه حسب اللائحة + ملخص الشهر (الحضور والتأخير والانصراف المبكر والإجازات).'
+  };
+  function attRepSetKind_(k){
+    attRepKind_ = (k === 'summary') ? 'summary' : 'detail';
+    var btns = document.querySelectorAll('#attRepKind .att-kind-btn');
+    for (var i = 0; i < btns.length; i++) {
+      var on = btns[i].getAttribute('data-kind') === attRepKind_;
+      btns[i].classList.toggle('on', on); btns[i].setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    document.getElementById('attRepKindHint').textContent = ATT_KIND_HINT_[attRepKind_];
+  }
+  // إجماليات كل الموظفين بنفس شكل بيانات الموظف الواحد (علشان نفس دالة رسم الصف تشتغل للاتنين)
+  function attSumAgg_(emps){
+    var t = { off: { i: '', o: '' }, present: 0, lateDays: 0, tLate: 0, earlyDays: 0, tEarly: 0, tExtra: 0, net: 0,
+      rs: { perm: 0, miss: 0, leaveDays: 0, kd: { 'اعتيادي': 0, 'عارضة': 0, 'مرضي': 0, 'بدون مرتب': 0 } } };
+    emps.forEach(function(e){
+      ['present', 'lateDays', 'tLate', 'earlyDays', 'tEarly', 'tExtra', 'net'].forEach(function(k){ t[k] += e[k] || 0; });
+      ['perm', 'miss', 'leaveDays'].forEach(function(k){ t.rs[k] += e.rs[k] || 0; });
+      ['اعتيادي', 'عارضة', 'مرضي', 'بدون مرتب'].forEach(function(k){ t.rs.kd[k] += e.rs.kd[k] || 0; });
+    });
+    return t;
+  }
+  function attSummaryPages_(rep){
+    var W = 1123, H = 794, NAVY = '#0b2a5b', BLUE = '#163a7a';
+    var TD = 'border:1px solid #cfd6e2;padding:0 3px;text-align:center;height:30px;line-height:1.2;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    var TH = 'border:1px solid ' + NAVY + ';color:#fff;padding:3px 3px;text-align:center;font-size:12px;line-height:1.3;font-weight:800;';
+    var dash = '<span style="color:#aab2bf;font-weight:400">—</span>';
+    function cnt(n, color){ return n ? '<b' + (color ? ' style="color:' + color + '"' : '') + '>' + n + '</b>' : dash; }
+    function mins(m, color){ return m ? '<b style="color:' + color + '"><span dir="ltr">' + attSigned_(m) + '</span></b>' : dash; }
+    function td(inner, extra){ return '<td style="' + TD + (extra || '') + '">' + inner + '</td>'; }
+    function th(txt, bg, attrs){ return '<th ' + (attrs || '') + ' style="' + TH + 'background:' + bg + '">' + txt + '</th>'; }
+    function rowHtml(e, idx, isTot){
+      var bg = isTot ? 'background:#e3eaf6;' : (idx % 2 ? 'background:#f6f8fc;' : '');
+      var tot = isTot ? 'font-weight:800;border-top:2px solid ' + NAVY + ';' : '';
+      var netCell = e.net > 0 ? td(mins(e.net, ATT_RED), 'background:#fdecea;') : (e.net < 0 ? td(mins(e.net, ATT_GREEN), 'background:#e6f5ec;') : td(dash));
+      var cells = isTot
+        ? '<td colspan="2" style="' + TD + ';background:#e3eaf6;font-weight:800;color:' + NAVY + ';border-top:2px solid ' + NAVY + '">الإجمالي (' + (idx) + ' موظف)</td>' + td('') + td('')
+        : td('<span style="color:#6b7488">' + (idx + 1) + '</span>') + td(attEsc_(e.name), 'text-align:right;padding:0 8px;font-weight:800;color:#111') +
+          td(e.off.i ? '<b style="color:' + NAVY + '"><span dir="ltr">' + e.off.i + '</span></b>' : dash) + td(e.off.o ? '<b style="color:' + NAVY + '"><span dir="ltr">' + e.off.o + '</span></b>' : dash);
+      cells += td(cnt(e.present)) +
+        td(cnt(e.lateDays, ATT_RED)) + td(mins(e.tLate, ATT_RED)) +
+        td(cnt(e.earlyDays, ATT_RED)) + td(mins(e.tEarly, ATT_RED)) +
+        td(mins(e.tExtra, ATT_GREEN)) + netCell +
+        td(cnt(e.rs.perm)) + td(cnt(e.rs.miss)) +
+        td(cnt(e.rs.leaveDays)) + td(cnt(e.rs.kd['اعتيادي'])) + td(cnt(e.rs.kd['عارضة'])) + td(cnt(e.rs.kd['مرضي'])) + td(cnt(e.rs.kd['بدون مرتب'], ATT_RED));
+      return '<tr style="' + bg + tot + '">' + cells + '</tr>';
+    }
+    var colw = [30, 200].concat([51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51]);
+    var colgroup = '<colgroup>' + colw.map(function(w){ return '<col style="width:' + w + 'px">'; }).join('') + '</colgroup>';
+    var thead = '<thead>' +
+      '<tr>' + th('م', BLUE, 'rowspan="2"') + th('الموظف', BLUE, 'rowspan="2"') + th('اللائحة', NAVY, 'colspan="2"') + th('أيام<br>الحضور', BLUE, 'rowspan="2"') +
+        th('التأخير', NAVY, 'colspan="2"') + th('الانصراف المبكر', NAVY, 'colspan="2"') + th('زيادة', BLUE, 'rowspan="2"') + th('الصافي', BLUE, 'rowspan="2"') +
+        th('طلبات معتمدة', NAVY, 'colspan="2"') + th('الإجازات المعتمدة', NAVY, 'colspan="5"') + '</tr>' +
+      '<tr>' + th('حضور', BLUE) + th('انصراف', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) +
+        th('أذونات', BLUE) + th('مأموريات', BLUE) + th('الأيام', BLUE) + th('اعتيادي', BLUE) + th('عارضة', BLUE) + th('مرضي', BLUE) + th('بدون مرتب', BLUE) + '</tr></thead>';
+    var rows = rep.emps.map(function(e, i){ return rowHtml(e, i, false); });
+    if (rep.emps.length > 1) rows.push(rowHtml(attSumAgg_(rep.emps), rep.emps.length, true));
+    if (!rows.length) rows.push('<tr><td style="' + TD + '" colspan="18">لا توجد بيانات في هذا الشهر</td></tr>');
+    var capFirst = 19, capNext = 20, chunks = [], i = 0;
+    chunks.push(rows.slice(0, capFirst)); i = capFirst;
+    while (i < rows.length) { chunks.push(rows.slice(i, i + capNext)); i += capNext; }
+    var who = rep.emps.length === 1 ? attEsc_(rep.emps[0].name) : 'كل الموظفين (' + rep.emps.length + ')';
+    var sq = function(c){ return '<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + c + ';vertical-align:middle;margin-left:4px"></span>'; };
+    var head = '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid ' + NAVY + ';padding-bottom:5px;margin-bottom:7px">' +
+        '<div><div style="font-size:26px;font-weight:800;color:' + NAVY + ';line-height:1.2">ملخص الحضور والانصراف</div>' +
+        '<div style="font-size:14px;color:#333;margin-top:2px">الشهر: <b><span dir="ltr">' + rep.month + '</span></b> &nbsp;|&nbsp; الموظفون: <b>' + who + '</b></div></div>' +
+        '<div style="font-size:11.5px;color:#444;line-height:1.7;text-align:right;font-weight:600">' +
+          sq(ATT_RED) + 'أحمر = عليه (تأخير / انصراف مبكر) &nbsp; ' + sq(ATT_GREEN) + 'أخضر = له (حضر بدري / مشي متأخر)<br>' +
+          'الصافي = التأخير + الانصراف المبكر − الزيادة (بعد خصم الأذونات والمأموريات المعتمدة) &nbsp;|&nbsp; الأوقات بالساعة:الدقيقة</div></div>';
+    var issued = attendanceTodayKey();
+    return chunks.map(function(c, idx){
+      return '<div style="position:relative;width:' + W + 'px;height:' + H + 'px;box-sizing:border-box;padding:18px 28px 38px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;font-weight:700;overflow:hidden">' +
+        (idx === 0 ? head : '<div style="font-size:13px;color:' + NAVY + ';font-weight:800;border-bottom:2px solid ' + NAVY + ';padding-bottom:3px;margin-bottom:6px">ملخص الحضور والانصراف — <span dir="ltr">' + rep.month + '</span> — تابع</div>') +
+        '<table style="width:100%;border-collapse:collapse;table-layout:fixed">' + colgroup + thead + '<tbody>' + c.join('') + '</tbody></table>' +
+        '<div style="position:absolute;bottom:12px;left:28px;right:28px;display:flex;justify-content:space-between;color:#888;font-size:11px;font-weight:600"><span>ملخص الحضور والانصراف — <span dir="ltr">' + rep.month + '</span></span><span>تاريخ الإصدار: <span dir="ltr">' + issued + '</span></span><span>صفحة ' + (idx + 1) + ' من ' + chunks.length + '</span></div></div>';
+    });
+  }
+  // صف إجمالي في آخر شيت الملخص (لو أكتر من موظف) — بنفس ترتيب أعمدة attXlsData_().sum
+  function attSumTotalRow_(aoa){
+    if (!aoa || aoa.length < 3) return aoa;
+    var tot = []; for (var c = 0; c < aoa[0].length; c++) tot.push('');
+    tot[0] = 'الإجمالي';
+    [3, 4, 5, 7, 8, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22].forEach(function(c){
+      var s = 0; for (var r = 1; r < aoa.length; r++) s += (+aoa[r][c]) || 0; tot[c] = s;
+    });
+    tot[6] = attSigned_(tot[5]); tot[9] = attSigned_(tot[8]); tot[11] = attSigned_(tot[10]); tot[13] = attSigned_(tot[12]);
+    return aoa.concat([tot]);
   }
 
   // ---- Excel: ملخص الشهر + التفاصيل (كل يوم) + الطلبات (كل أعمدة الداتا بيز) ----
@@ -6839,9 +6944,9 @@ window.safeFileName = function(str){
     var c = { style:'thin', color:{argb: color || 'FFD5DBE5'} };
     return { top:c, bottom:c, left:c, right:c };
   }
-  async function attXlsDownloadStyled_(rep, fileName){
+  async function attXlsDownloadStyled_(rep, fileName, kind){
     var thinBorder_ = _attThinBorder_;
-    var d = attXlsData_(rep);
+    var d = attXlsData_(rep), summary = kind === 'summary';
     var wb = new ExcelJS.Workbook();
     wb.views = [{ x:0, y:0, width:10000, height:20000, firstSheet:0, activeTab:0, visibility:'visible', rightToLeft:true }];
     var sheets = [
@@ -6849,12 +6954,17 @@ window.safeFileName = function(str){
       { name:'التفاصيل',   aoa:d.det, totalLastRow:false },
       { name:'الطلبات',    aoa:d.rq,  totalLastRow:false }
     ];
-    var title = 'ChillOut Construction — تقرير الحضور والانصراف';
+    if (summary) {   // الملخص: شيت واحد (سطر لكل موظف) + صف إجمالي لو أكتر من موظف
+      var sumAoa = attSumTotalRow_(d.sum);
+      sheets = [{ name:'ملخص الشهر', aoa:sumAoa, totalLastRow: sumAoa.length !== d.sum.length }];
+    }
+    var title = 'ChillOut Construction — ' + (summary ? 'ملخص الحضور والانصراف' : 'تقرير الحضور والانصراف');
     var period = rep && rep.month ? ('شهر: ' + rep.month) : '';
     var empLabel = (rep && rep.emps && rep.emps.length === 1) ? rep.emps[0].name : 'كل الموظفين';
     sheets.forEach(function(s){
       if (!s.aoa || !s.aoa.length) return;
       var ws = wb.addWorksheet(s.name, { views: [{ rightToLeft: true, state: 'frozen', ySplit: 3 }] });
+      if (summary) ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
       var headers = s.aoa[0];
       ws.columns = headers.map(function(h){
         var w = Math.min(34, Math.max(11, String(h || '').length + 2));
@@ -6863,7 +6973,7 @@ window.safeFileName = function(str){
       // صف 1: عنوان الشركة
       var lastCol = String.fromCharCode(64 + Math.min(26, headers.length));
       ws.mergeCells('A1:' + lastCol + '1');
-      var r1 = ws.getCell('A1'); r1.value = title + ' — ' + s.name;
+      var r1 = ws.getCell('A1'); r1.value = summary ? title : title + ' — ' + s.name;
       r1.font = { name:'Calibri', size:15, bold:true, color:{argb:'FFFFFFFF'} };
       r1.alignment = { vertical:'middle', horizontal:'center' };
       r1.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF0B2A5B'} };
@@ -6901,6 +7011,11 @@ window.safeFileName = function(str){
           c.alignment = { vertical:'middle', horizontal: (typeof val === 'number' ? 'center' : 'right'), wrapText: true };
           if (alt) c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFF7F9FC'} };
           if (typeof val === 'number') c.numFmt = Number.isInteger(val) ? '#,##0' : '#,##0.00';
+          if (s.totalLastRow && ri === s.aoa.length - 1) {   // صف الإجمالي
+            c.font = { name:'Calibri', size:11, bold:true, color:{argb:'FF0B2A5B'} };
+            c.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFE3EAF6'} };
+            c.border = { top:{style:'medium',color:{argb:'FF0B2A5B'}}, bottom:{style:'thin',color:{argb:'FFD5DBE5'}}, left:{style:'thin',color:{argb:'FFD5DBE5'}}, right:{style:'thin',color:{argb:'FFD5DBE5'}} };
+          }
         });
       }
     });
@@ -6923,21 +7038,22 @@ window.safeFileName = function(str){
       return imgs;
     } finally { host.remove(); }
   }
-  function attPdfBlob_(imgs){
-    var doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
-    imgs.forEach(function(u, i){ if (i) doc.addPage(); doc.addImage(u, 'JPEG', 0, 0, 210, 297); });
+  function attPdfBlob_(imgs, land){
+    var doc = new window.jspdf.jsPDF(land ? 'l' : 'p', 'mm', 'a4'), w = land ? 297 : 210, h = land ? 210 : 297;
+    imgs.forEach(function(u, i){ if (i) doc.addPage(); doc.addImage(u, 'JPEG', 0, 0, w, h); });
     return doc.output('blob');
   }
   function attDownload_(blob, name){
     var u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   }
-  function attRepFile_(ext){ return 'Attendance-' + (window.safeFileName ? window.safeFileName(attRepData_.label) : 'Report') + '-' + attRepData_.month + '.' + ext; }
+  function attRepFile_(ext){ return 'Attendance' + (attRepData_ && attRepData_.kind === 'summary' ? '-Summary' : '') + '-' + (window.safeFileName ? window.safeFileName(attRepData_.label) : 'Report') + '-' + attRepData_.month + '.' + ext; }
   function attRepOpen_(){
     var fixed = attRepEmployee_(), sel = document.getElementById('attRepEmp');
     document.getElementById('attRepEmpWrap').style.display = fixed ? 'none' : '';
     sel.innerHTML = '<option value="">كل الموظفين</option>' + ATTENDANCE_EMPLOYEES.map(function(n){ return '<option>' + attEsc_(n) + '</option>'; }).join('');
     document.getElementById('attRepMonth').value = attendanceTodayKey().slice(0, 7);
     attRepStatus_('');
+    attRepSetKind_('detail');   // الافتراضي: تفصيلي
     document.getElementById('attRepModal').style.display = 'flex';
   }
   function attRepClose_(){ document.getElementById('attRepModal').style.display = 'none'; }
@@ -6948,21 +7064,22 @@ window.safeFileName = function(str){
     var bs = document.getElementById('attRepModal').querySelectorAll('button'); bs.forEach(function(b){ b.disabled = true; });
     attRepStatus_('جارٍ إعداد التقرير…');
     try {
-      var rep = await attBuildReport_(month, emp);
+      var summary = attRepKind_ === 'summary';
+      var rep = await attBuildReport_(month, emp, summary);
       if (!rep.emps.length || !rep.emps.some(function(e){ return e.days.length; })) { attRepStatus_('مفيش حضور أو انصراف مسجل في الشهر ده', true); }
       else {
-        attRepData_ = { month: month, label: emp || 'All' };
+        attRepData_ = { month: month, label: emp || 'All', kind: summary ? 'summary' : 'detail', land: summary };
         if (mode === 'xls') {
-          await attXlsDownloadStyled_(rep, attRepFile_('xlsx'));
+          await attXlsDownloadStyled_(rep, attRepFile_('xlsx'), attRepData_.kind);
           attRepStatus_(rep.reqFail ? 'تم ✓ — تعذّر تحميل الأذونات، التأخير بدون خصم إذن' : 'تم ✓');
         } else {
-          var imgs = await attRenderImgs_(attPages_(rep));
+          var imgs = await attRenderImgs_(summary ? attSummaryPages_(rep) : attPages_(rep));
           if (mode === 'view') {
             attRepData_.imgs = imgs;
             document.getElementById('attVwTitle').textContent = attRepFile_('pdf');
-            document.getElementById('attVwBody').innerHTML = imgs.map(function(u){ return '<img src="' + u + '" style="display:block;width:100%;max-width:760px;margin:0 auto 8px;background:#fff">'; }).join('');
+            document.getElementById('attVwBody').innerHTML = imgs.map(function(u){ return '<img src="' + u + '" style="display:block;' + (summary ? 'width:100%;min-width:900px;max-width:1120px;' : 'width:100%;max-width:760px;') + 'margin:0 auto 8px;background:#fff">'; }).join('');
             attRepClose_(); document.getElementById('attViewer').style.display = 'flex';
-          } else { attDownload_(attPdfBlob_(imgs), attRepFile_('pdf')); }
+          } else { attDownload_(attPdfBlob_(imgs, summary), attRepFile_('pdf')); }
           attRepStatus_(rep.reqFail ? 'تم ✓ — تعذّر تحميل الأذونات، التأخير بدون خصم إذن' : 'تم ✓');
         }
       }
@@ -6975,13 +7092,18 @@ window.safeFileName = function(str){
   document.getElementById('attRepView').addEventListener('click', function(){ attRepRun_('view'); });
   document.getElementById('attRepPdf').addEventListener('click', function(){ attRepRun_('pdf'); });
   document.getElementById('attRepXls').addEventListener('click', function(){ attRepRun_('xls'); });
+  Array.prototype.forEach.call(document.querySelectorAll('#attRepKind .att-kind-btn'), function(b){
+    b.addEventListener('click', function(){ attRepSetKind_(b.getAttribute('data-kind')); attRepStatus_(''); });
+  });
+  attRepSetKind_('detail');
   document.getElementById('attVwClose').addEventListener('click', function(){ document.getElementById('attViewer').style.display = 'none'; document.getElementById('attVwBody').innerHTML = ''; });
-  document.getElementById('attVwDown').addEventListener('click', function(){ if (attRepData_ && attRepData_.imgs) attDownload_(attPdfBlob_(attRepData_.imgs), attRepFile_('pdf')); });
+  document.getElementById('attVwDown').addEventListener('click', function(){ if (attRepData_ && attRepData_.imgs) attDownload_(attPdfBlob_(attRepData_.imgs, attRepData_.land), attRepFile_('pdf')); });
   document.getElementById('attVwPrint').addEventListener('click', function(){
     if (!attRepData_ || !attRepData_.imgs) return;
     var f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0'; document.body.appendChild(f);
     var d = f.contentWindow.document; d.open();
-    d.write('<html><head><style>@page{size:A4;margin:0}body{margin:0}img{display:block;width:210mm;height:297mm;page-break-after:always}</style></head><body>' + attRepData_.imgs.map(function(u){ return '<img src="' + u + '">'; }).join('') + '</body></html>'); d.close();
+    var ld = !!attRepData_.land;
+    d.write('<html><head><style>@page{size:A4' + (ld ? ' landscape' : '') + ';margin:0}body{margin:0}img{display:block;width:' + (ld ? '297mm;height:210mm' : '210mm;height:297mm') + ';page-break-after:always}</style></head><body>' + attRepData_.imgs.map(function(u){ return '<img src="' + u + '">'; }).join('') + '</body></html>'); d.close();
     setTimeout(function(){ f.contentWindow.focus(); f.contentWindow.print(); setTimeout(function(){ f.remove(); }, 60000); }, 400);
   });
 
