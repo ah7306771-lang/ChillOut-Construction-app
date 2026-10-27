@@ -1,0 +1,39 @@
+{
+  "rows": [
+    {
+      "client": "الامين",
+      "count": 2,
+      "amount": 27715.5,
+      "avgDelay": 15
+    },
+    {
+      "client": "بينتاكون",
+      "count": 1,
+      "amount": 17305,
+      "avgDelay": 12
+    },
+    {
+      "client": "سامكريت مصر",
+      "count": 1,
+      "amount": 7031956.405964913,
+      "avgDelay": 1
+    },
+    {
+      "client": "فالتور",
+      "count": 8,
+      "amount": 32466515.935818713,
+      "avgDelay": 7.5
+    },
+    {
+      "client": "ويكادي",
+      "count": 5,
+      "amount": 8476495,
+      "avgDelay": 10.599999999998545
+    }
+  ],
+  "grandTotal": {
+    "count": 17,
+    "amount": 48019987.84178363,
+    "avgDelay": 9.176470588237862
+  }
+}

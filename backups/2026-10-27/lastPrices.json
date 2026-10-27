@@ -1,0 +1,2585 @@
+[
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40300,
+    "saleOrderNo": 1,
+    "paymentMethod": "شيك 60يوم",
+    "lastInvoiceDate": "27/06/2026",
+    "actualWeight": 13.63
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40300,
+    "saleOrderNo": 1,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/06/2026",
+    "actualWeight": 35.09
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 41000,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 19,
+    "paymentMethod": "شيك 60يوم",
+    "lastInvoiceDate": "06/07/2026",
+    "actualWeight": 13.64
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 41000,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 19,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/07/2026",
+    "actualWeight": 13.62
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 41000,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 19,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/07/2026",
+    "actualWeight": 29.4
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 41000,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 19,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/07/2026",
+    "actualWeight": 15.58
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "شيك 90 يوم",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 7.92
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 25.76
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 9.74
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 6.425
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 19.79
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 19.77
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 1.94
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 4.8
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 5.91
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 21.8
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 15.63
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 6.37
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 7.86
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 25.74
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 9.62
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 40200,
+    "saleOrderNo": 3,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/07/2026",
+    "actualWeight": 6.395
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38100,
+    "saleOrderNo": 18,
+    "paymentMethod": "كاش 25% - شيك شهر",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 1.95
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38100,
+    "saleOrderNo": 18,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 39.28
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38100,
+    "saleOrderNo": 18,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 9.83
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38100,
+    "saleOrderNo": 18,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 69.54
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "18/07/2026",
+    "actualWeight": 23.89
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/07/2026",
+    "actualWeight": 11.82
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/07/2026",
+    "actualWeight": 21.47
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 29.79
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 33.29
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 51.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 11.68
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 7.8
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 21.54
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 7.88
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 49.5
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 49.44
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 38.99
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 15.69
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 52.7
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 27.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 9.83
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 25.53
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 19.56
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 58.6
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 28.1
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 55.72
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 15.28
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 36.08
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 6.38
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 3.18
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 48.86
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 39.81
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 3.96
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 12.12
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 5.75
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 23.34
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 19.35
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--4",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 10.13
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 3.18
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 19.83
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 17.71
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 9.74
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 20.24
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 13.83
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 5.92
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 31.45
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 14.2
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.155
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 9.89
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 7.895
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 9.855
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 9.84
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 1.935
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 3.18
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 15.9
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 19.55
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--2",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 14.09
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 1.59
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 29.23
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.9
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 21.56
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 3.19
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 29.35
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 21.5
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 3.19
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 27.34
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/07/2026",
+    "actualWeight": 54.71
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 1.66
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 12.23
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 11.65
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 42.75
+  },
+  {
+    "client": "بيراميدز",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37600,
+    "saleOrderNo": "9--3",
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/07/2026",
+    "actualWeight": 29.35
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40700,
+    "saleOrderNo": "C-102",
+    "paymentMethod": "شيك 45 يوم",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 37.34
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40700,
+    "saleOrderNo": "C-102",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 70.89
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40700,
+    "saleOrderNo": "C-102",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 20.19
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40700,
+    "saleOrderNo": "C-102",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 3.91
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40700,
+    "saleOrderNo": "C-102",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 5.85
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 19.4
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 13.75
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 37.75
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 22.605
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 27.81
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 17.65
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39400,
+    "lastSellPrice": 39950,
+    "saleOrderNo": "C-104-R/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 39.76
+  },
+  {
+    "client": "جي دبيو",
+    "lastBuyPrice": 37800,
+    "lastSellPrice": 39250,
+    "saleOrderNo": "D-105/1",
+    "paymentMethod": "شيك اجل 60  يوم",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 15.58
+  },
+  {
+    "client": "جي دبيو",
+    "lastBuyPrice": 37800,
+    "lastSellPrice": 39250,
+    "saleOrderNo": "D-105/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 3.93
+  },
+  {
+    "client": "جي دبيو",
+    "lastBuyPrice": 37800,
+    "lastSellPrice": 39250,
+    "saleOrderNo": "D-105/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 15.68
+  },
+  {
+    "client": "جي دبيو",
+    "lastBuyPrice": 37800,
+    "lastSellPrice": 39250,
+    "saleOrderNo": "D-105/1",
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/07/2026",
+    "actualWeight": 3.91
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37700,
+    "saleOrderNo": 26,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "28/07/2026",
+    "actualWeight": 79.24
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 27,
+    "paymentMethod": "شيك 60 يوم",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 29.490000000000002
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 27,
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 39.19
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 38800,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 27,
+    "paymentMethod": "",
+    "lastInvoiceDate": "29/07/2026",
+    "actualWeight": 29.38
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 38350,
+    "saleOrderNo": 28,
+    "paymentMethod": "كاش 25% - شيك شهر",
+    "lastInvoiceDate": "31/07/2026",
+    "actualWeight": 48.7
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 38350,
+    "saleOrderNo": 28,
+    "paymentMethod": "",
+    "lastInvoiceDate": "31/07/2026",
+    "actualWeight": 49
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 49.5
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 49.38
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 49.64
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 56.31
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 207.72
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 91.89
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 31,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 21.65
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38350,
+    "saleOrderNo": 32,
+    "paymentMethod": "كاش 50% - شيك اجل شهر",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 5.85
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38350,
+    "saleOrderNo": 32,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 19.18
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38350,
+    "saleOrderNo": 32,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 30.09
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38350,
+    "saleOrderNo": 32,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/08/2026",
+    "actualWeight": 4.04
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37700,
+    "saleOrderNo": 33,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 29.22
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37700,
+    "saleOrderNo": 33,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 19.33
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37700,
+    "saleOrderNo": 33,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 19.91
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 37500,
+    "lastSellPrice": 37700,
+    "saleOrderNo": 33,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 2.1
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38250,
+    "lastSellPrice": 38650,
+    "saleOrderNo": 34,
+    "paymentMethod": "كاش 50% - شيك اجل شهر",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 3.86
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38250,
+    "lastSellPrice": 38650,
+    "saleOrderNo": 34,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 3.88
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38250,
+    "lastSellPrice": 38650,
+    "saleOrderNo": 34,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/08/2026",
+    "actualWeight": 56.86
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 36,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "11/08/2026",
+    "actualWeight": 1.95
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 36,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/08/2026",
+    "actualWeight": 21.49
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 36,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/08/2026",
+    "actualWeight": 27.45
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 36,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/08/2026",
+    "actualWeight": 54.72
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 36,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/08/2026",
+    "actualWeight": 11.77
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 36,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/08/2026",
+    "actualWeight": 11.66
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 115.61000000000001
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 11.76
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 23.48
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 3.91
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 20.72
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39950,
+    "saleOrderNo": 37,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 46.76
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 38050,
+    "saleOrderNo": 38,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 48.88
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 39,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 10.47
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 39,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 3.91
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 39,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/08/2026",
+    "actualWeight": 35.43
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38450,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 40,
+    "paymentMethod": "كاش 25% - شيك اجل شهر",
+    "lastInvoiceDate": "17/08/2026",
+    "actualWeight": 6.38
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38450,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 40,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/08/2026",
+    "actualWeight": 31.37
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38450,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 40,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/08/2026",
+    "actualWeight": 15.75
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40600,
+    "saleOrderNo": 41,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "17/08/2026",
+    "actualWeight": 9.54
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40600,
+    "saleOrderNo": 41,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/08/2026",
+    "actualWeight": 19.65
+  },
+  {
+    "client": "خالد صبري",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 40600,
+    "saleOrderNo": 41,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/08/2026",
+    "actualWeight": 69.69
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 38050,
+    "saleOrderNo": 42,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "18/08/2026",
+    "actualWeight": 72.86
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "22/08/2026",
+    "actualWeight": 11.8
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "",
+    "lastInvoiceDate": "22/08/2026",
+    "actualWeight": 67.24
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "",
+    "lastInvoiceDate": "22/08/2026",
+    "actualWeight": 53.317
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "",
+    "lastInvoiceDate": "22/08/2026",
+    "actualWeight": 49.94
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "",
+    "lastInvoiceDate": "22/08/2026",
+    "actualWeight": 104.18299999999999
+  },
+  {
+    "client": "الشركة المتحده",
+    "lastBuyPrice": 39750,
+    "lastSellPrice": 40050,
+    "saleOrderNo": 43,
+    "paymentMethod": "",
+    "lastInvoiceDate": "22/08/2026",
+    "actualWeight": 156.6
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 44,
+    "paymentMethod": "شيك اجل 60 يوم",
+    "lastInvoiceDate": "03/09/2026",
+    "actualWeight": 11.24
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 40700,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 44,
+    "paymentMethod": "",
+    "lastInvoiceDate": "03/09/2026",
+    "actualWeight": 97.88
+  },
+  {
+    "client": "سامكريت مصر",
+    "lastBuyPrice": 40000,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 44,
+    "paymentMethod": "",
+    "lastInvoiceDate": "03/09/2026",
+    "actualWeight": 67.54
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38150,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 45,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "09/09/2026",
+    "actualWeight": 7.78
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38150,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 45,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/09/2026",
+    "actualWeight": 23.71
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38150,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 45,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/09/2026",
+    "actualWeight": 19.49
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38150,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 45,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/09/2026",
+    "actualWeight": 11.76
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39000,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 46,
+    "paymentMethod": "شيك 30 يوم - شيك 60 يوم - شيك 90 يوم",
+    "lastInvoiceDate": "16/09/2026",
+    "actualWeight": 129.17
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39000,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 46,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/09/2026",
+    "actualWeight": 7.86
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39000,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 46,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/09/2026",
+    "actualWeight": 84.33
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39000,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 46,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/09/2026",
+    "actualWeight": 5.89
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39000,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 46,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/09/2026",
+    "actualWeight": 13.83
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39000,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 46,
+    "paymentMethod": "",
+    "lastInvoiceDate": "16/09/2026",
+    "actualWeight": 9.78
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38600,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 47,
+    "paymentMethod": "كاش 25% - شيك اجل 30 يوم",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 64.35
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38600,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 47,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 12.69
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38600,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 47,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 15.57
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38600,
+    "lastSellPrice": 38800,
+    "saleOrderNo": 47,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 25.37
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 48,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 6.42
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 48,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 6.07
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 48,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 9.8
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 48,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 21.62
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 48,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/09/2026",
+    "actualWeight": 3.95
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 49,
+    "paymentMethod": "اجل 60 يوم",
+    "lastInvoiceDate": "21/09/2026",
+    "actualWeight": 3.18
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 49,
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/09/2026",
+    "actualWeight": 23.46
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 49,
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/09/2026",
+    "actualWeight": 3.91
+  },
+  {
+    "client": "بينتاكون",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 49,
+    "paymentMethod": "",
+    "lastInvoiceDate": "21/09/2026",
+    "actualWeight": 15.79
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 50,
+    "paymentMethod": "كاش 100%",
+    "lastInvoiceDate": "23/09/2026",
+    "actualWeight": 31.59
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 50,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/09/2026",
+    "actualWeight": 25.43
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 50,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/09/2026",
+    "actualWeight": 39.74
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 50,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/09/2026",
+    "actualWeight": 1.98
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 38100,
+    "lastSellPrice": 38150,
+    "saleOrderNo": 50,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/09/2026",
+    "actualWeight": 3.9
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "شيك 30 يوم 50 % - شيك 60 يوم 50%",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 14.37
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 9.79
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 25.53
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 1.74
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 5.925
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 5.885
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 21.65
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 41300,
+    "saleOrderNo": 51,
+    "paymentMethod": "",
+    "lastInvoiceDate": "27/09/2026",
+    "actualWeight": 25.91
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 52,
+    "paymentMethod": "كاش 50% - 50 % شيك اجل 30 يوم",
+    "lastInvoiceDate": "02/10/2026",
+    "actualWeight": 16.84
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 52,
+    "paymentMethod": "",
+    "lastInvoiceDate": "02/10/2026",
+    "actualWeight": 105.74000000000001
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 52,
+    "paymentMethod": "",
+    "lastInvoiceDate": "02/10/2026",
+    "actualWeight": 4.44
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 52,
+    "paymentMethod": "",
+    "lastInvoiceDate": "02/10/2026",
+    "actualWeight": 7.6
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 53,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 1.94
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 53,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 1.94
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 53,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 5.9
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 53,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 19.04
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 53,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 19.4
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 41500,
+    "saleOrderNo": 53,
+    "paymentMethod": "",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 49.660000000000004
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39500,
+    "lastSellPrice": 39650,
+    "saleOrderNo": 54,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "08/10/2026",
+    "actualWeight": 29.52
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 39900,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 55,
+    "paymentMethod": "كاش 50% - 50 % شيك اجل 30 يوم",
+    "lastInvoiceDate": "06/10/2026",
+    "actualWeight": 4.6
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 39900,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 55,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/10/2026",
+    "actualWeight": 29.54
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 39900,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 55,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/10/2026",
+    "actualWeight": 3.91
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 39900,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 55,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/10/2026",
+    "actualWeight": 19.71
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 55,
+    "paymentMethod": "",
+    "lastInvoiceDate": "06/10/2026",
+    "actualWeight": 59.105
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 38000,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 44.32
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 39.239999999999995
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 39.37
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 147.45
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 1.54
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 17.66
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 7.85
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 5.94
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 1.96
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40350,
+    "saleOrderNo": 57,
+    "paymentMethod": "",
+    "lastInvoiceDate": "09/10/2026",
+    "actualWeight": 1.95
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 9.16
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 72.48
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 20.07
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 48.85
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 92.58
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 92.25999999999999
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 22
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 24.4
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 65.05
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 22.14
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 49.2
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 52.79
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 39450,
+    "lastSellPrice": 39600,
+    "saleOrderNo": 60,
+    "paymentMethod": "",
+    "lastInvoiceDate": "11/10/2026",
+    "actualWeight": 98.32
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41600,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 61,
+    "paymentMethod": "100% كاش",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 5.74
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41600,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 61,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 7.72
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41600,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 61,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 7.74
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41600,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 61,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 3.9
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41600,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 61,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 5.82
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 41600,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 61,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 7.8
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 62,
+    "paymentMethod": "كاش 25 % - باقي اجل 30 يوم",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 4.635
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 62,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 17.885
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 62,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 23.375
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40000,
+    "saleOrderNo": 62,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/10/2026",
+    "actualWeight": 49
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 63,
+    "paymentMethod": "كاش 25 % - باقي اجل 30 يوم",
+    "lastInvoiceDate": "13/10/2026",
+    "actualWeight": 1.94
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 63,
+    "paymentMethod": "",
+    "lastInvoiceDate": "13/10/2026",
+    "actualWeight": 1.94
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 63,
+    "paymentMethod": "",
+    "lastInvoiceDate": "13/10/2026",
+    "actualWeight": 1.98
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 63,
+    "paymentMethod": "",
+    "lastInvoiceDate": "13/10/2026",
+    "actualWeight": 1.95
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 63,
+    "paymentMethod": "",
+    "lastInvoiceDate": "13/10/2026",
+    "actualWeight": 12.08
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 40100,
+    "saleOrderNo": 63,
+    "paymentMethod": "",
+    "lastInvoiceDate": "13/10/2026",
+    "actualWeight": 158.95
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 64,
+    "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 3.06
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 64,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 12.005
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 64,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 3.935
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 64,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 9.835
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 64,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 2.01
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 67,
+    "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 1.555
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 67,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 3.975
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 67,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 1.975
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40500,
+    "saleOrderNo": 67,
+    "paymentMethod": "",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 5.9
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39100,
+    "lastSellPrice": 39300,
+    "saleOrderNo": 68,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "14/10/2026",
+    "actualWeight": 29.62
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39100,
+    "lastSellPrice": 39300,
+    "saleOrderNo": 69,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "17/10/2026",
+    "actualWeight": 45.38
+  },
+  {
+    "client": "مصطفي عمر",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 70,
+    "paymentMethod": "اجل  60 يوم",
+    "lastInvoiceDate": "15/10/2026",
+    "actualWeight": 11.46
+  },
+  {
+    "client": "مصطفي عمر",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 70,
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/10/2026",
+    "actualWeight": 17.32
+  },
+  {
+    "client": "مصطفي عمر",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 70,
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/10/2026",
+    "actualWeight": 9.78
+  },
+  {
+    "client": "مصطفي عمر",
+    "lastBuyPrice": 41150,
+    "lastSellPrice": 42500,
+    "saleOrderNo": 70,
+    "paymentMethod": "",
+    "lastInvoiceDate": "15/10/2026",
+    "actualWeight": 10.46
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39200,
+    "lastSellPrice": 39300,
+    "saleOrderNo": 71,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 5.935
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39200,
+    "lastSellPrice": 39300,
+    "saleOrderNo": 71,
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 15.68
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 39200,
+    "lastSellPrice": 39300,
+    "saleOrderNo": 71,
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 7.805
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 72,
+    "paymentMethod": "كاش 50 % - اجل 50% كاش",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 49.815
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 39800,
+    "lastSellPrice": 41000,
+    "saleOrderNo": 72,
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 9.815
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 3960,
+    "lastSellPrice": 4200,
+    "saleOrderNo": 72,
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 70
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 3960,
+    "lastSellPrice": 4200,
+    "saleOrderNo": 72,
+    "paymentMethod": "",
+    "lastInvoiceDate": "18/10/2026",
+    "actualWeight": 75
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40400,
+    "saleOrderNo": 73,
+    "paymentMethod": "كاش 40% - 30% شيك اجل 45 يوم - 30% شيك اجل 75 يوم",
+    "lastInvoiceDate": "19/10/2026",
+    "actualWeight": 39.86
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40400,
+    "saleOrderNo": 73,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/10/2026",
+    "actualWeight": 39.3
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40400,
+    "saleOrderNo": 73,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/10/2026",
+    "actualWeight": 39.49
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 40100,
+    "lastSellPrice": 40400,
+    "saleOrderNo": 73,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/10/2026",
+    "actualWeight": 29.345
+  }
+]

@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-09-26",
-  "updatedAt": "2026-09-26T01:40:30.920875+00:00",
+  "date": "2026-10-27",
+  "updatedAt": "2026-10-27T00:56:24.515138+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -9,19 +9,40 @@
     "شهد خالد",
     "سيد كارم",
     "محمود رجب",
-    "صبري يحي"
+    "صبري يحي",
+    "بكر",
+    "عماد",
+    "محمود شعبان",
+    "25",
+    "محمد عويس",
+    "YOSRY"
   ],
   "late": [],
   "dashboardRows": [],
-  "dashboardRequestRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mvp8rhjt-y43eh2",
+      "name": "صبري يحي",
+      "type": "إجازة",
+      "date": "2026-10-27",
+      "from": "",
+      "to": "",
+      "reason": "[اعتيادي] ظروف شخصيه",
+      "status": "موافق",
+      "submittedAt": "2026-10-26T12:37:16.000Z",
+      "leaveFrom": "2026-10-27",
+      "leaveTo": "2026-10-28"
+    }
+  ],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
-    "محمود كارم": "17:00",
-    "مني محمد": "17:00",
-    "شهد خالد": "17:00",
+    "بكر": "16:00",
     "سيد كارم": "17:00",
-    "محمود رجب": "16:00",
-    "صبري يحي": "16:00"
+    "شهد خالد": "17:00",
+    "صبري يحي": "16:00",
+    "محمود رجب": "17:00",
+    "محمود كارم": "17:00",
+    "مني محمد": "17:00"
   },
   "pendingRequestsCount": 0,
   "employees": [
@@ -65,6 +86,42 @@
       "name": "صبري يحي",
       "pass": "17",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "بكر",
+      "pass": "18",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "عماد",
+      "pass": "19",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "محمود شعبان",
+      "pass": "20",
+      "hiddenIcons": "",
+      "birthday": "1999-06-24"
+    },
+    {
+      "name": "25",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "محمد عويس",
+      "pass": "22",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "YOSRY",
+      "pass": "25",
+      "hiddenIcons": "",
       "birthday": ""
     }
   ]
