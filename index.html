@@ -6668,6 +6668,9 @@ window.safeFileName = function(str){
     return tot;
   }
   var ATT_KNOWN_ = { name: 1, date: 1, in_time: 1, out_time: 1 };
+  // الساعات المفترضة في الشهر = ساعات اليوم × عدد أيام الشهر المفترضة (غيّر الرقمين هنا لو اتغيرت اللائحة)
+  var ATT_EXP_DAY_H_ = 8, ATT_EXP_DAYS_ = 26;   // ساعات اليوم الافتراضية (لو الموظف ملوش لائحة) × أيام الشهر المفترضة
+  function attDiffTxt_(m){ return m == null ? '' : (m > 0 ? '+' : '') + attSigned_(m); }
 
   function attBuildReport_(month, empFilter, includeEmpty){
     var pr = month.split('-'), last = new Date(+pr[0], +pr[1], 0).getDate();
@@ -6708,7 +6711,7 @@ window.safeFileName = function(str){
           }
         });
         dates.sort();
-        var days = [], tLate = 0, lateDays = 0, tEarly = 0, earlyDays = 0, tExtra = 0, present = 0, sIn = 0, nIn = 0, sOut = 0, nOut = 0;
+        var days = [], tLate = 0, lateDays = 0, tEarly = 0, earlyDays = 0, tExtra = 0, present = 0, sIn = 0, nIn = 0, sOut = 0, nOut = 0, workMin = 0, workDays = 0;
         dates.forEach(function(k){
           var b = byDate[k] || { i: '', o: '', x: {} }, notes = [], rng = [], rT = [], rS = [], rW = [], rH = [];
           rq.forEach(function(r){
@@ -6730,6 +6733,7 @@ window.safeFileName = function(str){
           if (!hol && inM != null && offI != null) { raw = inM - offI; exIn = raw > 0 ? attOverlap_(rng, offI, inM) : 0; lateIn = raw - exIn; }
           if (!hol && outM != null && offO != null) { raw = offO - outM; exOut = raw > 0 ? attOverlap_(rng, outM, offO) : 0; early = raw - exOut; }
           if (b.i) present++;
+          if (inM != null && outM != null && outM > inM) { workMin += outM - inM; workDays++; }   // ساعات الحضور الفعلية: الأيام اللي فيها حضور وانصراف مسجّلين
           if (!hol) { if (inM != null) { sIn += inM; nIn++; } if (outM != null) { sOut += outM; nOut++; } }   // للمتوسط
           if (lateIn != null) { if (lateIn > 0) { lateDays++; tLate += lateIn; } else if (lateIn < 0) tExtra += -lateIn; }
           if (early != null) { if (early > 0) { earlyDays++; tEarly += early; } else if (early < 0) tExtra += -early; }
@@ -6738,6 +6742,26 @@ window.safeFileName = function(str){
           days.push({ d: k, day: dt.toLocaleDateString('ar-EG', { weekday: 'long' }), i: b.i, o: b.o, lateIn: lateIn, exIn: exIn, early: early, exOut: exOut,
             note: notes.join('، '), rType: rT.join(' + '), rStatus: rS.join(' + '), rTime: rH.join(' ، '), rWhy: rW.join(' | '), x: x });
         });
+        // مؤثرات بسيطة: غياب (يوم عمل رسمي فات بدون حضور ولا طلب معتمد يغطيه) + بصمة ناقصة (حضور بدون انصراف أو العكس)
+        var hasRec = days.length, absent = 0, missPunch = 0;
+        dates.forEach(function(k){ var b0 = byDate[k]; if (b0 && k < todayK && !!b0.i !== !!b0.o) missPunch++; });
+        for (var dd = 1; dd <= last; dd++) {
+          var kk = month + '-' + attendancePad(dd);
+          if (kk >= todayK) break;                       // اليوم الحالي وما بعده لسه ما خلصش
+          if (isOfficialHoliday_(kk)) continue;
+          var bb = byDate[kk]; if (bb && (bb.i || bb.o)) continue;
+          var cov = rq.some(function(r){
+            if (r.status !== 'موافق') return false;
+            if (r.type === 'إجازة') return !!(r.leave_from && r.leave_to && kk >= r.leave_from && kk <= r.leave_to);
+            return r.date === kk && !r.from_time && !r.to_time;   // إذن/مأمورية يوم كامل
+          });
+          if (cov) continue;
+          absent++;
+          var exRow = days.filter(function(x){ return x.d === kk; })[0];
+          if (exRow) exRow.note = (exRow.note ? exRow.note + '، ' : '') + 'غياب';
+          else days.push({ d: kk, day: new Date(+pr[0], +pr[1] - 1, dd).toLocaleDateString('ar-EG', { weekday: 'long' }), i: '', o: '', lateIn: null, exIn: 0, early: null, exOut: 0, note: 'غياب', rType: '', rStatus: '', rTime: '', rWhy: '', x: {} });
+        }
+        days.sort(function(a, b){ return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
         // إحصائيات الطلبات في الشهر
         var rs = { perm: 0, miss: 0, leaveDays: 0, rej: 0, pend: 0, kd: { 'اعتيادي': 0, 'عارضة': 0, 'مرضي': 0, 'بدون مرتب': 0, 'غير محدد': 0 } };
         rq.forEach(function(r){
@@ -6750,7 +6774,9 @@ window.safeFileName = function(str){
             for (var d = 1; d <= last; d++) { var kk = month + '-' + attendancePad(d); if (kk >= r.leave_from && kk <= r.leave_to && !isOfficialHoliday_(kk)) { rs.leaveDays++; rs.kd[kk_kind]++; } }
           }
         });
-        if (days.length || empFilter || includeEmpty) emps.push({ name: n, off: off, avgIn: nIn ? Math.round(sIn / nIn) : null, avgOut: nOut ? Math.round(sOut / nOut) : null, days: days, present: present, lateDays: lateDays, tLate: tLate, earlyDays: earlyDays, tEarly: tEarly, tExtra: tExtra, net: tLate + tEarly - tExtra, rs: rs });
+        // المفترض من لائحة الموظف نفسه: (ميعاد الانصراف − ميعاد الحضور) × أيام الشهر المفترضة (لو مفيش لائحة بنستخدم الافتراضي)
+        var expDay = (offI != null && offO != null && offO > offI) ? offO - offI : ATT_EXP_DAY_H_ * 60, expMin = expDay * ATT_EXP_DAYS_;
+        if (hasRec || empFilter || includeEmpty) emps.push({ name: n, off: off, avgIn: nIn ? Math.round(sIn / nIn) : null, avgOut: nOut ? Math.round(sOut / nOut) : null, days: days, present: present, lateDays: lateDays, tLate: tLate, earlyDays: earlyDays, tEarly: tEarly, tExtra: tExtra, net: tLate + tEarly - tExtra, absent: absent, missPunch: missPunch, workMin: workMin, workDays: workDays, expDay: expDay, expMin: expMin, diffMin: workMin - expMin, rs: rs });
       });
       return { month: month, emps: emps, reqFail: reqFail, extraCols: extraCols, reqs: reqs };
     });
@@ -6767,6 +6793,7 @@ window.safeFileName = function(str){
   function attBoxPdf_(label, val, color){
     return '<td style="' + ATT_TD + '">' + label + '<br><b style="' + (color ? 'color:' + color : '') + '"><span dir="ltr">' + val + '</span></b></td>';
   }
+  function attBox2_(label, val, color){ return attBoxPdf_(label, val, color).replace('<td style', '<td colspan="2" style'); }
   function attPages_(rep){
     var pages = [];
     rep.emps.forEach(function(e){
@@ -6782,10 +6809,13 @@ window.safeFileName = function(str){
         '<table style="width:100%;border-collapse:collapse;margin-bottom:2px;font-size:13px;line-height:1.25"><tr>' +
           attBoxPdf_('ميعاد الحضور (اللائحة)', e.off.i || '—') + attBoxPdf_('ميعاد الانصراف (اللائحة)', e.off.o || '—') + attBoxPdf_('أيام الحضور', e.present) + attBoxPdf_('أيام التأخير / الانصراف المبكر', e.lateDays + ' / ' + e.earlyDays) + '</tr><tr>' +
           attBoxPdf_('إجمالي تأخير الحضور', attSigned_(e.tLate), e.tLate ? ATT_RED : '') + attBoxPdf_('إجمالي الانصراف المبكر', attSigned_(e.tEarly), e.tEarly ? ATT_RED : '') +
-          attBoxPdf_('زيادة (حضر بدري / مشي متأخر)', e.tExtra ? attSigned_(-e.tExtra) : '0:00', e.tExtra ? ATT_GREEN : '') + attBoxPdf_('الصافي (موجب = عليه / سالب = له)', attSigned_(e.net), netColor) + '</tr>' +
+          attBoxPdf_('زيادة (حضر بدري / مشي متأخر)', e.tExtra ? attSigned_(-e.tExtra) : '0:00', e.tExtra ? ATT_GREEN : '') + attBoxPdf_('الصافي (موجب = عليه / سالب = له)', attSigned_(e.net), netColor) + '</tr><tr>' +
+          attBoxPdf_('ساعات الحضور الفعلية', attSigned_(e.workMin)) + attBoxPdf_('المفترض (' + attSigned_(e.expDay) + ' س × ' + ATT_EXP_DAYS_ + ' يوم)', attSigned_(e.expMin)) +
+          attBoxPdf_('الفرق (+ زيادة / − نقص)', attDiffTxt_(e.diffMin), e.diffMin > 0 ? ATT_GREEN : (e.diffMin < 0 ? ATT_RED : '')) + attBoxPdf_('أيام محسوبة (حضور + انصراف)', e.workDays) + '</tr><tr>' +
+          attBox2_('أيام الغياب (بدون إذن / إجازة)', e.absent, e.absent ? ATT_RED : '') + attBox2_('بصمة ناقصة (حضور بدون انصراف أو العكس)', e.missPunch, e.missPunch ? '#b9770e' : '') + '</tr>' +
           (e.rs.leaveDays ? '<tr>' + attBoxPdf_('أيام إجازة اعتيادي', e.rs.kd['اعتيادي']) + attBoxPdf_('أيام إجازة عارضة', e.rs.kd['عارضة']) + attBoxPdf_('أيام إجازة مرضي', e.rs.kd['مرضي']) + attBoxPdf_('أيام بدون مرتب (خصم)', e.rs.kd['بدون مرتب'], e.rs.kd['بدون مرتب'] ? ATT_RED : '') + '</tr>' : '') + '</table>' +
         '';
-      var chunks = [], cur = '', w = 0, cap = e.rs.leaveDays ? 36 : 38;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
+      var chunks = [], cur = '', w = 0, cap = e.rs.leaveDays ? 32 : 34;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
       rows.forEach(function(r){ if (cur && w + r.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 38; } cur += r.h; w += r.w; });
       chunks.push(cur);
       chunks.forEach(function(c, idx){
@@ -6802,7 +6832,7 @@ window.safeFileName = function(str){
   var attRepKind_ = 'detail';   // detail (الافتراضي) | summary
   var ATT_KIND_HINT_ = {
     detail: 'كل يوم في سطر: الحضور والانصراف والتأخير والملاحظات لكل موظف.',
-    summary: 'سطر واحد لكل موظف: ميعاد حضوره وانصرافه حسب اللائحة + ملخص الشهر (الحضور والتأخير والانصراف المبكر والإجازات).'
+    summary: 'سطر واحد لكل موظف: ميعاد حضوره وانصرافه حسب اللائحة + ملخص الشهر (الحضور والتأخير والانصراف المبكر والإجازات) + ساعات الحضور الفعلية مقابل المفترض والفرق + الغياب والبصمة الناقصة.'
   };
   function attRepSetKind_(k){
     attRepKind_ = (k === 'summary') ? 'summary' : 'detail';
@@ -6816,10 +6846,10 @@ window.safeFileName = function(str){
   // إجماليات كل الموظفين بنفس شكل بيانات الموظف الواحد (علشان نفس دالة رسم الصف تشتغل للاتنين)
   function attAvgHM_(m){ if (m == null) return ''; return (Math.floor(m / 60) < 10 ? '0' : '') + Math.floor(m / 60) + ':' + (m % 60 < 10 ? '0' : '') + (m % 60); }
   function attSumAgg_(emps){
-    var t = { off: { i: '', o: '' }, present: 0, lateDays: 0, tLate: 0, earlyDays: 0, tEarly: 0, tExtra: 0, net: 0,
+    var t = { off: { i: '', o: '' }, present: 0, lateDays: 0, tLate: 0, earlyDays: 0, tEarly: 0, tExtra: 0, net: 0, workMin: 0, workDays: 0, expMin: 0, diffMin: 0, absent: 0, missPunch: 0,
       rs: { perm: 0, miss: 0, leaveDays: 0, kd: { 'اعتيادي': 0, 'عارضة': 0, 'مرضي': 0, 'بدون مرتب': 0 } } };
     emps.forEach(function(e){
-      ['present', 'lateDays', 'tLate', 'earlyDays', 'tEarly', 'tExtra', 'net'].forEach(function(k){ t[k] += e[k] || 0; });
+      ['present', 'lateDays', 'tLate', 'earlyDays', 'tEarly', 'tExtra', 'net', 'workMin', 'workDays', 'expMin', 'diffMin', 'absent', 'missPunch'].forEach(function(k){ t[k] += e[k] || 0; });
       ['perm', 'miss', 'leaveDays'].forEach(function(k){ t.rs[k] += e.rs[k] || 0; });
       ['اعتيادي', 'عارضة', 'مرضي', 'بدون مرتب'].forEach(function(k){ t.rs.kd[k] += e.rs.kd[k] || 0; });
     });
@@ -6827,8 +6857,8 @@ window.safeFileName = function(str){
   }
   function attSummaryPages_(rep){
     var W = 1123, H = 794, NAVY = '#0b2a5b', BLUE = '#163a7a';
-    var TD = 'border:1px solid #cfd6e2;padding:0 3px;text-align:center;height:30px;line-height:1.2;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
-    var TH = 'border:1px solid ' + NAVY + ';color:#fff;padding:3px 2px;text-align:center;font-size:11.5px;line-height:1.3;font-weight:800;';
+    var TD = 'border:1px solid #cfd6e2;padding:0 2px;text-align:center;height:30px;line-height:1.2;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    var TH = 'border:1px solid ' + NAVY + ';color:#fff;padding:3px 1px;text-align:center;font-size:11px;line-height:1.3;font-weight:800;';
     var dash = '<span style="color:#aab2bf;font-weight:400">—</span>';
     function cnt(n, color){ return n ? '<b' + (color ? ' style="color:' + color + '"' : '') + '>' + n + '</b>' : dash; }
     function mins(m, color){ return m ? '<b style="color:' + color + '"><span dir="ltr">' + attSigned_(m) + '</span></b>' : dash; }
@@ -6844,26 +6874,30 @@ window.safeFileName = function(str){
           td(e.off.i ? '<b style="color:' + NAVY + '"><span dir="ltr">' + e.off.i + '</span></b>' : dash) + td(e.off.o ? '<b style="color:' + NAVY + '"><span dir="ltr">' + e.off.o + '</span></b>' : dash) +
           td(e.avgIn != null ? '<b style="color:' + (e.off.i && e.avgIn > attMin_(e.off.i) ? ATT_RED : ATT_GREEN) + '"><span dir="ltr">' + attAvgHM_(e.avgIn) + '</span></b>' : dash) +
           td(e.avgOut != null ? '<b style="color:' + (e.off.o && e.avgOut < attMin_(e.off.o) ? ATT_RED : ATT_GREEN) + '"><span dir="ltr">' + attAvgHM_(e.avgOut) + '</span></b>' : dash);
+      var hC = e.diffMin > 0 ? ATT_GREEN : (e.diffMin < 0 ? ATT_RED : ''), hBg = e.diffMin > 0 ? 'background:#e6f5ec;' : (e.diffMin < 0 ? 'background:#fdecea;' : '');
+      var hoursCells = td(e.workMin ? '<b><span dir="ltr">' + attSigned_(e.workMin) + '</span></b>' : dash) + td('<span dir="ltr">' + attSigned_(e.expMin) + '</span>') +
+        td('<b' + (hC ? ' style="color:' + hC + '"' : '') + '><span dir="ltr">' + attDiffTxt_(e.diffMin) + '</span></b>', hBg) +
+        td(cnt(e.absent, ATT_RED), e.absent ? 'background:#fdecea;' : '') + td(cnt(e.missPunch, '#b9770e'), e.missPunch ? 'background:#fff4dc;' : '');
       cells += td(cnt(e.present)) +
         td(cnt(e.lateDays, ATT_RED)) + td(mins(e.tLate, ATT_RED)) +
         td(cnt(e.earlyDays, ATT_RED)) + td(mins(e.tEarly, ATT_RED)) +
-        td(mins(e.tExtra, ATT_GREEN)) + netCell +
+        td(mins(e.tExtra, ATT_GREEN)) + netCell + hoursCells +
         td(cnt(e.rs.perm)) + td(cnt(e.rs.miss)) +
         td(cnt(e.rs.leaveDays)) + td(cnt(e.rs.kd['اعتيادي'])) + td(cnt(e.rs.kd['عارضة'])) + td(cnt(e.rs.kd['مرضي'])) + td(cnt(e.rs.kd['بدون مرتب'], ATT_RED));
       return '<tr style="' + bg + tot + '">' + cells + '</tr>';
     }
-    var colw = [28, 170].concat([48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48]);
+    var colw = [20, 100, 38, 38, 38, 38, 38, 38, 43, 38, 43, 38, 38, 56, 56, 56, 38, 42, 41, 45, 38, 43, 38, 38, 43];
     var colgroup = '<colgroup>' + colw.map(function(w){ return '<col style="width:' + w + 'px">'; }).join('') + '</colgroup>';
     var thead = '<thead>' +
       '<tr>' + th('م', BLUE, 'rowspan="2"') + th('الموظف', BLUE, 'rowspan="2"') + th('اللائحة', NAVY, 'colspan="2"') + th('المتوسط الفعلي', NAVY, 'colspan="2"') + th('أيام<br>الحضور', BLUE, 'rowspan="2"') +
-        th('التأخير', NAVY, 'colspan="2"') + th('الانصراف المبكر', NAVY, 'colspan="2"') + th('زيادة', BLUE, 'rowspan="2"') + th('الصافي', BLUE, 'rowspan="2"') +
+        th('التأخير', NAVY, 'colspan="2"') + th('الانصراف المبكر', NAVY, 'colspan="2"') + th('زيادة', BLUE, 'rowspan="2"') + th('الصافي', BLUE, 'rowspan="2"') + th('ساعات الشهر', NAVY, 'colspan="3"') + th('مؤثرات', NAVY, 'colspan="2"') +
         th('طلبات معتمدة', NAVY, 'colspan="2"') + th('الإجازات المعتمدة', NAVY, 'colspan="5"') + '</tr>' +
-      '<tr>' + th('حضور', BLUE) + th('انصراف', BLUE) + th('حضور', BLUE) + th('انصراف', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) +
-        th('أذونات', BLUE) + th('مأموريات', BLUE) + th('الأيام', BLUE) + th('اعتيادي', BLUE) + th('عارضة', BLUE) + th('مرضي', BLUE) + th('بدون مرتب', BLUE) + '</tr></thead>';
+      '<tr>' + th('حضور', BLUE) + th('انصراف', BLUE) + th('حضور', BLUE) + th('انصراف', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) + th('الفعلي', BLUE) + th('المفترض', BLUE) + th('الفرق', BLUE) + th('غياب', BLUE) + th('بصمة<br>ناقصة', BLUE) +
+        th('أذونات', BLUE) + th('مأموريات', BLUE) + th('الأيام', BLUE) + th('اعتيادي', BLUE) + th('عارضة', BLUE) + th('مرضي', BLUE) + th('بدون<br>مرتب', BLUE) + '</tr></thead>';
     var rows = rep.emps.map(function(e, i){ return rowHtml(e, i, false); });
     if (rep.emps.length > 1) rows.push(rowHtml(attSumAgg_(rep.emps), rep.emps.length, true));
-    if (!rows.length) rows.push('<tr><td style="' + TD + '" colspan="20">لا توجد بيانات في هذا الشهر</td></tr>');
-    var capFirst = 19, capNext = 20, chunks = [], i = 0;
+    if (!rows.length) rows.push('<tr><td style="' + TD + '" colspan="25">لا توجد بيانات في هذا الشهر</td></tr>');
+    var capFirst = 17, capNext = 20, chunks = [], i = 0;
     chunks.push(rows.slice(0, capFirst)); i = capFirst;
     while (i < rows.length) { chunks.push(rows.slice(i, i + capNext)); i += capNext; }
     var who = rep.emps.length === 1 ? attEsc_(rep.emps[0].name) : 'كل الموظفين (' + rep.emps.length + ')';
@@ -6873,24 +6907,25 @@ window.safeFileName = function(str){
         '<div style="font-size:14px;color:#333;margin-top:2px">الشهر: <b><span dir="ltr">' + rep.month + '</span></b> &nbsp;|&nbsp; الموظفون: <b>' + who + '</b></div></div>' +
         '<div style="font-size:11px;color:#444;line-height:1.7;text-align:right;font-weight:600">' +
           sq(ATT_RED) + 'أحمر = عليه (تأخير / انصراف مبكر) &nbsp; ' + sq(ATT_GREEN) + 'أخضر = له (حضر بدري / مشي متأخر)<br>' +
-          'الصافي = التأخير + الانصراف المبكر − الزيادة (بعد خصم المعتمد)<br>المتوسط الفعلي = متوسط أيام العمل العادية (بدون الجمعة والإجازات الرسمية)</div></div>';
+          'الصافي = التأخير + الانصراف المبكر − الزيادة (بعد خصم المعتمد)<br>المتوسط الفعلي = متوسط أيام العمل العادية (بدون الجمعة والإجازات الرسمية)<br>الساعات: الفعلي = مجموع (الانصراف − الحضور) | المفترض = ساعات لائحة كل موظف × ' + ATT_EXP_DAYS_ + ' يوم | الفرق = الفعلي − المفترض<br>غياب = يوم عمل بدون حضور ولا طلب معتمد | بصمة ناقصة = حضور بدون انصراف أو العكس</div></div>';
     var issued = attendanceTodayKey();
     return chunks.map(function(c, idx){
-      return '<div style="position:relative;width:' + W + 'px;height:' + H + 'px;box-sizing:border-box;padding:18px 28px 38px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;font-weight:700;overflow:hidden">' +
+      return '<div style="position:relative;width:' + W + 'px;height:' + H + 'px;box-sizing:border-box;padding:18px 18px 38px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;font-weight:700;overflow:hidden">' +
         (idx === 0 ? head : '<div style="font-size:13px;color:' + NAVY + ';font-weight:800;border-bottom:2px solid ' + NAVY + ';padding-bottom:3px;margin-bottom:6px">ملخص الحضور والانصراف — <span dir="ltr">' + rep.month + '</span> — تابع</div>') +
         '<table style="width:100%;border-collapse:collapse;table-layout:fixed">' + colgroup + thead + '<tbody>' + c.join('') + '</tbody></table>' +
-        '<div style="position:absolute;bottom:12px;left:28px;right:28px;display:flex;justify-content:space-between;color:#888;font-size:11px;font-weight:600"><span>ملخص الحضور والانصراف — <span dir="ltr">' + rep.month + '</span></span><span>تاريخ الإصدار: <span dir="ltr">' + issued + '</span></span><span>صفحة ' + (idx + 1) + ' من ' + chunks.length + '</span></div></div>';
+        '<div style="position:absolute;bottom:12px;left:18px;right:18px;display:flex;justify-content:space-between;color:#888;font-size:11px;font-weight:600"><span>ملخص الحضور والانصراف — <span dir="ltr">' + rep.month + '</span></span><span>تاريخ الإصدار: <span dir="ltr">' + issued + '</span></span><span>صفحة ' + (idx + 1) + ' من ' + chunks.length + '</span></div></div>';
     });
   }
   // صف إجمالي في آخر شيت الملخص (لو أكتر من موظف) — بنفس ترتيب أعمدة attXlsData_().sum
-  function attSumTotalRow_(aoa){
+  function attSumTotalRow_(aoa, rep){
     if (!aoa || aoa.length < 3) return aoa;
     var tot = []; for (var c = 0; c < aoa[0].length; c++) tot.push('');
     tot[0] = 'الإجمالي';
-    [5, 6, 7, 9, 10, 12, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24].forEach(function(c){
+    [5, 6, 7, 9, 10, 12, 14, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29].forEach(function(c){
       var s = 0; for (var r = 1; r < aoa.length; r++) s += (+aoa[r][c]) || 0; tot[c] = s;
     });
     tot[8] = attSigned_(tot[7]); tot[11] = attSigned_(tot[10]); tot[13] = attSigned_(tot[12]); tot[15] = attSigned_(tot[14]);
+    if (rep && rep.emps) { var ag = attSumAgg_(rep.emps); tot[16] = attSigned_(ag.workMin); tot[17] = attSigned_(ag.expMin); tot[18] = attDiffTxt_(ag.diffMin); }
     return aoa.concat([tot]);
   }
 
@@ -6905,14 +6940,14 @@ window.safeFileName = function(str){
   function attXlsData_(rep){
     var sum = [['الموظف', 'الحضور الرسمي', 'الانصراف الرسمي', 'متوسط الحضور الفعلي', 'متوسط الانصراف الفعلي', 'أيام الحضور', 'أيام تأخير الحضور', 'إجمالي تأخير الحضور (دقيقة)', 'إجمالي تأخير الحضور (س:د)',
       'أيام الانصراف المبكر', 'إجمالي الانصراف المبكر (دقيقة)', 'إجمالي الانصراف المبكر (س:د)', 'زيادة: حضر بدري / مشي متأخر (دقيقة)', 'زيادة (س:د)',
-      'الصافي (دقيقة) موجب = عليه / سالب = له', 'الصافي (س:د)', 'أذونات معتمدة', 'مأموريات معتمدة', 'أيام إجازة معتمدة', 'منها اعتيادي', 'منها عارضة', 'منها مرضي', 'منها بدون مرتب (خصم)', 'طلبات مرفوضة', 'طلبات قيد المراجعة']];
+      'الصافي (دقيقة) موجب = عليه / سالب = له', 'الصافي (س:د)', 'ساعات الحضور الفعلية (س:د)', 'الساعات المفترضة (س:د)', 'الفرق (س:د) موجب = زيادة / سالب = نقص', 'أيام غياب', 'بصمة ناقصة (أيام)', 'أذونات معتمدة', 'مأموريات معتمدة', 'أيام إجازة معتمدة', 'منها اعتيادي', 'منها عارضة', 'منها مرضي', 'منها بدون مرتب (خصم)', 'طلبات مرفوضة', 'طلبات قيد المراجعة']];
     var det = [['الموظف', 'التاريخ', 'اليوم', 'الحضور الرسمي', 'الانصراف الرسمي', 'حضور', 'انصراف',
       'تأخير الحضور (دقيقة)', 'تأخير الحضور (س:د)', 'انصراف مبكر (دقيقة)', 'انصراف مبكر (س:د)', 'مغطّى بطلب صباحًا (دقيقة)', 'مغطّى بطلب انصرافًا (دقيقة)',
       'نوع الطلب', 'حالة الطلب', 'وقت الطلب', 'سبب الطلب', 'ملاحظات']];
     rep.extraCols.forEach(function(c){ det[0].push(ATT_AR_COLS_[c] || c); });
     rep.emps.forEach(function(e){
       sum.push([e.name, e.off.i, e.off.o, attAvgHM_(e.avgIn), attAvgHM_(e.avgOut), e.present, e.lateDays, e.tLate, attSigned_(e.tLate), e.earlyDays, e.tEarly, attSigned_(e.tEarly),
-        e.tExtra, attSigned_(e.tExtra), e.net, attSigned_(e.net), e.rs.perm, e.rs.miss, e.rs.leaveDays, e.rs.kd['اعتيادي'], e.rs.kd['عارضة'], e.rs.kd['مرضي'], e.rs.kd['بدون مرتب'], e.rs.rej, e.rs.pend]);
+        e.tExtra, attSigned_(e.tExtra), e.net, attSigned_(e.net), attSigned_(e.workMin), attSigned_(e.expMin), attDiffTxt_(e.diffMin), e.absent, e.missPunch, e.rs.perm, e.rs.miss, e.rs.leaveDays, e.rs.kd['اعتيادي'], e.rs.kd['عارضة'], e.rs.kd['مرضي'], e.rs.kd['بدون مرتب'], e.rs.rej, e.rs.pend]);
       e.days.forEach(function(r){
         var row = [e.name, r.d, r.day, e.off.i, e.off.o, r.i, r.o,
           r.lateIn == null ? '' : r.lateIn, attSigned_(r.lateIn), r.early == null ? '' : r.early, attSigned_(r.early), r.exIn, r.exOut,
@@ -6959,7 +6994,7 @@ window.safeFileName = function(str){
       { name:'الطلبات',    aoa:d.rq,  totalLastRow:false }
     ];
     if (summary) {   // الملخص: شيت واحد (سطر لكل موظف) + صف إجمالي لو أكتر من موظف
-      var sumAoa = attSumTotalRow_(d.sum);
+      var sumAoa = attSumTotalRow_(d.sum, rep);
       sheets = [{ name:'ملخص الشهر', aoa:sumAoa, totalLastRow: sumAoa.length !== d.sum.length }];
     }
     var title = 'ChillOut Construction — ' + (summary ? 'ملخص الحضور والانصراف' : 'تقرير الحضور والانصراف');
@@ -6975,7 +7010,8 @@ window.safeFileName = function(str){
         return { header: h, width: w };
       });
       // صف 1: عنوان الشركة
-      var lastCol = String.fromCharCode(64 + Math.min(26, headers.length));
+      var _colL = function(n){ var t = ''; while (n > 0) { var m = (n - 1) % 26; t = String.fromCharCode(65 + m) + t; n = Math.floor((n - 1) / 26); } return t; };
+      var lastCol = _colL(headers.length);
       ws.mergeCells('A1:' + lastCol + '1');
       var r1 = ws.getCell('A1'); r1.value = summary ? title : title + ' — ' + s.name;
       r1.font = { name:'Calibri', size:15, bold:true, color:{argb:'FFFFFFFF'} };
@@ -6983,9 +7019,9 @@ window.safeFileName = function(str){
       r1.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF0B2A5B'} };
       ws.getRow(1).height = 28;
       // صف 2: الموظف + الفترة
-      var midCol = String.fromCharCode(64 + Math.ceil(Math.min(26, headers.length) / 2));
+      var midCol = _colL(Math.ceil(headers.length / 2));
       ws.mergeCells('A2:' + midCol + '2');
-      var nextCol = String.fromCharCode(64 + Math.ceil(Math.min(26, headers.length) / 2) + 1);
+      var nextCol = _colL(Math.ceil(headers.length / 2) + 1);
       ws.mergeCells(nextCol + '2:' + lastCol + '2');
       var r2a = ws.getCell('A2'); r2a.value = { richText:[{text:'الموظف: ', font:{bold:true,color:{argb:'FF5B6578'}}}, {text:String(empLabel), font:{bold:true,color:{argb:'FF0B2A5B'}}}] };
       var r2b = ws.getCell(nextCol + '2'); r2b.value = { richText:[{text:'الفترة: ', font:{bold:true,color:{argb:'FF5B6578'}}}, {text:String(period || '—'), font:{bold:true,color:{argb:'FF0B2A5B'}}}] };
