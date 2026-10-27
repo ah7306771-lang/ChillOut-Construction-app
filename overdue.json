@@ -20,14 +20,14 @@
     },
     {
       "client": "ويكادي",
-      "count": 6,
-      "amount": 9558815,
-      "avgDelay": 9.833333333335759
+      "count": 5,
+      "amount": 8808815,
+      "avgDelay": 8.80000000000291
     }
   ],
   "grandTotal": {
-    "count": 17,
-    "amount": 42070351.43581871,
-    "avgDelay": 10.117647058825241
+    "count": 16,
+    "amount": 41320351.43581871,
+    "avgDelay": 9.8125
   }
 }
