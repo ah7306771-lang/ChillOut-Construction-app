@@ -30,6 +30,8 @@ var TOPIC_STYLES = {
   overdue:  { icon: 'icon-overdue.png',  badge: 'icon-overdue.png',  tag: 'hhm-overdue',  vibrate: [300, 200, 300, 200, 300] },
   checks:   { icon: 'icon-checks.png',   badge: 'icon-checks.png',   tag: 'hhm-checks',   vibrate: [200, 100, 200] },
   salary:   { icon: 'icon-salary.png',   badge: 'icon-salary.png',   tag: 'hhm-salary',   vibrate: [200] },
+  presence: { icon: 'icon-presence.png',  badge: 'icon-presence.png',  tag: 'hhm-presence',  vibrate: [200] },
+  departure:{ icon: 'icon-departure.png', badge: 'icon-departure.png', tag: 'hhm-departure', vibrate: [200] },
   request:  { icon: 'icon-192.png',      badge: 'icon-192.png',      tag: 'hhm-request',  vibrate: [200, 100, 200] }
 };
 
@@ -62,6 +64,12 @@ messaging.onBackgroundMessage(function (payload) {
     if (now - __swSeen[k] > 300000) delete __swSeen[k];
   });
 
+  // حضور/انصراف: نتعرف عليهم من الـ topic، أو من dedupId (attendance-الاسم-حضور-التاريخ)
+  // لو السيرفر ما بعتش topic.
+  var dId = String(d.dedupId || '');
+  if (!TOPIC_STYLES[topic] && dId.indexOf('attendance-') === 0) {
+    topic = (dId.indexOf('-انصراف-') > -1) ? 'departure' : 'presence';
+  }
   var style = TOPIC_STYLES[topic] || TOPIC_STYLES.request;
   var options = {
     body: body,

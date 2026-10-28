@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-09-27",
-  "updatedAt": "2026-09-27T00:28:12.457175+00:00",
+  "date": "2026-10-28",
+  "updatedAt": "2026-10-28T01:22:16.011561+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -9,21 +9,68 @@
     "شهد خالد",
     "سيد كارم",
     "محمود رجب",
-    "صبري يحي"
+    "صبري يحي",
+    "بكر",
+    "عماد",
+    "محمود شعبان",
+    "25",
+    "محمد عويس",
+    "YOSRY"
   ],
   "late": [],
   "dashboardRows": [],
-  "dashboardRequestRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mvqxc9mv-zj8gh2",
+      "name": "شهد خالد",
+      "type": "إجازة",
+      "date": "2026-10-28",
+      "from": "",
+      "to": "",
+      "reason": "[اعتيادي] محاضرات في الجامعه",
+      "status": "قيد المراجعة",
+      "submittedAt": "2026-10-27T16:53:02.000Z",
+      "leaveFrom": "2026-10-28",
+      "leaveTo": "2026-10-28"
+    },
+    {
+      "id": "mvqf6pq9-z1zqyl",
+      "name": "محمود كارم",
+      "type": "إجازة",
+      "date": "2026-10-27",
+      "from": "",
+      "to": "",
+      "reason": "[بدون مرتب]",
+      "status": "موافق",
+      "submittedAt": "2026-10-27T08:24:50.000Z",
+      "leaveFrom": "2026-10-27",
+      "leaveTo": "2026-10-31"
+    },
+    {
+      "id": "mvp8rhjt-y43eh2",
+      "name": "صبري يحي",
+      "type": "إجازة",
+      "date": "2026-10-27",
+      "from": "",
+      "to": "",
+      "reason": "[اعتيادي] ظروف شخصيه",
+      "status": "موافق",
+      "submittedAt": "2026-10-26T12:37:16.000Z",
+      "leaveFrom": "2026-10-27",
+      "leaveTo": "2026-10-28"
+    }
+  ],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
-    "محمود كارم": "17:00",
-    "مني محمد": "17:00",
-    "شهد خالد": "17:00",
+    "بكر": "16:00",
     "سيد كارم": "17:00",
-    "محمود رجب": "16:00",
-    "صبري يحي": "16:00"
+    "شهد خالد": "17:00",
+    "صبري يحي": "16:00",
+    "محمود رجب": "17:00",
+    "محمود كارم": "17:00",
+    "مني محمد": "17:00"
   },
-  "pendingRequestsCount": 0,
+  "pendingRequestsCount": 1,
   "employees": [
     {
       "name": "أحمد مفرح",
@@ -65,6 +112,42 @@
       "name": "صبري يحي",
       "pass": "17",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
+      "birthday": ""
+    },
+    {
+      "name": "بكر",
+      "pass": "18",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "عماد",
+      "pass": "19",
+      "hiddenIcons": "",
+      "birthday": "2026-10-01"
+    },
+    {
+      "name": "محمود شعبان",
+      "pass": "20",
+      "hiddenIcons": "",
+      "birthday": "1999-06-24"
+    },
+    {
+      "name": "25",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "محمد عويس",
+      "pass": "22",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "YOSRY",
+      "pass": "25",
+      "hiddenIcons": "",
       "birthday": ""
     }
   ]
