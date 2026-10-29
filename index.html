@@ -2012,6 +2012,12 @@ select.sk-in{padding:0 4px;min-width:130px}
 .skp table.dtb .y{background:#fffbe0}
 .skp table.dtb tr.tot td{background:#fff59d;color:#8b0000;font-size:11.5px;font-weight:800}
 .skp table.dtb tr.tot td.lb{text-align:right;padding-inline-end:8px}
+/* ريسيت العمال — بلوك لكل عامل بنفس شكل الشيت + عمود توقيع */
+.skp .rcb{margin:0 0 6px;padding-bottom:6px;border-bottom:1px dashed #444;break-inside:avoid}
+.skp .rcb .dti{margin:2px 0 4px}
+.skp table.dtb.rc td{height:44px;font-size:12.5px}
+.skp table.dtb.rc td.sg{background:#fff}
+.skp table.dtb.rc th.sg{background:#dff0d8}
 </style>
 <style>
 .cg-who{text-align:center;font-weight:800;margin:2px 0 12px;color:var(--steel-dark)}
@@ -16858,6 +16864,8 @@ window.safeFileName = function(str){
       '<label class="l">العامل</label><select id="rpW"><option value="">كل العمال</option>' + ws.map(function(w){ return '<option value="' + w.id + '">' + esc(w.name) + '</option>'; }).join('') + '</select>' +
       '<label class="chk"><input type="checkbox" id="rpS" checked> إرفاق كشف تفصيلي لكل عامل (يوم بيوم) في PDF / الطباعة</label>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpX">📊 Excel</button><button class="btn btn-primary" id="rpP">⬇ PDF</button><button class="btn btn-secondary" id="rpR">🖨 طباعة</button></div>' +
+      '<div class="rpsec">④ ريسيت العمال (ورقة لكل عامل للتوقيع بالاستلام — حسب اختيار العامل فوق)</div>' +
+      '<div class="btns sm"><button class="btn btn-primary" id="rpRcP">⬇ PDF</button><button class="btn btn-secondary" id="rpRcR">🖨 طباعة</button><button class="btn btn-secondary" id="rpRcS">📤 مشاركة PDF</button></div>' +
       '<button class="btn btn-primary" id="rpGo" style="display:none;width:100%;margin-top:8px">📤 اضغط هنا لإكمال المشاركة</button>' +
       '<p class="msg" id="rpM"></p><div class="btns"><button class="btn btn-secondary" id="rpC">إغلاق</button></div>', function(el, close){
       var q = function(s){ return el.querySelector(s); };
@@ -16897,6 +16905,11 @@ window.safeFileName = function(str){
       q('#rpX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(function(){ return periodExcelBlob(p, opt()).then(function(b){ return { blob: b, name: repName(p, 'xlsx') }; }); }); };
       q('#rpP').onclick = function(){ msg('جارٍ إنشاء PDF… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, opt()); }); };
       q('#rpR').onclick = function(){ close(); printPages(p, opt()); };
+      // ④ ريسيت العمال
+      var rcOpt = function(){ return { type: 'receipt', worker: q('#rpW').value }; };
+      q('#rpRcP').onclick = function(){ msg('جارٍ إنشاء ريسيت العمال… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, rcOpt()); }); };
+      q('#rpRcS').onclick = function(){ share(function(){ return pdfBlob(p, rcOpt()); }, 'سراكي عمال — ريسيت العمال'); };
+      q('#rpRcR').onclick = function(){ try { buildReceiptPages(p, rcOpt()); } catch (e) { msg(e.message); return; } close(); printPages(p, rcOpt()); };
     });
   }
   function download(blob, name){
@@ -17157,6 +17170,45 @@ window.safeFileName = function(str){
       });
       if (last) h += '<tr class="tot"><td colspan="2" class="lb">الإجمالي</td><td>' + fmt(T.days) + '</td><td>' + z(T.otd) + '</td><td>' + fmt(T.tot) + '</td><td>' + z(T.extra) + '</td><td>' + fmt(T.before) + '</td><td>' + z(T.a1) + '</td><td>' + z(T.a2) + '</td><td>' + fmt(T.net) + '</td><td colspan="2"></td></tr>';
       h += '</tbody></table>';
+      pages.push({ orient: 'port dt', html: h });
+    });
+    return pages;
+  }
+  // ---------- ريسيت العمال: بلوك لكل عامل (إجمالي الفترة على مستوى العامل) + عمود توقيع ----------
+  function receiptData(p, workerId){
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), map = {}, rows = [];
+    WK(p.id).forEach(function(w){
+      if (workerId && w.id !== workerId) return;
+      var rate = +w.daily_rate || 0, nm = String(w.name || '').trim(), days = 0, otd = 0, ex = 0, a1 = 0, a2 = 0;
+      dates.forEach(function(d){
+        var r = m.get(w.id + '|' + d); if (!r) return;
+        if (r.present) days++; otd += +r.overtime || 0; ex += +r.extra_amt || 0;
+        var a = +r.advance || 0; if (d < w2) a1 += a; else a2 += a;
+      });
+      if (!days && !otd && !ex && !a1 && !a2) return;
+      var k = nm + '|' + rate, x = map[k];
+      if (!x) { x = map[k] = { name: nm, rate: rate, days: 0, otd: 0, extra: 0, a1: 0, a2: 0 }; rows.push(x); }
+      x.days += days; x.otd += otd; x.extra += ex; x.a1 += a1; x.a2 += a2;
+    });
+    rows.sort(function(a, b){ return a.name.localeCompare(b.name, 'ar', { numeric: true }) || (a.rate - b.rate); });
+    rows.forEach(function(x){ x.tot = x.days + x.otd; x.before = x.tot * x.rate + x.extra; x.net = x.before - x.a1 - x.a2; });
+    return rows;
+  }
+  function buildReceiptPages(p, o){
+    var rows = receiptData(p, o && o.worker), per = 6, pages = [], z = function(v){ return v ? fmt(v) : ''; };
+    if (!rows.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
+    var now = new Date(), hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    var chunks = []; for (var i = 0; i < rows.length; i += per) chunks.push(rows.slice(i, i + per));
+    var cg = '<colgroup><col style="width:17%"><col style="width:7%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:6%"><col style="width:7%"><col style="width:8.5%"><col style="width:8%"><col style="width:8%"><col style="width:9.5%"><col style="width:18%"></colgroup>';
+    var th = '<thead><tr><th>اسم العامل</th><th>قيمة<br>اليومية</th><th>عدد<br>الأيام</th><th>سهرات</th><th>إجمالي<br>الأيام</th><th>قيمة<br>الإضافي</th><th>القبض قبل<br>السلف</th><th>سلف الأسبوع<br>الأول</th><th>سلف الأسبوع<br>الثاني</th><th>القبض</th><th class="sg">التوقيع<br>بالاستلام</th></tr></thead>';
+    chunks.forEach(function(ch, ci){
+      var h = '<div class="dtop"><span>الوقت: ' + hhmm + '</span><span>التاريخ: ' + todayS() + '</span><span class="pg">' + (ci + 1) + ' / ' + chunks.length + '</span></div>' +
+        '<div class="dtt">ريســيت العمـــال</div>';
+      ch.forEach(function(x, j){
+        h += '<div class="rcb"><div class="dti"><div class="r"><span>البيان : </span></div><div class="l"><div><span>السنة : </span><b>' + p.year + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;مسلسل : </span><b>' + (ci * per + j + 1) + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;الفترة : </span><b>' + p.period_no + '</b></div>' +
+          '<div><span>من </span><b>' + fdmy(p.from_date) + '</b><span>&nbsp;&nbsp;&nbsp;الى&nbsp;&nbsp;&nbsp;</span><b>' + fdmy(p.to_date) + '</b></div></div></div>' +
+          '<table class="dtb rc">' + cg + th + '<tbody><tr><td class="nm">' + esc(x.name) + '</td><td>' + fmt(x.rate) + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td class="y">' + x.tot + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td><td class="sg"></td></tr></tbody></table></div>';
+      });
       pages.push({ orient: 'port dt', html: h });
     });
     return pages;
@@ -17436,7 +17488,7 @@ window.safeFileName = function(str){
   function pdfBlob(p, o){
     if (!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)) return Promise.reject(new Error('مكتبات PDF غير محمّلة'));
     var stage = document.getElementById('skStage');
-    var pgs; try { pgs = o.type === 'items' ? buildItemsPages(p) : o.type === 'detail' ? buildDetailPages(p) : buildPages(p, o); } catch (e) { return Promise.reject(e); }
+    var pgs; try { pgs = o.type === 'items' ? buildItemsPages(p) : o.type === 'detail' ? buildDetailPages(p) : o.type === 'receipt' ? buildReceiptPages(p, o) : buildPages(p, o); } catch (e) { return Promise.reject(e); }
     var els = pagesToDom(pgs, stage), doc = null, chain = fontsReady();
     els.forEach(function(el){
       chain = chain.then(function(){ return html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }); }).then(function(cv){
@@ -17446,12 +17498,12 @@ window.safeFileName = function(str){
         doc.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, land ? 297 : 210, land ? 210 : 297);
       });
     });
-    var nm = o.type === 'items' ? fileNm(p, 'إجمالي-حسب-البند', 'pdf') : o.type === 'detail' ? fileNm(p, 'شيت-تفصيلي', 'pdf') : repName(p, 'pdf');
+    var nm = o.type === 'items' ? fileNm(p, 'إجمالي-حسب-البند', 'pdf') : o.type === 'detail' ? fileNm(p, 'شيت-تفصيلي', 'pdf') : o.type === 'receipt' ? fileNm(p, 'ريسيت-العمال', 'pdf') : repName(p, 'pdf');
     return chain.then(function(){ stage.innerHTML = ''; return { blob: doc.output('blob'), name: nm }; }, function(e){ stage.innerHTML = ''; throw e; });
   }
   function buildPdf(p, o){ return pdfBlob(p, o).then(function(r){ download(r.blob, r.name); }); }
   function printPages(p, o){
-    var host = document.getElementById('skPrintRoot'); pagesToDom(buildPages(p, o), host);
+    var host = document.getElementById('skPrintRoot'); pagesToDom(o && o.type === 'receipt' ? buildReceiptPages(p, o) : buildPages(p, o), host);
     fontsReady().then(function(){
       document.body.classList.add('sk-printing');
       var done = function(){ document.body.classList.remove('sk-printing'); host.innerHTML = ''; window.removeEventListener('afterprint', done); };
