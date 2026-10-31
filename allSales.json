@@ -1,5 +1,31 @@
 [
   {
+    "date": "31/10/2026",
+    "orderNo": 75,
+    "client": "سامكريت مصر",
+    "buyPrice": 0,
+    "sellPrice": 42400,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 8474700.0,
+    "actualWeight": 199.875,
+    "paymentMethod": ""
+  },
+  {
+    "date": "30/10/2026",
+    "orderNo": 74,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 42000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 4250820.0,
+    "actualWeight": 101.21000000000001,
+    "paymentMethod": ""
+  },
+  {
     "date": "19/10/2026",
     "orderNo": 73,
     "client": "فالتور",
