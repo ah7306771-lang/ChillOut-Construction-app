@@ -6749,13 +6749,17 @@ window.safeFileName = function(str){
           });
           // كل واحد بيتحسب لوحده: الحضور على ميعاد الحضور، والانصراف على ميعاد الانصراف
           var inM = attMin_(b.i), outM = attMin_(b.o), lateIn = null, exIn = 0, early = null, exOut = 0, raw, hol = isOfficialHoliday_(k);
+          // لو الانصراف عدّى نص الليل (بصمة فجرية مرحّلة أو شفت ممتد)، نضيف 24 ساعة عشان الحساب يبقى صح
+          // (ميعاد الانصراف الفعلي بقى بعد منتصف الليل → اعتبره "زيادة" أو شغل إضافي، مش انصراف مبكر)
+          var outMadj = outM;
+          if (outM != null && inM != null && outM < inM) outMadj = outM + 1440;
           if (b._shiftedFromNext) notes.unshift('بصمة فجرية مرحّلة من اليوم التالي');
           if (hol) notes.unshift('جمعة — إجازة رسمية' + (b.i ? ' (حضر)' : ''));
           if (!hol && inM != null && offI != null) { raw = inM - offI; exIn = raw > 0 ? attOverlap_(rng, offI, inM) : 0; lateIn = raw - exIn; }
-          if (!hol && outM != null && offO != null) { raw = offO - outM; exOut = raw > 0 ? attOverlap_(rng, outM, offO) : 0; early = raw - exOut; }
+          if (!hol && outMadj != null && offO != null) { raw = offO - outMadj; exOut = raw > 0 ? attOverlap_(rng, outMadj, offO) : 0; early = raw - exOut; }
           if (b.i) present++;
-          if (inM != null && outM != null && outM > inM) { workMin += outM - inM; workDays++; }   // ساعات الحضور الفعلية: الأيام اللي فيها حضور وانصراف مسجّلين
-          if (!hol) { if (inM != null) { sIn += inM; nIn++; } if (outM != null) { sOut += outM; nOut++; } }   // للمتوسط
+          if (inM != null && outMadj != null && outMadj > inM) { workMin += outMadj - inM; workDays++; }   // ساعات الحضور الفعلية: الأيام اللي فيها حضور وانصراف مسجّلين
+          if (!hol) { if (inM != null) { sIn += inM; nIn++; } if (outM != null) { sOut += outM; nOut++; } }   // للمتوسط (نستخدم الوقت الأصلي من غير +24)
           if (lateIn != null) { if (lateIn > 0) { lateDays++; tLate += lateIn; } else if (lateIn < 0) tExtra += -lateIn; }
           if (early != null) { if (early > 0) { earlyDays++; tEarly += early; } else if (early < 0) tExtra += -early; }
           var x = {}; Object.keys(b.x).forEach(function(c){ x[c] = b.x[c].length === 1 ? b.x[c][0] : b.x[c].join(' | '); });
