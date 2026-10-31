@@ -6854,8 +6854,6 @@ window.safeFileName = function(str){
           attBoxPdf_('ميعاد الحضور (اللائحة)', e.off.i || '—') + attBoxPdf_('ميعاد الانصراف (اللائحة)', e.off.o || '—') + attBoxPdf_('أيام الحضور', e.present) + attBoxPdf_('أيام التأخير / الانصراف المبكر', e.lateDays + ' / ' + e.earlyDays) + '</tr><tr>' +
           attBoxPdf_('إجمالي تأخير الحضور', attSigned_(e.tLate), e.tLate ? ATT_RED : '') + attBoxPdf_('إجمالي الانصراف المبكر', attSigned_(e.tEarly), e.tEarly ? ATT_RED : '') +
           attBoxPdf_('زيادة (حضر بدري / مشي متأخر)', e.tExtra ? attSigned_(-e.tExtra) : '0:00', e.tExtra ? ATT_GREEN : '') + attBoxPdf_('الصافي (موجب = عليه / سالب = له)', attSigned_(e.net), netColor) + '</tr><tr>' +
-          attBoxPdf_('ساعات الحضور الفعلية', attSigned_(e.workMin)) + attBoxPdf_('المفترض (' + attSigned_(e.expDay) + ' س × ' + ATT_EXP_DAYS_ + ' يوم)', attSigned_(e.expMin)) +
-          attBoxPdf_('الفرق (+ زيادة / − نقص)', attDiffTxt_(e.diffMin), e.diffMin > 0 ? ATT_GREEN : (e.diffMin < 0 ? ATT_RED : '')) + attBoxPdf_('أيام محسوبة (حضور + انصراف)', e.workDays) + '</tr><tr>' +
           attBox2_('أيام الغياب (بدون إذن / إجازة)', e.absent, e.absent ? ATT_RED : '') + attBox2_('بصمة ناقصة (حضور بدون انصراف أو العكس)', e.missPunch, e.missPunch ? '#b9770e' : '') + '</tr>' +
           (e.rs.leaveDays ? '<tr>' + attBoxPdf_('أيام إجازة اعتيادي', e.rs.kd['اعتيادي']) + attBoxPdf_('أيام إجازة عارضة', e.rs.kd['عارضة']) + attBoxPdf_('أيام إجازة مرضي', e.rs.kd['مرضي']) + attBoxPdf_('أيام بدون مرتب (خصم)', e.rs.kd['بدون مرتب'], e.rs.kd['بدون مرتب'] ? ATT_RED : '') + '</tr>' : '') + '</table>' +
         '';
