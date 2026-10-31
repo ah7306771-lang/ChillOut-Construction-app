@@ -2,9 +2,9 @@
   "rows": [
     {
       "client": "الامين",
-      "count": 2,
-      "amount": 27715.5,
-      "avgDelay": 20
+      "count": 3,
+      "amount": 2627715.499999999,
+      "avgDelay": 14
     },
     {
       "client": "بينتاكون",
@@ -32,8 +32,8 @@
     }
   ],
   "grandTotal": {
-    "count": 17,
-    "amount": 30200837.5421345,
-    "avgDelay": 13.05882352941262
+    "count": 18,
+    "amount": 32800837.5421345,
+    "avgDelay": 12.444444444445253
   }
 }
