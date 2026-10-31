@@ -6676,6 +6676,9 @@ window.safeFileName = function(str){
   var ATT_KNOWN_ = { name: 1, date: 1, in_time: 1, out_time: 1 };
   // الساعات المفترضة في الشهر = ساعات اليوم × عدد أيام الشهر المفترضة (غيّر الرقمين هنا لو اتغيرت اللائحة)
   var ATT_EXP_DAY_H_ = 8, ATT_EXP_DAYS_ = 26;   // ساعات اليوم الافتراضية (لو الموظف ملوش لائحة) × أيام الشهر المفترضة
+  // بصمة فجرية: أي بصمة قبل الساعة دي بالصبح ومعاها حقل واحد بس (in أو out) بتتحسب انصراف لليوم السابق.
+  // غيّر الرقم ده لو ساعات العمل عندك متأخرة أكثر (مثلاً 7 أو 8 صباحًا).
+  var ATT_NIGHT_CUTOFF_H_ = 6;
   function attDiffTxt_(m){ return m == null ? '' : (m > 0 ? '+' : '') + attSigned_(m); }
 
   function attBuildReport_(month, empFilter, includeEmpty){
@@ -6700,9 +6703,20 @@ window.safeFileName = function(str){
         var off = offMap[n] || { i: '', o: '' }, offI = attMin_(off.i), offO = attMin_(off.o), byDate = {};
         att.forEach(function(r){
           if (r.name !== n) return;
-          var b = byDate[r.date] || (byDate[r.date] = { i: '', o: '', x: {} }), i = attHM_(r.in_time), o = attHM_(r.out_time);
+          var i = attHM_(r.in_time), o = attHM_(r.out_time), dateKey = r.date, shifted = false;
+          // بصمة فجرية بسجل واحد = انصراف لليوم السابق (مثلاً بصم 00:12 اتسجلت تاني يوم)
+          if ((!!i) !== (!!o)) {
+            var tm = i || o, hr = +String(tm).slice(0, 2);
+            if (hr < ATT_NIGHT_CUTOFF_H_) {
+              var _p = new Date(dateKey + 'T00:00:00'); _p.setDate(_p.getDate() - 1);
+              dateKey = _p.getFullYear() + '-' + attendancePad(_p.getMonth() + 1) + '-' + attendancePad(_p.getDate());
+              o = tm; i = ''; shifted = true;
+            }
+          }
+          var b = byDate[dateKey] || (byDate[dateKey] = { i: '', o: '', x: {} });
           if (i && (!b.i || i < b.i)) b.i = i;
           if (o && (!b.o || o > b.o)) b.o = o;
+          if (shifted) b._shiftedFromNext = true;
           extraCols.forEach(function(k){
             var v = r[k]; if (v == null || v === '') return;
             if (typeof v === 'object') v = JSON.stringify(v);
@@ -6735,6 +6749,7 @@ window.safeFileName = function(str){
           });
           // كل واحد بيتحسب لوحده: الحضور على ميعاد الحضور، والانصراف على ميعاد الانصراف
           var inM = attMin_(b.i), outM = attMin_(b.o), lateIn = null, exIn = 0, early = null, exOut = 0, raw, hol = isOfficialHoliday_(k);
+          if (b._shiftedFromNext) notes.unshift('بصمة فجرية مرحّلة من اليوم التالي');
           if (hol) notes.unshift('جمعة — إجازة رسمية' + (b.i ? ' (حضر)' : ''));
           if (!hol && inM != null && offI != null) { raw = inM - offI; exIn = raw > 0 ? attOverlap_(rng, offI, inM) : 0; lateIn = raw - exIn; }
           if (!hol && outM != null && offO != null) { raw = offO - outM; exOut = raw > 0 ? attOverlap_(rng, outM, offO) : 0; early = raw - exOut; }
@@ -6810,6 +6825,25 @@ window.safeFileName = function(str){
             attCellPdf_(r.lateIn) + attCellPdf_(r.early) + '<td style="' + ATT_TD + ';text-align:right;font-size:12.5px;line-height:1.25">' + attEsc_(r.note) + '</td></tr>' };
       });
       if (!rows.length) rows.push({ w: 1, h: '<tr><td style="' + ATT_TD + '" colspan="7">لا توجد حركات في هذا الشهر</td></tr>' });
+      // تذييل كل موظف: مجموع تأخير الحضور + مجموع الانصراف المبكر + الفرق بينهم
+      var _footDiff = (e.tLate || 0) - (e.tEarly || 0);
+      var _footDiffColor = _footDiff > 0 ? ATT_RED : (_footDiff < 0 ? ATT_GREEN : '');
+      var _footLateHtml = e.tLate ? '<b style="color:' + ATT_RED + '"><span dir="ltr">' + attSigned_(e.tLate) + '</span></b>' : '0:00';
+      var _footEarlyHtml = e.tEarly ? '<b style="color:' + ATT_RED + '"><span dir="ltr">' + attSigned_(e.tEarly) + '</span></b>' : '0:00';
+      var _footDiffHtml = '<b' + (_footDiffColor ? ' style="color:' + _footDiffColor + '"' : '') + '><span dir="ltr">' + attSigned_(_footDiff) + '</span></b>';
+      var _footTD = ATT_TD + ';background:#f3ece4;font-weight:800';
+      var _footHtml =
+        '<tr>' +
+          '<td style="' + _footTD + '" colspan="4">الإجمالي</td>' +
+          '<td style="' + _footTD + '">' + _footLateHtml + '</td>' +
+          '<td style="' + _footTD + '">' + _footEarlyHtml + '</td>' +
+          '<td style="' + _footTD + '"></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="' + _footTD + '" colspan="4">الفرق (تأخير حضور − انصراف مبكر)</td>' +
+          '<td style="' + _footTD + '" colspan="2">' + _footDiffHtml + '</td>' +
+          '<td style="' + _footTD + '"></td>' +
+        '</tr>';
       var netColor = e.net > 0 ? ATT_RED : (e.net < 0 ? ATT_GREEN : '');
       var head = '<h2 style="text-align:center;margin:0 0 1px;font-size:25px;font-weight:800;line-height:1.2">تقرير الحضور والانصراف</h2><div style="text-align:center;margin-bottom:3px;font-size:15px">الموظف: <b>' + attEsc_(e.name) + '</b> — الشهر: ' + rep.month + '</div>' +
         '<table style="width:100%;border-collapse:collapse;margin-bottom:2px;font-size:13px;line-height:1.25"><tr>' +
@@ -6823,9 +6857,18 @@ window.safeFileName = function(str){
         '';
       // سعة كل صفحة بالتقدير: الصفحة الأولى فيها الهيدر والملخص فسعتها أقل. الصفحات التالية فيها سطر "تابع" صغير بس.
       // الوزن w = 1 + دقائق الملاحظات الطويلة اللي بتلف لأكتر من سطر — عشان نقدر نحسب الارتفاع الفعلي.
+      // بنحجز سطرين في الآخر لتذييل الإجماليات (مجموع التأخير + مجموع الانصراف المبكر + الفرق)
+      var FOOT_W = 2;
       var chunks = [], cur = '', w = 0, cap = e.rs.leaveDays ? 23 : 26;
-      rows.forEach(function(r){ if (cur && w + r.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 32; } cur += r.h; w += r.w; });
+      rows.forEach(function(r, _ri){
+        var isLast = _ri === rows.length - 1;
+        var extra = isLast ? FOOT_W : 0;   // آخر سطر لازم مع التذييل يكفوا سوا
+        if (cur && w + r.w + extra > cap) { chunks.push(cur); cur = ''; w = 0; cap = 32; }
+        cur += r.h; w += r.w;
+      });
       chunks.push(cur);
+      // ألصق تذييل الإجماليات في آخر صفحة؛ لو الصفحة الأخيرة مش فاضية بما يكفي، افتح صفحة جديدة مخصوصة ليه
+      if (w + FOOT_W > cap) { chunks.push(_footHtml); } else { chunks[chunks.length - 1] += _footHtml; }
       chunks.forEach(function(c, idx){
         pages.push('<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:4px 26px 40px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:15px;font-weight:700;overflow:hidden">' +
           (idx === 0 ? head : '<div style="margin-bottom:4px;color:#666;font-size:13px">' + attEsc_(e.name) + ' — تابع التقرير</div>') +
