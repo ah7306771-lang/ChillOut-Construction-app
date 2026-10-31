@@ -6805,7 +6805,7 @@ window.safeFileName = function(str){
     rep.emps.forEach(function(e){
       var th = '<tr><th style="' + ATT_TH + '">التاريخ</th><th style="' + ATT_TH + '">اليوم</th><th style="' + ATT_TH + '">حضور</th><th style="' + ATT_TH + '">انصراف</th><th style="' + ATT_TH + '">تأخير حضور<br>(س:د)</th><th style="' + ATT_TH + '">انصراف مبكر<br>(س:د)</th><th style="' + ATT_TH + '">ملاحظات</th></tr>';
       var rows = e.days.map(function(r){
-        return { w: 1 + Math.floor((r.note || '').length / 40),
+        return { w: 1 + Math.floor((r.note || '').length / 30),
           h: '<tr><td style="' + ATT_TD + ';white-space:nowrap">' + r.d + '</td><td style="' + ATT_TD + ';white-space:nowrap">' + attEsc_(r.day) + '</td><td style="' + ATT_TD + '">' + (r.i || '—') + '</td><td style="' + ATT_TD + '">' + (r.o || '—') + '</td>' +
             attCellPdf_(r.lateIn) + attCellPdf_(r.early) + '<td style="' + ATT_TD + ';text-align:right;font-size:12.5px;line-height:1.25">' + attEsc_(r.note) + '</td></tr>' };
       });
@@ -6821,8 +6821,10 @@ window.safeFileName = function(str){
           attBox2_('أيام الغياب (بدون إذن / إجازة)', e.absent, e.absent ? ATT_RED : '') + attBox2_('بصمة ناقصة (حضور بدون انصراف أو العكس)', e.missPunch, e.missPunch ? '#b9770e' : '') + '</tr>' +
           (e.rs.leaveDays ? '<tr>' + attBoxPdf_('أيام إجازة اعتيادي', e.rs.kd['اعتيادي']) + attBoxPdf_('أيام إجازة عارضة', e.rs.kd['عارضة']) + attBoxPdf_('أيام إجازة مرضي', e.rs.kd['مرضي']) + attBoxPdf_('أيام بدون مرتب (خصم)', e.rs.kd['بدون مرتب'], e.rs.kd['بدون مرتب'] ? ATT_RED : '') + '</tr>' : '') + '</table>' +
         '';
-      var chunks = [], cur = '', w = 0, cap = e.rs.leaveDays ? 32 : 34;   // الصفحة الأولى فيها الهيدر والملخص، فسعتها أقل
-      rows.forEach(function(r){ if (cur && w + r.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 38; } cur += r.h; w += r.w; });
+      // سعة كل صفحة بالتقدير: الصفحة الأولى فيها الهيدر والملخص فسعتها أقل. الصفحات التالية فيها سطر "تابع" صغير بس.
+      // الوزن w = 1 + دقائق الملاحظات الطويلة اللي بتلف لأكتر من سطر — عشان نقدر نحسب الارتفاع الفعلي.
+      var chunks = [], cur = '', w = 0, cap = e.rs.leaveDays ? 23 : 26;
+      rows.forEach(function(r){ if (cur && w + r.w > cap) { chunks.push(cur); cur = ''; w = 0; cap = 32; } cur += r.h; w += r.w; });
       chunks.push(cur);
       chunks.forEach(function(c, idx){
         pages.push('<div style="position:relative;width:794px;height:1123px;box-sizing:border-box;padding:4px 26px 40px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:15px;font-weight:700;overflow:hidden">' +
@@ -6874,6 +6876,9 @@ window.safeFileName = function(str){
       var bg = isTot ? 'background:#e3eaf6;' : (idx % 2 ? 'background:#f6f8fc;' : '');
       var tot = isTot ? 'font-weight:800;border-top:2px solid ' + NAVY + ';' : '';
       var netCell = e.net > 0 ? td(mins(e.net, ATT_RED), 'background:#fdecea;') : (e.net < 0 ? td(mins(e.net, ATT_GREEN), 'background:#e6f5ec;') : td(dash));
+      // التزام يومي = الصافي ÷ أيام الحضور (مقياس عادل بين الموظفين)
+      var dailyMin = e.present ? Math.round(e.net / e.present) : null;
+      var dailyCell = dailyMin == null ? td(dash) : (dailyMin > 0 ? td(mins(dailyMin, ATT_RED), 'background:#fdecea;') : (dailyMin < 0 ? td(mins(dailyMin, ATT_GREEN), 'background:#e6f5ec;') : td(dash)));
       var cells = isTot
         ? '<td colspan="2" style="' + TD + ';background:#e3eaf6;font-weight:800;color:' + NAVY + ';border-top:2px solid ' + NAVY + '">الإجمالي (' + (idx) + ' موظف)</td>' + td('') + td('') + td('') + td('')
         : td('<span style="color:#6b7488">' + (idx + 1) + '</span>') + td(attEsc_(e.name), 'text-align:right;padding:0 8px;font-weight:800;color:#111') +
@@ -6887,22 +6892,22 @@ window.safeFileName = function(str){
       cells += td(cnt(e.present)) +
         td(cnt(e.lateDays, ATT_RED)) + td(mins(e.tLate, ATT_RED)) +
         td(cnt(e.earlyDays, ATT_RED)) + td(mins(e.tEarly, ATT_RED)) +
-        td(mins(e.tExtra, ATT_GREEN)) + netCell + hoursCells +
+        td(mins(e.tExtra, ATT_GREEN)) + netCell + dailyCell + hoursCells +
         td(cnt(e.rs.perm)) + td(cnt(e.rs.miss)) +
         td(cnt(e.rs.leaveDays)) + td(cnt(e.rs.kd['اعتيادي'])) + td(cnt(e.rs.kd['عارضة'])) + td(cnt(e.rs.kd['مرضي'])) + td(cnt(e.rs.kd['بدون مرتب'], ATT_RED));
       return '<tr style="' + bg + tot + '">' + cells + '</tr>';
     }
-    var colw = [20, 100, 38, 38, 38, 38, 38, 38, 43, 38, 43, 38, 38, 56, 56, 56, 38, 42, 41, 45, 38, 43, 38, 38, 43];
+    var colw = [20, 100, 38, 38, 38, 38, 38, 38, 43, 38, 43, 38, 38, 42, 56, 56, 56, 38, 42, 41, 45, 38, 43, 38, 38, 43];
     var colgroup = '<colgroup>' + colw.map(function(w){ return '<col style="width:' + w + 'px">'; }).join('') + '</colgroup>';
     var thead = '<thead>' +
       '<tr>' + th('م', BLUE, 'rowspan="2"') + th('الموظف', BLUE, 'rowspan="2"') + th('اللائحة', NAVY, 'colspan="2"') + th('المتوسط الفعلي', NAVY, 'colspan="2"') + th('أيام<br>الحضور', BLUE, 'rowspan="2"') +
-        th('التأخير', NAVY, 'colspan="2"') + th('الانصراف المبكر', NAVY, 'colspan="2"') + th('زيادة', BLUE, 'rowspan="2"') + th('الصافي', BLUE, 'rowspan="2"') + th('ساعات الشهر', NAVY, 'colspan="3"') + th('مؤثرات', NAVY, 'colspan="2"') +
+        th('التأخير', NAVY, 'colspan="2"') + th('الانصراف المبكر', NAVY, 'colspan="2"') + th('زيادة', BLUE, 'rowspan="2"') + th('الصافي', BLUE, 'rowspan="2"') + th('التزام<br>يومي', BLUE, 'rowspan="2"') + th('ساعات الشهر', NAVY, 'colspan="3"') + th('مؤثرات', NAVY, 'colspan="2"') +
         th('طلبات معتمدة', NAVY, 'colspan="2"') + th('الإجازات المعتمدة', NAVY, 'colspan="5"') + '</tr>' +
       '<tr>' + th('حضور', BLUE) + th('انصراف', BLUE) + th('حضور', BLUE) + th('انصراف', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) + th('أيام', BLUE) + th('الإجمالي', BLUE) + th('الفعلي', BLUE) + th('المفترض', BLUE) + th('الفرق', BLUE) + th('غياب', BLUE) + th('بصمة<br>ناقصة', BLUE) +
         th('أذونات', BLUE) + th('مأموريات', BLUE) + th('الأيام', BLUE) + th('اعتيادي', BLUE) + th('عارضة', BLUE) + th('مرضي', BLUE) + th('بدون<br>مرتب', BLUE) + '</tr></thead>';
     var rows = rep.emps.map(function(e, i){ return rowHtml(e, i, false); });
     if (rep.emps.length > 1) rows.push(rowHtml(attSumAgg_(rep.emps), rep.emps.length, true));
-    if (!rows.length) rows.push('<tr><td style="' + TD + '" colspan="25">لا توجد بيانات في هذا الشهر</td></tr>');
+    if (!rows.length) rows.push('<tr><td style="' + TD + '" colspan="26">لا توجد بيانات في هذا الشهر</td></tr>');
     var capFirst = 17, capNext = 20, chunks = [], i = 0;
     chunks.push(rows.slice(0, capFirst)); i = capFirst;
     while (i < rows.length) { chunks.push(rows.slice(i, i + capNext)); i += capNext; }
@@ -6913,7 +6918,7 @@ window.safeFileName = function(str){
         '<div style="font-size:14px;color:#333;margin-top:2px">الشهر: <b><span dir="ltr">' + rep.month + '</span></b> &nbsp;|&nbsp; الموظفون: <b>' + who + '</b></div></div>' +
         '<div style="font-size:11px;color:#444;line-height:1.7;text-align:right;font-weight:600">' +
           sq(ATT_RED) + 'أحمر = عليه (تأخير / انصراف مبكر) &nbsp; ' + sq(ATT_GREEN) + 'أخضر = له (حضر بدري / مشي متأخر)<br>' +
-          'الصافي = التأخير + الانصراف المبكر − الزيادة (بعد خصم المعتمد)<br>المتوسط الفعلي = متوسط أيام العمل العادية (بدون الجمعة والإجازات الرسمية)<br>الساعات: الفعلي = مجموع (الانصراف − الحضور) | المفترض = ساعات لائحة كل موظف × ' + ATT_EXP_DAYS_ + ' يوم | الفرق = الفعلي − المفترض<br>غياب = يوم عمل بدون حضور ولا طلب معتمد | بصمة ناقصة = حضور بدون انصراف أو العكس</div></div>';
+          'الصافي = التأخير + الانصراف المبكر − الزيادة (بعد خصم المعتمد)<br>التزام يومي = الصافي ÷ أيام الحضور — مقياس عادل للمقارنة بين الموظفين بغض النظر عن عدد أيام حضور كل واحد<br>المتوسط الفعلي = متوسط أيام العمل العادية (بدون الجمعة والإجازات الرسمية)<br>الساعات: الفعلي = مجموع (الانصراف − الحضور) | المفترض = ساعات لائحة كل موظف × ' + ATT_EXP_DAYS_ + ' يوم | الفرق = الفعلي − المفترض<br>غياب = يوم عمل بدون حضور ولا طلب معتمد | بصمة ناقصة = حضور بدون انصراف أو العكس</div></div>';
     var issued = attendanceTodayKey();
     return chunks.map(function(c, idx){
       return '<div style="position:relative;width:' + W + 'px;height:' + H + 'px;box-sizing:border-box;padding:18px 18px 38px;background:#fff;color:#111;font-family:Cairo,sans-serif;direction:rtl;font-size:13px;font-weight:700;overflow:hidden">' +
@@ -6946,14 +6951,15 @@ window.safeFileName = function(str){
   function attXlsData_(rep){
     var sum = [['الموظف', 'الحضور الرسمي', 'الانصراف الرسمي', 'متوسط الحضور الفعلي', 'متوسط الانصراف الفعلي', 'أيام الحضور', 'أيام تأخير الحضور', 'إجمالي تأخير الحضور (دقيقة)', 'إجمالي تأخير الحضور (س:د)',
       'أيام الانصراف المبكر', 'إجمالي الانصراف المبكر (دقيقة)', 'إجمالي الانصراف المبكر (س:د)', 'زيادة: حضر بدري / مشي متأخر (دقيقة)', 'زيادة (س:د)',
-      'الصافي (دقيقة) موجب = عليه / سالب = له', 'الصافي (س:د)', 'ساعات الحضور الفعلية (س:د)', 'الساعات المفترضة (س:د)', 'الفرق (س:د) موجب = زيادة / سالب = نقص', 'أيام غياب', 'بصمة ناقصة (أيام)', 'أذونات معتمدة', 'مأموريات معتمدة', 'أيام إجازة معتمدة', 'منها اعتيادي', 'منها عارضة', 'منها مرضي', 'منها بدون مرتب (خصم)', 'طلبات مرفوضة', 'طلبات قيد المراجعة']];
+      'الصافي (دقيقة) موجب = عليه / سالب = له', 'الصافي (س:د)', 'ساعات الحضور الفعلية (س:د)', 'الساعات المفترضة (س:د)', 'الفرق (س:د) موجب = زيادة / سالب = نقص', 'أيام غياب', 'بصمة ناقصة (أيام)', 'أذونات معتمدة', 'مأموريات معتمدة', 'أيام إجازة معتمدة', 'منها اعتيادي', 'منها عارضة', 'منها مرضي', 'منها بدون مرتب (خصم)', 'طلبات مرفوضة', 'طلبات قيد المراجعة', 'التزام يومي (دقيقة)', 'التزام يومي (س:د)']];
     var det = [['الموظف', 'التاريخ', 'اليوم', 'الحضور الرسمي', 'الانصراف الرسمي', 'حضور', 'انصراف',
       'تأخير الحضور (دقيقة)', 'تأخير الحضور (س:د)', 'انصراف مبكر (دقيقة)', 'انصراف مبكر (س:د)', 'مغطّى بطلب صباحًا (دقيقة)', 'مغطّى بطلب انصرافًا (دقيقة)',
       'نوع الطلب', 'حالة الطلب', 'وقت الطلب', 'سبب الطلب', 'ملاحظات']];
     rep.extraCols.forEach(function(c){ det[0].push(ATT_AR_COLS_[c] || c); });
     rep.emps.forEach(function(e){
+      var dailyMinE = e.present ? Math.round(e.net / e.present) : null;
       sum.push([e.name, e.off.i, e.off.o, attAvgHM_(e.avgIn), attAvgHM_(e.avgOut), e.present, e.lateDays, e.tLate, attSigned_(e.tLate), e.earlyDays, e.tEarly, attSigned_(e.tEarly),
-        e.tExtra, attSigned_(e.tExtra), e.net, attSigned_(e.net), attSigned_(e.workMin), attSigned_(e.expMin), attDiffTxt_(e.diffMin), e.absent, e.missPunch, e.rs.perm, e.rs.miss, e.rs.leaveDays, e.rs.kd['اعتيادي'], e.rs.kd['عارضة'], e.rs.kd['مرضي'], e.rs.kd['بدون مرتب'], e.rs.rej, e.rs.pend]);
+        e.tExtra, attSigned_(e.tExtra), e.net, attSigned_(e.net), attSigned_(e.workMin), attSigned_(e.expMin), attDiffTxt_(e.diffMin), e.absent, e.missPunch, e.rs.perm, e.rs.miss, e.rs.leaveDays, e.rs.kd['اعتيادي'], e.rs.kd['عارضة'], e.rs.kd['مرضي'], e.rs.kd['بدون مرتب'], e.rs.rej, e.rs.pend, dailyMinE == null ? '' : dailyMinE, attSigned_(dailyMinE)]);
       e.days.forEach(function(r){
         var row = [e.name, r.d, r.day, e.off.i, e.off.o, r.i, r.o,
           r.lateIn == null ? '' : r.lateIn, attSigned_(r.lateIn), r.early == null ? '' : r.early, attSigned_(r.early), r.exIn, r.exOut,
