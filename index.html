@@ -6825,12 +6825,12 @@ window.safeFileName = function(str){
             attCellPdf_(r.lateIn) + attCellPdf_(r.early) + '<td style="' + ATT_TD + ';text-align:right;font-size:12.5px;line-height:1.25">' + attEsc_(r.note) + '</td></tr>' };
       });
       if (!rows.length) rows.push({ w: 1, h: '<tr><td style="' + ATT_TD + '" colspan="7">لا توجد حركات في هذا الشهر</td></tr>' });
-      // تذييل كل موظف: مجموع تأخير الحضور + مجموع الانصراف المبكر + الفرق بينهم
-      var _footDiff = (e.tLate || 0) - (e.tEarly || 0);
-      var _footDiffColor = _footDiff > 0 ? ATT_RED : (_footDiff < 0 ? ATT_GREEN : '');
+      // تذييل كل موظف: مجموع تأخير الحضور + مجموع الانصراف المبكر + مجموعهما سوا (كلاهما عليه)
+      var _footSum = (e.tLate || 0) + (e.tEarly || 0);
+      var _footSumColor = _footSum ? ATT_RED : '';
       var _footLateHtml = e.tLate ? '<b style="color:' + ATT_RED + '"><span dir="ltr">' + attSigned_(e.tLate) + '</span></b>' : '0:00';
       var _footEarlyHtml = e.tEarly ? '<b style="color:' + ATT_RED + '"><span dir="ltr">' + attSigned_(e.tEarly) + '</span></b>' : '0:00';
-      var _footDiffHtml = '<b' + (_footDiffColor ? ' style="color:' + _footDiffColor + '"' : '') + '><span dir="ltr">' + attSigned_(_footDiff) + '</span></b>';
+      var _footSumHtml = '<b' + (_footSumColor ? ' style="color:' + _footSumColor + '"' : '') + '><span dir="ltr">' + attSigned_(_footSum) + '</span></b>';
       var _footTD = ATT_TD + ';background:#f3ece4;font-weight:800';
       var _footHtml =
         '<tr>' +
@@ -6840,8 +6840,8 @@ window.safeFileName = function(str){
           '<td style="' + _footTD + '"></td>' +
         '</tr>' +
         '<tr>' +
-          '<td style="' + _footTD + '" colspan="4">الفرق (تأخير حضور − انصراف مبكر)</td>' +
-          '<td style="' + _footTD + '" colspan="2">' + _footDiffHtml + '</td>' +
+          '<td style="' + _footTD + '" colspan="4">الإجمالي الكلي (تأخير حضور + انصراف مبكر)</td>' +
+          '<td style="' + _footTD + '" colspan="2">' + _footSumHtml + '</td>' +
           '<td style="' + _footTD + '"></td>' +
         '</tr>';
       var netColor = e.net > 0 ? ATT_RED : (e.net < 0 ? ATT_GREEN : '');
