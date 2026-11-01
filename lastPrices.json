@@ -2671,5 +2671,14 @@
     "paymentMethod": "",
     "lastInvoiceDate": "31/10/2026",
     "actualWeight": 16.005
+  },
+  {
+    "client": "اشرف حفناوي",
+    "lastBuyPrice": 2900,
+    "lastSellPrice": 0,
+    "saleOrderNo": 76,
+    "paymentMethod": "",
+    "lastInvoiceDate": "01/11/2026",
+    "actualWeight": 22
   }
 ]
