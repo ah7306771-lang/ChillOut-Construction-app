@@ -2584,92 +2584,101 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41150,
     "lastSellPrice": 42000,
     "saleOrderNo": 74,
     "paymentMethod": "",
-    "lastInvoiceDate": "30/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 19.91
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41150,
     "lastSellPrice": 42000,
     "saleOrderNo": 74,
     "paymentMethod": "",
-    "lastInvoiceDate": "30/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 19.725
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41150,
     "lastSellPrice": 42000,
     "saleOrderNo": 74,
     "paymentMethod": "",
-    "lastInvoiceDate": "30/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 11.955
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41150,
     "lastSellPrice": 42000,
     "saleOrderNo": 74,
     "paymentMethod": "",
-    "lastInvoiceDate": "30/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 49.62
   },
   {
     "client": "سامكريت مصر",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 40000,
     "lastSellPrice": 42400,
     "saleOrderNo": 75,
     "paymentMethod": "",
-    "lastInvoiceDate": "31/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 10.515
   },
   {
     "client": "سامكريت مصر",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 42500,
     "lastSellPrice": 42400,
     "saleOrderNo": 75,
     "paymentMethod": "",
-    "lastInvoiceDate": "31/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 15.84
   },
   {
     "client": "سامكريت مصر",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41700,
     "lastSellPrice": 42400,
     "saleOrderNo": 75,
     "paymentMethod": "",
-    "lastInvoiceDate": "31/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 73.02
   },
   {
     "client": "سامكريت مصر",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41700,
     "lastSellPrice": 42400,
     "saleOrderNo": 75,
     "paymentMethod": "",
-    "lastInvoiceDate": "31/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 64.62
   },
   {
     "client": "سامكريت مصر",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 42500,
     "lastSellPrice": 42400,
     "saleOrderNo": 75,
     "paymentMethod": "",
-    "lastInvoiceDate": "31/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 19.875
   },
   {
     "client": "سامكريت مصر",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 42500,
     "lastSellPrice": 42400,
     "saleOrderNo": 75,
     "paymentMethod": "",
-    "lastInvoiceDate": "31/10/2026",
+    "lastInvoiceDate": "01/11/2026",
     "actualWeight": 16.005
+  },
+  {
+    "client": "اشرف حفناوي",
+    "lastBuyPrice": 2900,
+    "lastSellPrice": 0,
+    "saleOrderNo": 76,
+    "paymentMethod": "",
+    "lastInvoiceDate": "01/11/2026",
+    "actualWeight": 22
   }
 ]
