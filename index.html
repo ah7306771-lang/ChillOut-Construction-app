@@ -1610,7 +1610,7 @@
 /* ================= سراكي عمال ================= */
 #sarrakiScreen{align-items:flex-start;padding:70px 10px 40px}
 #sarrakiScreen .back-bar{top:30px !important;padding:6px 12px !important}
-#sarrakiScreen .gate-card{max-width:min(98vw,1180px);text-align:right}
+#sarrakiScreen .gate-card{max-width:min(99vw,1900px);text-align:right}
 #sarrakiScreen .gate-title{font-size:20px;margin:0;text-align:right}
 .sk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
 .sk-sync{font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#eaf6ef;color:#1f7a4c;border:1px solid #b7e0c8;white-space:nowrap}
@@ -1939,7 +1939,7 @@ select.sk-in{padding:0 4px;min-width:130px}
 
 /* ===== السراكي: تخطيط تطبيق (app-shell) — الجدول ياخد كل المساحة المتاحة وبيتسكرول جواه ===== */
 #sarrakiScreen{height:100vh;height:100dvh;min-height:0 !important;overflow:hidden;padding:60px 3px 4px !important;box-sizing:border-box}
-#sarrakiScreen .gate-card{display:flex;flex-direction:column;height:100%;min-height:0;margin:0 auto !important;max-width:min(98vw,1180px) !important;padding:4px 6px 4px !important;box-sizing:border-box}
+#sarrakiScreen .gate-card{display:flex;flex-direction:column;height:100%;min-height:0;margin:0 auto !important;max-width:min(99vw,1900px) !important;padding:4px 10px 4px !important;box-sizing:border-box}
 #sarrakiScreen .gate-card > *{flex:none}
 #sarrakiScreen .gate-card > #skBody{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
 #sarrakiScreen #skBody.dayv{display:flex;flex-direction:column;overflow:hidden}
@@ -1996,6 +1996,43 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-md .rpsec{font-weight:800;font-size:13px;color:var(--steel-dark);margin:12px 0 2px;padding-top:8px;border-top:1px dashed var(--panel-line)}
 .sk-md .rpsec:first-of-type{border-top:none;padding-top:0}
 .sk-md .btns.sm .btn{min-width:80px;padding:8px 8px;font-size:12.5px}
+
+/* ===== سراكي: تنسيق مريح للشاشة الكبيرة (ديسكتوب ≥ 1200px) — تملي الشاشة بالكامل مع فونت وحقول مريحة ===== */
+@media (min-width:1200px){
+  #sarrakiScreen{padding:56px 10px 32px !important}
+  #sarrakiScreen .gate-card{padding:10px 16px 8px !important;max-width:min(99vw,1900px) !important}
+  #sarrakiScreen .gate-title{font-size:19px}
+  #sarrakiScreen .sk-head{margin:0 0 8px}
+  #sarrakiScreen .sk-sync{font-size:12px;padding:4px 12px}
+  #sarrakiScreen .sk-master{padding:10px 14px;gap:10px;border-radius:12px}
+  #sarrakiScreen .sk-f label{font-size:12.5px;margin-bottom:4px}
+  #sarrakiScreen .sk-f input,#sarrakiScreen .sk-f select,#sarrakiScreen .sk-f .sk-badge{height:34px;font-size:13.5px;border-radius:9px;padding:0 10px}
+  #sarrakiScreen .sk-master .btn{height:34px;font-size:13px;padding:0 14px}
+  #sarrakiScreen .sk-tabs{margin:8px 0 6px;gap:4px}
+  #sarrakiScreen .sk-tab{font-size:14px;padding:9px 18px}
+  #sarrakiScreen .sk-days{padding:4px 0 8px;gap:6px}
+  #sarrakiScreen .sk-chip{flex:1 0 92px;padding:7px 6px;line-height:1.3}
+  #sarrakiScreen .sk-chip b,#sarrakiScreen .sk-chip span{display:block;font-size:13px}
+  #sarrakiScreen .sk-chip span{margin-top:1px;font-size:11.5px}
+  #sarrakiScreen .sk-chip i{display:inline-block;margin-top:3px;font-size:11.5px;padding:0 8px}
+  #sarrakiScreen .sk-tools{margin:4px 0 8px;gap:6px}
+  #sarrakiScreen .sk-tools button{font-size:12.5px;padding:7px 12px;border-radius:9px}
+  #sarrakiScreen .sk-add{gap:8px;padding:10px}
+  #sarrakiScreen .sk-add input,#sarrakiScreen .sk-add select{height:36px;font-size:13.5px}
+  #sarrakiScreen .sk-add button{height:36px;padding:0 18px}
+  #sarrakiScreen .sk-t{font-size:13.5px;min-width:0}
+  #sarrakiScreen .sk-t th{font-size:12.5px;padding:9px 6px}
+  #sarrakiScreen .sk-t td{padding:6px 4px}
+  #sarrakiScreen .sk-in{height:34px;font-size:13.5px}
+  #sarrakiScreen .sk-sum{gap:10px;margin-top:10px;grid-template-columns:repeat(4,1fr)}
+  #sarrakiScreen .sk-sum div{padding:9px 12px;font-size:12.5px;border-radius:12px}
+  #sarrakiScreen .sk-sum b{font-size:17px}
+  #sarrakiScreen .sk-fix{width:min(99vw,1900px);padding:5px 10px calc(5px + env(safe-area-inset-bottom,0px));border-radius:12px 12px 0 0}
+  #sarrakiScreen .sk-fix > div{padding:3px 10px;gap:6px}
+  #sarrakiScreen .sk-fix span{font-size:11.5px}
+  #sarrakiScreen .sk-fix b{font-size:13.5px}
+  #sarrakiScreen .sk-sec{font-size:14.5px;margin:14px 0 7px}
+}
 /* الشيت التفصيلي (A4 طولي) — بنفس شكل شيت العمالة */
 .skp.dt{padding:20px 26px}
 .skp .dtop{display:flex;gap:18px;justify-content:flex-start;font-size:10.5px;color:#1a237e;font-weight:700;margin-bottom:4px}
@@ -16910,6 +16947,8 @@ window.safeFileName = function(str){
     modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
       '<div class="rpsec">① الشيت الإجمالي (حسب البند)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-primary" id="rpIX">📊 Excel</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpIXS">📤 مشاركة Excel</button></div>' +
+      '<div class="rpsec">①.أ المشروع حسب البنود (كل مشروع فيه بنوده + إجمالي كل بند + إجمالي المشروع + إجمالي عام)</div>' +
+      '<div class="btns sm"><button class="btn btn-primary" id="rpPI">📑 PDF</button><button class="btn btn-primary" id="rpPIX">📊 Excel</button><button class="btn btn-secondary" id="rpPIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpPIXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">② شيت العمالة التفصيلي (سطر لكل عامل / أسبوع / مشروع)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpD">📋 PDF</button><button class="btn btn-primary" id="rpDX">📊 Excel</button><button class="btn btn-secondary" id="rpDS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpDXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">③ كشف الفترة (يومي / أسبوعي)</div>' +
@@ -16926,6 +16965,7 @@ window.safeFileName = function(str){
       var fail = function(pre){ return function(e){ msg(pre + ': ' + ((e && e.message) || e)); }; };
       var xlsDetail = function(){ return detailExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'شيت-تفصيلي', 'xlsx') }; }); };
       var xlsItems  = function(){ return itemsExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'إجمالي-حسب-البند', 'xlsx') }; }); };
+      var xlsProjectItems = function(){ return projectItemsExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'المشروع-حسب-البنود', 'xlsx') }; }); };
       // مشاركة: بنجهّز الملف وبعدين Web Share (لو الجهاز بيرفض لأن الضغطة قديمة بنطلب ضغطة تانية)
       function share(job, label){
         msg('جارٍ تجهيز الملف… (ممكن ياخد لحظات)');
@@ -16948,6 +16988,11 @@ window.safeFileName = function(str){
       q('#rpIX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(xlsItems); };
       q('#rpIS').onclick = function(){ share(function(){ return pdfBlob(p, { type: 'items' }); }, 'سراكي عمال — الشيت الإجمالي حسب البند'); };
       q('#rpIXS').onclick = function(){ share(xlsItems, 'سراكي عمال — الشيت الإجمالي حسب البند (Excel)'); };
+      // ①.أ المشروع حسب البنود
+      q('#rpPI').onclick = function(){ msg('جارٍ إنشاء تقرير المشروع حسب البنود… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, { type: 'projectItems' }); }); };
+      q('#rpPIX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(xlsProjectItems); };
+      q('#rpPIS').onclick = function(){ share(function(){ return pdfBlob(p, { type: 'projectItems' }); }, 'سراكي عمال — المشروع حسب البنود'); };
+      q('#rpPIXS').onclick = function(){ share(xlsProjectItems, 'سراكي عمال — المشروع حسب البنود (Excel)'); };
       // ② التفصيلي
       q('#rpD').onclick = function(){ msg('جارٍ إنشاء الشيت التفصيلي… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, { type: 'detail' }); }); };
       q('#rpDX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(xlsDetail); };
@@ -17133,6 +17178,56 @@ window.safeFileName = function(str){
     rows.forEach(function(x){ for (var k in t) if (k !== 'n') t[k] += x[k] || 0; });
     return t;
   }
+  // ---------- تجميع البيانات: مشروع ← بنود داخله ← عمال ----------
+  // لكل يوم بياخد project_id (من اليوم أو من العامل) + item_id (من العامل)،
+  // ويجمع لكل تركيبة (project, item) إجمالي العامل. النتيجة list من مشاريع،
+  // كل مشروع فيه list من بنود، كل بند فيه list عمال + إجمالي البند، وفي
+  // الآخر إجمالي المشروع. مرتبين حسب ترتيب المشروع ثم ترتيب البند.
+  function projectItemsData(p){
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), buckets = {};
+    WK(p.id).forEach(function(w){
+      var rate = +w.daily_rate || 0, wNm = String(w.name || '').trim(), wItem = w.item_id || '', wProj = w.project_id || '';
+      // نجمع لكل عامل في كل تركيبة (project, item) من كل أيامه
+      var perKey = {};
+      dates.forEach(function(d){
+        var r = m.get(w.id + '|' + d); if (!r) return;
+        var pj = r.project_id || wProj || '', it = wItem;
+        var k = pj + '||' + it, x = perKey[k];
+        if (!x) x = perKey[k] = { pj: pj, it: it, days: 0, otd: 0, extra: 0, a1: 0, a2: 0 };
+        if (r.present) x.days++;
+        x.otd += +r.overtime || 0;
+        x.extra += +r.extra_amt || 0;
+        var a = +r.advance || 0; if (d < w2) x.a1 += a; else x.a2 += a;
+      });
+      Object.keys(perKey).forEach(function(k){
+        var x = perKey[k];
+        if (!x.days && !x.otd && !x.extra && !x.a1 && !x.a2) return;
+        var pb = buckets[x.pj] || (buckets[x.pj] = { pj: x.pj, items: {} });
+        var ib = pb.items[x.it] || (pb.items[x.it] = { it: x.it, rows: [], map: {} });
+        // صف لكل عامل في البند (نجمع لو نفس العامل مكرر في نفس البند — نادر)
+        var row = ib.map[wNm + '|' + rate];
+        if (!row) { row = ib.map[wNm + '|' + rate] = { name: wNm, rate: rate, days: 0, otd: 0, extra: 0, before: 0, a1: 0, a2: 0 }; ib.rows.push(row); }
+        row.days += x.days; row.otd += x.otd; row.extra += x.extra;
+        row.before += (x.days + x.otd) * rate + x.extra;
+        row.a1 += x.a1; row.a2 += x.a2;
+      });
+    });
+    function pOrd2(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return i; return 1e6; }
+    var pjKeys = Object.keys(buckets).sort(function(a, b){ return pOrd2(a) - pOrd2(b); });
+    return pjKeys.map(function(pk){
+      var pb = buckets[pk], itKeys = Object.keys(pb.items).sort(function(a, b){ if (a === '') return 1; if (b === '') return -1; return itemSortOf(a) - itemSortOf(b); });
+      var items = itKeys.map(function(ik){
+        var ib = pb.items[ik];
+        ib.rows.forEach(function(x){ x.tot = x.days + x.otd; x.net = x.before - x.a1 - x.a2; });
+        ib.name = ik ? itemName(ik) : 'بدون بند';
+        ib.tot = sumRows(ib.rows);
+        return ib;
+      });
+      var ptot = sumRows(items.map(function(ib){ return ib.tot; }));
+      ptot.n = items.reduce(function(s, ib){ return s + ib.rows.length; }, 0);
+      return { pj: pk, name: pk ? (projName(pk) || '(بدون اسم)') : 'بدون مشروع', items: items, tot: ptot };
+    });
+  }
   function buildItemsPages(p){
     var gs = itemsData(p), pages = [], per = 15;
     if (!gs.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
@@ -17166,6 +17261,53 @@ window.safeFileName = function(str){
     gs.forEach(function(g){ hs += '<tr><td class="nm">' + esc(g.name) + '</td>' + cells(g.tot, g.rows.length) + '</tr>'; });
     hs += '<tr class="tot"><td class="lb">الإجمالي العام</td><td>' + gs.reduce(function(m, g){ return m + g.rows.length; }, 0) + '</td><td>' + all.days + '</td><td>' + z(all.otd) + '</td><td>' + all.tot + '</td><td>' + z(all.extra) + '</td><td>' + fmt(all.before) + '</td><td>' + z(all.a1) + '</td><td>' + z(all.a2) + '</td><td>' + fmt(all.net) + '</td></tr></tbody></table>';
     pages.push({ orient: 'land', html: hs });
+    return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
+  }
+  // ---------- PDF: المشروع ← البنود داخله ← عمال ----------
+  // لكل مشروع: جدول لكل بند جوّه، صف إجمالي للبند، وبعد كل البنود صف إجمالي
+  // المشروع. آخر صفحة فيها إجمالي عام على مستوى كل المشاريع.
+  function buildProjectItemsPages(p){
+    var pjs = projectItemsData(p), pages = [], per = 15;
+    if (!pjs.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
+    var z = function(v){ return v ? fmt(v) : ''; };
+    function head(seq, line){
+      return '<div class="ih"><div class="ihr"><span>البيان : </span><b>سراكي عمال — تقرير المشروع حسب البنود</b></div>' +
+        '<div class="ihl"><div><span>السنة : </span><b>' + p.year + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;مسلسل : </span><b>' + seq + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;الفترة : </span><b>' + p.period_no + '</b></div>' +
+        '<div style="margin-top:4px"><span>من </span><b>' + fdmy(p.from_date) + '</b><span>&nbsp;&nbsp;&nbsp;الى&nbsp;&nbsp;&nbsp;</span><b>' + fdmy(p.to_date) + '</b></div></div></div>' + line;
+    }
+    function th(first, second){
+      return '<colgroup><col style="width:20%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:9%"><col style="width:11%"><col style="width:10%"><col style="width:10%"><col style="width:10%"></colgroup>' +
+        '<thead><tr><th>' + first + '</th><th>' + second + '</th><th>عدد<br>الأيام</th><th>سهرات</th><th>إجمالي<br>الأيام</th><th>قيمة<br>الإضافي</th><th class="y">القبض قبل<br>السلف</th><th>سلف الأسبوع<br>الأول</th><th>سلف الأسبوع<br>الثاني</th><th class="y">القبض</th></tr></thead>';
+    }
+    function cells(x, lead2){
+      return '<td>' + lead2 + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td>' + x.tot + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td>';
+    }
+    pjs.forEach(function(pj, pi){
+      // (أ) كل بند جوّه المشروع في جدول خاص بيه
+      pj.items.forEach(function(ib, ii){
+        var chunks = []; for (var i = 0; i < ib.rows.length; i += per) chunks.push(ib.rows.slice(i, i + per));
+        chunks.forEach(function(ch, ci){
+          var last = ci === chunks.length - 1, cont = ci > 0 ? ' <small>(تابع)</small>' : '';
+          var h = head(pi + 1, '<div class="ib">المشروع : <b>' + esc(pj.name) + '</b> &nbsp;•&nbsp; البند : <b>' + esc(ib.name) + '</b>' + cont + '</div>') + '<table class="it">' + th('اسم العامل', 'قيمة اليومية') + '<tbody>';
+          ch.forEach(function(x){ h += '<tr><td class="nm">' + esc(x.name) + '</td>' + cells(x, fmt(x.rate)) + '</tr>'; });
+          if (last) { var t = ib.tot; h += '<tr class="tot"><td colspan="2" class="lb">إجمالي البند</td><td>' + t.days + '</td><td>' + z(t.otd) + '</td><td>' + t.tot + '</td><td>' + z(t.extra) + '</td><td>' + fmt(t.before) + '</td><td>' + z(t.a1) + '</td><td>' + z(t.a2) + '</td><td>' + fmt(t.net) + '</td></tr>'; }
+          h += '</tbody></table>';
+          pages.push({ orient: 'land', html: h });
+        });
+      });
+      // (ب) ملخص المشروع: صف لكل بند + إجمالي المشروع
+      var hs = head(pi + 1, '<div class="ib">ملخص المشروع : <b>' + esc(pj.name) + '</b></div>') + '<table class="it">' + th('البند التحليلي', 'عدد العمال') + '<tbody>';
+      pj.items.forEach(function(ib){ hs += '<tr><td class="nm">' + esc(ib.name) + '</td>' + cells(ib.tot, ib.rows.length) + '</tr>'; });
+      hs += '<tr class="tot"><td class="lb">إجمالي المشروع</td><td>' + pj.tot.n + '</td><td>' + pj.tot.days + '</td><td>' + z(pj.tot.otd) + '</td><td>' + pj.tot.tot + '</td><td>' + z(pj.tot.extra) + '</td><td>' + fmt(pj.tot.before) + '</td><td>' + z(pj.tot.a1) + '</td><td>' + z(pj.tot.a2) + '</td><td>' + fmt(pj.tot.net) + '</td></tr></tbody></table>';
+      pages.push({ orient: 'land', html: hs });
+    });
+    // (ج) آخر صفحة: إجمالي كل المشاريع
+    var all = sumRows(pjs.map(function(pj){ return pj.tot; }));
+    all.n = pjs.reduce(function(s, pj){ return s + pj.tot.n; }, 0);
+    var fs = head(pjs.length + 1, '<div class="ib">إجمالي الفترة على مستوى كل <b>المشاريع</b></div>') + '<table class="it">' + th('المشروع', 'عدد العمال') + '<tbody>';
+    pjs.forEach(function(pj){ fs += '<tr><td class="nm">' + esc(pj.name) + '</td>' + cells(pj.tot, pj.tot.n) + '</tr>'; });
+    fs += '<tr class="tot"><td class="lb">الإجمالي العام</td><td>' + all.n + '</td><td>' + all.days + '</td><td>' + z(all.otd) + '</td><td>' + all.tot + '</td><td>' + z(all.extra) + '</td><td>' + fmt(all.before) + '</td><td>' + z(all.a1) + '</td><td>' + z(all.a2) + '</td><td>' + fmt(all.net) + '</td></tr></tbody></table>';
+    pages.push({ orient: 'land', html: fs });
     return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
   }
   // ---------- الشيت التفصيلي: كل سطر = عامل + أسبوع + مشروع (بنفس شكل "شيت العمالة تفصيلي") ----------
@@ -17264,6 +17406,220 @@ window.safeFileName = function(str){
       pages.push({ orient: 'port dt', html: h });
     });
     return pages;
+  }
+  // ---------- Excel: المشروع ← البنود داخله ← عمال (شيت واحد منسّق) ----------
+  function projectItemsExcelBlob(p){
+    if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
+    var pjs; try { pjs = projectItemsData(p); } catch (e) { return Promise.reject(e); }
+    if (!pjs.length) return Promise.reject(new Error('مفيش حضور أو سلف مسجّل في الفترة دي'));
+    var wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال'; wb.created = new Date();
+    var INK = 'FF1A237E', RED = 'FF8B0000', GREEN = 'FF1F7A4C', YELLOW = 'FFFFF59D', HEADBG = 'FFE9E9E9', ITEMBG = 'FFFFF0C8', PROJBG = 'FF1A237E', GRANDBG = 'FF8B0000';
+    var blk = { style: 'thin', color: { argb: 'FF000000' } };
+    var border = { top: blk, bottom: blk, left: blk, right: blk };
+    var MONEY = '#,##0.00', BLANK0 = '[=0]"";#,##0.00';
+    var ws = wb.addWorksheet('المشروع حسب البنود', {
+      views: [{ rightToLeft: true, showGridLines: false }],
+      pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, horizontalCentered: true, margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.6, header: 0.2, footer: 0.3 } }
+    });
+    ws.headerFooter.oddFooter = '&C&9صفحة &P من &N';
+    [24, 12, 10, 9, 11, 12, 15, 14, 14, 13].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
+
+    // ========= العنوان الرئيسي =========
+    ws.mergeCells(1, 1, 1, 10);
+    var tc = ws.getCell(1, 1);
+    tc.value = 'سراكي عمال — تقرير المشروع حسب البنود';
+    tc.font = { name: 'Arial', size: 18, bold: true, color: { argb: RED } };
+    tc.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(1).height = 32;
+    var dbl = { style: 'double', color: { argb: RED } };
+    for (var c1 = 1; c1 <= 10; c1++) {
+      var bc = ws.getCell(1, c1);
+      bc.border = { top: dbl, bottom: dbl, left: c1 === 1 ? dbl : undefined, right: c1 === 10 ? dbl : undefined };
+    }
+    ws.mergeCells(2, 1, 2, 10);
+    var inf = ws.getCell(2, 1);
+    inf.value = 'الفترة : ' + p.period_no + '   •   السنة : ' + p.year + '   •   من : ' + fdmy(p.from_date) + '   إلى : ' + fdmy(p.to_date);
+    inf.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
+    inf.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(2).height = 22;
+
+    var cursor = 4;
+    var HEADER = ['اسم العامل', 'قيمة اليومية', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض'];
+    function writeHeader(rowIdx, firstLabel, secondLabel){
+      var h = [firstLabel || HEADER[0], secondLabel || HEADER[1]].concat(HEADER.slice(2));
+      h.forEach(function(v, i){
+        var c = ws.getCell(rowIdx, i + 1);
+        c.value = v; c.font = { name: 'Arial', size: 10, bold: true, color: { argb: INK } };
+        c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEADBG } };
+        c.border = border;
+      });
+      ws.getRow(rowIdx).height = 32;
+    }
+    function writeBanner(label, bgArgb, size){
+      ws.mergeCells(cursor, 1, cursor, 10);
+      var c = ws.getCell(cursor, 1);
+      c.value = label;
+      c.font = { name: 'Arial', size: size || 13, bold: true, color: { argb: 'FFFFFFFF' } };
+      c.alignment = { horizontal: 'center', vertical: 'middle' };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgArgb } };
+      ws.getRow(cursor).height = 24;
+      cursor++;
+    }
+
+    // ========= لكل مشروع =========
+    pjs.forEach(function(pj, pi){
+      // بانر المشروع
+      writeBanner('المشروع ' + (pi + 1) + ' : ' + pj.name, PROJBG, 14);
+
+      // لكل بند جوّه
+      pj.items.forEach(function(ib, ii){
+        // بانر البند (أصغر، لون فاتح)
+        ws.mergeCells(cursor, 1, cursor, 10);
+        var ibc = ws.getCell(cursor, 1);
+        ibc.value = 'البند التحليلي : ' + ib.name;
+        ibc.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
+        ibc.alignment = { horizontal: 'right', vertical: 'middle', indent: 1 };
+        ibc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ITEMBG } };
+        ibc.border = border;
+        ws.getRow(cursor).height = 20;
+        cursor++;
+
+        writeHeader(cursor); cursor++;
+        var firstRow = cursor;
+        ib.rows.forEach(function(x){
+          var n = cursor, row = ws.getRow(n);
+          row.getCell(1).value = x.name;
+          row.getCell(2).value = x.rate;
+          row.getCell(3).value = x.days;
+          row.getCell(4).value = x.otd || null;
+          row.getCell(5).value = { formula: 'C' + n + '+D' + n, result: x.tot };
+          row.getCell(6).value = x.extra || null;
+          row.getCell(7).value = { formula: 'E' + n + '*B' + n + '+F' + n, result: x.before };
+          row.getCell(8).value = x.a1 || null;
+          row.getCell(9).value = x.a2 || null;
+          row.getCell(10).value = { formula: 'G' + n + '-H' + n + '-I' + n, result: x.net };
+          for (var k = 1; k <= 10; k++) {
+            var cell = row.getCell(k);
+            cell.font = { name: 'Arial', size: 10, color: { argb: k === 7 || k === 10 ? RED : 'FF000000' }, bold: (k === 7 || k === 10) };
+            cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
+            cell.border = border;
+            if (k >= 2) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
+            if (k === 7 || k === 10) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: YELLOW } };
+          }
+          cursor++;
+        });
+
+        // صف إجمالي البند (SUM)
+        var lastR = cursor - 1, trN = cursor, tr = ws.getRow(trN);
+        tr.getCell(1).value = 'إجمالي البند';
+        [2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(function(col){
+          var letter = String.fromCharCode(64 + col);
+          tr.getCell(col).value = { formula: 'SUM(' + letter + firstRow + ':' + letter + lastR + ')' };
+        });
+        for (var k2 = 1; k2 <= 10; k2++) {
+          var tc2 = tr.getCell(k2);
+          tc2.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
+          tc2.alignment = { horizontal: k2 === 1 ? 'right' : 'center', vertical: 'middle' };
+          tc2.border = border;
+          tc2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ITEMBG } };
+          if (k2 >= 2) tc2.numFmt = (k2 === 7 || k2 === 10) ? MONEY : BLANK0;
+        }
+        tr.height = 22;
+        cursor++;
+        cursor++; // فاصل
+      });
+
+      // ====== ملخص المشروع (البنود كصفوف + إجمالي المشروع) ======
+      writeHeader(cursor, 'البند التحليلي', 'عدد العمال');
+      cursor++;
+      var projFirst = cursor;
+      pj.items.forEach(function(ib){
+        var row = ws.getRow(cursor);
+        row.getCell(1).value = ib.name;
+        row.getCell(2).value = ib.rows.length;
+        row.getCell(3).value = ib.tot.days;
+        row.getCell(4).value = ib.tot.otd || null;
+        row.getCell(5).value = ib.tot.tot;
+        row.getCell(6).value = ib.tot.extra || null;
+        row.getCell(7).value = ib.tot.before;
+        row.getCell(8).value = ib.tot.a1 || null;
+        row.getCell(9).value = ib.tot.a2 || null;
+        row.getCell(10).value = ib.tot.net;
+        for (var k = 1; k <= 10; k++) {
+          var cell = row.getCell(k);
+          cell.font = { name: 'Arial', size: 10, color: { argb: k === 7 || k === 10 ? RED : 'FF000000' }, bold: (k === 7 || k === 10) };
+          cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
+          cell.border = border;
+          if (k >= 3) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
+          if (k === 7 || k === 10) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: YELLOW } };
+        }
+        cursor++;
+      });
+      // إجمالي المشروع (SUM)
+      var pjLast = cursor - 1, pjTotN = cursor, pjtr = ws.getRow(pjTotN);
+      pjtr.getCell(1).value = 'إجمالي المشروع';
+      [2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(function(col){
+        var letter = String.fromCharCode(64 + col);
+        pjtr.getCell(col).value = { formula: 'SUM(' + letter + projFirst + ':' + letter + pjLast + ')' };
+      });
+      for (var k3 = 1; k3 <= 10; k3++) {
+        var pc = pjtr.getCell(k3);
+        pc.font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
+        pc.alignment = { horizontal: k3 === 1 ? 'right' : 'center', vertical: 'middle' };
+        pc.border = border;
+        pc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
+        if (k3 >= 2) pc.numFmt = (k3 === 7 || k3 === 10) ? MONEY : BLANK0;
+      }
+      pjtr.height = 26;
+      cursor += 2;
+    });
+
+    // ========= الإجمالي العام =========
+    writeBanner('الإجمالي العام على مستوى كل المشاريع', GRANDBG, 14);
+    writeHeader(cursor, 'المشروع', 'عدد العمال');
+    cursor++;
+    var grandFirst = cursor;
+    pjs.forEach(function(pj){
+      var row = ws.getRow(cursor);
+      row.getCell(1).value = pj.name;
+      row.getCell(2).value = pj.tot.n;
+      row.getCell(3).value = pj.tot.days;
+      row.getCell(4).value = pj.tot.otd || null;
+      row.getCell(5).value = pj.tot.tot;
+      row.getCell(6).value = pj.tot.extra || null;
+      row.getCell(7).value = pj.tot.before;
+      row.getCell(8).value = pj.tot.a1 || null;
+      row.getCell(9).value = pj.tot.a2 || null;
+      row.getCell(10).value = pj.tot.net;
+      for (var k = 1; k <= 10; k++) {
+        var cell = row.getCell(k);
+        cell.font = { name: 'Arial', size: 10, bold: (k === 7 || k === 10), color: { argb: k === 7 || k === 10 ? RED : 'FF000000' } };
+        cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
+        cell.border = border;
+        if (k >= 3) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
+        if (k === 7 || k === 10) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: YELLOW } };
+      }
+      cursor++;
+    });
+    var gLast = cursor - 1, gTotN = cursor, gtr = ws.getRow(gTotN);
+    gtr.getCell(1).value = 'الإجمالي العام';
+    [2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(function(col){
+      var letter = String.fromCharCode(64 + col);
+      gtr.getCell(col).value = { formula: 'SUM(' + letter + grandFirst + ':' + letter + gLast + ')' };
+    });
+    var dbl2 = { style: 'double', color: { argb: RED } };
+    for (var k4 = 1; k4 <= 10; k4++) {
+      var gc = gtr.getCell(k4);
+      gc.font = { name: 'Arial', size: 13, bold: true, color: { argb: RED } };
+      gc.alignment = { horizontal: k4 === 1 ? 'right' : 'center', vertical: 'middle' };
+      gc.border = { top: dbl2, bottom: dbl2, left: k4 === 1 ? dbl2 : blk, right: k4 === 10 ? dbl2 : blk };
+      gc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF0C8' } };
+      if (k4 >= 2) gc.numFmt = (k4 === 7 || k4 === 10) ? MONEY : BLANK0;
+    }
+    gtr.height = 30;
+
+    return wb.xlsx.writeBuffer().then(function(buf){ return new Blob([buf], { type: XLSX_MIME }); });
   }
   function detailExcelBlob(p){
     if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
@@ -17540,7 +17896,7 @@ window.safeFileName = function(str){
   function pdfBlob(p, o){
     if (!window.html2canvas || !(window.jspdf && window.jspdf.jsPDF)) return Promise.reject(new Error('مكتبات PDF غير محمّلة'));
     var stage = document.getElementById('skStage');
-    var pgs; try { pgs = o.type === 'items' ? buildItemsPages(p) : o.type === 'detail' ? buildDetailPages(p) : o.type === 'receipt' ? buildReceiptPages(p, o) : buildPages(p, o); } catch (e) { return Promise.reject(e); }
+    var pgs; try { pgs = o.type === 'items' ? buildItemsPages(p) : o.type === 'projectItems' ? buildProjectItemsPages(p) : o.type === 'detail' ? buildDetailPages(p) : o.type === 'receipt' ? buildReceiptPages(p, o) : buildPages(p, o); } catch (e) { return Promise.reject(e); }
     var els = pagesToDom(pgs, stage), doc = null, chain = fontsReady();
     els.forEach(function(el){
       chain = chain.then(function(){ return html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true }); }).then(function(cv){
@@ -17550,7 +17906,7 @@ window.safeFileName = function(str){
         doc.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, land ? 297 : 210, land ? 210 : 297);
       });
     });
-    var nm = o.type === 'items' ? fileNm(p, 'إجمالي-حسب-البند', 'pdf') : o.type === 'detail' ? fileNm(p, 'شيت-تفصيلي', 'pdf') : o.type === 'receipt' ? fileNm(p, 'ريسيت-العمال', 'pdf') : repName(p, 'pdf');
+    var nm = o.type === 'items' ? fileNm(p, 'إجمالي-حسب-البند', 'pdf') : o.type === 'projectItems' ? fileNm(p, 'المشروع-حسب-البنود', 'pdf') : o.type === 'detail' ? fileNm(p, 'شيت-تفصيلي', 'pdf') : o.type === 'receipt' ? fileNm(p, 'ريسيت-العمال', 'pdf') : repName(p, 'pdf');
     return chain.then(function(){ stage.innerHTML = ''; return { blob: doc.output('blob'), name: nm }; }, function(e){ stage.innerHTML = ''; throw e; });
   }
   function buildPdf(p, o){ return pdfBlob(p, o).then(function(r){ download(r.blob, r.name); }); }
