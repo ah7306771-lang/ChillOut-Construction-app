@@ -17263,11 +17263,10 @@ window.safeFileName = function(str){
     pages.push({ orient: 'land', html: hs });
     return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
   }
-  // ---------- PDF: المشروع ← البنود داخله ← عمال ----------
-  // لكل مشروع: جدول لكل بند جوّه، صف إجمالي للبند، وبعد كل البنود صف إجمالي
-  // المشروع. آخر صفحة فيها إجمالي عام على مستوى كل المشاريع.
+  // ---------- PDF: المشروع ← البنود (بدون عمال) ----------
+  // صفحة لكل مشروع: جدول البنود كصفوف + إجمالي المشروع. آخر صفحة إجمالي عام.
   function buildProjectItemsPages(p){
-    var pjs = projectItemsData(p), pages = [], per = 15;
+    var pjs = projectItemsData(p), pages = [];
     if (!pjs.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
     var z = function(v){ return v ? fmt(v) : ''; };
     function head(seq, line){
@@ -17282,26 +17281,14 @@ window.safeFileName = function(str){
     function cells(x, lead2){
       return '<td>' + lead2 + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td>' + x.tot + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td>';
     }
+    // صفحة لكل مشروع: البنود كصفوف + إجمالي المشروع
     pjs.forEach(function(pj, pi){
-      // (أ) كل بند جوّه المشروع في جدول خاص بيه
-      pj.items.forEach(function(ib, ii){
-        var chunks = []; for (var i = 0; i < ib.rows.length; i += per) chunks.push(ib.rows.slice(i, i + per));
-        chunks.forEach(function(ch, ci){
-          var last = ci === chunks.length - 1, cont = ci > 0 ? ' <small>(تابع)</small>' : '';
-          var h = head(pi + 1, '<div class="ib">المشروع : <b>' + esc(pj.name) + '</b> &nbsp;•&nbsp; البند : <b>' + esc(ib.name) + '</b>' + cont + '</div>') + '<table class="it">' + th('اسم العامل', 'قيمة اليومية') + '<tbody>';
-          ch.forEach(function(x){ h += '<tr><td class="nm">' + esc(x.name) + '</td>' + cells(x, fmt(x.rate)) + '</tr>'; });
-          if (last) { var t = ib.tot; h += '<tr class="tot"><td colspan="2" class="lb">إجمالي البند</td><td>' + t.days + '</td><td>' + z(t.otd) + '</td><td>' + t.tot + '</td><td>' + z(t.extra) + '</td><td>' + fmt(t.before) + '</td><td>' + z(t.a1) + '</td><td>' + z(t.a2) + '</td><td>' + fmt(t.net) + '</td></tr>'; }
-          h += '</tbody></table>';
-          pages.push({ orient: 'land', html: h });
-        });
-      });
-      // (ب) ملخص المشروع: صف لكل بند + إجمالي المشروع
-      var hs = head(pi + 1, '<div class="ib">ملخص المشروع : <b>' + esc(pj.name) + '</b></div>') + '<table class="it">' + th('البند التحليلي', 'عدد العمال') + '<tbody>';
+      var hs = head(pi + 1, '<div class="ib">المشروع : <b>' + esc(pj.name) + '</b></div>') + '<table class="it">' + th('البند التحليلي', 'عدد العمال') + '<tbody>';
       pj.items.forEach(function(ib){ hs += '<tr><td class="nm">' + esc(ib.name) + '</td>' + cells(ib.tot, ib.rows.length) + '</tr>'; });
       hs += '<tr class="tot"><td class="lb">إجمالي المشروع</td><td>' + pj.tot.n + '</td><td>' + pj.tot.days + '</td><td>' + z(pj.tot.otd) + '</td><td>' + pj.tot.tot + '</td><td>' + z(pj.tot.extra) + '</td><td>' + fmt(pj.tot.before) + '</td><td>' + z(pj.tot.a1) + '</td><td>' + z(pj.tot.a2) + '</td><td>' + fmt(pj.tot.net) + '</td></tr></tbody></table>';
       pages.push({ orient: 'land', html: hs });
     });
-    // (ج) آخر صفحة: إجمالي كل المشاريع
+    // آخر صفحة: إجمالي عام على مستوى كل المشاريع
     var all = sumRows(pjs.map(function(pj){ return pj.tot; }));
     all.n = pjs.reduce(function(s, pj){ return s + pj.tot.n; }, 0);
     var fs = head(pjs.length + 1, '<div class="ib">إجمالي الفترة على مستوى كل <b>المشاريع</b></div>') + '<table class="it">' + th('المشروع', 'عدد العمال') + '<tbody>';
@@ -17467,73 +17454,15 @@ window.safeFileName = function(str){
       cursor++;
     }
 
-    // ========= لكل مشروع =========
+    // ========= لكل مشروع — البنود فقط (بدون عمال) =========
     pjs.forEach(function(pj, pi){
       // بانر المشروع
       writeBanner('المشروع ' + (pi + 1) + ' : ' + pj.name, PROJBG, 14);
-
-      // لكل بند جوّه
-      pj.items.forEach(function(ib, ii){
-        // بانر البند (أصغر، لون فاتح)
-        ws.mergeCells(cursor, 1, cursor, 10);
-        var ibc = ws.getCell(cursor, 1);
-        ibc.value = 'البند التحليلي : ' + ib.name;
-        ibc.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
-        ibc.alignment = { horizontal: 'right', vertical: 'middle', indent: 1 };
-        ibc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ITEMBG } };
-        ibc.border = border;
-        ws.getRow(cursor).height = 20;
-        cursor++;
-
-        writeHeader(cursor); cursor++;
-        var firstRow = cursor;
-        ib.rows.forEach(function(x){
-          var n = cursor, row = ws.getRow(n);
-          row.getCell(1).value = x.name;
-          row.getCell(2).value = x.rate;
-          row.getCell(3).value = x.days;
-          row.getCell(4).value = x.otd || null;
-          row.getCell(5).value = { formula: 'C' + n + '+D' + n, result: x.tot };
-          row.getCell(6).value = x.extra || null;
-          row.getCell(7).value = { formula: 'E' + n + '*B' + n + '+F' + n, result: x.before };
-          row.getCell(8).value = x.a1 || null;
-          row.getCell(9).value = x.a2 || null;
-          row.getCell(10).value = { formula: 'G' + n + '-H' + n + '-I' + n, result: x.net };
-          for (var k = 1; k <= 10; k++) {
-            var cell = row.getCell(k);
-            cell.font = { name: 'Arial', size: 10, color: { argb: k === 7 || k === 10 ? RED : 'FF000000' }, bold: (k === 7 || k === 10) };
-            cell.alignment = { horizontal: k === 1 ? 'right' : 'center', vertical: 'middle' };
-            cell.border = border;
-            if (k >= 2) cell.numFmt = (k === 7 || k === 10) ? MONEY : BLANK0;
-            if (k === 7 || k === 10) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: YELLOW } };
-          }
-          cursor++;
-        });
-
-        // صف إجمالي البند (SUM)
-        var lastR = cursor - 1, trN = cursor, tr = ws.getRow(trN);
-        tr.getCell(1).value = 'إجمالي البند';
-        [2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(function(col){
-          var letter = String.fromCharCode(64 + col);
-          tr.getCell(col).value = { formula: 'SUM(' + letter + firstRow + ':' + letter + lastR + ')' };
-        });
-        for (var k2 = 1; k2 <= 10; k2++) {
-          var tc2 = tr.getCell(k2);
-          tc2.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } };
-          tc2.alignment = { horizontal: k2 === 1 ? 'right' : 'center', vertical: 'middle' };
-          tc2.border = border;
-          tc2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ITEMBG } };
-          if (k2 >= 2) tc2.numFmt = (k2 === 7 || k2 === 10) ? MONEY : BLANK0;
-        }
-        tr.height = 22;
-        cursor++;
-        cursor++; // فاصل
-      });
-
-      // ====== ملخص المشروع (البنود كصفوف + إجمالي المشروع) ======
+      // هيدر الجدول: البند / عدد العمال / ...
       writeHeader(cursor, 'البند التحليلي', 'عدد العمال');
       cursor++;
       var projFirst = cursor;
+      // صف لكل بند
       pj.items.forEach(function(ib){
         var row = ws.getRow(cursor);
         row.getCell(1).value = ib.name;
