@@ -16482,7 +16482,7 @@ window.safeFileName = function(str){
         var pj = r.project_id || w.project_id || '';
         otd += +r.overtime || 0;
         if (r.present) { if (d < w2) d1++; else d2++; var o = proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0, ex: 0 }); o.days++; o.wages += rate; }
-        if (+r.overtime) { var ow = (+r.overtime) * rate; ot += ow; (proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0, ex: 0 })).ot += ow; }
+        if (+r.overtime) { var ow = (+r.overtime) * rate; ot += ow; (proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0, ex: 0 })).ot += ow; proj[pj].od = (proj[pj].od || 0) + (+r.overtime); }
         if (+r.extra_amt) { ex += +r.extra_amt; (proj[pj] || (proj[pj] = { days: 0, wages: 0, ot: 0, ex: 0 })).ex += +r.extra_amt; }
         adv += +r.advance || 0;
       });
@@ -16493,7 +16493,7 @@ window.safeFileName = function(str){
     rows.forEach(function(r){
       for (var k in t) t[k] += r[k];
       var o = items[r.item] || (items[r.item] = { workers: 0, days: 0, wages: 0, ot: 0, ex: 0, gross: 0, adv: 0, net: 0 });
-      o.workers++; ['days','wages','ot','ex','gross','adv','net'].forEach(function(k){ o[k] += r[k]; });
+      o.workers++; ['days','wages','ot','ex','gross','adv','net'].forEach(function(k){ o[k] += r[k]; }); o.od = (o.od || 0) + r.otd;
     });
     return { rows: rows, tot: t, proj: proj, items: items, dates: dates };
   }
@@ -16777,7 +16777,7 @@ window.safeFileName = function(str){
   // ---------- ملخص الأسبوع ----------
   function renderWeek(){
     var p = P(), wd = weekDates(p, S.week), ws = WK(), dm = DM();
-    var h = '<div class="sk-wrap"><table class="sk-t"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th>' + wd.map(function(d){ return '<th class="sk-hd" data-goday="' + d + '">' + dayName(d) + '<br><small>' + short(d) + '</small></th>'; }).join('') + '<th>الأيام</th><th>سهرات (أيام)</th><th>قيمة إضافية</th><th>سلف</th><th>مستحق الأسبوع</th></tr></thead><tbody>';
+    var h = '<div class="sk-wrap"><table class="sk-t"><thead><tr><th>م</th><th>اسم العامل</th><th>المهنة</th><th>البند</th>' + wd.map(function(d){ return '<th class="sk-hd" data-goday="' + d + '">' + dayName(d) + '<br><small>' + short(d) + '</small></th>'; }).join('') + '<th>إجمالي الأيام</th><th>سهرات (أيام)</th><th>قيمة إضافية</th><th>سلف</th><th>مستحق الأسبوع</th></tr></thead><tbody>';
     var T = { d: 0, o: 0, e: 0, a: 0, g: 0 };
     ws.forEach(function(w, i){
       var days = 0, ot = 0, adv = 0, ex = 0, rate = +w.daily_rate || 0;
@@ -16788,10 +16788,10 @@ window.safeFileName = function(str){
         return '<td>' + (r.present ? '<span class="sk-mark">✔' + (pn ? '<small>' + esc(pn) + '</small>' : '') + '</span>' : '') + '</td>';
       }).join('');
       var g = (days + ot) * rate + ex; T.d += days; T.o += ot; T.e += ex; T.a += adv; T.g += g;
-      h += '<tr><td class="n">' + (i + 1) + '</td><td class="nm">' + esc(w.name) + '</td><td>' + esc(w.profession || '') + '</td><td>' + esc(itemName(w.item_id)) + '</td>' + cells + '<td class="c">' + days + '</td><td>' + fmt(ot) + '</td><td>' + fmt(ex) + '</td><td>' + fmt(adv) + '</td><td class="big">' + fmt(g) + '</td></tr>';
+      h += '<tr><td class="n">' + (i + 1) + '</td><td class="nm">' + esc(w.name) + '</td><td>' + esc(w.profession || '') + '</td><td>' + esc(itemName(w.item_id)) + '</td>' + cells + '<td class="c">' + fd(days + ot) + '</td><td>' + fmt(ot) + '</td><td>' + fmt(ex) + '</td><td>' + fmt(adv) + '</td><td class="big">' + fmt(g) + '</td></tr>';
     });
     if (!ws.length) h += '<tr><td colspan="' + (wd.length + 9) + '" class="sk-empty">لا يوجد عمال في هذه الفترة.</td></tr>';
-    h += '</tbody><tfoot><tr><td colspan="' + (wd.length + 4) + '" style="text-align:right">الإجمالي</td><td>' + T.d + '</td><td>' + fmt(T.o) + '</td><td>' + fmt(T.e) + '</td><td>' + fmt(T.a) + '</td><td>' + fmt(T.g) + '</td></tr></tfoot></table></div>';
+    h += '</tbody><tfoot><tr><td colspan="' + (wd.length + 4) + '" style="text-align:right">الإجمالي</td><td>' + fd(T.d + T.o) + '</td><td>' + fmt(T.o) + '</td><td>' + fmt(T.e) + '</td><td>' + fmt(T.a) + '</td><td>' + fmt(T.g) + '</td></tr></tfoot></table></div>';
     $('#skBody').innerHTML = h;
   }
 
@@ -16808,13 +16808,13 @@ window.safeFileName = function(str){
     var ik = Object.keys(c.items);
     if (ik.length) {
       h += '<div class="sk-sec">توزيع التكلفة على البنود</div><div class="sk-wrap"><table class="sk-t"><thead><tr><th>البند</th><th>عدد العمال</th><th>أيام العمل</th><th>أجر الأيام</th><th>السهرات</th><th>قيمة إضافية</th><th>إجمالي القبض</th><th>السلف</th><th>صافي القبض</th></tr></thead><tbody>';
-      ik.forEach(function(k){ var o = c.items[k]; h += '<tr><td class="nm">' + esc(k ? itemName(k) : 'بدون بند') + '</td><td>' + o.workers + '</td><td>' + o.days + '</td><td>' + fmt(o.wages) + '</td><td>' + fmt(o.ot) + '</td><td>' + fmt(o.ex) + '</td><td class="c">' + fmt(o.gross) + '</td><td>' + fmt(o.adv) + '</td><td class="big">' + fmt(o.net) + '</td></tr>'; });
+      ik.forEach(function(k){ var o = c.items[k]; h += '<tr><td class="nm">' + esc(k ? itemName(k) : 'بدون بند') + '</td><td>' + o.workers + '</td><td>' + fd(o.days + (o.od || 0)) + '</td><td>' + fmt(o.wages) + '</td><td>' + fmt(o.ot) + '</td><td>' + fmt(o.ex) + '</td><td class="c">' + fmt(o.gross) + '</td><td>' + fmt(o.adv) + '</td><td class="big">' + fmt(o.net) + '</td></tr>'; });
       h += '</tbody></table></div>';
     }
     var pk = Object.keys(c.proj);
     if (pk.length) {
       h += '<div class="sk-sec">توزيع التكلفة على المشاريع</div><div class="sk-wrap"><table class="sk-t"><thead><tr><th>المشروع</th><th>أيام العمل</th><th>الأجور</th><th>السهرات</th><th>قيمة إضافية</th><th>الإجمالي</th></tr></thead><tbody>';
-      pk.forEach(function(k){ var o = c.proj[k]; h += '<tr><td class="nm">' + esc(k ? projName(k) : 'بدون مشروع') + '</td><td>' + o.days + '</td><td>' + fmt(o.wages) + '</td><td>' + fmt(o.ot) + '</td><td>' + fmt(o.ex) + '</td><td class="big">' + fmt(o.wages + o.ot + o.ex) + '</td></tr>'; });
+      pk.forEach(function(k){ var o = c.proj[k]; h += '<tr><td class="nm">' + esc(k ? projName(k) : 'بدون مشروع') + '</td><td>' + fd(o.days + (o.od || 0)) + '</td><td>' + fmt(o.wages) + '</td><td>' + fmt(o.ot) + '</td><td>' + fmt(o.ex) + '</td><td class="big">' + fmt(o.wages + o.ot + o.ex) + '</td></tr>'; });
       h += '</tbody></table></div>';
     }
     $('#skBody').innerHTML = h;
@@ -17048,8 +17048,8 @@ window.safeFileName = function(str){
     var first = 5;
     c.rows.forEach(function(r, i){
       var n = first + i, row = ws1.addRow([i + 1, r.w.name, r.w.profession || '', itemName(r.item), r.rate, r.d1, r.d2, null, null, r.ot, r.ex, null, r.adv, null, '']);
-      row.getCell(8).value = { formula: 'F' + n + '+G' + n, result: r.days };
-      row.getCell(9).value = { formula: 'H' + n + '*E' + n, result: r.wages };
+      row.getCell(8).value = { formula: 'F' + n + '+G' + n + '+IF(E' + n + '=0,0,J' + n + '/E' + n + ')', result: r.days + r.otd };
+      row.getCell(9).value = { formula: '(F' + n + '+G' + n + ')*E' + n, result: r.wages };
       row.getCell(12).value = { formula: 'I' + n + '+J' + n + '+K' + n, result: r.gross };
       row.getCell(14).value = { formula: 'L' + n + '-M' + n, result: r.net };
       body(row, 2);
@@ -17058,7 +17058,7 @@ window.safeFileName = function(str){
     });
     var lastR = first + c.rows.length - 1, tr = ws1.addRow(['', 'الإجمالي', '', '', '', '', '', '', '', '', '', '', '', '', '']);
     var T = c.tot;
-    [[6, 'F', T.d1], [7, 'G', T.d2], [8, 'H', T.days], [9, 'I', T.wages], [10, 'J', T.ot], [11, 'K', T.ex], [12, 'L', T.gross], [13, 'M', T.adv], [14, 'N', T.net]].forEach(function(x){
+    [[6, 'F', T.d1], [7, 'G', T.d2], [8, 'H', T.days + T.otd], [9, 'I', T.wages], [10, 'J', T.ot], [11, 'K', T.ex], [12, 'L', T.gross], [13, 'M', T.adv], [14, 'N', T.net]].forEach(function(x){
       tr.getCell(x[0]).value = c.rows.length ? { formula: 'SUM(' + x[1] + first + ':' + x[1] + lastR + ')', result: x[2] } : 0; tr.getCell(x[0]).numFmt = '#,##0.00';
     });
     tr.eachCell({ includeEmpty: true }, function(cell){ cell.fill = accent; cell.font = { bold: true }; cell.border = border; cell.alignment = { horizontal: 'center' }; });
@@ -17069,7 +17069,7 @@ window.safeFileName = function(str){
     ws2.addRow([]);
     head(ws2.addRow(['م', 'اسم العامل', 'المهنة', 'البند'].concat(c.dates.map(function(d){ return dayName(d) + '\n' + short(d); })).concat(['الأيام'])));
     c.rows.forEach(function(r, i){
-      var row = ws2.addRow([i + 1, r.w.name, r.w.profession || '', itemName(r.item)].concat(c.dates.map(function(d){ var x = dm.get(r.w.id + '|' + d); return x && x.present ? '✔' : ''; })).concat([r.days]));
+      var row = ws2.addRow([i + 1, r.w.name, r.w.profession || '', itemName(r.item)].concat(c.dates.map(function(d){ var x = dm.get(r.w.id + '|' + d); return x && x.present ? '✔' : ''; })).concat([r.days + r.otd]));
       row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; }); row.getCell(2).alignment = { horizontal: 'right' };
     });
     ws2.getColumn(2).width = 24; ws2.getColumn(3).width = 14; ws2.getColumn(4).width = 16; for (var q = 5; q <= c.dates.length + 5; q++) ws2.getColumn(q).width = 8.5;
@@ -17092,7 +17092,7 @@ window.safeFileName = function(str){
     ws4.addRow([]);
     head(ws4.addRow(['المشروع', 'أيام العمل', 'الأجور', 'السهرات', 'قيمة إضافية', 'الإجمالي']));
     Object.keys(c.proj).forEach(function(k){
-      var o2 = c.proj[k], row = ws4.addRow([k ? projName(k) : 'بدون مشروع', o2.days, o2.wages, o2.ot, o2.ex, o2.wages + o2.ot + o2.ex]);
+      var o2 = c.proj[k], row = ws4.addRow([k ? projName(k) : 'بدون مشروع', o2.days + (o2.od || 0), o2.wages, o2.ot, o2.ex, o2.wages + o2.ot + o2.ex]);
       row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; }); [3, 4, 5, 6].forEach(function(z){ row.getCell(z).numFmt = '#,##0.00'; });
     });
     [28, 12, 14, 14, 14, 14].forEach(function(w, i){ ws4.getColumn(i + 1).width = w; });
@@ -17102,7 +17102,7 @@ window.safeFileName = function(str){
     ws5.addRow([]);
     head(ws5.addRow(['البند', 'عدد العمال', 'أيام العمل', 'أجر الأيام', 'السهرات', 'قيمة إضافية', 'إجمالي القبض', 'السلف', 'صافي القبض']));
     Object.keys(c.items).forEach(function(k){
-      var o3 = c.items[k], row = ws5.addRow([k ? itemName(k) : 'بدون بند', o3.workers, o3.days, o3.wages, o3.ot, o3.ex, o3.gross, o3.adv, o3.net]);
+      var o3 = c.items[k], row = ws5.addRow([k ? itemName(k) : 'بدون بند', o3.workers, o3.days + (o3.od || 0), o3.wages, o3.ot, o3.ex, o3.gross, o3.adv, o3.net]);
       row.eachCell(function(cell){ cell.border = border; cell.alignment = { horizontal: 'center' }; }); [4, 5, 6, 7, 8, 9].forEach(function(z){ row.getCell(z).numFmt = '#,##0.00'; });
     });
     [24, 12, 12, 14, 14, 14, 14, 14, 14].forEach(function(w, i){ ws5.getColumn(i + 1).width = w; });
@@ -17128,14 +17128,14 @@ window.safeFileName = function(str){
     var ik = Object.keys(c.items);
     if (ik.length && !o.worker) {
       var h4 = pageHead(p, 'توزيع التكلفة على البنود') + '<table><thead><tr><th>البند</th><th>عدد العمال</th><th>أيام العمل</th><th>أجر الأيام</th><th>السهرات</th><th>إضافي</th><th>إجمالي القبض</th><th>السلف</th><th>صافي القبض</th></tr></thead><tbody>';
-      ik.forEach(function(k){ var x = c.items[k]; h4 += '<tr><td class="nm">' + esc(k ? itemName(k) : 'بدون بند') + '</td><td>' + x.workers + '</td><td>' + x.days + '</td><td>' + fmt(x.wages) + '</td><td>' + fmt(x.ot) + '</td><td>' + fmt(x.ex) + '</td><td>' + fmt(x.gross) + '</td><td>' + fmt(x.adv) + '</td><td class="hl">' + fmt(x.net) + '</td></tr>'; });
-      h4 += '<tr class="tot"><td style="text-align:right">الإجمالي</td><td>' + c.rows.length + '</td><td>' + T.days + '</td><td>' + fmt(T.wages) + '</td><td>' + fmt(T.ot) + '</td><td>' + fmt(T.ex) + '</td><td>' + fmt(T.gross) + '</td><td>' + fmt(T.adv) + '</td><td>' + fmt(T.net) + '</td></tr></tbody></table>';
+      ik.forEach(function(k){ var x = c.items[k]; h4 += '<tr><td class="nm">' + esc(k ? itemName(k) : 'بدون بند') + '</td><td>' + x.workers + '</td><td>' + fd(x.days + (x.od || 0)) + '</td><td>' + fmt(x.wages) + '</td><td>' + fmt(x.ot) + '</td><td>' + fmt(x.ex) + '</td><td>' + fmt(x.gross) + '</td><td>' + fmt(x.adv) + '</td><td class="hl">' + fmt(x.net) + '</td></tr>'; });
+      h4 += '<tr class="tot"><td style="text-align:right">الإجمالي</td><td>' + c.rows.length + '</td><td>' + fd(T.days + T.otd) + '</td><td>' + fmt(T.wages) + '</td><td>' + fmt(T.ot) + '</td><td>' + fmt(T.ex) + '</td><td>' + fmt(T.gross) + '</td><td>' + fmt(T.adv) + '</td><td>' + fmt(T.net) + '</td></tr></tbody></table>';
       pages.push({ orient: 'land', html: h4 });
     }
     var pk = Object.keys(c.proj);
     if (pk.length && !o.worker) {
       var h2 = pageHead(p, 'توزيع التكلفة على المشاريع') + '<table><thead><tr><th>المشروع</th><th>أيام العمل</th><th>الأجور</th><th>السهرات</th><th>إضافي</th><th>الإجمالي</th></tr></thead><tbody>';
-      pk.forEach(function(k){ var x = c.proj[k]; h2 += '<tr><td class="nm">' + esc(k ? projName(k) : 'بدون مشروع') + '</td><td>' + x.days + '</td><td>' + fmt(x.wages) + '</td><td>' + fmt(x.ot) + '</td><td>' + fmt(x.ex) + '</td><td class="hl">' + fmt(x.wages + x.ot + x.ex) + '</td></tr>'; });
+      pk.forEach(function(k){ var x = c.proj[k]; h2 += '<tr><td class="nm">' + esc(k ? projName(k) : 'بدون مشروع') + '</td><td>' + fd(x.days + (x.od || 0)) + '</td><td>' + fmt(x.wages) + '</td><td>' + fmt(x.ot) + '</td><td>' + fmt(x.ex) + '</td><td class="hl">' + fmt(x.wages + x.ot + x.ex) + '</td></tr>'; });
       h2 += '</tbody></table>'; pages.push({ orient: 'land', html: h2 });
     }
     if (o.slips) c.rows.forEach(function(r){
@@ -17145,7 +17145,7 @@ window.safeFileName = function(str){
         var x = dm.get(r.w.id + '|' + d), pr = x && x.present;
         h3 += '<tr><td>' + d + '</td><td>' + dayName(d) + '</td><td>' + esc(x ? projName(x.project_id || r.w.project_id) : '') + '</td><td>' + (pr ? '✔' : '') + '</td><td>' + (pr ? fmt(r.rate) : '') + '</td><td>' + (x && +x.overtime ? fmt(+x.overtime * r.rate) : '') + '</td><td>' + (x && +x.extra_amt ? fmt(x.extra_amt) : '') + '</td><td>' + (x && +x.advance ? fmt(x.advance) : '') + '</td></tr>';
       });
-      h3 += '<tr class="tot"><td colspan="3" style="text-align:right">الإجمالي</td><td>' + r.days + '</td><td>' + fmt(r.wages) + '</td><td>' + fmt(r.ot) + '</td><td>' + fmt(r.ex) + '</td><td>' + fmt(r.adv) + '</td></tr></tbody></table>';
+      h3 += '<tr class="tot"><td colspan="3" style="text-align:right">الإجمالي</td><td>' + fd(r.days + r.otd) + '</td><td>' + fmt(r.wages) + '</td><td>' + fmt(r.ot) + '</td><td>' + fmt(r.ex) + '</td><td>' + fmt(r.adv) + '</td></tr></tbody></table>';
       h3 += '<div class="box"><div>إجمالي القبض<b>' + fmt(r.gross) + '</b></div><div>السلف<b>' + fmt(r.adv) + '</b></div><div class="net">صافي القبض<b>' + fmt(r.net) + '</b></div></div>';
       h3 += '<div class="sig"><div>توقيع العامل</div><div>المحاسب</div></div>';
       pages.push({ orient: 'port', html: h3 });
