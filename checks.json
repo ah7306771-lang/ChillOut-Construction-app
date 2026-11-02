@@ -10,20 +10,11 @@
   },
   {
     "client": "الامين",
-    "number": 74668,
-    "value": 1400000,
-    "dueDate": "30/10/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
-    "client": "الامين",
     "number": 74669,
     "value": 1200000,
     "dueDate": "30/10/2026",
     "bank": "NBE",
-    "notes": "",
+    "notes": "متبقي منه 1100000",
     "type": "أ.ق"
   },
   {
