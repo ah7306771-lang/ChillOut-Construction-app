@@ -2680,5 +2680,14 @@
     "paymentMethod": "",
     "lastInvoiceDate": "01/11/2026",
     "actualWeight": 22
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 77,
+    "paymentMethod": "",
+    "lastInvoiceDate": "04/11/2026",
+    "actualWeight": 175
   }
 ]
