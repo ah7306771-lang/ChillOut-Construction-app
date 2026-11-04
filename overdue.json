@@ -4,30 +4,30 @@
       "client": "الامين",
       "count": 3,
       "amount": 1127715.499999999,
-      "avgDelay": 16
+      "avgDelay": 18
     },
     {
       "client": "بينتاكون",
       "count": 1,
       "amount": 17305,
-      "avgDelay": 19
+      "avgDelay": 21
     },
     {
       "client": "فالتور",
-      "count": 8,
-      "amount": 20766515.935818713,
-      "avgDelay": 14.5
+      "count": 3,
+      "amount": 10767565.647660818,
+      "avgDelay": 10
     },
     {
       "client": "ويكادي",
-      "count": 5,
-      "amount": 11309635,
-      "avgDelay": 13.80000000000291
+      "count": 3,
+      "amount": 8709635,
+      "avgDelay": 12.666666666664241
     }
   ],
   "grandTotal": {
-    "count": 17,
-    "amount": 33221171.435818713,
-    "avgDelay": 14.823529411762138
+    "count": 10,
+    "amount": 20622221.147660818,
+    "avgDelay": 14.30000000000291
   }
 }
