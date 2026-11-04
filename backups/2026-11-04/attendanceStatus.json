@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-10-04",
-  "updatedAt": "2026-10-04T00:45:51.977945+00:00",
+  "date": "2026-11-04",
+  "updatedAt": "2026-11-04T02:38:47.473264+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -11,11 +11,29 @@
     "محمود رجب",
     "صبري يحي",
     "بكر",
-    "عماد"
+    "عماد",
+    "محمود شعبان",
+    "25",
+    "محمد عويس",
+    "YOSRY"
   ],
   "late": [],
   "dashboardRows": [],
-  "dashboardRequestRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mvxn1h4x-rrqvqj",
+      "name": "محمود كارم",
+      "type": "إجازة",
+      "date": "2026-11-01",
+      "from": "",
+      "to": "",
+      "reason": "[بدون مرتب]",
+      "status": "موافق",
+      "submittedAt": "2026-11-01T09:39:06.000Z",
+      "leaveFrom": "2026-11-01",
+      "leaveTo": "2026-11-08"
+    }
+  ],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
     "بكر": "16:00",
@@ -81,6 +99,30 @@
       "pass": "19",
       "hiddenIcons": "",
       "birthday": "2026-10-01"
+    },
+    {
+      "name": "محمود شعبان",
+      "pass": "20",
+      "hiddenIcons": "",
+      "birthday": "1999-06-24"
+    },
+    {
+      "name": "25",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "محمد عويس",
+      "pass": "22",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "YOSRY",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
     }
   ]
 }
