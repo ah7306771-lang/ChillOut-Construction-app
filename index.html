@@ -14675,8 +14675,8 @@ window.safeFileName = function(str){
   function today(){ var d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
   // أول يوم في الشهر الحالي (YYYY-MM-01): الفلتر بيبدأ منه تلقائيًا كل شهر
   function monthStart(){ return today().slice(0, 8) + '01'; }
-  // رقم واتساب اللي بيتبعتله مرفقات الصرف (نفس رقم أيقونة الواتساب العايمة): 01005833218
-  var CAM_WA = '201005833218';
+  // رقم واتساب اللي بيتبعتله مرفقات الصرف: 01158883402
+  var CAM_WA = '201158883402';
   function camLink(r){
     var msg = 'مرفق صرف — الخزنة: ' + r.employee + ' — البيان: ' + r.description + ' — القيمة: ' + fmt(+r.amount) +
       ' — التاريخ: ' + r.entry_date + (r.project ? ' — المشروع: ' + r.project : '');
