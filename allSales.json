@@ -1,5 +1,18 @@
 [
   {
+    "date": "05/11/2026",
+    "orderNo": 78,
+    "client": "ويكادي",
+    "buyPrice": 41100,
+    "sellPrice": 42000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 2272213.5,
+    "sellTotal": 2321970.0,
+    "actualWeight": 55.285,
+    "paymentMethod": ""
+  },
+  {
     "date": "01/11/2026",
     "orderNo": 75,
     "client": "سامكريت مصر",
