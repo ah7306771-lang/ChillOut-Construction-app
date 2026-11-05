@@ -16293,11 +16293,11 @@ window.safeFileName = function(str){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){ var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
   }
   function pd(s){ var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
-  function fd(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-  function addD(s, n){ var d = pd(s); d.setDate(d.getDate() + n); return fd(d); }
+  function fdate(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function addD(s, n){ var d = pd(s); d.setDate(d.getDate() + n); return fdate(d); }
   function dayName(s){ return DAYN[pd(s).getDay()]; }
   function short(s){ return s.slice(8, 10) + '/' + s.slice(5, 7); }
-  function todayS(){ return fd(new Date()); }
+  function todayS(){ return fdate(new Date()); }
   var LS = {
     get: function(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
