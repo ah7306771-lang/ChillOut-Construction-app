@@ -16877,15 +16877,19 @@ window.safeFileName = function(str){
     var chk = [[nm, 'الاسم', nm.value.trim()], [pf, 'المهنة', pf.value.trim()], [rt, 'اليومية', num(rt.value) > 0], [pj, 'المشروع', pj.value]], miss = [], first = null;
     chk.forEach(function(c){ var bad = !c[2]; c[0].classList.toggle('sk-bad', bad); if (bad) { miss.push(c[1]); if (!first) first = c[0]; } });
     if (miss.length) { toast('الحقول دي إجبارية: ' + miss.join(' - ')); first.focus(); return; }
-    var name = nm.value.trim(), ws = WK();
-    var w = ws.filter(function(x){ return String(x.name).trim() === name; })[0];
+    var name = nm.value.trim(), itemId = it.value || null, ws = WK();
+    // التكرار يتحدد بالاسم + البند، وليس بالاسم وحده.
+    // نبحث عن العامل بعد قراءة البند المختار حتى يسمح بتسجيل نفس العامل على بند مختلف.
+    var w = ws.filter(function(x){
+      return String(x.name).trim() === name && String(x.item_id || '') === String(itemId || '');
+    })[0];
     if (!w) {
       var mx = ws.reduce(function(m, x){ return Math.max(m, x.sort || 0); }, 0);
-      w = { id: uid(), period_id: S.cur, name: name, profession: pf.value.trim(), daily_rate: num(rt.value), project_id: pj.value, item_id: it.value || null, sort: mx + 1, entered_by: who() };
+      w = { id: uid(), period_id: S.cur, name: name, profession: pf.value.trim(), daily_rate: num(rt.value), project_id: pj.value, item_id: itemId, sort: mx + 1, entered_by: who() };
       S.workers.push(w); saveWorker(w);
     }
     var r = dayObj(w, S.day, true);
-    if (r.present) { toast('العامل ده مضاف بالفعل في اليوم ده'); return; }
+    if (r.present) { toast('العامل مضاف بالفعل في نفس البند في اليوم ده'); return; }
     r.present = true; r.project_id = pj.value; commitDay(r);
     S.addOpen = true;
     renderDay(); var n2 = $('#skaName'); if (n2) n2.focus();
