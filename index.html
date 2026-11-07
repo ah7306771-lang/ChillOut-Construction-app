@@ -2177,6 +2177,13 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f input,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f select,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f .sk-badge { height:26px !important; font-size:10.5px !important; }
+  /* الصف الثالث: فلتر "عرض مدخلات" — عرض/إخفاء عن طريق JS (style.display) */
+  #sarrakiScreen .sk-master #skFilterEmpRow[style*="display:none"],
+  #sarrakiScreen .sk-master #skFilterEmpRow[style*="display: none"] { display:none !important; }
+  #sarrakiScreen .sk-master #skFilterEmpRow { gap:5px; width:100%; }
+  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f { flex:1 1 auto; min-width:0; width:100%; }
+  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f label { font-size:10px; }
+  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f select { height:28px !important; font-size:11px !important; width:100%; }
   /* قائمة العامل اليدوية للإضافة */
   #sarrakiScreen .sk-add { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; padding:5px !important; }
   #sarrakiScreen .sk-add #skaName { grid-column:1 / -1; grid-row:1; min-width:0; width:100%; }
@@ -2714,6 +2721,9 @@ body.cg-compact .wa-float-btn{display:none !important}
         <label class="sk-eng-check" id="skEngWrap" style="display:none"><input type="checkbox" id="skEngCheck"><span id="skEngLabel">اعتماد المهندس الأسبوع الأول</span></label>
         <button type="button" class="btn btn-secondary" id="skReview">🔎 مراجعة السراكي</button>
         <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
+      </div>
+      <div class="mrow" id="skFilterEmpRow" style="display:none">
+        <div class="sk-f grow"><label>👤 عرض مدخلات</label><select id="skFilterEmp"></select></div>
       </div>
     </div>
     <div class="sk-banner" id="skBanner"></div>
@@ -16446,7 +16456,7 @@ window.safeFileName = function(str){
   };
 
   // ---------- الحالة ----------
-  var S = { items: [], projects: [], periods: [], workers: [], dm: {}, cur: null, week: 1, day: null, view: 'day', online: null, missing: false, loading: false };
+  var S = { items: [], projects: [], periods: [], workers: [], dm: {}, cur: null, week: 1, day: null, view: 'day', online: null, missing: false, loading: false, filterEmp: null };
   var Q = LS.get('sk_q', {}), ver = 0, flushing = false, again = false, flushTimer = null, retryTimer = null, cacheTimer = null;
   // لو عمود extra_amt لسه مااتضافش في جدول wl_days: بنكمّل شغل عادي (بنشيله من الإرسال) ونعرض تنبيه
   var noExtra = !!LS.get('sk_noextra', 0);
@@ -16634,7 +16644,35 @@ window.safeFileName = function(str){
     var l = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
     return l.indexOf('allow_sarrakiAllEmployees') > -1;
   }
+  // قائمة الموظفين اللي عندهم صلاحية عرض السراكي (لبناء فلتر "عرض مدخلات")
+  function sarrakiEmployees_(){
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    var all = (c.employees || []).slice();
+    var out = [];
+    all.forEach(function(n){
+      var nm = String(n || '').trim(); if (!nm) return;
+      var l = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[nm]) || [];
+      // لا توجد بيانات صلاحيات = نسمح (أدمن قديم / بيانات ناقصة)
+      if (!EMPLOYEE_HIDDEN_ICONS_[nm] || l.indexOf('allow_sarraki') > -1) out.push(nm);
+    });
+    return out;
+  }
   function workerVisibleToSession(w){
+    var sel = S.filterEmp;
+    // فلتر مُحدَّد من واجهة المستخدم
+    if (sel && sel !== '__ALL__') {
+      if (String(w.entered_by || '').trim() === sel) return true;
+      var maps1 = S.dm || {};
+      for (var pid1 in maps1) {
+        var dm1 = maps1[pid1]; if (!dm1 || !dm1.forEach) continue;
+        var f1 = false;
+        dm1.forEach(function(r){ if (r && r.worker_id === w.id && String(r.entered_by || '').trim() === sel) f1 = true; });
+        if (f1) return true;
+      }
+      return false;
+    }
+    // فلتر = "الكل": مسموح للأدمن أو لموظف عنده صلاحية allow_sarrakiAllEmployees
+    if (sel === '__ALL__') { if (canSeeAllWorkers()) return true; /* وإلا نرجع للفلتر الافتراضي حسب الاسم */ }
     if (canSeeAllWorkers()) return true;
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
     if (!c.isEmp || !c.name) return true;
@@ -16737,6 +16775,35 @@ window.safeFileName = function(str){
     t.textContent = m; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2200);
   }
 
+  // ---------- فلتر "عرض مدخلات" ----------
+  function renderFilterEmp(){
+    var row = $('#skFilterEmpRow'), sel = $('#skFilterEmp'); if (!row || !sel) return;
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    var canAll = canSeeAllWorkers();           // أدمن أو موظف عنده allow_sarrakiAllEmployees
+    var isEmp = !!c.isEmp;
+    var meName = String(c.name || '').trim();
+    var emps = sarrakiEmployees_();
+    // لو الموظف ما عندوش صلاحية "عرض الكل" والقائمة فيها اسمه بس → ما فيش داعي للفلتر
+    if (isEmp && !canAll) {
+      // اخفاء الصف — بيشوف مدخلاته فقط (نفس السلوك الأصلي)
+      row.style.display = 'none';
+      if (S.filterEmp !== null && S.filterEmp !== meName) S.filterEmp = null;
+      sel.innerHTML = '';
+      return;
+    }
+    // قيمة افتراضية: الأدمن/صلاحية الكل → الكل
+    if (S.filterEmp === null) S.filterEmp = '__ALL__';
+    // اعد بناء الاختيارات
+    var h = '<option value="__ALL__">— الكل —</option>';
+    // نضم اسم الموظف الحالي لو مش موجود (حالة أدمن أو جلسة بدون قوائم)
+    var seen = {};
+    emps.forEach(function(n){ seen[n] = true; h += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
+    if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '">' + esc(meName) + '</option>';
+    sel.innerHTML = h;
+    sel.value = S.filterEmp || '__ALL__';
+    row.style.display = '';
+  }
+
   // ---------- الماستر ----------
   function renderMaster(){
     var p = P(), sel = $('#skPeriod');
@@ -16749,6 +16816,7 @@ window.safeFileName = function(str){
     var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
     var rv = $('#skReview'); if (rv) rv.style.display = p ? '' : 'none';
+    renderFilterEmp();
     var ew = $('#skEngWrap'), ec = $('#skEngCheck'), el = $('#skEngLabel');
     if (ew && ec && el) {
       ew.style.display = p ? 'inline-flex' : 'none';
@@ -18160,6 +18228,7 @@ window.safeFileName = function(str){
   $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
   $('#skRep').addEventListener('click', reportModal);
   $('#skReview').addEventListener('click', reviewSarrakiModal);
+  $('#skFilterEmp').addEventListener('change', function(){ S.filterEmp = this.value || '__ALL__'; S.day = null; renderAll(); });
   $('#skEngCheck').addEventListener('change', toggleEng);
   $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
   if (LS.get('sk_mcoll', 0)) { root.classList.add('mcoll'); $('#skColl').textContent = '▸'; }
