@@ -1914,6 +1914,9 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-t.sk-day td.c-adv{width:66px;min-width:66px}
 #sarrakiScreen .sk-t.sk-day td.c-proj{width:140px;min-width:140px}
 #sarrakiScreen .sk-t.sk-day td.act{width:64px;min-width:64px;white-space:nowrap}
+#sarrakiScreen .sk-t.sk-day td.c-note{width:150px;min-width:150px}
+#sarrakiScreen .sk-t.sk-day td.c-note .sk-in{text-align:right}
+#sarrakiScreen .sk-t.sk-day td.c-note .sk-in.has-note{background:#fff8d6;border-color:#e0b84a}
 #sarrakiScreen .sk-t.sk-day td.c-ot .sk-in{text-align:center;padding:0 2px}
 #sarrakiScreen .sk-t.sk-day tfoot td{position:sticky;bottom:0;z-index:3;background:#fff0e0;font-weight:800;border-top:2px solid var(--steel);padding:5px 4px;font-size:11.5px}
 #sarrakiScreen .sk-t.sk-day tfoot td.nm{z-index:6;inset-inline-start:0;width:auto;max-width:none;box-shadow:none}
@@ -2048,6 +2051,7 @@ select.sk-in{padding:0 4px;min-width:130px}
 .skp table.dtb td{border:1px solid #333;padding:0 3px;height:22px;box-sizing:border-box;font-weight:700;text-align:center;color:#000;font-size:11px;white-space:nowrap;overflow:hidden}
 .skp table.dtb td.nm{text-align:center;font-size:11px}
 .skp table.dtb td.pj{color:#1a3fb0;font-size:10px}
+.skp table.dtb td.nt{white-space:normal;font-size:9px;line-height:1.2;height:auto;min-height:22px;color:#333;word-break:break-word}
 .skp table.dtb .y{background:#fffbe0}
 .skp table.dtb tr.tot td{background:#fff59d;color:#8b0000;font-size:11.5px;font-weight:800}
 .skp table.dtb tr.tot td.lb{text-align:right;padding-inline-end:8px}
@@ -16583,7 +16587,7 @@ window.safeFileName = function(str){
       if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>المشروع</th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th></th></tr></thead><tbody>';
+    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>المشروع</th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -16595,9 +16599,10 @@ window.safeFileName = function(str){
         '<td class="c-ot"><input class="sk-in" data-d="overtime" inputmode="text" autocomplete="off" placeholder="±"' + dis + '></td>' +
         '<td class="c-ex"><input class="sk-in" data-d="extra" inputmode="decimal"' + dis + '></td>' +
         '<td class="c-adv"><input class="sk-in" data-d="advance" inputmode="decimal"' + dis + '></td>' +
+        '<td class="c-note"><input class="sk-in l" data-d="note" maxlength="200" autocomplete="off" placeholder="ملاحظة…"' + dis + '></td>' +
         '<td class="act">' + (closed ? '' : '<button type="button" class="sk-cp" data-cp title="نسخ العامل (مشروع + سهرات) ليوم تاني — من غير السلفة">📋</button><button type="button" class="sk-x" data-del title="إزالة العامل">✕</button>') + '</td></tr>';
     });
-    if (!ws.length) h += '<tr><td colspan="10" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
+    if (!ws.length) h += '<tr><td colspan="11" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
     h += '</tbody></table></div>';
     $('#skBody').innerHTML = h;
     Array.prototype.forEach.call($('#skBody').querySelectorAll('tbody tr[data-w]'), paintRow);
@@ -16613,6 +16618,8 @@ window.safeFileName = function(str){
     if (document.activeElement !== ot) ot.value = r && r.overtime ? r.overtime : '';
     if (document.activeElement !== ad) ad.value = r && r.advance ? r.advance : '';
     if (ex && document.activeElement !== ex) ex.value = r && r.extra_amt ? r.extra_amt : '';
+    var nt = tr.querySelector('[data-d=note]');
+    if (nt) { if (document.activeElement !== nt) nt.value = r && r.note ? r.note : ''; nt.classList.toggle('has-note', !!(r && r.note)); }
     ot.classList.toggle('has-ot', !!(r && +r.overtime)); ad.classList.toggle('has-adv', !!(r && +r.advance)); if (ex) ex.classList.toggle('has-ex', !!(r && +r.extra_amt));
     var bad = function(q, c){ var e = tr.querySelector(q); if (e) e.classList.toggle('sk-bad', !!c); };
     bad('[data-f=name]', !w.name); bad('[data-f=profession]', !w.profession); bad('[data-f=daily_rate]', !(+w.daily_rate > 0)); bad('[data-d=project]', !pj);
@@ -16641,7 +16648,7 @@ window.safeFileName = function(str){
   }
   function commitDay(r){
     var dm = DM(), k = r.worker_id + '|' + r.work_date;
-    if (!r.present && !(+r.overtime) && !(+r.advance) && !(+r.extra_amt)) { dm.delete(k); enqueue('del', 'wl_days', r.id); }
+    if (!r.present && !(+r.overtime) && !(+r.advance) && !(+r.extra_amt) && !r.note) { dm.delete(k); enqueue('del', 'wl_days', r.id); }
     else enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null });
   }
   function saveWorker(w){ enqueue('up', 'wl_workers', { id: w.id, period_id: w.period_id, name: w.name, profession: w.profession || null, daily_rate: +w.daily_rate || 0, project_id: w.project_id || null, item_id: w.item_id || null, sort: w.sort || 0 }); }
@@ -16663,6 +16670,8 @@ window.safeFileName = function(str){
     if (d === 'project') {
       if (!el.value) { paintRow(tr); toast('المشروع إجباري'); return; }
       var r2 = dayObj(w, S.day, true); r2.project_id = el.value; r2.present = true; commitDay(r2);
+    } else if (d === 'note') {
+      var r4 = dayObj(w, S.day, false); if (!r4) return; r4.note = el.value.trim() || null; commitDay(r4);
     } else if (d === 'overtime' || d === 'advance' || d === 'extra') {
       var val = num(el.value); if (val < 0 && d !== 'overtime') val = 0; el.value = val || '';
       var r3 = dayObj(w, S.day, false); if (!r3) return; r3[d === 'extra' ? 'extra_amt' : d] = val; commitDay(r3);
@@ -16825,12 +16834,20 @@ window.safeFileName = function(str){
 
   // ---------- الفترات ----------
   function selectPeriod(id){
-    S.cur = id; LS.set('sk_cur', id); S.week = 1; S.day = null;
+    S.cur = id; S.picked = true; LS.set('sk_cur', id); S.week = 1; S.day = null;
     var need = S.online !== false && !S.missing && !Object.keys(Q).length && id;
     S.loading = !!need && !S.dm[id]; renderAll();
     if (need) loadDays(id).catch(function(){}).then(function(){ S.loading = false; if (S.cur === id) renderAll(); });
   }
   function newPeriod(){
+    // ممنوع فتح فترة جديدة طالما فيه فترة مفتوحة: لازم تتقفل الأول
+    var openP = S.periods.filter(function(x){ return x.status === 'open'; }).sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0];
+    if (openP) {
+      modal('<h3>⚠ لا يمكن فتح فترة جديدة</h3><p class="msg">الفترة رقم <b>' + openP.period_no + '</b> / ' + openP.year + ' لسه <b>مفتوحة</b>.<br>لازم تقفلها الأول من <b>إعدادات السراكي ← إقفال الفترة</b>، وبعدها تقدر تفتح الفترة الجديدة.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){
+        el.querySelector('[data-n]').onclick = close;
+      });
+      return;
+    }
     var sorted = S.periods.slice().sort(function(a, b){ return (a.year - b.year) || (a.period_no - b.period_no); });
     var last = sorted[sorted.length - 1];
     var from = last ? addD(last.to_date, 1) : todayS(), to = addD(from, 13);
@@ -16839,7 +16856,6 @@ window.safeFileName = function(str){
       '<div class="row"><div><label class="l">السنة</label><input type="number" id="npY" value="' + year + '"></div><div><label class="l">رقم الفترة</label><input type="number" id="npN" value="' + no + '"></div></div>' +
       '<div class="row"><div><label class="l">من تاريخ</label><input type="date" id="npF" value="' + from + '"></div><div><label class="l">إلى تاريخ</label><input type="date" id="npT" value="' + to + '"></div></div>' +
       (last ? '<label class="chk"><input type="checkbox" id="npC" checked> نسخ العمال (الاسم والمهنة واليومية والمشروع) من الفترة ' + last.period_no + '</label>' : '') +
-      (last && last.status === 'open' ? '<label class="chk"><input type="checkbox" id="npX" checked> إقفال الفترة ' + last.period_no + ' (ما زالت مفتوحة)</label>' : '') +
       '<p class="msg" id="npM" style="color:#b3261e"></p><div class="btns"><button class="btn btn-primary" id="npOk">إنشاء الفترة</button><button class="btn btn-secondary" id="npNo">إلغاء</button></div>', function(el, close){
       el.querySelector('#npF').onchange = function(){ el.querySelector('#npT').value = addD(this.value, 13); };
       el.querySelector('#npNo').onclick = close;
@@ -16850,7 +16866,6 @@ window.safeFileName = function(str){
         if (S.periods.some(function(x){ return x.year === y && x.period_no === n; })) { m.textContent = 'رقم الفترة موجود بالفعل في نفس السنة'; return; }
         var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null };
         var copy = el.querySelector('#npC') && el.querySelector('#npC').checked;
-        if (el.querySelector('#npX') && el.querySelector('#npX').checked) { last.status = 'closed'; last.closed_at = new Date().toISOString(); enqueue('up', 'wl_periods', last); }
         S.periods.push(np); enqueue('up', 'wl_periods', np); S.dm[np.id] = new Map();
         if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1 }; S.workers.push(nw); saveWorker(nw); });
         close(); selectPeriod(np.id); toast('تم فتح الفترة ' + n);
@@ -16874,6 +16889,16 @@ window.safeFileName = function(str){
   }
 
   // ---------- إعدادات السراكي (من الإعدادات): البنود + فتح فترة جديدة + إقفال/إعادة فتح الفترة ----------
+  // الفترة الافتراضية: آخر فترة مفتوحة، ولو مفيش مفتوحة فآخر فترة — مش آخر فترة اتفتحت قبل كده (اللي ممكن تكون مقفلة)
+  function defaultPeriodId(){
+    var d = function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); };
+    var o = S.periods.filter(function(x){ return x.status === 'open'; }).sort(d)[0] || S.periods.slice().sort(d)[0];
+    return o ? o.id : null;
+  }
+  function autoPeriod(){
+    var id = defaultPeriodId();
+    if (id !== S.cur) { S.cur = id; S.week = 1; S.day = null; if (id) LS.set('sk_cur', id); }
+  }
   function pickDefaultPeriod(){
     if (P()) return;
     var d = function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); };
@@ -16881,7 +16906,7 @@ window.safeFileName = function(str){
     S.cur = o ? o.id : null;
   }
   function settingsModal(){
-    loadCache(); if (!S.cur) S.cur = LS.get('sk_cur', null); pickDefaultPeriod();
+    loadCache(); S.picked = false; autoPeriod();
     function body(){
       var list = S.periods.slice().sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); }), p = P();
       var opts = list.length ? list.map(function(x){ return '<option value="' + x.id + '"' + (x.id === S.cur ? ' selected' : '') + '>' + x.period_no + ' — ' + x.year + ' (' + short(x.from_date) + ' → ' + short(x.to_date) + ')' + (x.status === 'closed' ? ' 🔒' : '') + '</option>'; }).join('') : '<option value="">— لا توجد فترات —</option>';
@@ -16907,7 +16932,7 @@ window.safeFileName = function(str){
       }
       function rebind(){ el.innerHTML = body(); wire(); }
       wire();
-      loadServer().then(function(){ seedItems(); pickDefaultPeriod(); if (S.cur) return loadDays(S.cur).catch(function(){}); })
+      loadServer().then(function(){ seedItems(); if (!S.picked || !P()) autoPeriod(); if (S.cur) return loadDays(S.cur).catch(function(){}); })
         .catch(function(e){ if (String(e.message) !== 'pending') handleErr(e); else schedule(100); seedItems(); })
         .then(function(){ if (el.isConnected) rebind(); });
     });
@@ -17309,19 +17334,21 @@ window.safeFileName = function(str){
     var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), map = {}, rows = [], advs = [];
     function pOrd(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return i; return 1e6; }
     function cmp(a, b){ return a.name.localeCompare(b.name, 'ar', { numeric: true }) || (a.rate - b.rate) || (a.wk - b.wk) || (pOrd(a.pj) - pOrd(b.pj)); }
-    function blank(a){ return { name: a.name, rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0 }; }
+    function blank(a){ return { name: a.name, rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0, notes: [] }; }
     WK(p.id).forEach(function(w){
       var rate = +w.daily_rate || 0, nm = String(w.name || '').trim();
       dates.forEach(function(d){
         var r = m.get(w.id + '|' + d); if (!r) return;
         var pj = r.project_id || w.project_id || '', wk = d < w2 ? 1 : 2;
         var days = r.present ? 1 : 0, otd = +r.overtime || 0, ex = +r.extra_amt || 0, adv = +r.advance || 0;
+        var nTxt = r.note ? (short(d) + ': ' + String(r.note).trim()) : '';
         if (days || otd || ex) {
           var k = nm + '|' + rate + '|' + wk + '|' + pj, x = map[k];
           if (!x) { x = map[k] = blank({ name: nm, rate: rate, wk: wk, pj: pj }); rows.push(x); }
           x.days += days; x.otd += otd; x.extra += ex;
+          if (nTxt) x.notes.push(nTxt);
         }
-        if (adv) advs.push({ name: nm, rate: rate, wk: wk, pj: pj, adv: adv });
+        if (adv) advs.push({ name: nm, rate: rate, wk: wk, pj: pj, adv: adv, note: (days || otd || ex) ? '' : nTxt });
       });
     });
     rows.sort(cmp);
@@ -17331,16 +17358,17 @@ window.safeFileName = function(str){
       var tgt = mine.filter(function(x){ return x.pj === a.pj; })[0] || mine[0];
       if (!tgt) { tgt = blank(a); rows.push(tgt); rows.sort(cmp); }
       if (a.wk === 1) tgt.a1 += a.adv; else tgt.a2 += a.adv;
+      if (a.note) tgt.notes.push(a.note);
     });
     var T = { days: 0, otd: 0, tot: 0, extra: 0, before: 0, a1: 0, a2: 0, net: 0 };
     rows.forEach(function(x){
-      x.tot = x.days + x.otd; x.before = x.tot * x.rate + x.extra; x.net = x.before - x.a1 - x.a2; x.pname = x.pj ? projName(x.pj) : '';
+      x.tot = x.days + x.otd; x.before = x.tot * x.rate + x.extra; x.net = x.before - x.a1 - x.a2; x.pname = x.pj ? projName(x.pj) : ''; x.note = (x.notes || []).join(' | ');
       for (var k in T) T[k] += x[k];
     });
     return { rows: rows, tot: T };
   }
   function buildDetailPages(p){
-    var D = detailData(p), rows = D.rows, T = D.tot, per = 38, pages = [], z = function(v){ return v ? fmt(v) : ''; };
+    var D = detailData(p), rows = D.rows, T = D.tot, per = 32, pages = [], z = function(v){ return v ? fmt(v) : ''; };
     if (!rows.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
     var now = new Date(), hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     var chunks = []; for (var i = 0; i < rows.length; i += per) chunks.push(rows.slice(i, i + per));
@@ -17350,12 +17378,12 @@ window.safeFileName = function(str){
         '<div class="dtt">شيت العمــالة تفصيلي</div>' +
         '<div class="dti"><div class="r"><span>البيان : </span></div><div class="l"><div><span>السنة : </span><b>' + p.year + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;مسلسل : </span><b>1</b><span>&nbsp;&nbsp;&nbsp;&nbsp;الفترة : </span><b>' + p.period_no + '</b></div>' +
         '<div><span>من </span><b>' + fdmy(p.from_date) + '</b><span>&nbsp;&nbsp;&nbsp;الى&nbsp;&nbsp;&nbsp;</span><b>' + fdmy(p.to_date) + '</b></div></div></div>' +
-        '<table class="dtb"><colgroup><col style="width:13.5%"><col style="width:5.5%"><col style="width:5%"><col style="width:5%"><col style="width:5.5%"><col style="width:6.5%"><col style="width:8.5%"><col style="width:8.5%"><col style="width:8.5%"><col style="width:8%"><col style="width:10.5%"><col style="width:15%"></colgroup>' +
-        '<thead><tr><th>اسم العامل</th><th>قيمة<br>اليومية</th><th>عدد<br>الأيام</th><th>سهرات</th><th>إجمالي<br>الأيام</th><th>قيمة<br>الإضافي</th><th>القبض قبل<br>السلف</th><th>سلف الأسبوع<br>الأول</th><th>سلف الأسبوع<br>الثاني</th><th>القبض</th><th>الأسبوع</th><th>اسم المشروع</th></tr></thead><tbody>';
+        '<table class="dtb"><colgroup><col style="width:12%"><col style="width:5%"><col style="width:4.5%"><col style="width:4.5%"><col style="width:5%"><col style="width:5.5%"><col style="width:7.5%"><col style="width:7.5%"><col style="width:7.5%"><col style="width:7.5%"><col style="width:8.5%"><col style="width:12%"><col style="width:13%"></colgroup>' +
+        '<thead><tr><th>اسم العامل</th><th>قيمة<br>اليومية</th><th>عدد<br>الأيام</th><th>سهرات</th><th>إجمالي<br>الأيام</th><th>قيمة<br>الإضافي</th><th>القبض قبل<br>السلف</th><th>سلف الأسبوع<br>الأول</th><th>سلف الأسبوع<br>الثاني</th><th>القبض</th><th>الأسبوع</th><th>اسم المشروع</th><th>ملاحظات</th></tr></thead><tbody>';
       ch.forEach(function(x){
-        h += '<tr><td class="nm">' + esc(x.name) + '</td><td>' + fmt(x.rate) + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td class="y">' + fd(x.tot) + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td><td>' + WEEKN[x.wk] + '</td><td class="pj">' + esc(x.pname) + '</td></tr>';
+        h += '<tr><td class="nm">' + esc(x.name) + '</td><td>' + fmt(x.rate) + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td class="y">' + fd(x.tot) + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td><td>' + WEEKN[x.wk] + '</td><td class="pj">' + esc(x.pname) + '</td><td class="nt">' + esc(x.note) + '</td></tr>';
       });
-      if (last) h += '<tr class="tot"><td colspan="2" class="lb">الإجمالي</td><td>' + fmt(T.days) + '</td><td>' + z(T.otd) + '</td><td>' + fmt(T.tot) + '</td><td>' + z(T.extra) + '</td><td>' + fmt(T.before) + '</td><td>' + z(T.a1) + '</td><td>' + z(T.a2) + '</td><td>' + fmt(T.net) + '</td><td colspan="2"></td></tr>';
+      if (last) h += '<tr class="tot"><td colspan="2" class="lb">الإجمالي</td><td>' + fmt(T.days) + '</td><td>' + z(T.otd) + '</td><td>' + fmt(T.tot) + '</td><td>' + z(T.extra) + '</td><td>' + fmt(T.before) + '</td><td>' + z(T.a1) + '</td><td>' + z(T.a2) + '</td><td>' + fmt(T.net) + '</td><td colspan="3"></td></tr>';
       h += '</tbody></table>';
       pages.push({ orient: 'port dt', html: h });
     });
@@ -17560,7 +17588,7 @@ window.safeFileName = function(str){
     if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
     var D; try { D = detailData(p); } catch (e) { return Promise.reject(e); }
     if (!D.rows.length) return Promise.reject(new Error('مفيش حضور أو سلف مسجّل في الفترة دي'));
-    var T = D.tot, NC = 12, HR = 6, FIRST = HR + 1, LAST = HR + D.rows.length;
+    var T = D.tot, NC = 13, HR = 6, FIRST = HR + 1, LAST = HR + D.rows.length;
     var now = new Date(), hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     var wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال'; wb.created = now;
     var ws = wb.addWorksheet('شيت العمالة تفصيلي', {
@@ -17572,7 +17600,7 @@ window.safeFileName = function(str){
     var INK = 'FF1A237E', RED = 'FF8B0000', BLUE = 'FF1A3FB0';
     var blk = { style: 'thin', color: { argb: 'FF000000' } }, gry = { style: 'thin', color: { argb: 'FF555555' } };
     var fillY = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFBE0' } }, fillH = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE9E9E9' } }, fillT = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF59D' } };
-    [24, 12, 10, 9, 11, 12, 15, 14, 14, 13, 16, 28].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
+    [24, 12, 10, 9, 11, 12, 15, 14, 14, 13, 16, 28, 34].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
     // عنوان الشيت في النص داخل إطار مزدوج
     ws.mergeCells(1, 4, 1, 9);
     var tc = ws.getCell(1, 4); tc.value = 'شيت العمــالة تفصيلي'; tc.font = { name: 'Arial', size: 18, bold: true, color: { argb: RED } }; tc.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -17591,7 +17619,7 @@ window.safeFileName = function(str){
     var ft = ws.getCell(4, 8); ft.value = 'من  ' + fdmy(p.from_date) + '    الى    ' + fdmy(p.to_date); ft.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } }; ft.alignment = { horizontal: 'left', vertical: 'middle' };
     ws.getRow(5).height = 6;
     // الهيدر
-    ['اسم العامل', 'قيمة اليومية', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض', 'الأسبوع', 'اسم المشروع'].forEach(function(h, i){
+    ['اسم العامل', 'قيمة اليومية', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض', 'الأسبوع', 'اسم المشروع', 'ملاحظات'].forEach(function(h, i){
       var c = ws.getCell(HR, i + 1); c.value = h; c.fill = fillH; c.font = { name: 'Arial', size: 10, bold: true, color: { argb: INK } };
       c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; c.border = { top: blk, bottom: blk, left: blk, right: blk };
     });
@@ -17607,11 +17635,11 @@ window.safeFileName = function(str){
       r.getCell(7).value = { formula: 'E' + n + '*B' + n + '+F' + n, result: x.before };
       r.getCell(8).value = x.a1 || null; r.getCell(9).value = x.a2 || null;
       r.getCell(10).value = { formula: 'G' + n + '-H' + n + '-I' + n, result: x.net };
-      r.getCell(11).value = WEEKN[x.wk]; r.getCell(12).value = x.pname;
+      r.getCell(11).value = WEEKN[x.wk]; r.getCell(12).value = x.pname; r.getCell(13).value = x.note || null;
       for (var k = 1; k <= NC; k++) {
         var cell = r.getCell(k);
         cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: k === 12 ? BLUE : 'FF000000' } };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: k === 13 };
         cell.border = { top: gry, bottom: gry, left: gry, right: gry };
         if (k === 5 || k === 7 || k === 10) cell.fill = fillY;
       }
@@ -17877,15 +17905,14 @@ window.safeFileName = function(str){
   var opened = false;
   function open(){
     window.showScreen_('sarraki');
-    loadCache(); if (!S.cur) S.cur = LS.get('sk_cur', null);
+    loadCache(); S.picked = false; autoPeriod();
     if (noExtra) {
       noExtra = false; LS.set('sk_noextra', 0);
       Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null }); }); });
     }
-    if (!P()) { var o = S.periods.filter(function(x){ return x.status === 'open'; }).sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0] || S.periods.slice().sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0]; S.cur = o ? o.id : null; }
     setSync(Object.keys(Q).length ? 'pending' : 'ok'); renderAll();
     loadServer().then(function(){ seedItems();
-      if (!P()) { var o2 = S.periods.filter(function(x){ return x.status === 'open'; }).sort(function(a, b){ return (b.year - a.year) || (b.period_no - a.period_no); })[0] || S.periods[S.periods.length - 1]; S.cur = o2 ? o2.id : null; }
+      if (!S.picked || !P()) autoPeriod();
       if (S.cur) return loadDays(S.cur).catch(function(){});
     }).catch(function(e){ if (String(e.message) !== 'pending') handleErr(e); else schedule(100); seedItems(); }).then(function(){ opened = true; renderAll(); });
   }
