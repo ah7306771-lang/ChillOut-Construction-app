@@ -2186,14 +2186,21 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-master #skFilterEmpRow .sk-f select { height:28px !important; font-size:11px !important; width:100%; }
   /* تصغير النصوص فوق على الموبايل: اعتماد المهندس + زراير مراجعة/تقارير */
   #sarrakiScreen #skEngLabel { font-size:9.5px !important; letter-spacing:-.2px; }
-  #sarrakiScreen #skReview, #sarrakiScreen #skRep { font-size:0 !important; }
-  #sarrakiScreen #skReview::before { content: attr(data-short); font-size:11.5px; font-weight:800; }
-  #sarrakiScreen #skRep::before { content: attr(data-short); font-size:11.5px; font-weight:800; }
-  /* بار الإجماليات تحت: استبدال النصوص بإيموجي صغير */
+  /* زراير مراجعة/تقارير: نخفي النص الأصلي بالكامل ونعرض data-short فقط لمنع التداخل */
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skReview,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skRep {
+    font-size:0 !important; color:transparent !important; text-indent:-9999px; overflow:hidden; position:relative;
+  }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skReview::before,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skRep::before {
+    content: attr(data-short); position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:var(--ink); text-indent:0;
+  }
+  /* بار الإجماليات تحت: استبدال النصوص بإيموجي صغير — قيم أصغر عشان ما تتكلّش */
   #sarrakiScreen .sk-fix > div { position:relative; }
   #sarrakiScreen .sk-fix > div > span { display:none !important; }
-  #sarrakiScreen .sk-fix > div::before { content: attr(data-ic); font-size:13px; line-height:1; margin-inline-end:2px; }
-  #sarrakiScreen .sk-fix > div > b { font-size:12px !important; font-weight:800; }
+  #sarrakiScreen .sk-fix > div::before { content: attr(data-ic); font-size:11px; line-height:1; margin-inline-end:1px; }
+  #sarrakiScreen .sk-fix > div > b { font-size:10px !important; font-weight:800; }
   /* قائمة العامل اليدوية للإضافة */
   #sarrakiScreen .sk-add { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; padding:5px !important; }
   #sarrakiScreen .sk-add #skaName { grid-column:1 / -1; grid-row:1; min-width:0; width:100%; }
@@ -16662,6 +16669,7 @@ window.safeFileName = function(str){
     return l.indexOf('allow_sarrakiAllEmployees') > -1;
   }
   // قائمة الموظفين اللي عندهم صلاحية عرض السراكي (لبناء فلتر "عرض مدخلات")
+  // الموظف يظهر في الفلتر فقط لو عنده allow_sarraki صراحةً في صلاحياته.
   function sarrakiEmployees_(){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
     var all = (c.employees || []).slice();
@@ -16669,9 +16677,8 @@ window.safeFileName = function(str){
     var out = [];
     all.forEach(function(n){
       var nm = String(n || '').trim(); if (!nm) return;
-      var l = icons[nm] || [];
-      // لا توجد بيانات صلاحيات = نسمح (أدمن قديم / بيانات ناقصة)
-      if (!icons[nm] || l.indexOf('allow_sarraki') > -1) out.push(nm);
+      var l = icons[nm];
+      if (l && l.indexOf && l.indexOf('allow_sarraki') > -1) out.push(nm);
     });
     return out;
   }
