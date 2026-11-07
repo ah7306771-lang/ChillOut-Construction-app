@@ -2177,13 +2177,16 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f input,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f select,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f .sk-badge { height:26px !important; font-size:10.5px !important; }
-  /* الصف الثالث: فلتر "عرض مدخلات" — عرض/إخفاء عن طريق JS (style.display) */
-  #sarrakiScreen .sk-master #skFilterEmpRow[style*="display:none"],
-  #sarrakiScreen .sk-master #skFilterEmpRow[style*="display: none"] { display:none !important; }
-  #sarrakiScreen .sk-master #skFilterEmpRow { gap:5px; width:100%; }
-  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f { flex:1 1 auto; min-width:0; width:100%; }
-  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f label { font-size:10px; }
-  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f select { height:28px !important; font-size:11px !important; width:100%; }
+  /* تصغير النصوص فوق على الموبايل: اعتماد المهندس + زراير مراجعة/تقارير */
+  #sarrakiScreen #skEngLabel { font-size:9.5px !important; letter-spacing:-.2px; }
+  #sarrakiScreen #skReview, #sarrakiScreen #skRep { font-size:0 !important; }
+  #sarrakiScreen #skReview::before { content: attr(data-short); font-size:11.5px; font-weight:800; }
+  #sarrakiScreen #skRep::before { content: attr(data-short); font-size:11.5px; font-weight:800; }
+  /* بار الإجماليات تحت: استبدال النصوص بإيموجي صغير */
+  #sarrakiScreen .sk-fix > div { position:relative; }
+  #sarrakiScreen .sk-fix > div > span { display:none !important; }
+  #sarrakiScreen .sk-fix > div::before { content: attr(data-ic); font-size:13px; line-height:1; margin-inline-end:2px; }
+  #sarrakiScreen .sk-fix > div > b { font-size:12px !important; font-weight:800; }
   /* قائمة العامل اليدوية للإضافة */
   #sarrakiScreen .sk-add { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; padding:5px !important; }
   #sarrakiScreen .sk-add #skaName { grid-column:1 / -1; grid-row:1; min-width:0; width:100%; }
@@ -2196,6 +2199,12 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-fix b { display:inline !important; font-size:10px !important; line-height:1.1 !important; margin:0 !important; }
   #sarrakiScreen .sk-head { margin-bottom:4px !important; }
   #sarrakiScreen .sk-tab { padding:4px 7px !important; font-size:10.5px !important; }
+}
+@media (max-width: 380px) {
+  #sarrakiScreen .sk-fix > div::before { font-size:12px; }
+  #sarrakiScreen .sk-fix > div > b { font-size:11px !important; }
+  #sarrakiScreen #skReview::before, #sarrakiScreen #skRep::before { font-size:10.5px !important; }
+  #sarrakiScreen #skEngLabel { font-size:9px !important; }
 }
 #sarrakiScreen .sk-t.sk-day th:last-child,#sarrakiScreen .sk-t.sk-day td.c-by{width:92px;min-width:92px;max-width:92px}
 #sarrakiScreen .sk-t.sk-day td.c-by{font-size:10.5px;font-weight:700;color:#6b7690;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
@@ -2719,11 +2728,8 @@ body.cg-compact .wa-float-btn{display:none !important}
         <div class="sk-f w-week"><label>الأسبوع</label><select id="skWeek"><option value="1">الأول</option><option value="2">الثاني</option></select></div>
         <div class="sk-f w-st"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
         <label class="sk-eng-check" id="skEngWrap" style="display:none"><input type="checkbox" id="skEngCheck"><span id="skEngLabel">اعتماد المهندس الأسبوع الأول</span></label>
-        <button type="button" class="btn btn-secondary" id="skReview">🔎 مراجعة السراكي</button>
-        <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
-      </div>
-      <div class="mrow" id="skFilterEmpRow" style="display:none">
-        <div class="sk-f grow"><label>👤 عرض مدخلات</label><select id="skFilterEmp"></select></div>
+        <button type="button" class="btn btn-secondary" id="skReview" data-short="🔎 مراجعة">🔎 مراجعة السراكي</button>
+        <button type="button" class="btn btn-secondary" id="skRep" data-short="📄 تقارير">📄 تقارير (Excel / PDF)</button>
       </div>
     </div>
     <div class="sk-banner" id="skBanner"></div>
@@ -2734,11 +2740,11 @@ body.cg-compact .wa-float-btn{display:none !important}
     </div>
     <div id="skBody"></div>
     <div class="sk-fix" id="skFix" style="display:none">
-      <div><span>إجمالي الأيام</span><b id="skfxD">0</b></div>
-      <div><span>إجمالي الإضافي</span><b id="skfxE">0</b></div>
-      <div><span>إجمالي السلف</span><b id="skfxA">0</b></div>
-      <div class="g"><span>إجمالي القبض</span><b id="skfxG">0</b></div>
-      <div class="nt"><span>صافي القبض</span><b id="skfxN">0</b></div>
+      <div data-ic="📅"><span>إجمالي الأيام</span><b id="skfxD">0</b></div>
+      <div data-ic="➕"><span>إجمالي الإضافي</span><b id="skfxE">0</b></div>
+      <div data-ic="💸"><span>إجمالي السلف</span><b id="skfxA">0</b></div>
+      <div class="g" data-ic="💰"><span>إجمالي القبض</span><b id="skfxG">0</b></div>
+      <div class="nt" data-ic="✅"><span>صافي القبض</span><b id="skfxN">0</b></div>
     </div>
   </div>
 </div>
@@ -16775,33 +16781,23 @@ window.safeFileName = function(str){
     t.textContent = m; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2200);
   }
 
-  // ---------- فلتر "عرض مدخلات" ----------
-  function renderFilterEmp(){
-    var row = $('#skFilterEmpRow'), sel = $('#skFilterEmp'); if (!row || !sel) return;
+  // ---------- فلتر "عرض مدخلات" (يُستخدم داخل مودالات المراجعة/التقارير) ----------
+  function filterEmpSelectHTML(id){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
-    var canAll = canSeeAllWorkers();           // أدمن أو موظف عنده allow_sarrakiAllEmployees
+    var canAll = canSeeAllWorkers();
     var isEmp = !!c.isEmp;
     var meName = String(c.name || '').trim();
     var emps = sarrakiEmployees_();
-    // لو الموظف ما عندوش صلاحية "عرض الكل" والقائمة فيها اسمه بس → ما فيش داعي للفلتر
-    if (isEmp && !canAll) {
-      // اخفاء الصف — بيشوف مدخلاته فقط (نفس السلوك الأصلي)
-      row.style.display = 'none';
-      if (S.filterEmp !== null && S.filterEmp !== meName) S.filterEmp = null;
-      sel.innerHTML = '';
-      return;
-    }
-    // قيمة افتراضية: الأدمن/صلاحية الكل → الكل
-    if (S.filterEmp === null) S.filterEmp = '__ALL__';
-    // اعد بناء الاختيارات
-    var h = '<option value="__ALL__">— الكل —</option>';
-    // نضم اسم الموظف الحالي لو مش موجود (حالة أدمن أو جلسة بدون قوائم)
+    var sel = S.filterEmp;
+    if (sel === null) sel = canAll ? '__ALL__' : (meName || '__ALL__');
+    var h = '<select id="' + id + '">';
+    // لو عنده صلاحية الكل أو مش موظف → يُسمح بـ "الكل"
+    if (canAll) h += '<option value="__ALL__"' + (sel === '__ALL__' ? ' selected' : '') + '>— الكل —</option>';
     var seen = {};
-    emps.forEach(function(n){ seen[n] = true; h += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
-    if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '">' + esc(meName) + '</option>';
-    sel.innerHTML = h;
-    sel.value = S.filterEmp || '__ALL__';
-    row.style.display = '';
+    emps.forEach(function(n){ if (seen[n]) return; seen[n] = true; h += '<option value="' + esc(n) + '"' + (sel === n ? ' selected' : '') + '>' + esc(n) + '</option>'; });
+    if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '"' + (sel === meName ? ' selected' : '') + '>' + esc(meName) + '</option>';
+    h += '</select>';
+    return h;
   }
 
   // ---------- الماستر ----------
@@ -16816,7 +16812,6 @@ window.safeFileName = function(str){
     var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
     var rv = $('#skReview'); if (rv) rv.style.display = p ? '' : 'none';
-    renderFilterEmp();
     var ew = $('#skEngWrap'), ec = $('#skEngCheck'), el = $('#skEngLabel');
     if (ew && ec && el) {
       ew.style.display = p ? 'inline-flex' : 'none';
@@ -17273,11 +17268,14 @@ window.safeFileName = function(str){
   // تقرير مراجعة السراكي: نفس الشيت التفصيلي، مستقل عن اعتماد المهندس.
   function reviewSarrakiModal(){
     var p = P(); if (!p) return;
+    var prevFilter = S.filterEmp; // نحفظ الحالة قبل المودال
     modal('<h3>🔎 مراجعة السراكي</h3><p class="msg">التقرير التفصيلي لكل عامل حسب الأسبوع والمشروع — لا يتطلب اعتماد المهندس.</p>' +
+      '<label class="l">👤 عرض مدخلات</label>' + filterEmpSelectHTML('rvFilterEmp') +
       '<div class="rpsec">الشيت التفصيلي (سطر لكل عامل / أسبوع / مشروع)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rvPDF">📋 PDF</button><button class="btn btn-primary" id="rvXLS">📊 Excel</button><button class="btn btn-secondary" id="rvShare">📤 مشاركة PDF</button></div>' +
       '<p class="msg" id="rvM"></p><div class="btns"><button class="btn btn-secondary" id="rvClose">إغلاق</button></div>', function(el, close){
         var msg = function(t){ el.querySelector('#rvM').textContent = t || ''; };
+        var fe = el.querySelector('#rvFilterEmp'); if (fe) { S.filterEmp = fe.value || '__ALL__'; fe.onchange = function(){ S.filterEmp = this.value || '__ALL__'; }; }
         function run(job, share){
           msg('جارٍ تجهيز التقرير…');
           job().then(function(r){
@@ -17285,7 +17283,8 @@ window.safeFileName = function(str){
             download(r.blob, r.name); msg('تم تنزيل التقرير ✔');
           }).catch(function(e){ msg('تعذّر إنشاء التقرير: ' + ((e && e.message) || e)); });
         }
-        el.querySelector('#rvClose').onclick = close;
+        function doClose(){ S.filterEmp = prevFilter; close(); }
+        el.querySelector('#rvClose').onclick = doClose;
         el.querySelector('#rvPDF').onclick = function(){ run(function(){ return pdfBlob(p, { type: 'detail' }).then(function(b){ return { blob:b, name:fileNm(p, 'مراجعة-السراكي-تفصيلي', 'pdf') }; }); }); };
         el.querySelector('#rvXLS').onclick = function(){ run(function(){ return detailExcelBlob(p).then(function(b){ return { blob:b, name:fileNm(p, 'مراجعة-السراكي-تفصيلي', 'xlsx') }; }); }); };
         el.querySelector('#rvShare').onclick = function(){ run(function(){ return pdfBlob(p, { type: 'detail' }).then(function(b){ return { blob:b, name:fileNm(p, 'مراجعة-السراكي-تفصيلي', 'pdf') }; }); }, true); };
@@ -17305,8 +17304,10 @@ window.safeFileName = function(str){
     // كل التقارير العادية تعمل على أيام الأسابيع المعتمدة فقط، مع الاحتفاظ بترقيم الأسبوع الأصلي.
     var p = Object.assign({}, pp, { __approvedWeeks: weeks, __baseFromDate: pp.from_date, __baseToDate: pp.to_date });
     var dates = rangeDates(p); p.from_date = dates[0]; p.to_date = dates[dates.length - 1];
+    var prevFilter = S.filterEmp; // نحفظ الحالة قبل المودال
     var ws = WK();
     modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">الأسابيع المعتمدة: ' + weeks.map(function(w){ return w === 1 ? 'الأول' : 'الثاني'; }).join(' + ') + ' — من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
+      '<label class="l">👤 عرض مدخلات</label>' + filterEmpSelectHTML('rpFilterEmp') +
       '<div class="rpsec">① الشيت الإجمالي (حسب البند)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-primary" id="rpIX">📊 Excel</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpIXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">①.أ المشروع حسب البنود (كل مشروع فيه بنوده + إجمالي كل بند + إجمالي المشروع + إجمالي عام)</div>' +
@@ -17325,6 +17326,16 @@ window.safeFileName = function(str){
       var msg = function(m){ q('#rpM').textContent = m || ''; q('#rpGo').style.display = 'none'; };
       var opt = function(){ return { worker: q('#rpW').value, slips: q('#rpS').checked }; };
       var fail = function(pre){ return function(e){ msg(pre + ': ' + ((e && e.message) || e)); }; };
+      // فلتر "عرض مدخلات" — عند التغيير نعيد بناء قائمة العمال وحفظ الاختيار الحالي
+      var fe = q('#rpFilterEmp');
+      if (fe) {
+        S.filterEmp = fe.value || '__ALL__';
+        fe.onchange = function(){
+          S.filterEmp = this.value || '__ALL__';
+          var cur = q('#rpW').value, ws2 = WK();
+          q('#rpW').innerHTML = '<option value="">كل العمال</option>' + ws2.map(function(w){ return '<option value="' + w.id + '"' + (w.id === cur ? ' selected' : '') + '>' + esc(w.name) + '</option>'; }).join('');
+        };
+      }
       var xlsDetail = function(){ return detailExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'شيت-تفصيلي', 'xlsx') }; }); };
       var xlsItems  = function(){ return itemsExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'إجمالي-حسب-البند', 'xlsx') }; }); };
       var xlsProjectItems = function(){ return projectItemsExcelBlob(p).then(function(b){ return { blob: b, name: fileNm(p, 'المشروع-حسب-البنود', 'xlsx') }; }); };
@@ -17344,7 +17355,7 @@ window.safeFileName = function(str){
       function save(job, ok){
         job().then(function(r){ download(r.blob, r.name); msg(ok || 'تم تنزيل الملف ✔'); }).catch(fail('تعذّر إنشاء الملف'));
       }
-      q('#rpC').onclick = close;
+      q('#rpC').onclick = function(){ S.filterEmp = prevFilter; close(); };
       // ① الإجمالي حسب البند
       q('#rpI').onclick = function(){ msg('جارٍ إنشاء تقرير الإجمالي حسب البند… (ممكن ياخد لحظات)'); save(function(){ return pdfBlob(p, { type: 'items' }); }); };
       q('#rpIX').onclick = function(){ msg('جارٍ إنشاء ملف Excel…'); save(xlsItems); };
@@ -18228,7 +18239,6 @@ window.safeFileName = function(str){
   $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
   $('#skRep').addEventListener('click', reportModal);
   $('#skReview').addEventListener('click', reviewSarrakiModal);
-  $('#skFilterEmp').addEventListener('change', function(){ S.filterEmp = this.value || '__ALL__'; S.day = null; renderAll(); });
   $('#skEngCheck').addEventListener('change', toggleEng);
   $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
   if (LS.get('sk_mcoll', 0)) { root.classList.add('mcoll'); $('#skColl').textContent = '▸'; }
