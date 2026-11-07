@@ -2062,6 +2062,101 @@ select.sk-in{padding:0 4px;min-width:130px}
 .skp table.dtb.rc td.sg{background:#fff}
 .skp table.dtb.rc th.sg{background:#dff0d8}
 </style>
+<style id="skProTheme">
+/* ===== سراكي عمال: ثيم احترافي (ألوان وتنسيق بصري فقط — بدون تغيير المقاسات) ===== */
+#sarrakiScreen{--k-navy:#1b2540;--k-navy2:#2c3b63;--k-acc:#e2621f;--k-acc2:#c24e13;--k-bg:#f4f6fa;--k-line:#dde3ee;--k-ink:#1c2433;--k-soft:#6b7690;--k-ok:#0f8a5f;--k-bad:#c0392b;--k-amb:#fff4d6}
+#sarrakiScreen .gate-title{color:var(--k-navy);font-weight:800;position:relative;padding-inline-start:12px}
+#sarrakiScreen .gate-title::before{content:"";position:absolute;inset-inline-start:0;top:12%;bottom:12%;width:4px;border-radius:4px;background:linear-gradient(180deg,var(--k-acc),var(--k-acc2))}
+#sarrakiScreen .sk-sync{background:#e7f6ef;color:var(--k-ok);border-color:#b5e3cf}
+#sarrakiScreen .sk-sync.saving{background:#fff4d6;color:#8a5a00;border-color:#f0d594}
+#sarrakiScreen .sk-sync.off{background:#fdebe9;color:var(--k-bad);border-color:#f3bdb7}
+/* الماستر */
+#sarrakiScreen .sk-master{background:#fff;border:1px solid var(--k-line);border-top:3px solid var(--k-acc);box-shadow:0 4px 16px rgba(27,37,64,.08)}
+#sarrakiScreen .sk-f label{color:var(--k-soft);letter-spacing:.2px}
+#sarrakiScreen .sk-f input,#sarrakiScreen .sk-f select{background:var(--k-bg);border-color:var(--k-line);color:var(--k-ink)}
+#sarrakiScreen .sk-f input[readonly]{background:#eceff5}
+#sarrakiScreen .sk-f input:focus,#sarrakiScreen .sk-f select:focus{outline:none;border-color:var(--k-acc);box-shadow:0 0 0 3px rgba(226,98,31,.14);background:#fff}
+#sarrakiScreen .sk-coll{color:var(--k-navy)}
+/* التبويبات */
+#sarrakiScreen .sk-tabs{border-bottom:1px solid var(--k-line)}
+#sarrakiScreen .sk-tab{color:var(--k-soft);border-radius:10px 10px 0 0;transition:background .15s,color .15s}
+#sarrakiScreen .sk-tab:hover{background:#eef1f7;color:var(--k-navy)}
+#sarrakiScreen .sk-tab.on{color:var(--k-acc2);border-bottom-color:var(--k-acc);background:linear-gradient(180deg,rgba(226,98,31,0),rgba(226,98,31,.08))}
+/* شرائط الأيام */
+#sarrakiScreen .sk-chip{background:#fff;border-color:var(--k-line);color:var(--k-ink);transition:transform .12s,box-shadow .12s,border-color .12s}
+#sarrakiScreen .sk-chip:hover{border-color:var(--k-navy2);box-shadow:0 3px 10px rgba(27,37,64,.12);transform:translateY(-1px)}
+#sarrakiScreen .sk-chip span{color:var(--k-soft)}
+#sarrakiScreen .sk-chip i{background:#eef1f7;color:var(--k-navy2)}
+#sarrakiScreen .sk-chip.has i{background:#dff3ea;color:var(--k-ok)}
+#sarrakiScreen .sk-chip.fri:not(.on){background:#fff5f4;border-color:#f1c9c4}
+#sarrakiScreen .sk-chip.fri:not(.on) b{color:var(--k-bad)}
+#sarrakiScreen .sk-chip.today:not(.on){border-color:var(--k-acc);box-shadow:inset 0 0 0 1px var(--k-acc)}
+#sarrakiScreen .sk-chip.on{background:linear-gradient(135deg,var(--k-navy),var(--k-navy2));border-color:var(--k-navy);box-shadow:0 4px 12px rgba(27,37,64,.28)}
+#sarrakiScreen .sk-chip.on span{color:#cfd8ee}
+#sarrakiScreen .sk-chip.on i{background:var(--k-acc);color:#fff}
+/* أدوات اليوم + إضافة عامل */
+#sarrakiScreen .sk-tools button{background:#fff;border-color:var(--k-line);color:var(--k-navy);transition:background .15s,border-color .15s}
+#sarrakiScreen .sk-tools button:hover{background:#eef1f7;border-color:var(--k-navy2)}
+#sarrakiScreen .sk-tools button.on{background:var(--k-navy);border-color:var(--k-navy);color:#fff}
+#sarrakiScreen .sk-tools button.red{color:var(--k-bad);border-color:#f1c9c4;background:#fff7f6}
+#sarrakiScreen .sk-tools button.red:hover{background:#fdebe9}
+#sarrakiScreen .sk-add{background:#f8f9fd;border:1px dashed var(--k-navy2)}
+#sarrakiScreen .sk-add input,#sarrakiScreen .sk-add select{border-color:var(--k-line)}
+#sarrakiScreen .sk-add input:focus,#sarrakiScreen .sk-add select:focus{outline:none;border-color:var(--k-acc);box-shadow:0 0 0 3px rgba(226,98,31,.14)}
+#sarrakiScreen .sk-add button{background:linear-gradient(135deg,var(--k-acc),var(--k-acc2))}
+#sarrakiScreen .sk-add .sk-bad,#sarrakiScreen .sk-in.sk-bad{border-color:var(--k-bad);background:#fff3f1}
+/* الجداول */
+#sarrakiScreen .sk-wrap{border-color:var(--k-line);box-shadow:0 2px 10px rgba(27,37,64,.06)}
+#sarrakiScreen .sk-t th,#sarrakiScreen .sk-t.sk-day th{background:linear-gradient(180deg,var(--k-navy2),var(--k-navy));color:#fff;border-bottom:2px solid var(--k-acc);letter-spacing:.2px}
+#sarrakiScreen .sk-t td{border-bottom:1px solid #e9edf5}
+#sarrakiScreen .sk-t tr:nth-child(even) td,#sarrakiScreen .sk-t.sk-day tbody tr:nth-child(even) td{background:#f8f9fc}
+#sarrakiScreen .sk-t.sk-day td{background:#fff}
+#sarrakiScreen .sk-t.sk-day tbody tr:hover td,#sarrakiScreen .sk-t.sk-day tbody tr:focus-within td{background:#eaf0fb}
+#sarrakiScreen .sk-t.sk-day tr.sk-np td{background:var(--k-amb)}
+#sarrakiScreen .sk-t td.n{color:var(--k-soft)}
+#sarrakiScreen .sk-t td.nm{color:var(--k-navy)}
+#sarrakiScreen .sk-t td.big{color:var(--k-acc2)}
+#sarrakiScreen .sk-t tfoot td,#sarrakiScreen .sk-t.sk-day tfoot td{background:#eef1f7 !important;border-top:2px solid var(--k-navy);color:var(--k-navy)}
+#sarrakiScreen .sk-mark{color:var(--k-ok)}
+#sarrakiScreen th.sk-hd:hover{background:var(--k-acc)}
+/* الحقول داخل الجدول */
+#sarrakiScreen .sk-in{border-color:#e3e8f1;color:var(--k-ink);background:#fff;transition:border-color .12s,box-shadow .12s}
+#sarrakiScreen .sk-in:hover{border-color:#b9c3d8}
+#sarrakiScreen .sk-in:focus{border-color:var(--k-acc);box-shadow:0 0 0 3px rgba(226,98,31,.15)}
+#sarrakiScreen .sk-in.has-ot{background:#e8f0ff;border-color:#9db8ee;color:#1e4fa8;font-weight:800}
+#sarrakiScreen .sk-in.has-ex{background:#efe9fb;border-color:#c0aee6;color:#5b34a4;font-weight:800}
+#sarrakiScreen .sk-in.has-adv{background:#fdeceb;border-color:#f0b4ae;color:var(--k-bad);font-weight:800}
+#sarrakiScreen .sk-t.sk-day td.c-note .sk-in.has-note{background:#fff4d6;border-color:#e6bd5c;color:#6b4a00}
+#sarrakiScreen .sk-cp:hover{background:#eef1f7;border-radius:6px}
+#sarrakiScreen .sk-x{color:var(--k-bad)}
+#sarrakiScreen .sk-x:hover{background:#fdebe9}
+/* ملخصات */
+#sarrakiScreen .sk-sum div{background:#fff;border-color:var(--k-line);border-top:3px solid var(--k-navy2);color:var(--k-soft);box-shadow:0 2px 8px rgba(27,37,64,.06)}
+#sarrakiScreen .sk-sum b{color:var(--k-navy)}
+#sarrakiScreen .sk-sum .net{border-top-color:var(--k-ok)}
+#sarrakiScreen .sk-sum .net b{color:var(--k-ok)}
+#sarrakiScreen .sk-sec{color:var(--k-navy);padding-inline-start:10px;border-inline-start:4px solid var(--k-acc)}
+#sarrakiScreen .sk-lock{background:#eceff5;color:var(--k-navy2);border:1px solid var(--k-line)}
+#sarrakiScreen .sk-banner{background:#fdebe9;color:var(--k-bad);border-color:#f3bdb7}
+/* شريط الإجماليات السفلي */
+#sarrakiScreen .sk-fix{background:linear-gradient(180deg,var(--k-navy2),var(--k-navy));box-shadow:0 -6px 18px rgba(27,37,64,.3)}
+#sarrakiScreen .sk-fix > div{background:rgba(255,255,255,.1)}
+#sarrakiScreen .sk-fix .g{background:linear-gradient(135deg,var(--k-acc),var(--k-acc2))}
+#sarrakiScreen .sk-fix .nt{background:linear-gradient(135deg,#17a56c,#0f7a50)}
+/* النوافذ */
+.sk-ov{background:rgba(20,28,48,.6);backdrop-filter:blur(2px)}
+.sk-md{border-top:4px solid #e2621f;box-shadow:0 20px 50px rgba(20,28,48,.35)}
+.sk-md h3{color:#1b2540}
+.sk-md input:focus,.sk-md select:focus{outline:none;border-color:#e2621f;box-shadow:0 0 0 3px rgba(226,98,31,.14)}
+.sk-md .btns .btn-primary{background:linear-gradient(135deg,#e2621f,#c24e13);color:#fff;border:none}
+.sk-md .btns .btn-secondary{background:#eef1f7;color:#1b2540;border:1px solid #dde3ee}
+/* اعتماد المهندس + المُدخِل */
+#sarrakiScreen .sk-eng{font-weight:800;white-space:nowrap}
+#sarrakiScreen .sk-eng.pend{background:#fff4d6;color:#8a5a00;border:1px solid #f0d594}
+#sarrakiScreen .sk-eng.ok{background:#e7f6ef;color:#0f8a5f;border:1px solid #b5e3cf}
+#sarrakiScreen .sk-t.sk-day th:last-child,#sarrakiScreen .sk-t.sk-day td.c-by{width:92px;min-width:92px;max-width:92px}
+#sarrakiScreen .sk-t.sk-day td.c-by{font-size:10.5px;font-weight:700;color:#6b7690;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+</style>
 <style>
 .cg-who{text-align:center;font-weight:800;margin:2px 0 12px;color:var(--steel-dark)}
 .cg-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
@@ -2580,7 +2675,9 @@ body.cg-compact .wa-float-btn{display:none !important}
       <div class="mrow">
         <div class="sk-f w-week"><label>الأسبوع</label><select id="skWeek"><option value="1">الأول</option><option value="2">الثاني</option></select></div>
         <div class="sk-f w-st"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
+        <button type="button" class="btn btn-secondary sk-eng pend" id="skEng">✅ اعتماد المهندس</button>
         <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
+        <button type="button" class="btn btn-secondary" id="skReview">🔎 مراجعة السراكي</button>
       </div>
     </div>
     <div class="sk-banner" id="skBanner"></div>
@@ -11252,6 +11349,7 @@ window.safeFileName = function(str){
     { id: 'custodyReport', label: 'تقرير العهد (كل الخزن) 🧾', defaultOn: false },
     { id: 'sarraki', label: 'سراكي عمال 👷', defaultOn: false },
     { id: 'sarrakiSettings', label: 'إعدادات السراكي 🛠️', defaultOn: false },
+    { id: 'sarrakiApprove', label: 'اعتماد مهندس السراكي ✅', defaultOn: false },
     { id: 'loginSarrakyPeriod', label: 'قبض فترة السراكي (شاشة الدخول) 👷', defaultOn: false }
   ];
   function notifPermById_(id){
@@ -15880,9 +15978,12 @@ window.safeFileName = function(str){
 
       // المسار السريع: لو عندنا كاش فترة لسه ساري (اليوم جوّه from..to)،
       // نروح على طول للطلبات التلاتة بدون استعلام wl_periods.
+      // قفل اعتماد المهندس: لو الفترة مش معتمدة منعرضش البيانات (ولو العمود لسه مش في الداتابيز بنكمّل عادي)
+      // الإشعار الخارجي لملخص السراكي مستقل عن اعتماد المهندس.
+      function gatedFetch(pp){ return fetchData(pp); }
       var cp = loadCachedPeriod();
       if (cp) {
-        fetchData(cp).catch(function(){
+        gatedFetch(cp).catch(function(){
           // الكاش قديم أو الـ period id اتغيّر — نرجع للمسار العادي.
           try { localStorage.removeItem(PID_KEY); } catch (e) {}
           lookupAndFetch();
@@ -15897,7 +15998,7 @@ window.safeFileName = function(str){
             var p = pickPeriod(periods || []);
             if (!p) { wrap.innerHTML = '<div class="empty-note">مفيش فترة سراكي شاملة تاريخ النهاردة.</div>'; return; }
             saveCachedPeriod({ id: p.id, from_date: p.from_date, to_date: p.to_date, year: p.year, period_no: p.period_no, status: p.status });
-            return fetchData(p);
+            return gatedFetch(p);
           }).catch(onErr);
       }
     });
@@ -16312,7 +16413,17 @@ window.safeFileName = function(str){
   var Q = LS.get('sk_q', {}), ver = 0, flushing = false, again = false, flushTimer = null, retryTimer = null, cacheTimer = null;
   // لو عمود extra_amt لسه مااتضافش في جدول wl_days: بنكمّل شغل عادي (بنشيله من الإرسال) ونعرض تنبيه
   var noExtra = !!LS.get('sk_noextra', 0);
-  function sendRow(tb, row){ if (tb === 'wl_days' && noExtra) { var c = {}; for (var k in row) if (k !== 'extra_amt') c[k] = row[k]; return c; } return row; }
+  // أعمدة جديدة (entered_by / اعتماد المهندس): لو لسه ماتضافتش في Supabase بنشيلها من الإرسال ونعرض تنبيه
+  var noEnt = false, noEng = false, noMod = false;
+  function sendRow(tb, row){
+    var drop = [];
+    if (tb === 'wl_days' && noExtra) drop.push('extra_amt');
+    if ((tb === 'wl_days' || tb === 'wl_workers') && noEnt) drop.push('entered_by');
+    if (tb === 'wl_days' && noMod) drop.push('modified_by');
+    if (tb === 'wl_periods' && noEng) drop.push('eng_approved', 'eng_approved_by', 'eng_approved_at');
+    if (!drop.length) return row;
+    var c = {}; for (var k in row) if (drop.indexOf(k) < 0) c[k] = row[k]; return c;
+  }
 
   // ---------- Supabase ----------
   function api(path, o){
@@ -16346,11 +16457,17 @@ window.safeFileName = function(str){
     } else if (noExtra) {
       b.className = 'sk-banner show';
       b.innerHTML = 'عمود <code>extra_amt</code> غير موجود في جدول <code>wl_days</code> — القيمة الإضافية محفوظة على الجهاز بس ومش بتترفع. شغّل في Supabase ← SQL Editor: <code>alter table wl_days add column if not exists extra_amt numeric not null default 0;</code> وبعدها اقفل الشاشة وافتحها تاني.';
+    } else if (noEnt || noEng || noMod) {
+      b.className = 'sk-banner show';
+      b.innerHTML = 'بعض أعمدة السراكي غير موجودة في Supabase. أضف أعمدة <code>entered_by</code> و<code>modified_by</code> واعتماد المهندس حسب سكربت التحديث. لحد إضافتها، بعض بيانات المراجعة قد لا تُرفع.';
     } else b.className = 'sk-banner';
   }
   function schedule(ms){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, ms == null ? 500 : ms); }
   function handleErr(e){
     var m = String((e && e.message) || e);
+    if (/modified_by/.test(m) && !noMod) { noMod = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
+    if (/entered_by/.test(m) && !noEnt) { noEnt = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
+    if (/eng_approved/.test(m) && !noEng) { noEng = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (/extra_amt/.test(m)) { noExtra = true; LS.set('sk_noextra', 1); setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (e && (e.status === 404 || /PGRST205|PGRST200|does not exist|relation/i.test(m))) { S.missing = true; setSync('missing'); }
     else { S.online = false; setSync('off'); }
@@ -16440,6 +16557,32 @@ window.safeFileName = function(str){
   }
 
   // ---------- مساعدات البيانات ----------
+  // اسم المستخدم اللي بيدخل الحركة: اسم الموظف، أو «الأدمن» لو الدخول أدمن
+  function who(){
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    return c.isEmp ? String(c.name || '').trim() : 'الأدمن';
+  }
+  // صلاحية الاعتماد: الأدمن دايمًا، والموظف لو عنده allow_sarrakiApprove
+  function canApprove(){
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    if (!c.isEmp) return true;
+    var l = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
+    return l.indexOf('allow_sarrakiApprove') > -1;
+  }
+  // لو أعمدة الاعتماد لسه مش في الداتابيز: القفل بيتعطّل (عشان التقارير ما تتقفلش بلا مخرج) ويظهر تنبيه
+  function engMissing(){ return noEng || (S.periods.length > 0 && !S.periods.some(function(x){ return 'eng_approved' in x; })); }
+  function engOk(p){ return !!p && (engMissing() || !!p.eng_approved); }
+  function toggleEng(){
+    var p = P(); if (!p) return;
+    if (engMissing()) { toast('شغّل سكربت السوبابيز الأول (أعمدة اعتماد المهندس)'); return; }
+    if (!canApprove()) { toast(p.eng_approved ? 'الفترة معتمدة من المهندس' : 'بانتظار اعتماد المهندس — ليس لديك صلاحية الاعتماد'); return; }
+    var on = !p.eng_approved;
+    ask(on ? 'اعتماد المهندس' : 'إلغاء الاعتماد', on ? 'اعتماد الفترة <b>' + p.period_no + '</b> / ' + p.year + '؟ بعد الاعتماد تتفتح التقارير.' : 'إلغاء اعتماد الفترة <b>' + p.period_no + '</b>؟ التقارير هتتقفل لحد الاعتماد من جديد.', on ? 'اعتماد' : 'إلغاء الاعتماد').then(function(ok){
+      if (!ok) return;
+      p.eng_approved = on; p.eng_approved_by = on ? who() : null; p.eng_approved_at = on ? new Date().toISOString() : null;
+      enqueue('up', 'wl_periods', p); renderAll(); toast(on ? 'تم اعتماد الفترة' : 'تم إلغاء الاعتماد');
+    });
+  }
   function P(){ for (var i = 0; i < S.periods.length; i++) if (S.periods[i].id === S.cur) return S.periods[i]; return null; }
   function isClosed(){ var p = P(); return !p || p.status === 'closed'; }
   function DM(){ return S.dm[S.cur] || (S.dm[S.cur] = new Map()); }
@@ -16539,6 +16682,17 @@ window.safeFileName = function(str){
     $('#skWeek').value = String(S.week); $('#skWeek').disabled = !p;
     var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
+    var rv = $('#skReview'); if (rv) rv.style.display = p ? '' : 'none';
+    var eb = $('#skEng');
+    if (eb) {
+      eb.style.display = p ? '' : 'none';
+      if (p) {
+        var ap = !!p.eng_approved && !engMissing();
+        eb.className = 'btn btn-secondary sk-eng ' + (ap ? 'ok' : 'pend');
+        eb.textContent = ap ? '✅ معتمد — ' + (p.eng_approved_by || 'المهندس') : (canApprove() ? '✅ اعتماد المهندس' : '⏳ بانتظار اعتماد المهندس');
+        eb.title = ap && p.eng_approved_at ? 'اعتمد بتاريخ ' + String(p.eng_approved_at).slice(0, 10) : '';
+      }
+    }
     Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-v') === S.view); b.style.display = p ? '' : 'none'; });
   }
   function ensureDay(){
@@ -16587,7 +16741,7 @@ window.safeFileName = function(str){
       if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>المشروع</th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th></tr></thead><tbody>';
+    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>المشروع</th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -16600,9 +16754,9 @@ window.safeFileName = function(str){
         '<td class="c-ex"><input class="sk-in" data-d="extra" inputmode="decimal"' + dis + '></td>' +
         '<td class="c-adv"><input class="sk-in" data-d="advance" inputmode="decimal"' + dis + '></td>' +
         '<td class="c-note"><input class="sk-in l" data-d="note" maxlength="200" autocomplete="off" placeholder="ملاحظة…"' + dis + '></td>' +
-        '<td class="act">' + (closed ? '' : '<button type="button" class="sk-cp" data-cp title="نسخ العامل (مشروع + سهرات) ليوم تاني — من غير السلفة">📋</button><button type="button" class="sk-x" data-del title="إزالة العامل">✕</button>') + '</td></tr>';
+        '<td class="act">' + (closed ? '' : '<button type="button" class="sk-cp" data-cp title="نسخ العامل (مشروع + سهرات) ليوم تاني — من غير السلفة">📋</button><button type="button" class="sk-x" data-del title="إزالة العامل">✕</button>') + '</td><td class="c-by"></td><td class="c-mod"></td></tr>';
     });
-    if (!ws.length) h += '<tr><td colspan="11" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
+    if (!ws.length) h += '<tr><td colspan="13" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
     h += '</tbody></table></div>';
     $('#skBody').innerHTML = h;
     Array.prototype.forEach.call($('#skBody').querySelectorAll('tbody tr[data-w]'), paintRow);
@@ -16618,6 +16772,8 @@ window.safeFileName = function(str){
     if (document.activeElement !== ot) ot.value = r && r.overtime ? r.overtime : '';
     if (document.activeElement !== ad) ad.value = r && r.advance ? r.advance : '';
     if (ex && document.activeElement !== ex) ex.value = r && r.extra_amt ? r.extra_amt : '';
+    var by = tr.querySelector('.c-by'); if (by) { by.textContent = (r && r.entered_by) || ''; by.title = (r && r.entered_by) ? 'مدخل الحركة: ' + r.entered_by : ''; }
+    var mod = tr.querySelector('.c-mod'); if (mod) { mod.textContent = (r && r.modified_by) || ''; mod.title = (r && r.modified_by) ? 'آخر تعديل بواسطة: ' + r.modified_by : ''; }
     var nt = tr.querySelector('[data-d=note]');
     if (nt) { if (document.activeElement !== nt) nt.value = r && r.note ? r.note : ''; nt.classList.toggle('has-note', !!(r && r.note)); }
     ot.classList.toggle('has-ot', !!(r && +r.overtime)); ad.classList.toggle('has-adv', !!(r && +r.advance)); if (ex) ex.classList.toggle('has-ex', !!(r && +r.extra_amt));
@@ -16641,7 +16797,7 @@ window.safeFileName = function(str){
   function dayObj(w, d, create){
     var dm = DM(), k = w.id + '|' + d, r = dm.get(k);
     if (!r && create) {
-      r = { id: uid(), period_id: S.cur, worker_id: w.id, work_date: d, present: false, project_id: null, overtime: 0, advance: 0, extra_amt: 0, note: null };
+      r = { id: uid(), period_id: S.cur, worker_id: w.id, work_date: d, present: false, project_id: null, overtime: 0, advance: 0, extra_amt: 0, note: null, entered_by: who(), modified_by: null };
       dm.set(k, r);
     }
     return r;
@@ -16649,9 +16805,9 @@ window.safeFileName = function(str){
   function commitDay(r){
     var dm = DM(), k = r.worker_id + '|' + r.work_date;
     if (!r.present && !(+r.overtime) && !(+r.advance) && !(+r.extra_amt) && !r.note) { dm.delete(k); enqueue('del', 'wl_days', r.id); }
-    else enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null });
+    else enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null });
   }
-  function saveWorker(w){ enqueue('up', 'wl_workers', { id: w.id, period_id: w.period_id, name: w.name, profession: w.profession || null, daily_rate: +w.daily_rate || 0, project_id: w.project_id || null, item_id: w.item_id || null, sort: w.sort || 0 }); }
+  function saveWorker(w){ enqueue('up', 'wl_workers', { id: w.id, period_id: w.period_id, name: w.name, profession: w.profession || null, daily_rate: +w.daily_rate || 0, project_id: w.project_id || null, item_id: w.item_id || null, sort: w.sort || 0, entered_by: w.entered_by || null }); }
 
   function onBodyChange(e){
     var el = e.target;
@@ -16665,16 +16821,17 @@ window.safeFileName = function(str){
       else if (f === 'profession') { var pv = el.value.trim(); if (!pv) { el.value = w.profession || ''; toast('المهنة إجبارية'); return; } w.profession = pv; }
       else if (f === 'daily_rate') { var rv = num(el.value); if (!(rv > 0)) { el.value = w.daily_rate || ''; toast('اليومية إجبارية'); return; } w.daily_rate = rv; el.value = rv; }
       else w[f] = el.value.trim();
+      var auditRow = dayObj(w, S.day, false); if (auditRow) { auditRow.modified_by = who(); commitDay(auditRow); }
       saveWorker(w); paintRow(tr); paintFoot(); return;
     }
     if (d === 'project') {
       if (!el.value) { paintRow(tr); toast('المشروع إجباري'); return; }
-      var r2 = dayObj(w, S.day, true); r2.project_id = el.value; r2.present = true; commitDay(r2);
+      var r2 = dayObj(w, S.day, true); r2.project_id = el.value; r2.present = true; r2.modified_by = r2.entered_by ? who() : null; commitDay(r2);
     } else if (d === 'note') {
-      var r4 = dayObj(w, S.day, false); if (!r4) return; r4.note = el.value.trim() || null; commitDay(r4);
+      var r4 = dayObj(w, S.day, false); if (!r4) return; r4.note = el.value.trim() || null; r4.modified_by = who(); commitDay(r4);
     } else if (d === 'overtime' || d === 'advance' || d === 'extra') {
       var val = num(el.value); if (val < 0 && d !== 'overtime') val = 0; el.value = val || '';
-      var r3 = dayObj(w, S.day, false); if (!r3) return; r3[d === 'extra' ? 'extra_amt' : d] = val; commitDay(r3);
+      var r3 = dayObj(w, S.day, false); if (!r3) return; r3[d === 'extra' ? 'extra_amt' : d] = val; r3.modified_by = who(); commitDay(r3);
     }
     paintRow(tr); paintFoot();
   }
@@ -16688,7 +16845,7 @@ window.safeFileName = function(str){
     var w = ws.filter(function(x){ return String(x.name).trim() === name; })[0];
     if (!w) {
       var mx = ws.reduce(function(m, x){ return Math.max(m, x.sort || 0); }, 0);
-      w = { id: uid(), period_id: S.cur, name: name, profession: pf.value.trim(), daily_rate: num(rt.value), project_id: pj.value, item_id: it.value || null, sort: mx + 1 };
+      w = { id: uid(), period_id: S.cur, name: name, profession: pf.value.trim(), daily_rate: num(rt.value), project_id: pj.value, item_id: it.value || null, sort: mx + 1, entered_by: who() };
       S.workers.push(w); saveWorker(w);
     }
     var r = dayObj(w, S.day, true);
@@ -16864,10 +17021,10 @@ window.safeFileName = function(str){
         if (!y || !n || !f || !t) { m.textContent = 'كمّل كل البيانات'; return; }
         if (t < f) { m.textContent = 'تاريخ النهاية قبل البداية'; return; }
         if (S.periods.some(function(x){ return x.year === y && x.period_no === n; })) { m.textContent = 'رقم الفترة موجود بالفعل في نفس السنة'; return; }
-        var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null };
+        var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null, eng_approved: false, eng_approved_by: null, eng_approved_at: null };
         var copy = el.querySelector('#npC') && el.querySelector('#npC').checked;
         S.periods.push(np); enqueue('up', 'wl_periods', np); S.dm[np.id] = new Map();
-        if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1 }; S.workers.push(nw); saveWorker(nw); });
+        if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1, entered_by: who() }; S.workers.push(nw); saveWorker(nw); });
         close(); selectPeriod(np.id); toast('تم فتح الفترة ' + n);
       };
     });
@@ -16972,7 +17129,33 @@ window.safeFileName = function(str){
   // ---------- التقارير ----------
   var BRAND = '#e2621f';
   function repName(p, ext){ return 'سراكي-عمال-فترة-' + p.period_no + '-' + p.year + '.' + ext; }
+  // تقرير مراجعة السراكي: نفس الشيت التفصيلي، مستقل عن اعتماد المهندس.
+  function reviewSarrakiModal(){
+    var p = P(); if (!p) return;
+    modal('<h3>🔎 مراجعة السراكي</h3><p class="msg">التقرير التفصيلي لكل عامل حسب الأسبوع والمشروع — لا يتطلب اعتماد المهندس.</p>' +
+      '<div class="rpsec">الشيت التفصيلي (سطر لكل عامل / أسبوع / مشروع)</div>' +
+      '<div class="btns sm"><button class="btn btn-primary" id="rvPDF">📋 PDF</button><button class="btn btn-primary" id="rvXLS">📊 Excel</button><button class="btn btn-secondary" id="rvShare">📤 مشاركة PDF</button></div>' +
+      '<p class="msg" id="rvM"></p><div class="btns"><button class="btn btn-secondary" id="rvClose">إغلاق</button></div>', function(el, close){
+        var msg = function(t){ el.querySelector('#rvM').textContent = t || ''; };
+        function run(job, share){
+          msg('جارٍ تجهيز التقرير…');
+          job().then(function(r){
+            if (share) return shareBlob(r.blob, r.name, 'مراجعة السراكي — الشيت التفصيلي').then(function(v){ msg(v === 'ok' ? 'تمت المشاركة ✔' : v === 'dl' ? 'تم تنزيل التقرير ✔' : ''); });
+            download(r.blob, r.name); msg('تم تنزيل التقرير ✔');
+          }).catch(function(e){ msg('تعذّر إنشاء التقرير: ' + ((e && e.message) || e)); });
+        }
+        el.querySelector('#rvClose').onclick = close;
+        el.querySelector('#rvPDF').onclick = function(){ run(function(){ return pdfBlob(p, { type: 'detail' }).then(function(b){ return { blob:b, name:fileNm(p, 'مراجعة-السراكي-تفصيلي', 'pdf') }; }); }); };
+        el.querySelector('#rvXLS').onclick = function(){ run(function(){ return detailExcelBlob(p).then(function(b){ return { blob:b, name:fileNm(p, 'مراجعة-السراكي-تفصيلي', 'xlsx') }; }); }); };
+        el.querySelector('#rvShare').onclick = function(){ run(function(){ return pdfBlob(p, { type: 'detail' }).then(function(b){ return { blob:b, name:fileNm(p, 'مراجعة-السراكي-تفصيلي', 'pdf') }; }); }, true); };
+      });
+  }
   function reportModal(){
+    var pp = P();
+    if (!engOk(pp)) {
+      modal('<h3>🔒 التقارير مقفولة</h3><p class="msg">الفترة رقم <b>' + (pp ? pp.period_no : '') + '</b> لسه <b>مش معتمدة من المهندس</b>.<br>التقارير بتتفتح بعد اعتماد المهندس للفترة.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
+      return;
+    }
     var p = P(); if (!p) return;
     var ws = WK();
     modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
@@ -17896,6 +18079,8 @@ window.safeFileName = function(str){
   }
   $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
   $('#skRep').addEventListener('click', reportModal);
+  $('#skReview').addEventListener('click', reviewSarrakiModal);
+  $('#skEng').addEventListener('click', toggleEng);
   $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
   if (LS.get('sk_mcoll', 0)) { root.classList.add('mcoll'); $('#skColl').textContent = '▸'; }
   Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.addEventListener('click', function(){ S.view = b.getAttribute('data-v'); renderAll(); }); });
@@ -17908,7 +18093,7 @@ window.safeFileName = function(str){
     loadCache(); S.picked = false; autoPeriod();
     if (noExtra) {
       noExtra = false; LS.set('sk_noextra', 0);
-      Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null }); }); });
+      Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null }); }); });
     }
     setSync(Object.keys(Q).length ? 'pending' : 'ok'); renderAll();
     loadServer().then(function(){ seedItems();
