@@ -9,24 +9,6 @@
     "type": "أ.ق"
   },
   {
-    "client": "الامين",
-    "number": 74669,
-    "value": 1200000,
-    "dueDate": "30/10/2026",
-    "bank": "NBE",
-    "notes": "متبقي منه 1100000",
-    "type": "أ.ق"
-  },
-  {
-    "client": "الامين",
-    "number": 74675,
-    "value": 2395732.5,
-    "dueDate": "06/11/2026",
-    "bank": "NBE",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
     "client": "بينتاكون",
     "number": null,
     "value": 1923110,
