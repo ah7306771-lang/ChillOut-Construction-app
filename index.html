@@ -2152,9 +2152,9 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-md .btns .btn-secondary{background:#eef1f7;color:#1b2540;border:1px solid #dde3ee}
 /* اعتماد المهندس + المُدخِل */
 #sarrakiScreen .sk-eng{font-weight:800;white-space:nowrap}
-#sarrakiScreen .sk-eng-check{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border-radius:10px;background:#fff4d6;color:#8a5a00;border:1px solid #f0d594;font-weight:800;white-space:nowrap;cursor:pointer;user-select:none}
+#sarrakiScreen .sk-eng-check{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:7px;background:#fff4d6;color:#8a5a00;border:1px solid #f0d594;font-weight:700;white-space:nowrap;cursor:pointer;user-select:none;font-size:12px;height:29px;box-sizing:border-box}
 #sarrakiScreen .sk-eng-check.is-approved{background:#e7f6ef;color:#0f8a5f;border-color:#b5e3cf}
-#sarrakiScreen .sk-eng-check input{width:19px;height:19px;min-width:19px;margin:0;accent-color:#0f9d70;cursor:pointer}
+#sarrakiScreen .sk-eng-check input{width:15px;height:15px;min-width:15px;margin:0;accent-color:#0f9d70;cursor:pointer}
 #sarrakiScreen .sk-eng-check input:disabled{cursor:not-allowed;opacity:.75}
 
 /* ====== إصلاح عرض السراكي على الموبايل ====== */
@@ -2177,6 +2177,13 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f input,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f select,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f .sk-badge { height:26px !important; font-size:10.5px !important; }
+  /* الصف الثالث: فلتر "عرض مدخلات" — عرض/إخفاء عن طريق JS (style.display) */
+  #sarrakiScreen .sk-master #skFilterEmpRow[style*="display:none"],
+  #sarrakiScreen .sk-master #skFilterEmpRow[style*="display: none"] { display:none !important; }
+  #sarrakiScreen .sk-master #skFilterEmpRow { gap:5px; width:100%; }
+  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f { flex:1 1 auto; min-width:0; width:100%; }
+  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f label { font-size:10px; }
+  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f select { height:28px !important; font-size:11px !important; width:100%; }
   /* تصغير النصوص فوق على الموبايل: اعتماد المهندس + زراير مراجعة/تقارير */
   #sarrakiScreen #skEngLabel { font-size:9.5px !important; letter-spacing:-.2px; }
   #sarrakiScreen #skReview, #sarrakiScreen #skRep { font-size:0 !important; }
@@ -2730,6 +2737,9 @@ body.cg-compact .wa-float-btn{display:none !important}
         <label class="sk-eng-check" id="skEngWrap" style="display:none"><input type="checkbox" id="skEngCheck"><span id="skEngLabel">اعتماد المهندس الأسبوع الأول</span></label>
         <button type="button" class="btn btn-secondary" id="skReview" data-short="🔎 مراجعة">🔎 مراجعة السراكي</button>
         <button type="button" class="btn btn-secondary" id="skRep" data-short="📄 تقارير">📄 تقارير (Excel / PDF)</button>
+      </div>
+      <div class="mrow" id="skFilterEmpRow" style="display:none">
+        <div class="sk-f grow"><label>👤 عرض مدخلات</label><select id="skFilterEmp"></select></div>
       </div>
     </div>
     <div class="sk-banner" id="skBanner"></div>
@@ -16781,6 +16791,25 @@ window.safeFileName = function(str){
     t.textContent = m; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2200);
   }
 
+  // ---------- فلتر "عرض مدخلات" الرئيسي (أعلى الشاشة) ----------
+  function renderFilterEmp(){
+    var row = $('#skFilterEmpRow'), sel = $('#skFilterEmp'); if (!row || !sel) return;
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    var canAll = canSeeAllWorkers();
+    var isEmp = !!c.isEmp;
+    var meName = String(c.name || '').trim();
+    var emps = sarrakiEmployees_();
+    // موظف بدون صلاحية "عرض الكل" → بيشوف مدخلاته فقط ومش محتاج الفلتر
+    if (isEmp && !canAll) { row.style.display = 'none'; sel.innerHTML = ''; return; }
+    if (S.filterEmp === null) S.filterEmp = '__ALL__';
+    var h = '<option value="__ALL__"' + (S.filterEmp === '__ALL__' ? ' selected' : '') + '>— الكل —</option>';
+    var seen = {};
+    emps.forEach(function(n){ if (seen[n]) return; seen[n] = true; h += '<option value="' + esc(n) + '"' + (S.filterEmp === n ? ' selected' : '') + '>' + esc(n) + '</option>'; });
+    if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '"' + (S.filterEmp === meName ? ' selected' : '') + '>' + esc(meName) + '</option>';
+    sel.innerHTML = h;
+    row.style.display = '';
+  }
+
   // ---------- فلتر "عرض مدخلات" (يُستخدم داخل مودالات المراجعة/التقارير) ----------
   function filterEmpSelectHTML(id){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
@@ -16812,6 +16841,7 @@ window.safeFileName = function(str){
     var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
     var rv = $('#skReview'); if (rv) rv.style.display = p ? '' : 'none';
+    renderFilterEmp();
     var ew = $('#skEngWrap'), ec = $('#skEngCheck'), el = $('#skEngLabel');
     if (ew && ec && el) {
       ew.style.display = p ? 'inline-flex' : 'none';
@@ -18239,6 +18269,7 @@ window.safeFileName = function(str){
   $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
   $('#skRep').addEventListener('click', reportModal);
   $('#skReview').addEventListener('click', reviewSarrakiModal);
+  $('#skFilterEmp').addEventListener('change', function(){ S.filterEmp = this.value || '__ALL__'; S.day = null; renderAll(); });
   $('#skEngCheck').addEventListener('change', toggleEng);
   $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
   if (LS.get('sk_mcoll', 0)) { root.classList.add('mcoll'); $('#skColl').textContent = '▸'; }
