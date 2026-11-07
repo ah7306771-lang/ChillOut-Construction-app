@@ -2684,7 +2684,7 @@
   {
     "client": "الامين",
     "lastBuyPrice": 4100,
-    "lastSellPrice": 0,
+    "lastSellPrice": 4300,
     "saleOrderNo": 77,
     "paymentMethod": "",
     "lastInvoiceDate": "04/11/2026",
@@ -2743,5 +2743,50 @@
     "paymentMethod": "",
     "lastInvoiceDate": "05/11/2026",
     "actualWeight": 70
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43000,
+    "saleOrderNo": 81,
+    "paymentMethod": "",
+    "lastInvoiceDate": "07/11/2026",
+    "actualWeight": 59.21
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43000,
+    "saleOrderNo": 81,
+    "paymentMethod": "",
+    "lastInvoiceDate": "07/11/2026",
+    "actualWeight": 3.98
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43000,
+    "saleOrderNo": 81,
+    "paymentMethod": "",
+    "lastInvoiceDate": "07/11/2026",
+    "actualWeight": 5.85
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43000,
+    "saleOrderNo": 82,
+    "paymentMethod": "",
+    "lastInvoiceDate": "07/11/2026",
+    "actualWeight": 61.68
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43000,
+    "saleOrderNo": 82,
+    "paymentMethod": "",
+    "lastInvoiceDate": "07/11/2026",
+    "actualWeight": 10.205
   }
 ]
