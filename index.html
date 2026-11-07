@@ -11353,6 +11353,7 @@ window.safeFileName = function(str){
     { id: 'sarraki', label: 'سراكي عمال 👷', defaultOn: false },
     { id: 'sarrakiSettings', label: 'إعدادات السراكي 🛠️', defaultOn: false },
     { id: 'sarrakiApprove', label: 'اعتماد مهندس السراكي ✅', defaultOn: false },
+    { id: 'sarrakiAllEmployees', label: 'عرض قائمة كل الموظفين في السراكي 👥', defaultOn: false },
     { id: 'loginSarrakyPeriod', label: 'قبض فترة السراكي (شاشة الدخول) 👷', defaultOn: false }
   ];
   function notifPermById_(id){
@@ -11548,7 +11549,7 @@ window.safeFileName = function(str){
     list.appendChild(xtag);
     var xhint = document.createElement('div');
     xhint.style.cssText = 'font-size:12px;opacity:.75;margin:0 0 6px;line-height:1.6;';
-    xhint.textContent = 'مخفية عن الموظفين تلقائي. علّم على اللي عايزه يظهر للموظف ده: تقرير العهد / سراكي عمال (الرئيسية) وإعدادات السراكي (الإعدادات).';
+    xhint.textContent = 'مخفية عن الموظفين تلقائي. من ضمنها صلاحية عرض قائمة كل الموظفين في السراكي؛ لو مش مفعّلة، الموظف يشوف العمال والحركات اللي أدخلها هو فقط.';
     list.appendChild(xhint);
     EXTRA_PERMS_.forEach(function(p){
       var xrow = document.createElement('label');
@@ -16592,7 +16593,33 @@ window.safeFileName = function(str){
   function P(){ for (var i = 0; i < S.periods.length; i++) if (S.periods[i].id === S.cur) return S.periods[i]; return null; }
   function isClosed(){ var p = P(); return !p || p.status === 'closed'; }
   function DM(){ return S.dm[S.cur] || (S.dm[S.cur] = new Map()); }
-  function WK(pid){ return S.workers.filter(function(w){ return w.period_id === (pid || S.cur); }).sort(function(a, b){ return (a.sort || 0) - (b.sort || 0); }); }
+  // عرض كل العمال داخل السراكي صلاحية مستقلة لكل موظف.
+  // بدونها، الموظف يرى فقط سجلات العمال التي أدخلها باسمه؛ الأدمن يرى الجميع.
+  function canSeeAllWorkers(){
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    if (!c.isEmp) return true;
+    var l = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
+    return l.indexOf('allow_sarrakiAllEmployees') > -1;
+  }
+  function workerVisibleToSession(w){
+    if (canSeeAllWorkers()) return true;
+    var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+    if (!c.isEmp || !c.name) return true;
+    var name = String(c.name).trim();
+    if (String(w.entered_by || '').trim() === name) return true;
+    // لو العامل أضافه مسؤول/موظف آخر لكن الموظف الحالي سجّل له حركة بنفسه،
+    // يظهر له العامل في الفترة التي تحتوي على حركته هو.
+    var maps = S.dm || {};
+    for (var pid in maps) {
+      var dm = maps[pid];
+      if (!dm || !dm.forEach) continue;
+      var found = false;
+      dm.forEach(function(r){ if (r && r.worker_id === w.id && String(r.entered_by || '').trim() === name) found = true; });
+      if (found) return true;
+    }
+    return false;
+  }
+  function WK(pid){ return S.workers.filter(function(w){ return w.period_id === (pid || S.cur) && workerVisibleToSession(w); }).sort(function(a, b){ return (a.sort || 0) - (b.sort || 0); }); }
   function projName(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return S.projects[i].name; return ''; }
   function itemName(id){ for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return S.items[i].name; return ''; }
   function itemOpts(sel){
@@ -16732,7 +16759,7 @@ window.safeFileName = function(str){
 
   // ---------- التسجيل اليومي ----------
   function dirList(){
-    var m = {}; S.workers.forEach(function(w){ m[w.name] = w; });
+    var m = {}; S.workers.forEach(function(w){ if (workerVisibleToSession(w)) m[w.name] = w; });
     return Object.keys(m).map(function(k){ return m[k]; });
   }
   function addOpenNow(ws){ return S.addOpen == null ? !(ws || WK().filter(function(w){ return DM().get(w.id + '|' + S.day); })).length : !!S.addOpen; }
@@ -16773,7 +16800,7 @@ window.safeFileName = function(str){
   }
   function dayRow(w, d){ return DM().get(w + '|' + d); }
   function paintRow(tr){
-    var wid = tr.getAttribute('data-w'), w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
+    var wid = tr.getAttribute('data-w'), w = S.workers.filter(function(x){ return x.id === wid && workerVisibleToSession(x); })[0]; if (!w) return;
     var r = dayRow(wid, S.day), pj = (r && r.project_id) || w.project_id || '';
     tr.classList.toggle('sk-np', !!(r && !r.present));
     var sel = tr.querySelector('[data-d=project]'); sel.innerHTML = projOpts(pj, true);
@@ -16823,7 +16850,7 @@ window.safeFileName = function(str){
     if (el.closest && el.closest('.sk-add')) { el.classList.remove('sk-bad'); return; }
     if (isClosed()) return;
     var tr = el.closest('tr[data-w]'); if (!tr) return;
-    var w = S.workers.filter(function(x){ return x.id === tr.getAttribute('data-w'); })[0]; if (!w) return;
+    var w = S.workers.filter(function(x){ return x.id === tr.getAttribute('data-w') && workerVisibleToSession(x); })[0]; if (!w) return;
     var f = el.getAttribute('data-f'), d = el.getAttribute('data-d');
     if (f) {
       if (f === 'name') { var v = el.value.trim(); if (!v) { el.value = w.name; toast('اسم العامل إجباري'); return; } w.name = v; }
@@ -16883,7 +16910,7 @@ window.safeFileName = function(str){
   }
   // نسخ بيانات عامل واحد (حضور + مشروع + سهرات) من اليوم المفتوح لأيام تانية في الفترة — السلفة ما بتتنسخش أبدًا
   function copyWorkerModal(wid){
-    var w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
+    var w = S.workers.filter(function(x){ return x.id === wid && workerVisibleToSession(x); })[0]; if (!w) return;
     var src = dayRow(w.id, S.day);
     if (!src) { toast('العامل مش مسجّل في اليوم ده'); return; }
     var p = P(), nxt = addD(S.day, 1), dm = DM();
@@ -16913,7 +16940,7 @@ window.safeFileName = function(str){
   }
   // ✕ جنب العامل: إزالته من اليوم المفتوح بس، أو حذفه نهائي من الفترة كلها
   function removeWorkerModal(wid){
-    var w = S.workers.filter(function(x){ return x.id === wid; })[0]; if (!w) return;
+    var w = S.workers.filter(function(x){ return x.id === wid && workerVisibleToSession(x); })[0]; if (!w) return;
     var r = dayRow(w.id, S.day), extra = r && (+r.advance || +r.overtime) ? '<br>⚠ مسجّل عليه في اليوم ده' + (+r.advance ? ' سلفة <b>' + fmt(r.advance) + '</b>' : '') + (+r.overtime ? ' سهرات <b>' + fmt(r.overtime) + '</b>' : '') + ' وهتتشال معاه.' : '';
     modal('<h3>إزالة ' + esc(w.name) + '</h3><p class="msg">إزالته من يوم <b>' + dayName(S.day) + ' ' + short(S.day) + '</b> بس، ولا حذفه نهائي من الفترة كلها (بكل أيامه وسلفه)؟' + extra + '</p>' +
       '<div class="sks"><button class="btn btn-secondary" data-day>إزالة من اليوم ده بس</button><button class="btn btn-secondary" data-all style="color:#b3261e">🗑 حذف العامل نهائيًا من الفترة</button></div><div class="btns"><button class="btn btn-secondary" data-n>إلغاء</button></div>', function(el, close){
@@ -18111,8 +18138,19 @@ window.safeFileName = function(str){
       noExtra = false; LS.set('sk_noextra', 0);
       Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null }); }); });
     }
-    setSync(Object.keys(Q).length ? 'pending' : 'ok'); renderAll();
-    loadServer().then(function(){ seedItems();
+    setSync(Object.keys(Q).length ? 'pending' : 'ok');
+    // حدّث صلاحيات الموظف من Supabase عند كل دخول للشاشة قبل العرض النهائي،
+    // حتى من لديه صلاحية "عرض كل الموظفين" تظهر له القائمة كاملة مباشرة.
+    var refreshPerms = new Promise(function(resolve){
+      if (typeof refreshHiddenIconsLive_ === 'function') {
+        refreshHiddenIconsLive_(function(){ resolve(); });
+      } else resolve();
+    });
+    renderAll();
+    refreshPerms.then(function(){
+      renderAll();
+      return loadServer();
+    }).then(function(){ seedItems();
       if (!S.picked || !P()) autoPeriod();
       if (S.cur) return loadDays(S.cur).catch(function(){});
     }).catch(function(e){ if (String(e.message) !== 'pending') handleErr(e); else schedule(100); seedItems(); }).then(function(){ opened = true; renderAll(); });
