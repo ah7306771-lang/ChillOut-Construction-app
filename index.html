@@ -15329,7 +15329,38 @@ window.safeFileName = function(str){
   $('vwPrint').addEventListener('click', function(){
     var f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0'; document.body.appendChild(f);
     var d = f.contentWindow.document; d.open();
-    d.write('<html><head><style>@page{size:A4;margin:0}body{margin:0}img{display:block;width:210mm;height:297mm;page-break-after:always}</style></head><body>' + VW.imgs.map(function(u){ return '<img src="' + u + '">'; }).join('') + '</body></html>'); d.close();
+    d.write('<html><head><style>@page{size:A4;margin:0}body{margin:0}img{display:block;width:210mm;height:297mm;page-break-after:always}</style>
+/* إصلاح عرض السراكي على الموبايل: إظهار الأزرار وعدم قص التقرير وتصغير الاعتماد والإجماليات */
+@media (max-width: 600px) {
+  #sarrakiScreen { padding-inline: 2px !important; padding-bottom: 24px !important; }
+  #sarrakiScreen .gate-card { padding: 3px 5px 3px !important; }
+  #sarrakiScreen .sk-master { display:flex !important; flex-direction:column; gap:5px; padding:5px !important; }
+  #sarrakiScreen.mcoll .sk-master { display:none !important; }
+  #sarrakiScreen .sk-master .mrow { display:flex; flex-wrap:wrap; align-items:flex-end; gap:5px; width:100%; min-width:0; }
+  #sarrakiScreen .sk-master .mrow:first-child { display:grid; grid-template-columns:54px minmax(65px,.65fr) minmax(95px,1fr) minmax(95px,1fr); }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) { display:grid; grid-template-columns: minmax(62px,.65fr) minmax(34px,.35fr) minmax(0,1.35fr) minmax(0,1fr); }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f { min-width:0; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check { grid-column:3 / 5; grid-row:1; justify-self:stretch; min-width:0; width:100%; box-sizing:border-box; justify-content:center; padding:3px 5px !important; gap:4px !important; border-radius:7px; font-size:10px !important; line-height:1.15; white-space:normal; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check input { width:14px !important; height:14px !important; min-width:14px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skRep { grid-column:1 / 3; grid-row:2; width:100%; min-width:0; height:27px !important; padding:2px 4px !important; font-size:10px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skReview { grid-column:3 / 5; grid-row:2; display:block !important; width:100%; min-width:0; height:27px !important; padding:2px 4px !important; font-size:10px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f label { font-size:9px; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f input,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f select,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f .sk-badge { height:25px !important; font-size:10px !important; }
+  #sarrakiScreen .sk-add { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; padding:5px !important; }
+  #sarrakiScreen .sk-add #skaName { grid-column:1 / -1; grid-row:1; min-width:0; width:100%; }
+  #sarrakiScreen .sk-add input, #sarrakiScreen .sk-add select { height:29px !important; font-size:11px !important; min-width:0; }
+  #sarrakiScreen .sk-add button { grid-column:1 / -1; height:29px !important; font-size:11px !important; }
+  #sarrakiScreen .sk-fix { position:fixed !important; left:0 !important; right:0 !important; bottom:0 !important; transform:none !important; width:100% !important; max-width:none !important; display:flex !important; gap:2px !important; padding:2px 3px calc(2px + env(safe-area-inset-bottom,0px)) !important; border-radius:6px 6px 0 0 !important; box-shadow:0 -1px 5px rgba(0,0,0,.14) !important; }
+  #sarrakiScreen .sk-fix > div { flex:1 1 0 !important; min-width:0 !important; display:flex !important; align-items:center !important; justify-content:center !important; gap:2px !important; padding:1px 2px !important; border-radius:4px !important; white-space:nowrap !important; }
+  #sarrakiScreen .sk-fix span { display:inline !important; font-size:7.5px !important; line-height:1.1 !important; }
+  #sarrakiScreen .sk-fix b { display:inline !important; font-size:9px !important; line-height:1.1 !important; margin:0 !important; }
+  #sarrakiScreen .sk-head { margin-bottom:4px !important; }
+  #sarrakiScreen .sk-tab { padding:4px 7px !important; font-size:10px !important; }
+}
+
+</head><body>' + VW.imgs.map(function(u){ return '<img src="' + u + '">'; }).join('') + '</body></html>'); d.close();
     setTimeout(function(){ f.contentWindow.focus(); f.contentWindow.print(); setTimeout(function(){ f.remove(); }, 60000); }, 400);
   });
 
