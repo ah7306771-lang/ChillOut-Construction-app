@@ -2152,8 +2152,11 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-md .btns .btn-secondary{background:#eef1f7;color:#1b2540;border:1px solid #dde3ee}
 /* اعتماد المهندس + المُدخِل */
 #sarrakiScreen .sk-eng{font-weight:800;white-space:nowrap}
-#sarrakiScreen .sk-eng.pend{background:#fff4d6;color:#8a5a00;border:1px solid #f0d594}
-#sarrakiScreen .sk-eng.ok{background:#e7f6ef;color:#0f8a5f;border:1px solid #b5e3cf}
+#sarrakiScreen .sk-eng-check{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border-radius:10px;background:#fff4d6;color:#8a5a00;border:1px solid #f0d594;font-weight:800;white-space:nowrap;cursor:pointer;user-select:none}
+#sarrakiScreen .sk-eng-check.is-approved{background:#e7f6ef;color:#0f8a5f;border-color:#b5e3cf}
+#sarrakiScreen .sk-eng-check input{width:19px;height:19px;min-width:19px;margin:0;accent-color:#0f9d70;cursor:pointer}
+#sarrakiScreen .sk-eng-check input:disabled{cursor:not-allowed;opacity:.75}
+@media(max-width:600px){#sarrakiScreen .sk-eng-check{font-size:12px;padding:8px 9px;gap:6px}}
 #sarrakiScreen .sk-t.sk-day th:last-child,#sarrakiScreen .sk-t.sk-day td.c-by{width:92px;min-width:92px;max-width:92px}
 #sarrakiScreen .sk-t.sk-day td.c-by{font-size:10.5px;font-weight:700;color:#6b7690;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 </style>
@@ -2675,7 +2678,7 @@ body.cg-compact .wa-float-btn{display:none !important}
       <div class="mrow">
         <div class="sk-f w-week"><label>الأسبوع</label><select id="skWeek"><option value="1">الأول</option><option value="2">الثاني</option></select></div>
         <div class="sk-f w-st"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
-        <button type="button" class="btn btn-secondary sk-eng pend" id="skEng">✅ اعتماد المهندس</button>
+        <label class="sk-eng-check" id="skEngWrap" style="display:none"><input type="checkbox" id="skEngCheck"><span id="skEngLabel">اعتماد المهندس الأسبوع الأول</span></label>
         <button type="button" class="btn btn-secondary" id="skRep">📄 تقارير (Excel / PDF)</button>
         <button type="button" class="btn btn-secondary" id="skReview">🔎 مراجعة السراكي</button>
       </div>
@@ -16420,7 +16423,7 @@ window.safeFileName = function(str){
     if (tb === 'wl_days' && noExtra) drop.push('extra_amt');
     if ((tb === 'wl_days' || tb === 'wl_workers') && noEnt) drop.push('entered_by');
     if (tb === 'wl_days' && noMod) drop.push('modified_by');
-    if (tb === 'wl_periods' && noEng) drop.push('eng_approved', 'eng_approved_by', 'eng_approved_at');
+    if (tb === 'wl_periods' && noEng) drop.push('eng_week1_approved', 'eng_week1_approved_by', 'eng_week1_approved_at', 'eng_week2_approved', 'eng_week2_approved_by', 'eng_week2_approved_at');
     if (!drop.length) return row;
     var c = {}; for (var k in row) if (drop.indexOf(k) < 0) c[k] = row[k]; return c;
   }
@@ -16467,7 +16470,7 @@ window.safeFileName = function(str){
     var m = String((e && e.message) || e);
     if (/modified_by/.test(m) && !noMod) { noMod = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (/entered_by/.test(m) && !noEnt) { noEnt = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
-    if (/eng_approved/.test(m) && !noEng) { noEng = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
+    if (/eng_week[12]_approved/.test(m) && !noEng) { noEng = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (/extra_amt/.test(m)) { noExtra = true; LS.set('sk_noextra', 1); setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (e && (e.status === 404 || /PGRST205|PGRST200|does not exist|relation/i.test(m))) { S.missing = true; setSync('missing'); }
     else { S.online = false; setSync('off'); }
@@ -16569,18 +16572,21 @@ window.safeFileName = function(str){
     var l = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
     return l.indexOf('allow_sarrakiApprove') > -1;
   }
-  // لو أعمدة الاعتماد لسه مش في الداتابيز: القفل بيتعطّل (عشان التقارير ما تتقفلش بلا مخرج) ويظهر تنبيه
-  function engMissing(){ return noEng || (S.periods.length > 0 && !S.periods.some(function(x){ return 'eng_approved' in x; })); }
-  function engOk(p){ return !!p && (engMissing() || !!p.eng_approved); }
+  // الاعتماد مستقل لكل أسبوع داخل الفترة، ولا يؤثر اعتماد أسبوع على الآخر.
+  function engFields(w){ return { ok:'eng_week' + w + '_approved', by:'eng_week' + w + '_approved_by', at:'eng_week' + w + '_approved_at' }; }
+  function engMissing(){ return noEng || (S.periods.length > 0 && !S.periods.some(function(x){ return 'eng_week1_approved' in x && 'eng_week2_approved' in x; })); }
+  function weekApproved(p, w){ var f = engFields(w); return !!(p && p[f.ok]); }
+  function approvedWeeks(p){ var a=[]; if (weekApproved(p,1)) a.push(1); if (weekApproved(p,2) && weekDates(p,2).length) a.push(2); return a; }
   function toggleEng(){
     var p = P(); if (!p) return;
-    if (engMissing()) { toast('شغّل سكربت السوبابيز الأول (أعمدة اعتماد المهندس)'); return; }
-    if (!canApprove()) { toast(p.eng_approved ? 'الفترة معتمدة من المهندس' : 'بانتظار اعتماد المهندس — ليس لديك صلاحية الاعتماد'); return; }
-    var on = !p.eng_approved;
-    ask(on ? 'اعتماد المهندس' : 'إلغاء الاعتماد', on ? 'اعتماد الفترة <b>' + p.period_no + '</b> / ' + p.year + '؟ بعد الاعتماد تتفتح التقارير.' : 'إلغاء اعتماد الفترة <b>' + p.period_no + '</b>؟ التقارير هتتقفل لحد الاعتماد من جديد.', on ? 'اعتماد' : 'إلغاء الاعتماد').then(function(ok){
-      if (!ok) return;
-      p.eng_approved = on; p.eng_approved_by = on ? who() : null; p.eng_approved_at = on ? new Date().toISOString() : null;
-      enqueue('up', 'wl_periods', p); renderAll(); toast(on ? 'تم اعتماد الفترة' : 'تم إلغاء الاعتماد');
+    var w = S.week, f = engFields(w), check = document.getElementById('skEngCheck');
+    var on = !!(check && check.checked);
+    if (engMissing()) { toast('شغّل سكريبت Supabase لإضافة أعمدة اعتماد كل أسبوع'); renderMaster(); return; }
+    if (!canApprove()) { toast(weekApproved(p,w) ? 'الأسبوع معتمد من المهندس' : 'الأسبوع غير معتمد — ليس لديك صلاحية الاعتماد'); renderMaster(); return; }
+    ask(on ? 'اعتماد الأسبوع' : 'إلغاء اعتماد الأسبوع', on ? 'اعتماد الأسبوع ' + (w === 1 ? 'الأول' : 'الثاني') + ' للفترة ' + p.period_no + ' / ' + p.year + '؟' : 'إلغاء اعتماد الأسبوع ' + (w === 1 ? 'الأول' : 'الثاني') + ' فقط؟', on ? 'اعتماد الأسبوع' : 'إلغاء الاعتماد').then(function(ok){
+      if (!ok) { renderMaster(); return; }
+      p[f.ok] = on; p[f.by] = on ? who() : null; p[f.at] = on ? new Date().toISOString() : null;
+      enqueue('up', 'wl_periods', p); renderAll(); toast(on ? 'تم اعتماد الأسبوع' : 'تم إلغاء اعتماد الأسبوع');
     });
   }
   function P(){ for (var i = 0; i < S.periods.length; i++) if (S.periods[i].id === S.cur) return S.periods[i]; return null; }
@@ -16615,7 +16621,7 @@ window.safeFileName = function(str){
     var n = itemName(id) || String(id), h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0;
     return IPAL[h % IPAL.length];
   }
-  function rangeDates(p){ var out = [], d = p.from_date, n = 0; while (d <= p.to_date && n < 62) { out.push(d); d = addD(d, 1); n++; } return out; }
+  function rangeDates(p){ var out = [], n = 0; if (p && p.__approvedWeeks) { var base = { from_date: p.__baseFromDate || p.from_date, to_date: p.__baseToDate || p.to_date }; p.__approvedWeeks.forEach(function(w){ weekDates(base, w).forEach(function(d){ if (out.indexOf(d) < 0) out.push(d); }); }); return out.sort(); } var d = p.from_date; while (d <= p.to_date && n < 62) { out.push(d); d = addD(d, 1); n++; } return out; }
   function weekDates(p, w){
     var s = addD(p.from_date, (w - 1) * 7), out = [];
     for (var i = 0; i < 7; i++) { var d = addD(s, i); if (d <= p.to_date) out.push(d); }
@@ -16624,7 +16630,7 @@ window.safeFileName = function(str){
   function pmap(p){ return S.dm[p.id] || new Map(); }
   // حساب الفترة لكل عامل
   function compute(p, onlyWorker){
-    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), proj = {};
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), proj = {};
     var rows = WK(p.id).filter(function(w){ return !onlyWorker || w.id === onlyWorker; }).map(function(w){
       var d1 = 0, d2 = 0, ot = 0, otd = 0, adv = 0, ex = 0, rate = +w.daily_rate || 0;
       dates.forEach(function(d){
@@ -16683,14 +16689,17 @@ window.safeFileName = function(str){
     var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
     var rv = $('#skReview'); if (rv) rv.style.display = p ? '' : 'none';
-    var eb = $('#skEng');
-    if (eb) {
-      eb.style.display = p ? '' : 'none';
+    var ew = $('#skEngWrap'), ec = $('#skEngCheck'), el = $('#skEngLabel');
+    if (ew && ec && el) {
+      ew.style.display = p ? 'inline-flex' : 'none';
       if (p) {
-        var ap = !!p.eng_approved && !engMissing();
-        eb.className = 'btn btn-secondary sk-eng ' + (ap ? 'ok' : 'pend');
-        eb.textContent = ap ? '✅ معتمد — ' + (p.eng_approved_by || 'المهندس') : (canApprove() ? '✅ اعتماد المهندس' : '⏳ بانتظار اعتماد المهندس');
-        eb.title = ap && p.eng_approved_at ? 'اعتمد بتاريخ ' + String(p.eng_approved_at).slice(0, 10) : '';
+        var ef = engFields(S.week), ap = weekApproved(p, S.week) && !engMissing();
+        var wn = S.week === 1 ? 'الأول' : 'الثاني';
+        ec.checked = ap;
+        ec.disabled = !canApprove() || engMissing();
+        el.textContent = 'اعتماد المهندس الأسبوع ' + wn;
+        ew.classList.toggle('is-approved', ap);
+        ew.title = ap ? 'معتمد بواسطة ' + (p[ef.by] || 'المهندس') + (p[ef.at] ? ' بتاريخ ' + String(p[ef.at]).slice(0, 10) : '') : 'غير معتمد';
       }
     }
     Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-v') === S.view); b.style.display = p ? '' : 'none'; });
@@ -17021,7 +17030,7 @@ window.safeFileName = function(str){
         if (!y || !n || !f || !t) { m.textContent = 'كمّل كل البيانات'; return; }
         if (t < f) { m.textContent = 'تاريخ النهاية قبل البداية'; return; }
         if (S.periods.some(function(x){ return x.year === y && x.period_no === n; })) { m.textContent = 'رقم الفترة موجود بالفعل في نفس السنة'; return; }
-        var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null, eng_approved: false, eng_approved_by: null, eng_approved_at: null };
+        var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null, eng_week1_approved: false, eng_week1_approved_by: null, eng_week1_approved_at: null, eng_week2_approved: false, eng_week2_approved_by: null, eng_week2_approved_at: null };
         var copy = el.querySelector('#npC') && el.querySelector('#npC').checked;
         S.periods.push(np); enqueue('up', 'wl_periods', np); S.dm[np.id] = new Map();
         if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1, entered_by: who() }; S.workers.push(nw); saveWorker(nw); });
@@ -17151,14 +17160,21 @@ window.safeFileName = function(str){
       });
   }
   function reportModal(){
-    var pp = P();
-    if (!engOk(pp)) {
-      modal('<h3>🔒 التقارير مقفولة</h3><p class="msg">الفترة رقم <b>' + (pp ? pp.period_no : '') + '</b> لسه <b>مش معتمدة من المهندس</b>.<br>التقارير بتتفتح بعد اعتماد المهندس للفترة.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
+    var pp = P(); if (!pp) return;
+    if (engMissing()) {
+      modal('<h3>🔒 التقارير مقفولة</h3><p class="msg">لا يمكن فتح التقارير قبل إضافة أعمدة اعتماد الأسبوع الأول والثاني في Supabase وتشغيل سكريبت التحديث.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
       return;
     }
-    var p = P(); if (!p) return;
+    var weeks = approvedWeeks(pp);
+    if (!weeks.length) {
+      modal('<h3>🔒 لا توجد أسابيع معتمدة</h3><p class="msg">لا يمكن فتح التقارير؛ اعتمد الأسبوع الأول أو الثاني أولاً. التقارير ستعرض الأسابيع المعتمدة فقط.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
+      return;
+    }
+    // كل التقارير العادية تعمل على أيام الأسابيع المعتمدة فقط، مع الاحتفاظ بترقيم الأسبوع الأصلي.
+    var p = Object.assign({}, pp, { __approvedWeeks: weeks, __baseFromDate: pp.from_date, __baseToDate: pp.to_date });
+    var dates = rangeDates(p); p.from_date = dates[0]; p.to_date = dates[dates.length - 1];
     var ws = WK();
-    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
+    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">الأسابيع المعتمدة: ' + weeks.map(function(w){ return w === 1 ? 'الأول' : 'الثاني'; }).join(' + ') + ' — من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
       '<div class="rpsec">① الشيت الإجمالي (حسب البند)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-primary" id="rpIX">📊 Excel</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpIXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">①.أ المشروع حسب البنود (كل مشروع فيه بنوده + إجمالي كل بند + إجمالي المشروع + إجمالي عام)</div>' +
@@ -17367,7 +17383,7 @@ window.safeFileName = function(str){
   function fdmy(d){ return d.slice(8, 10) + '-' + d.slice(5, 7) + '-' + d.slice(0, 4); }
   function itemSortOf(id){ for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return S.items[i].sort || i; return 1e8; }
   function itemsData(p){
-    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), groups = {};
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), groups = {};
     WK(p.id).forEach(function(w){
       var rate = +w.daily_rate || 0, days = 0, otd = 0, ex = 0, a1 = 0, a2 = 0;
       dates.forEach(function(d){
@@ -17398,7 +17414,7 @@ window.safeFileName = function(str){
   // كل مشروع فيه list من بنود، كل بند فيه list عمال + إجمالي البند، وفي
   // الآخر إجمالي المشروع. مرتبين حسب ترتيب المشروع ثم ترتيب البند.
   function projectItemsData(p){
-    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), buckets = {};
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), buckets = {};
     WK(p.id).forEach(function(w){
       var rate = +w.daily_rate || 0, wNm = String(w.name || '').trim(), wItem = w.item_id || '', wProj = w.project_id || '';
       // نجمع لكل عامل في كل تركيبة (project, item) من كل أيامه
@@ -17514,7 +17530,7 @@ window.safeFileName = function(str){
   // ---------- الشيت التفصيلي: كل سطر = عامل + أسبوع + مشروع (بنفس شكل "شيت العمالة تفصيلي") ----------
   var WEEKN = ['', 'الاسبوع الاول', 'الاسبوع الثاني'];
   function detailData(p){
-    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), map = {}, rows = [], advs = [];
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), map = {}, rows = [], advs = [];
     function pOrd(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return i; return 1e6; }
     function cmp(a, b){ return a.name.localeCompare(b.name, 'ar', { numeric: true }) || (a.rate - b.rate) || (a.wk - b.wk) || (pOrd(a.pj) - pOrd(b.pj)); }
     function blank(a){ return { name: a.name, rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0, notes: [] }; }
@@ -17574,7 +17590,7 @@ window.safeFileName = function(str){
   }
   // ---------- ريسيت العمال: بلوك لكل عامل (إجمالي الفترة على مستوى العامل) + عمود توقيع ----------
   function receiptData(p, workerId){
-    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.from_date, 7), map = {}, rows = [];
+    var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), map = {}, rows = [];
     WK(p.id).forEach(function(w){
       if (workerId && w.id !== workerId) return;
       var rate = +w.daily_rate || 0, nm = String(w.name || '').trim(), days = 0, otd = 0, ex = 0, a1 = 0, a2 = 0;
@@ -18080,7 +18096,7 @@ window.safeFileName = function(str){
   $('#skFrom').addEventListener('change', dateChange); $('#skTo').addEventListener('change', dateChange);
   $('#skRep').addEventListener('click', reportModal);
   $('#skReview').addEventListener('click', reviewSarrakiModal);
-  $('#skEng').addEventListener('click', toggleEng);
+  $('#skEngCheck').addEventListener('change', toggleEng);
   $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
   if (LS.get('sk_mcoll', 0)) { root.classList.add('mcoll'); $('#skColl').textContent = '▸'; }
   Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.addEventListener('click', function(){ S.view = b.getAttribute('data-v'); renderAll(); }); });
