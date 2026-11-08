@@ -1859,6 +1859,8 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-master select{-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center;background-image:none}
 #sarrakiScreen .sk-master .sk-f .sk-badge,#sarrakiScreen .sk-master .sk-f .sk-badge.closed{background:transparent;border-color:transparent;font-size:17px;padding:0}
 #sarrakiScreen .sk-master .btn{width:auto;margin-inline-start:auto;height:29px;padding:0 12px;font-size:11.5px;border-radius:8px;white-space:nowrap}
+#sarrakiScreen .sk-master #skRep{padding:0 8px;min-width:32px;font-size:14px;line-height:1}
+#sarrakiScreen .sk-master #skFilterEmpRow{flex:0 1 200px;min-width:120px}
 #sarrakiScreen .sk-tools{flex-wrap:nowrap}
 #sarrakiScreen .sk-tools button{flex:1;white-space:nowrap}
 #sarrakiScreen .sk-tools button.red{color:#b3261e;background:#fdeceb;border-color:#f3c0bc}
@@ -2166,13 +2168,13 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-master .mrow { display:flex !important; flex-wrap:wrap !important; align-items:flex-end; gap:5px; width:100%; min-width:0; }
   #sarrakiScreen .sk-master .mrow:first-child { display:grid !important; grid-template-columns:54px minmax(65px,.65fr) minmax(95px,1fr) minmax(95px,1fr); }
   /* الصف الثاني: السنة/الحالة فوق + اعتماد المهندس فوق، وزرارين (مراجعة + تقارير) تحت */
-  #sarrakiScreen .sk-master .mrow:nth-child(2) { display:grid !important; grid-template-columns:minmax(62px,.65fr) minmax(34px,.35fr) minmax(0,1.35fr) minmax(0,1fr); gap:5px; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) { display:grid !important; grid-template-columns:minmax(62px,.65fr) minmax(34px,.35fr) minmax(0,1fr) 40px; gap:5px; align-items:end; }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f { min-width:0; }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check { grid-column:3 / 5; grid-row:1; justify-self:stretch; min-width:0; width:100%; box-sizing:border-box; justify-content:center; padding:4px 6px !important; gap:5px !important; border-radius:7px; font-size:10.5px !important; line-height:1.2; white-space:normal }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check input { width:14px !important; height:14px !important; min-width:14px !important; }
   /* الصف السفلي: مراجعة السراكي 🔎 (شمال) + تقارير 📄 (يمين) */
   #sarrakiScreen .sk-master .mrow:nth-child(2) #skReview { grid-column:1 / 3; grid-row:2; display:block !important; width:100%; min-width:0; height:30px !important; padding:2px 4px !important; font-size:11px !important; font-weight:800 }
-  #sarrakiScreen .sk-master .mrow:nth-child(2) #skRep { grid-column:3 / 5; grid-row:2; display:block !important; width:100%; min-width:0; height:30px !important; padding:2px 4px !important; font-size:11px !important; font-weight:800 }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skRep { grid-column:4; grid-row:2; display:block !important; width:100%; min-width:0; height:30px !important; padding:2px 4px !important; font-size:11px !important; font-weight:800 }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f label { font-size:9.5px; }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f input,
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f select,
@@ -2180,10 +2182,9 @@ select.sk-in{padding:0 4px;min-width:130px}
   /* الصف الثالث: فلتر "عرض مدخلات" — عرض/إخفاء عن طريق JS (style.display) */
   #sarrakiScreen .sk-master #skFilterEmpRow[style*="display:none"],
   #sarrakiScreen .sk-master #skFilterEmpRow[style*="display: none"] { display:none !important; }
-  #sarrakiScreen .sk-master #skFilterEmpRow { gap:5px; width:100%; }
-  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f { flex:1 1 auto; min-width:0; width:100%; }
-  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f label { font-size:10px; }
-  #sarrakiScreen .sk-master #skFilterEmpRow .sk-f select { height:28px !important; font-size:11px !important; width:100%; }
+  #sarrakiScreen .sk-master #skFilterEmpRow { grid-column:3; grid-row:2; min-width:0; width:100%; flex:none; }
+  #sarrakiScreen .sk-master #skFilterEmpRow label { font-size:9.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #sarrakiScreen .sk-master #skFilterEmpRow select { height:30px !important; font-size:11px !important; width:100%; }
   /* تصغير النصوص فوق على الموبايل: اعتماد المهندس + زراير مراجعة/تقارير */
   #sarrakiScreen #skEngLabel { font-size:9.5px !important; letter-spacing:-.2px; }
   /* زراير مراجعة/تقارير: نخفي النص الأصلي بالكامل ونعرض data-short فقط لمنع التداخل */
@@ -2743,10 +2744,8 @@ body.cg-compact .wa-float-btn{display:none !important}
         <div class="sk-f w-st"><label>الحالة</label><div class="sk-badge" id="skState">—</div></div>
         <label class="sk-eng-check" id="skEngWrap" style="display:none"><input type="checkbox" id="skEngCheck"><span id="skEngLabel">اعتماد المهندس الأسبوع الأول</span></label>
         <button type="button" class="btn btn-secondary" id="skReview" data-short="🔎 مراجعة">🔎 مراجعة السراكي</button>
-        <button type="button" class="btn btn-secondary" id="skRep" data-short="📄 تقارير">📄 تقارير (Excel / PDF)</button>
-      </div>
-      <div class="mrow" id="skFilterEmpRow" style="display:none">
-        <div class="sk-f grow"><label>👤 عرض مدخلات</label><select id="skFilterEmp"></select></div>
+        <div class="sk-f" id="skFilterEmpRow" style="display:none"><label>👤 عرض مدخلات</label><select id="skFilterEmp"></select></div>
+        <button type="button" class="btn btn-secondary" id="skRep" data-short="📄" title="تقارير (Excel / PDF)" aria-label="تقارير">📄</button>
       </div>
     </div>
     <div class="sk-banner" id="skBanner"></div>
@@ -16595,11 +16594,16 @@ window.safeFileName = function(str){
   // المشروع في السراكي = مشروع في cost_center (بنفس الاسم). اللي موجود قبل كده بنفس الاسم بيتربط وبيحتفظ بـ id بتاعه
   // (فالعمال والأيام المسجلة ما بتضيعش)، واللي جديد بيتعمل له سطر في wl_projects تلقائي.
   var linked = {};
+  // صلاحيات المشاريع (نفس مصدر تقرير العهد: cost_center.allowed_employees). الموظف يشوف بس المشاريع المسموحة له، والأدمن يشوف الكل.
+  // بتتخزن على الجهاز عشان تفضل شغالة أوفلاين؛ ولو مفيش بيانات صلاحيات للمشروع الموظف مايشوفوش (نفس قاعدة العهد).
+  var ALW = LS.get('sk_allowed', {});
+  function sessEmp(){ var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {}; return c.isEmp ? String(c.name || '').trim() : null; }
+  function projAllowed(id){ var me = sessEmp(); if (me === null) return true; var l = ALW[id]; return !!(l && l.indexOf(me) > -1); }
   function ccId(code){ return '00000000-0000-4000-9000-' + String(100000000000 + (+code || 0)).slice(-12); }
   function syncProjects(){
-    return api('cost_center?select=code,name,is_stopped&order=code.asc').then(function(cc){
+    return api('cost_center?select=*&order=code.asc').then(function(cc){
       cc = cc || []; if (!cc.length) return;
-      var lk = {}, codes = {};
+      var lk = {}, codes = {}, alw = {};
       cc.forEach(function(c){
         var name = String(c.name || '').trim(); if (!name) return;
         codes[c.code] = 1;
@@ -16611,11 +16615,12 @@ window.safeFileName = function(str){
           x.code = c.code; x.name = name; x.is_stopped = !!c.is_stopped; enqueue('up', 'wl_projects', x);
         }
         lk[x.id] = 1;
+        alw[x.id] = String(c.allowed_employees || '').split(',').map(function(q){ return q.trim(); }).filter(Boolean);
       });
       // مشاريع قديمة غير مربوطة ورقمها بيتعارض مع رقم مشروع من النظام: نشيل رقمها بس (الاسم والبيانات زي ما هي)
       S.projects.forEach(function(p){ if (!lk[p.id] && p.code != null && codes[p.code]) { p.code = null; enqueue('up', 'wl_projects', p); } });
       S.projects.sort(function(a, b){ return (a.code == null ? 1e9 : a.code) - (b.code == null ? 1e9 : b.code); });
-      linked = lk; saveCache();
+      linked = lk; ALW = alw; LS.set('sk_allowed', ALW); saveCache();
     }).catch(function(){});
   }
   function loadDays(pid){
@@ -16633,6 +16638,8 @@ window.safeFileName = function(str){
     return c.isEmp ? String(c.name || '').trim() : 'الأدمن';
   }
   // صلاحية الاعتماد: الأدمن دايمًا، والموظف لو عنده allow_sarrakiApprove
+  // الحركة دي مدخلة باسم المستخدم الحالي؟ (الأدمن بينسخ كل الحركات)
+  function mineRow(r){ var me = who(), eb = String((r && r.entered_by) || '').trim(); return me === 'الأدمن' ? true : eb === me; }
   function canApprove(){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
     if (!c.isEmp) return true;
@@ -16685,7 +16692,7 @@ window.safeFileName = function(str){
   function workerVisibleToSession(w){
     var sel = S.filterEmp;
     // فلتر مُحدَّد من واجهة المستخدم
-    if (sel && sel !== '__ALL__') {
+    if (sel && sel !== '__ALL__' && canSeeAllWorkers()) {
       if (String(w.entered_by || '').trim() === sel) return true;
       var maps1 = S.dm || {};
       for (var pid1 in maps1) {
@@ -16734,7 +16741,7 @@ window.safeFileName = function(str){
   }
   function projOpts(sel, req){
     var h = (req && sel) ? '' : '<option value="">' + (req ? '— المشروع * —' : '— بدون —') + '</option>';
-    S.projects.forEach(function(p){ if (!p.is_stopped || p.id === sel) h += '<option value="' + p.id + '"' + (p.id === sel ? ' selected' : '') + '>' + esc(p.name) + '</option>'; });
+    S.projects.forEach(function(p){ if ((!p.is_stopped && projAllowed(p.id)) || p.id === sel) h += '<option value="' + p.id + '"' + (p.id === sel ? ' selected' : '') + '>' + esc(p.name) + '</option>'; });
     return h;
   }
   // لون ثابت لكل بند (شريط جنب اسم العامل) عشان يتفرزوا بالعين
@@ -16832,6 +16839,7 @@ window.safeFileName = function(str){
     // لو عنده صلاحية الكل أو مش موظف → يُسمح بـ "الكل"
     if (canAll) h += '<option value="__ALL__"' + (sel === '__ALL__' ? ' selected' : '') + '>— الكل —</option>';
     var seen = {};
+    if (isEmp && !canAll) { emps = []; sel = meName; }
     emps.forEach(function(n){ if (seen[n]) return; seen[n] = true; h += '<option value="' + esc(n) + '"' + (sel === n ? ' selected' : '') + '>' + esc(n) + '</option>'; });
     if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '"' + (sel === meName ? ' selected' : '') + '>' + esc(meName) + '</option>';
     h += '</select>';
@@ -16958,8 +16966,6 @@ window.safeFileName = function(str){
     ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; var rate = +w.daily_rate || 0; if (r.present) { c++; wages += rate; } ot += +r.overtime || 0; wages += (+r.overtime || 0) * rate + (+r.extra_amt || 0); adv += +r.advance || 0; });
     var set = function(id, v){ var e = $('#' + id); if (e) e.textContent = v; };
     set('skfP', c + ' حاضر'); set('skfO', fmt(ot)); set('skfA', fmt(adv));
-    var s = $('#skDaySum');
-    if (s) s.innerHTML = '<div>حاضرين اليوم<b>' + c + '</b></div><div>أجور اليوم<b>' + fmt(wages) + '</b></div><div>سهرات اليوم (أيام)<b>' + fmt(ot) + '</b></div><div class="net">سلف اليوم<b>' + fmt(adv) + '</b></div>';
     Array.prototype.forEach.call(root.querySelectorAll('[data-cnt]'), function(e){
       var d = e.getAttribute('data-cnt'), n = 0; ws.forEach(function(w){ var r = dayRow(w.id, d); if (r && r.present) n++; }); e.textContent = n + ' حاضر';
       if (e.parentNode) e.parentNode.classList.toggle('has', n > 0);
@@ -17099,9 +17105,9 @@ window.safeFileName = function(str){
     var ws = WK(), d = S.day;
     if (a === 'copy') {
       var p = P(); if (d <= p.from_date) { toast('ده أول يوم في الفترة'); return; }
-      var prev = addD(d, -1), n = 0;
-      ws.forEach(function(w){ var pr = dayRow(w.id, prev); if (pr && pr.present) { var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = pr.project_id || w.project_id || null; commitDay(r); n++; } } });
-      toast(n ? 'تم نسخ ' + n + ' عامل' : 'مفيش حاجة تتنسخ');
+      var prev = addD(d, -1), n = 0, other = 0;
+      ws.forEach(function(w){ var pr = dayRow(w.id, prev); if (pr && pr.present) { if (!mineRow(pr)) { other++; return; } var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = pr.project_id || w.project_id || null; commitDay(r); n++; } } });
+      toast(n ? 'تم نسخ ' + n + ' عامل (اللي دخلتهم إنت بس)' : other ? 'مفيش حاجة تتنسخ — اليوم السابق مش مدخل باسمك' : 'مفيش حاجة تتنسخ');
     } else if (a === 'add') {
       S.addOpen = !addOpenNow(); renderDay(); var nf = $('#skaName'); if (nf) nf.focus(); return;
     } else if (a === 'clear') {
@@ -18289,7 +18295,7 @@ window.safeFileName = function(str){
   var opened = false;
   function open(){
     window.showScreen_('sarraki');
-    loadCache(); S.picked = false; autoPeriod();
+    loadCache(); S.picked = false; S.filterEmp = null; autoPeriod();
     if (noExtra) {
       noExtra = false; LS.set('sk_noextra', 0);
       Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null }); }); });
