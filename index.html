@@ -16524,6 +16524,7 @@ window.safeFileName = function(str){
 
   // ---------- الحالة ----------
   var S = { items: [], projects: [], periods: [], workers: [], dm: {}, cur: null, week: 1, day: null, view: 'day', online: null, missing: false, loading: false, filterEmp: null };
+  var DEAD = LS.get('sk_dead', []); // حركات رفضها السيرفر (خطأ 4xx) — بتتشال من الطابور عشان ما تعطّلش باقي الشغل
   var Q = LS.get('sk_q', {}), ver = 0, flushing = false, again = false, flushTimer = null, retryTimer = null, cacheTimer = null;
   // لو عمود extra_amt لسه مااتضافش في جدول wl_days: بنكمّل شغل عادي (بنشيله من الإرسال) ونعرض تنبيه
   var noExtra = !!LS.get('sk_noextra', 0);
@@ -16575,11 +16576,18 @@ window.safeFileName = function(str){
     } else if (noEnt || noEng || noMod || noUntil) {
       b.className = 'sk-banner show';
       b.innerHTML = 'بعض أعمدة السراكي غير موجودة في Supabase. أضف أعمدة <code>entered_by</code> و<code>modified_by</code> واعتماد المهندس حسب سكربت التحديث (ومعاها <code>eng_week1_until</code> و<code>eng_week2_until</code> من نوع date في <code>wl_periods</code>). لحد إضافتها، بعض بيانات المراجعة قد لا تُرفع.';
-    } else b.className = 'sk-banner';
+    } else { b.className = 'sk-banner'; b.innerHTML = ''; }
+    el.title = (kind === 'off' && S.lastErr) ? String(S.lastErr).slice(0, 220) : '';
+    if (DEAD.length) {
+      b.className = 'sk-banner show';
+      b.innerHTML += (b.innerHTML ? '<br>' : '') + '⚠ تعذّر رفع <b>' + DEAD.length + '</b> حركة لأن قاعدة البيانات رفضتها: <code style="direction:ltr;display:inline-block;max-width:100%;overflow-wrap:anywhere">' + esc(String(DEAD[0].err || '').slice(0, 180)) + '</code> ' +
+        '<button type="button" class="btn btn-secondary" data-dead="retry" style="height:26px;padding:0 10px;font-size:11px;margin:2px">🔁 إعادة المحاولة</button><button type="button" class="btn btn-secondary" data-dead="drop" style="height:26px;padding:0 10px;font-size:11px;margin:2px">🗑 تجاهل</button>';
+    }
   }
   function schedule(ms){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, ms == null ? 500 : ms); }
   function handleErr(e){
     var m = String((e && e.message) || e);
+    S.lastErr = m;
     if (/modified_by/.test(m) && !noMod) { noMod = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (/entered_by/.test(m) && !noEnt) { noEnt = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
     if (/eng_week[12]_until/.test(m) && !noUntil) { noUntil = true; setSync('pending'); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 400); return; }
@@ -16608,7 +16616,41 @@ window.safeFileName = function(str){
       snap.forEach(function(o){ var k = o.table + ':' + (o.id || o.row.id); if (Q[k] && Q[k].v === o.v) delete Q[k]; });
       LS.set('sk_q', Q); S.online = true; S.missing = false; setSync(Object.keys(Q).length ? 'pending' : 'ok');
       if (Object.keys(Q).length) schedule(300);
-    }).catch(handleErr).then(function(){ flushing = false; if (again) { again = false; schedule(100); } });
+    }).catch(function(e){ return onFlushErr(e, snap); }).then(function(){ flushing = false; if (again) { again = false; schedule(100); } });
+  }
+  var TORDER = ['wl_items', 'wl_projects', 'wl_periods', 'wl_workers', 'wl_days'];
+  function isPermErr(e, m){
+    return !!(e && e.status >= 400 && e.status < 500 && e.status !== 404 && e.status !== 408 && e.status !== 429 && !/modified_by|entered_by|eng_week[12]_|extra_amt/.test(m));
+  }
+  function sendOne(o){
+    if (o.op === 'up') return api(o.table + '?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([sendRow(o.table, o.row)]) });
+    return api(o.table + '?id=eq.' + encodeURIComponent(o.id), { method: 'DELETE' });
+  }
+  // لو دفعة اترفضت (4xx): نجرّب كل حركة لوحدها، واللي السيرفر بيرفضها نركنها في DEAD وتتشال من الطابور
+  function onFlushErr(e, snap){
+    var m = String((e && e.message) || e); S.lastErr = m;
+    if (!isPermErr(e, m)) return handleErr(e);
+    var list = snap.slice().sort(function(a, b){ return (a.op === 'del') - (b.op === 'del') || TORDER.indexOf(a.table) - TORDER.indexOf(b.table); });
+    var chain = Promise.resolve();
+    list.forEach(function(o){
+      chain = chain.then(function(){
+        return sendOne(o).then(function(){ var k = o.table + ':' + (o.id || o.row.id); if (Q[k] && Q[k].v === o.v) delete Q[k]; })
+          .catch(function(er){
+            var mm = String((er && er.message) || er);
+            if (!isPermErr(er, mm)) throw er;
+            var k2 = o.table + ':' + (o.id || o.row.id);
+            DEAD.push({ table: o.table, op: o.op, id: o.id || (o.row && o.row.id), row: o.row, err: o.table + ' — ' + mm, at: new Date().toISOString() });
+            if (Q[k2] && Q[k2].v === o.v) delete Q[k2];
+          });
+      });
+    });
+    return chain.then(function(){
+      LS.set('sk_q', Q); LS.set('sk_dead', DEAD); S.online = true; S.missing = false;
+      setSync(Object.keys(Q).length ? 'pending' : 'ok');
+      if (Object.keys(Q).length) { schedule(300); return; }
+      // الطابور فضي: نحمّل بيانات السيرفر الحقيقية بعد ما كان الحمل متعطّل
+      return loadServer().then(function(){ return S.cur ? loadDays(S.cur) : null; }).then(function(){ renderAll(); }).catch(function(){});
+    }).catch(handleErr);
   }
   function enqueue(op, table, rowOrId){
     var id = op === 'up' ? rowOrId.id : rowOrId;
@@ -18445,6 +18487,15 @@ window.safeFileName = function(str){
         p[f.until] = v; p[f.by] = who(); p[f.at] = new Date().toISOString();
         enqueue('up', 'wl_periods', p); renderAll(); toast('تم تعديل تاريخ الاعتماد');
       });
+    }
+  });
+  $('#skBanner').addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('[data-dead]'); if (!b) return;
+    if (b.getAttribute('data-dead') === 'retry') {
+      DEAD.forEach(function(d){ if (d.op === 'up' && d.row) enqueue('up', d.table, d.row); else if (d.op === 'del') enqueue('del', d.table, d.id); });
+      DEAD = []; LS.set('sk_dead', DEAD); setSync('pending'); schedule(100);
+    } else {
+      ask('تجاهل الحركات المرفوضة', 'هيتم حذف ' + DEAD.length + ' حركة معلّقة من الجهاز نهائيًا (السيرفر رافضها). متأكد؟', 'تجاهل').then(function(ok){ if (!ok) return; DEAD = []; LS.set('sk_dead', DEAD); setSync(Object.keys(Q).length ? 'pending' : 'ok'); });
     }
   });
   $('#skColl').addEventListener('click', function(){ var c = root.classList.toggle('mcoll'); this.textContent = c ? '▸' : '▾'; LS.set('sk_mcoll', c ? 1 : 0); });
