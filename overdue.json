@@ -21,13 +21,13 @@
     {
       "client": "ويكادي",
       "count": 2,
-      "amount": 7209635,
+      "amount": 6709635,
       "avgDelay": 14
     }
   ],
   "grandTotal": {
     "count": 9,
-    "amount": 15924791.56140351,
+    "amount": 15424791.56140351,
     "avgDelay": 15.666666666664241
   }
 }
