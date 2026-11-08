@@ -1867,7 +1867,8 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-master .w-year{width:46px}
 #sarrakiScreen .sk-master .w-per{width:42px}
 #sarrakiScreen .sk-master .w-week{width:62px}
-#sarrakiScreen .sk-master .w-st{width:30px}
+#sarrakiScreen .sk-master .w-st{width:auto;min-width:40px}
+#sarrakiScreen .sk-master .w-st label{overflow:visible;text-overflow:clip;text-align:center}
 #sarrakiScreen .sk-master .sk-f input,#sarrakiScreen .sk-master .sk-f select{padding:0 3px;font-size:12px;min-width:0}
 #sarrakiScreen .sk-master .sk-f input[type=date]{font-size:11.5px;padding:0 2px}
 #sarrakiScreen .sk-master select{-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center;background-image:none}
@@ -2189,7 +2190,7 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-master .mrow { display:flex !important; flex-wrap:wrap !important; align-items:flex-end; gap:5px; width:100%; min-width:0; }
   #sarrakiScreen .sk-master .mrow:first-child { display:grid !important; grid-template-columns:54px minmax(65px,.65fr) minmax(95px,1fr) minmax(95px,1fr); }
   /* الصف الثاني: السنة/الحالة فوق + اعتماد المهندس فوق، وزرارين (مراجعة + تقارير) تحت */
-  #sarrakiScreen .sk-master .mrow:nth-child(2) { display:grid !important; grid-template-columns:minmax(62px,.65fr) minmax(34px,.35fr) minmax(0,1fr) 40px; gap:5px; align-items:end; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) { display:grid !important; grid-template-columns:minmax(62px,.6fr) minmax(40px,auto) minmax(0,1fr) 40px; gap:5px; align-items:end; }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f { min-width:0; }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check { grid-column:3 / 5; grid-row:1; justify-self:stretch; min-width:0; width:100%; box-sizing:border-box; justify-content:center; padding:4px 6px !important; gap:5px !important; border-radius:7px; font-size:10.5px !important; line-height:1.2; white-space:normal }
   #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check input { width:14px !important; height:14px !important; min-width:14px !important; }
@@ -2426,6 +2427,17 @@ body.cg-compact .wa-float-btn{display:none !important}
 .nc-item.unread .nc-time{color:#e2621f}
 .nc-dot{position:absolute;top:12px;left:10px;width:8px;height:8px;border-radius:50%;background:#e2621f}
 .nc-empty{padding:22px 10px;text-align:center;color:var(--ink-soft);font-weight:700;font-size:12px}
+</style>
+<style id="a4DesktopViewer">
+/* عرض التقارير على الكمبيوتر: الصفحة A4 كاملة جوه الشاشة بالنسبة الحقيقية 210x297 */
+@media (min-width:900px){
+  #vwBody,#attVwBody{display:flex !important;flex-direction:column;align-items:center;gap:14px;padding:12px !important;box-sizing:border-box}
+  #vwBody img,#attVwBody img{
+    width:min(calc((100vh - 76px) * 210 / 297),100%) !important;
+    height:auto !important;max-width:100% !important;min-width:0 !important;
+    margin:0 !important;flex:none;box-shadow:0 2px 14px rgba(0,0,0,.45)}
+  #attVwBody img[style*="min-width:900px"]{width:min(calc((100vh - 76px) * 297 / 210),100%) !important}
+}
 </style>
 </head>
 <body>
