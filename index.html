@@ -5090,7 +5090,9 @@ window.safeFileName = function(str){
   window.custodyCtx_ = function(){ return { isEmp: isEmployeeSession, name: currentSessionEmployeeName, employees: (typeof ATTENDANCE_EMPLOYEES !== 'undefined' ? ATTENDANCE_EMPLOYEES : []),
     // authed: فيه جلسة دخول فعلية؟ موظف باسم معروف، أو أدمن جلسته محفوظة (تذكرني/بصمة). غير كده = زائر على صفحة الدخول.
     authed: isEmployeeSession ? !!currentSessionEmployeeName : (function(){ try { return localStorage.getItem(AUTH_KEY) === '1' && localStorage.getItem(ROLE_KEY) === 'admin'; } catch(e){ return false; } })(),
-    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1) }; };
+    canReport: !isEmployeeSession || ((EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).indexOf('allow_custodyReport') > -1),
+    // صلاحيات السراكي: كود السراكي في سكربت منفصل ومايقدرش يشوف EMPLOYEE_HIDDEN_ICONS_ مباشرة
+    perms: (EMPLOYEE_HIDDEN_ICONS_[currentSessionEmployeeName] || []).slice() }; };
 
   // Clone the brand logo (defined once in the app header) into the
   // login/home screens instead of duplicating the embedded image data.
@@ -7942,6 +7944,7 @@ window.safeFileName = function(str){
       if (cb) cb(!!map);
     });
   }
+  window.refreshHiddenIconsLive_ = refreshHiddenIconsLive_; // يستخدمها سكربت السراكي لتحديث الصلاحيات عند الدخول
 
   reloadEmployeesFromServer_(function(){
     // بعد أول تحميل من السيرفر، نعيد رسم القايمة واللستة عشان لو حد ضاف
@@ -16686,7 +16689,7 @@ window.safeFileName = function(str){
   function canApprove(){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
     if (!c.isEmp) return true;
-    var l = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined' && EMPLOYEE_HIDDEN_ICONS_[c.name]) || [];
+    var l = c.perms || [];
     return l.indexOf('allow_sarrakiApprove') > -1;
   }
   // الاعتماد مستقل لكل أسبوع داخل الفترة، ولا يؤثر اعتماد أسبوع على الآخر.
@@ -16725,8 +16728,7 @@ window.safeFileName = function(str){
   function canSeeAllWorkers(){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
     if (!c.isEmp) return true;
-    var icons = (typeof EMPLOYEE_HIDDEN_ICONS_ !== 'undefined') ? EMPLOYEE_HIDDEN_ICONS_ : {};
-    var l = (icons[c.name]) || [];
+    var l = c.perms || [];
     return l.indexOf('allow_sarrakiAllEmployees') > -1;
   }
   // قائمة الموظفين اللي عندهم صلاحية عرض السراكي (لبناء فلتر "عرض مدخلات")
@@ -18590,8 +18592,8 @@ window.safeFileName = function(str){
     // حدّث صلاحيات الموظف من Supabase عند كل دخول للشاشة قبل العرض النهائي،
     // حتى من لديه صلاحية "عرض كل الموظفين" تظهر له القائمة كاملة مباشرة.
     var refreshPerms = new Promise(function(resolve){
-      if (typeof refreshHiddenIconsLive_ === 'function') {
-        refreshHiddenIconsLive_(function(){ resolve(); });
+      if (typeof window.refreshHiddenIconsLive_ === 'function') {
+        window.refreshHiddenIconsLive_(function(){ resolve(); });
       } else resolve();
     });
     renderAll();
