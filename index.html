@@ -17252,9 +17252,14 @@ window.safeFileName = function(str){
     var ws = WK(), d = S.day;
     if (a === 'copy') {
       var p = P(); if (d <= p.from_date) { toast('ده أول يوم في الفترة'); return; }
+      ask('نسخ اليوم السابق', 'هيتم نسخ العمال الحاضرين من يوم <b>' + dayName(addD(d, -1)) + ' ' + short(addD(d, -1)) + '</b> إلى يوم <b>' + dayName(d) + ' ' + short(d) + '</b>. متأكد؟', 'نسخ').then(function(ok){
+      if (!ok) return;
       var prev = addD(d, -1), n = 0, other = 0;
       ws.forEach(function(w){ var pr = dayRow(w.id, prev); if (pr && pr.present) { if (!mineRow(pr)) { other++; return; } var r = dayObj(w, d, true); if (!r.present) { r.present = true; r.project_id = pr.project_id || w.project_id || null; commitDay(r); n++; } } });
       toast(n ? 'تم نسخ ' + n + ' عامل (اللي دخلتهم إنت بس)' : other ? 'مفيش حاجة تتنسخ — اليوم السابق مش مدخل باسمك' : 'مفيش حاجة تتنسخ');
+      renderDay();
+      });
+      return;
     } else if (a === 'add') {
       S.addOpen = !addOpenNow(); renderDay(); var nf = $('#skaName'); if (nf) nf.focus(); return;
     } else if (a === 'clear') {
