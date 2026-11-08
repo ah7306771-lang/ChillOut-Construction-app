@@ -2177,6 +2177,35 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-eng-check.is-approved{background:#e7f6ef;color:#0f8a5f;border-color:#b5e3cf}
 #sarrakiScreen .sk-eng-check input{width:15px;height:15px;min-width:15px;margin:0;accent-color:#0f9d70;cursor:pointer}
 #sarrakiScreen .sk-eng-check input:disabled{cursor:not-allowed;opacity:.75}
+#sarrakiScreen .sk-zm{margin-inline-start:auto;display:flex;align-items:center;gap:3px;padding-bottom:2px}
+#sarrakiScreen .sk-zm button{width:26px;height:24px;border:1px solid #e3e8f1;background:#fff;border-radius:6px;font-size:11px;cursor:pointer;line-height:1;padding:0}
+#sarrakiScreen .sk-zm span{min-width:38px;text-align:center;font-size:11px;font-weight:800;color:#6b7690;cursor:pointer}
+#sarrakiScreen[data-zm="1"] .sk-wrap table{zoom:.9}
+#sarrakiScreen[data-zm="2"] .sk-wrap table{zoom:.8}
+#sarrakiScreen[data-zm="3"] .sk-wrap table{zoom:.7}
+#sarrakiScreen[data-zm="4"] .sk-wrap table{zoom:.6}
+#sarrakiScreen[data-zm="5"] .sk-wrap table{zoom:.5}
+#sarrakiScreen .sk-t.sk-day th .rz{position:absolute;top:0;bottom:0;inset-inline-end:-3px;width:9px;cursor:col-resize;z-index:8;touch-action:none}
+#sarrakiScreen .sk-t.sk-day th .rz:hover,#sarrakiScreen .sk-t.sk-day th .rz:active{background:rgba(244,180,0,.65)}
+#sarrakiScreen .sk-t.sk-day th.cf{cursor:pointer;user-select:none}
+#sarrakiScreen .sk-t.sk-day th.cf .cfb{display:inline-block;margin-inline-start:3px;font-size:9px;background:rgba(255,255,255,.2);border-radius:4px;padding:0 4px}
+#sarrakiScreen .sk-t.sk-day th.cf.on{box-shadow:inset 0 -3px 0 #f4b400}
+#sarrakiScreen .sk-t.sk-day th.cf.on .cfb{background:#f4b400;color:#1b2540}
+#skCfBar:empty{display:none}
+#skCfBar{display:flex;align-items:center;gap:8px;margin:3px 0;padding:4px 8px;background:#fff7dc;border:1px solid #f0d27a;border-radius:8px;font-size:11.5px;font-weight:700;color:#6b4a00}
+#skCfBar button{margin-inline-start:auto;border:1px solid #d93025;background:#fff;color:#d93025;border-radius:6px;font-size:11px;padding:2px 8px;cursor:pointer;font-family:inherit}
+.sk-cfp{position:fixed;z-index:10040;width:228px;max-height:62vh;display:flex;flex-direction:column;background:#fff;border:1px solid #cfd6e4;border-radius:10px;box-shadow:0 8px 28px rgba(27,37,64,.25);font-family:'Cairo',sans-serif;direction:rtl;font-size:12px}
+.sk-cfp .cfh{padding:7px 10px;font-weight:800;color:#1b2540;border-bottom:1px solid #eef1f7}
+.sk-cfp .cfs{margin:6px 8px 2px;height:28px;border:1px solid #dde3ee;border-radius:7px;padding:0 8px;font:inherit;font-size:12px}
+.sk-cfp label{display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer}
+.sk-cfp label:hover{background:#f3f6fc}
+.sk-cfp .cfa{border-bottom:1px solid #eef1f7}
+.sk-cfp .cfl{overflow:auto;flex:1;min-height:40px}
+.sk-cfp .cfi span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sk-cfp .cfi small{color:#6b7690;font-weight:700}
+.sk-cfp .cff{display:flex;gap:6px;padding:7px 8px;border-top:1px solid #eef1f7}
+.sk-cfp .cff button{flex:1;height:28px;border:1px solid #dde3ee;background:#f7f9fd;border-radius:7px;font:inherit;font-size:11.5px;cursor:pointer}
+.sk-cfp .cff .cfx{color:#d93025;border-color:#f0b8b4}
 #sarrakiScreen #skEngDate{height:24px;font:inherit;font-size:11px;padding:0 3px;border:1px solid #e0b84a;border-radius:6px;background:#fff;color:var(--ink);min-width:0;width:118px;flex:0 1 auto;cursor:pointer}
 #sarrakiScreen #skEngDate:disabled{background:#f1f1f1;cursor:not-allowed}
 #sarrakiScreen #skEngDate.apr,#sarrakiScreen #skEngDate.apr:disabled{background:#fdeceb;border-color:#d93025;color:#c0392b;-webkit-text-fill-color:#c0392b;font-weight:800;opacity:1}
@@ -2807,6 +2836,7 @@ body.cg-compact .wa-float-btn{display:none !important}
       <button type="button" class="sk-tab on" data-v="day">التسجيل اليومي</button>
       <button type="button" class="sk-tab" data-v="week">ملخص الأسبوع</button>
       <button type="button" class="sk-tab" data-v="period">حساب الفترة</button>
+      <div class="sk-zm" id="skZm"><button type="button" data-zm="-" title="تصغير الجداول">➖</button><span id="skZmV">100%</span><button type="button" data-zm="+" title="تكبير الجداول">➕</button></div>
     </div>
     <div id="skBody"></div>
     <div class="sk-fix" id="skFix" style="display:none">
@@ -16717,6 +16747,94 @@ window.safeFileName = function(str){
   var linked = {};
   // صلاحيات المشاريع (نفس مصدر تقرير العهد: cost_center.allowed_employees). الموظف يشوف بس المشاريع المسموحة له، والأدمن يشوف الكل.
   // بتتخزن على الجهاز عشان تفضل شغالة أوفلاين؛ ولو مفيش بيانات صلاحيات للمشروع الموظف مايشوفوش (نفس قاعدة العهد).
+  // ===== فلاتر الأعمدة (بند / مهنة / مشروع) بنظام الشيك بوكس — بتخفي الصفوف بس ومابتغيّرش البيانات =====
+  var CF = { item: {}, prof: {}, proj: {} };
+  var CF_T = { item: 'البند', prof: 'المهنة', proj: 'المشروع' };
+  function cfKey(col, w, r){
+    if (col === 'item') return w.item_id || '';
+    if (col === 'prof') return String(w.profession || '').trim();
+    return (r && r.project_id) || w.project_id || '';
+  }
+  function cfLabel(col, k){
+    if (col === 'item') return k ? (itemName(k) || '—') : '(بدون بند)';
+    if (col === 'prof') return k || '(بدون مهنة)';
+    if (!k) return '(بدون مشروع)';
+    for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === k) return S.projects[i].name;
+    return '—';
+  }
+  function cfActive(col){ for (var k in CF[col]) if (CF[col][k]) return true; return false; }
+  function cfAny(){ return cfActive('item') || cfActive('prof') || cfActive('proj'); }
+  function rowPass(w, r){ return !CF.item[cfKey('item', w, r)] && !CF.prof[cfKey('prof', w, r)] && !CF.proj[cfKey('proj', w, r)]; }
+  function applyCF(){
+    var body = document.getElementById('skBody'); if (!body || S.view !== 'day') return;
+    var act = document.activeElement, n = 0, tot = 0;
+    Array.prototype.forEach.call(body.querySelectorAll('tbody tr[data-w]'), function(tr){
+      var wid = tr.getAttribute('data-w'), w = null;
+      for (var i = 0; i < S.workers.length; i++) if (S.workers[i].id === wid) { w = S.workers[i]; break; }
+      if (!w) return; tot++;
+      var ok = rowPass(w, dayRow(wid, S.day)) || tr.contains(act);
+      tr.style.display = ok ? '' : 'none';
+      if (ok) { n++; var c = tr.querySelector('td.n'); if (c) c.textContent = n; }
+    });
+    ['item', 'prof', 'proj'].forEach(function(col){ var th = body.querySelector('th[data-cf="' + col + '"]'); if (th) th.classList.toggle('on', cfActive(col)); });
+    var bar = document.getElementById('skCfBar');
+    if (bar) bar.innerHTML = cfAny() ? '🔽 فلتر مفعّل — ظاهر ' + n + ' من ' + tot + ' عامل<button type="button" data-cfclear>✖ مسح الفلاتر</button>' : '';
+  }
+  function closeCF(){ var p = document.getElementById('skCfp'); if (p && p.parentNode) p.parentNode.removeChild(p); document.removeEventListener('mousedown', cfOutside, true); document.removeEventListener('keydown', cfEsc, true); }
+  function cfOutside(e){ var p = document.getElementById('skCfp'); if (p && !p.contains(e.target) && !e.target.closest('[data-cf]')) closeCF(); }
+  function cfEsc(e){ if (e.key === 'Escape') closeCF(); }
+  function openCF(col, anchor){
+    var old = document.getElementById('skCfp'), same = old && old.getAttribute('data-col') === col; closeCF(); if (same) return;
+    var dm = DM(), cnt = {}, order = [];
+    WK().forEach(function(w){ var r = dm.get(w.id + '|' + S.day); if (!r) return; var k = cfKey(col, w, r); if (!(k in cnt)) { cnt[k] = 0; order.push(k); } cnt[k]++; });
+    order.sort(function(a, b){ return cfLabel(col, a).localeCompare(cfLabel(col, b), 'ar'); });
+    var pop = document.createElement('div'); pop.className = 'sk-cfp'; pop.id = 'skCfp'; pop.setAttribute('data-col', col);
+    pop.innerHTML = '<div class="cfh">فلتر ' + CF_T[col] + '</div><input class="cfs" placeholder="🔍 بحث…" autocomplete="off"><label class="cfa"><input type="checkbox" class="cfall"><b>الكل</b></label><div class="cfl">' +
+      order.map(function(k){ return '<label class="cfi" data-s="' + esc(cfLabel(col, k)) + '"><input type="checkbox" data-k="' + esc(k) + '"' + (CF[col][k] ? '' : ' checked') + '><span>' + esc(cfLabel(col, k)) + '</span><small>' + cnt[k] + '</small></label>'; }).join('') +
+      '</div><div class="cff"><button type="button" class="cfx">✖ مسح الفلتر</button><button type="button" class="cfc">إغلاق</button></div>';
+    document.body.appendChild(pop);
+    var rc = anchor.getBoundingClientRect(), W = 228, left = Math.max(8, Math.min(rc.left + rc.width / 2 - W / 2, window.innerWidth - W - 8));
+    pop.style.left = left + 'px'; pop.style.top = Math.min(rc.bottom + 4, window.innerHeight - 120) + 'px';
+    function items(){ return Array.prototype.filter.call(pop.querySelectorAll('.cfi'), function(l){ return l.style.display !== 'none'; }); }
+    function sync(){ var it = items(), on = it.filter(function(l){ return l.querySelector('input').checked; }).length, all = pop.querySelector('.cfall'); all.checked = it.length > 0 && on === it.length; all.indeterminate = on > 0 && on < it.length; }
+    pop.addEventListener('change', function(e){
+      var t = e.target;
+      if (t.classList.contains('cfall')) { items().forEach(function(l){ var c = l.querySelector('input'); c.checked = t.checked; if (t.checked) delete CF[col][c.getAttribute('data-k')]; else CF[col][c.getAttribute('data-k')] = true; }); }
+      else if (t.hasAttribute('data-k')) { var k = t.getAttribute('data-k'); if (t.checked) delete CF[col][k]; else CF[col][k] = true; }
+      sync(); applyCF();
+    });
+    pop.querySelector('.cfs').addEventListener('input', function(){ var q = this.value.trim().toLowerCase(); Array.prototype.forEach.call(pop.querySelectorAll('.cfi'), function(l){ l.style.display = !q || l.getAttribute('data-s').toLowerCase().indexOf(q) > -1 ? '' : 'none'; }); sync(); });
+    pop.querySelector('.cfx').addEventListener('click', function(){ CF[col] = {}; Array.prototype.forEach.call(pop.querySelectorAll('.cfi input'), function(c){ c.checked = true; }); sync(); applyCF(); });
+    pop.querySelector('.cfc').addEventListener('click', closeCF);
+    sync();
+    document.addEventListener('mousedown', cfOutside, true); document.addEventListener('keydown', cfEsc, true);
+  }
+  // ===== تغيير عرض أعمدة جدول اليوم بالسحب (الاسم، الملاحظات، …) — بيتحفظ على الجهاز =====
+  var COLW = LS.get('sk_colw', {}) || {};
+  function applyColW(){
+    var st = document.getElementById('skColStyle'); if (!st) { st = document.createElement('style'); st.id = 'skColStyle'; document.head.appendChild(st); }
+    var css = '';
+    for (var i in COLW) {
+      var w = +COLW[i]; if (!(w > 0)) continue;
+      css += '#sarrakiScreen .sk-t.sk-day thead th:nth-child(' + i + '),#sarrakiScreen .sk-t.sk-day tbody tr[data-w] td:nth-child(' + i + '){width:' + w + 'px !important;min-width:' + w + 'px !important;max-width:' + w + 'px !important}' +
+        '#sarrakiScreen .sk-t.sk-day tbody tr[data-w] td:nth-child(' + i + ') .sk-in{min-width:0 !important}\n';
+    }
+    st.textContent = css;
+  }
+  function addResizers(){
+    Array.prototype.forEach.call(document.querySelectorAll('#skBody .sk-t.sk-day thead th'), function(th, i){
+      var idx = i + 1; if (idx === 1 || idx === 11) return;
+      var h = document.createElement('i'); h.className = 'rz'; h.setAttribute('data-rz', idx); h.title = 'اسحب لتغيير عرض العمود — دبل كليك لإرجاعه'; th.appendChild(h);
+    });
+  }
+  // ===== تصغير/تكبير الجداول =====
+  var ZM_STEPS = [1, .9, .8, .7, .6, .5], zmI = +LS.get('sk_zmi', 0) || 0;
+  function applyZm(){
+    zmI = Math.max(0, Math.min(ZM_STEPS.length - 1, zmI));
+    var sc = document.getElementById('sarrakiScreen'); if (sc) sc.setAttribute('data-zm', String(zmI));
+    var v = document.getElementById('skZmV'); if (v) v.textContent = Math.round(ZM_STEPS[zmI] * 100) + '%';
+    LS.set('sk_zmi', zmI);
+  }
   var ALW = LS.get('sk_allowed', {});
   function sessEmp(){ var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {}; return c.isEmp ? String(c.name || '').trim() : null; }
   function projAllowed(id){ var me = sessEmp(); if (me === null) return true; var l = ALW[id]; return !!(l && l.indexOf(me) > -1); }
@@ -17067,7 +17185,7 @@ window.safeFileName = function(str){
       if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th>البند</th><th>المهنة</th><th>اليومية</th><th>المشروع</th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr></thead><tbody>';
+    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -17085,6 +17203,7 @@ window.safeFileName = function(str){
     if (!ws.length) h += '<tr><td colspan="13" class="sk-empty" style="padding:22px">أضف العمال من الشريط أعلاه — كل عامل بتضيفه بيتسجل حاضر في اليوم ده.</td></tr>';
     h += '</tbody></table></div>';
     $('#skBody').innerHTML = h;
+    addResizers();
     Array.prototype.forEach.call($('#skBody').querySelectorAll('tbody tr[data-w]'), paintRow);
     paintFoot();
   }
@@ -17109,8 +17228,9 @@ window.safeFileName = function(str){
   function paintFoot(){
     paintFix();
     if (S.view !== 'day') return;
+    applyCF();
     var ws = WK(), c = 0, ot = 0, adv = 0, wages = 0;
-    ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; var rate = +w.daily_rate || 0; if (r.present) { c++; wages += rate; } ot += +r.overtime || 0; wages += (+r.overtime || 0) * rate + (+r.extra_amt || 0); adv += +r.advance || 0; });
+    ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; if (!rowPass(w, r)) return; var rate = +w.daily_rate || 0; if (r.present) { c++; wages += rate; } ot += +r.overtime || 0; wages += (+r.overtime || 0) * rate + (+r.extra_amt || 0); adv += +r.advance || 0; });
     var set = function(id, v){ var e = $('#' + id); if (e) e.textContent = v; };
     set('skfP', c + ' حاضر'); set('skfO', fmt(ot)); set('skfA', fmt(adv));
     Array.prototype.forEach.call(root.querySelectorAll('[data-cnt]'), function(e){
@@ -17184,6 +17304,9 @@ window.safeFileName = function(str){
   }
   function onBodyClick(e){
     var el = e.target;
+    if (el.closest('.rz')) return;
+    var cfh = el.closest('[data-cf]'); if (cfh) { openCF(cfh.getAttribute('data-cf'), cfh); return; }
+    if (el.closest('[data-cfclear]')) { CF = { item: {}, prof: {}, proj: {} }; closeCF(); renderAll(); return; }
     var chip = el.closest('[data-day]'); if (chip) { S.day = chip.getAttribute('data-day'); renderAll(); return; }
     var hd = el.closest('[data-goday]'); if (hd) { S.day = hd.getAttribute('data-goday'); S.view = 'day'; renderAll(); return; }
     if (el.id === 'skaBtn') { addWorker(); return; }
@@ -18521,6 +18644,31 @@ window.safeFileName = function(str){
   $('#skReview').addEventListener('click', reviewSarrakiModal);
   $('#skFilterEmp').addEventListener('change', function(){ S.filterEmp = this.value || '__ALL__'; S.day = null; renderAll(); });
   $('#skEngCheck').addEventListener('change', toggleEng);
+  $('#skZm').addEventListener('click', function(e){
+    var b = e.target.closest('[data-zm]');
+    if (b) zmI += b.getAttribute('data-zm') === '+' ? -1 : 1; else if (e.target.id === 'skZmV') zmI = 0; else return;
+    applyZm();
+  });
+  applyZm(); applyColW();
+  $('#skBody').addEventListener('pointerdown', function(e){
+    var rz = e.target.closest && e.target.closest('.rz'); if (!rz) return;
+    e.preventDefault(); e.stopPropagation();
+    var idx = rz.getAttribute('data-rz'), th = rz.parentNode, x0 = e.clientX, r0 = th.getBoundingClientRect().width,
+        rtl = getComputedStyle(th.closest('table')).direction === 'rtl', cssW = th.offsetWidth;
+    try { rz.setPointerCapture(e.pointerId); } catch (x) {}
+    function mv(ev){
+      var d = rtl ? x0 - ev.clientX : ev.clientX - x0, target = Math.max(30, r0 + d);
+      COLW[idx] = cssW; applyColW();
+      var cur = th.getBoundingClientRect().width;
+      if (cur > 0) { cssW = Math.max(36, Math.min(900, cssW * target / cur)); COLW[idx] = Math.round(cssW); applyColW(); }
+    }
+    function up(){ rz.removeEventListener('pointermove', mv); rz.removeEventListener('pointerup', up); rz.removeEventListener('pointercancel', up); LS.set('sk_colw', COLW); }
+    rz.addEventListener('pointermove', mv); rz.addEventListener('pointerup', up); rz.addEventListener('pointercancel', up);
+  });
+  $('#skBody').addEventListener('dblclick', function(e){
+    var rz = e.target.closest && e.target.closest('.rz'); if (!rz) return;
+    delete COLW[rz.getAttribute('data-rz')]; applyColW(); LS.set('sk_colw', COLW);
+  });
   $('#skEngDate').addEventListener('change', function(){
     var p = P(); if (!p) return; var w = S.week, wds = weekDates(p, w), v = this.value;
     if (!v || wds.indexOf(v) < 0) { toast('اختر تاريخًا داخل الأسبوع'); renderMaster(); return; }
@@ -18665,7 +18813,7 @@ window.safeFileName = function(str){
   var opened = false;
   function open(){
     window.showScreen_('sarraki');
-    loadCache(); S.picked = false; S.filterEmp = null; autoPeriod();
+    loadCache(); S.picked = false; S.filterEmp = null; CF = { item: {}, prof: {}, proj: {} }; closeCF(); autoPeriod();
     if (noExtra) {
       noExtra = false; LS.set('sk_noextra', 0);
       Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null }); }); });
