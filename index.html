@@ -2051,7 +2051,10 @@ select.sk-in{padding:0 4px;min-width:130px}
 .skp table.dtb{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}
 .skp table.dtb th{background:#e9e9e9;color:#1a237e;border:1px solid #000;padding:2px 2px;font-size:10.5px;font-weight:700;line-height:1.3;height:38px;box-sizing:border-box;vertical-align:middle;overflow:hidden}
 .skp table.dtb td{border:1px solid #333;padding:0 3px;height:22px;box-sizing:border-box;font-weight:700;text-align:center;color:#000;font-size:11px;white-space:nowrap;overflow:hidden}
-.skp table.dtb td.nm{text-align:center;font-size:11px}
+.skp table.dtb td.nm{text-align:center;font-size:12px}
+.skp table.dtb tr.grp td{background:#dfe6fb;color:#1a237e;font-size:12px;font-weight:800;text-align:right;padding-inline-start:8px;height:24px;border-color:#000}
+.skp table.dtb tr.sub td{background:#fff3cd;color:#8b0000;font-size:11px;font-weight:800}
+.skp table.dtb tr.sub td.lb{text-align:right;padding-inline-end:8px}
 .skp table.dtb td.pj{color:#1a3fb0;font-size:10px}
 .skp table.dtb td.nt{white-space:normal;font-size:9px;line-height:1.2;height:auto;min-height:22px;color:#333;word-break:break-word}
 .skp table.dtb .y{background:#fffbe0}
@@ -2218,6 +2221,26 @@ select.sk-in{padding:0 4px;min-width:130px}
   #sarrakiScreen .sk-fix b { display:inline !important; font-size:10px !important; line-height:1.1 !important; margin:0 !important; }
   #sarrakiScreen .sk-head { margin-bottom:4px !important; }
   #sarrakiScreen .sk-tab { padding:4px 7px !important; font-size:10.5px !important; }
+
+  /* ===== ضغط الماستر لفوق (موبايل) ===== */
+  #sarrakiScreen .gate-card { padding-top: 0 !important; }
+  #sarrakiScreen .sk-head { margin-bottom: 2px !important; }
+  #sarrakiScreen .sk-master { gap: 2px !important; padding: 3px 5px !important; }
+  #sarrakiScreen .sk-master .mrow { gap: 4px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) { row-gap: 2px !important; column-gap: 4px !important; align-items: end; }
+  #sarrakiScreen .sk-master .sk-f label { font-size: 8.5px !important; line-height: 1.05 !important; margin: 0 0 1px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-eng-check { height: 24px !important; padding: 1px 5px !important; line-height: 1 !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skEngDate { height: 20px !important; font-size: 9.5px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f input,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f select,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) .sk-f .sk-badge { height: 24px !important; }
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skReview,
+  #sarrakiScreen .sk-master .mrow:nth-child(2) #skRep,
+  #sarrakiScreen .sk-master #skFilterEmpRow select { height: 24px !important; }
+  #sarrakiScreen .sk-master .mrow:first-child .sk-f input,
+  #sarrakiScreen .sk-master .mrow:first-child .sk-f select { height: 24px !important; }
+  #sarrakiScreen .sk-banner:empty { display: none; }
+  #sarrakiScreen .sk-tabs { margin: 2px 0 3px !important; }
 }
 @media (max-width: 380px) {
   #sarrakiScreen .sk-fix > div::before { font-size:12px; }
@@ -17788,32 +17811,34 @@ window.safeFileName = function(str){
     return pages.map(function(pg, i){ pg.html += pageFoot(i + 1, pages.length); return pg; });
   }
   // ---------- الشيت التفصيلي: كل سطر = عامل + أسبوع + مشروع (بنفس شكل "شيت العمالة تفصيلي") ----------
-  var WEEKN = ['', 'الاسبوع الاول', 'الاسبوع الثاني'];
+  var WEEKN = ['', 'الأول', 'الثاني'];
   function detailData(p){
     var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), map = {}, rows = [], advs = [];
     function pOrd(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return i; return 1e6; }
-    function cmp(a, b){ return a.name.localeCompare(b.name, 'ar', { numeric: true }) || (a.rate - b.rate) || (a.wk - b.wk) || (pOrd(a.pj) - pOrd(b.pj)); }
-    function blank(a){ return { name: a.name, rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0, notes: [] }; }
+    function cmp(a, b){ return a.eb.localeCompare(b.eb, 'ar') || a.name.localeCompare(b.name, 'ar', { numeric: true }) || (a.rate - b.rate) || (a.wk - b.wk) || (pOrd(a.pj) - pOrd(b.pj)); }
+    function blank(a){ return { name: a.name, eb: a.eb, rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0, notes: [] }; }
     WK(p.id).forEach(function(w){
       var rate = +w.daily_rate || 0, nm = String(w.name || '').trim();
       dates.forEach(function(d){
         var r = m.get(w.id + '|' + d); if (!r) return;
         var pj = r.project_id || w.project_id || '', wk = d < w2 ? 1 : 2;
+        var eb = String(r.entered_by || w.entered_by || '').trim() || 'غير محدد';
         var days = r.present ? 1 : 0, otd = +r.overtime || 0, ex = +r.extra_amt || 0, adv = +r.advance || 0;
         var nTxt = r.note ? (short(d) + ': ' + String(r.note).trim()) : '';
         if (days || otd || ex) {
-          var k = nm + '|' + rate + '|' + wk + '|' + pj, x = map[k];
-          if (!x) { x = map[k] = blank({ name: nm, rate: rate, wk: wk, pj: pj }); rows.push(x); }
+          var k = eb + '|' + nm + '|' + rate + '|' + wk + '|' + pj, x = map[k];
+          if (!x) { x = map[k] = blank({ name: nm, eb: eb, rate: rate, wk: wk, pj: pj }); rows.push(x); }
           x.days += days; x.otd += otd; x.extra += ex;
           if (nTxt) x.notes.push(nTxt);
         }
-        if (adv) advs.push({ name: nm, rate: rate, wk: wk, pj: pj, adv: adv, note: (days || otd || ex) ? '' : nTxt });
+        if (adv) advs.push({ name: nm, eb: eb, rate: rate, wk: wk, pj: pj, adv: adv, note: (days || otd || ex) ? '' : nTxt });
       });
     });
     rows.sort(cmp);
     // السلفة بتتسجل على أول سطر للعامل في نفس المشروع (وإلا أول سطر له)، وعمودها حسب أسبوع صرف السلفة
     advs.forEach(function(a){
-      var mine = rows.filter(function(x){ return x.name === a.name && x.rate === a.rate; });
+      var mine = rows.filter(function(x){ return x.name === a.name && x.rate === a.rate && x.eb === a.eb; });
+      if (!mine.length) mine = rows.filter(function(x){ return x.name === a.name && x.rate === a.rate; });
       var tgt = mine.filter(function(x){ return x.pj === a.pj; })[0] || mine[0];
       if (!tgt) { tgt = blank(a); rows.push(tgt); rows.sort(cmp); }
       if (a.wk === 1) tgt.a1 += a.adv; else tgt.a2 += a.adv;
@@ -17824,25 +17849,54 @@ window.safeFileName = function(str){
       x.tot = x.days + x.otd; x.before = x.tot * x.rate + x.extra; x.net = x.before - x.a1 - x.a2; x.pname = x.pj ? projName(x.pj) : ''; x.note = (x.notes || []).join(' | ');
       for (var k in T) T[k] += x[k];
     });
-    return { rows: rows, tot: T };
+    var groups = [], gm = {};
+    rows.forEach(function(x){
+      var g = gm[x.eb];
+      if (!g) { g = gm[x.eb] = { eb: x.eb, rows: [], tot: { days: 0, otd: 0, tot: 0, extra: 0, before: 0, a1: 0, a2: 0, net: 0 } }; groups.push(g); }
+      g.rows.push(x); for (var k2 in g.tot) g.tot[k2] += x[k2];
+    });
+    return { rows: rows, tot: T, groups: groups };
   }
   function buildDetailPages(p){
     var D = detailData(p), rows = D.rows, T = D.tot, per = 32, pages = [], z = function(v){ return v ? fmt(v) : ''; };
     if (!rows.length) throw new Error('مفيش حضور أو سلف مسجّل في الفترة دي');
+    var many = D.groups.length > 1, NC = 13;
     var now = new Date(), hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-    var chunks = []; for (var i = 0; i < rows.length; i += per) chunks.push(rows.slice(i, i + per));
+    // نفرد الأقسام لسطور: عنوان المدخل ← عمال ← إجمالي المدخل، ونقسمها على الصفحات
+    var chunks = [], cur = [];
+    function push(it){ cur.push(it); }
+    function flush(){ if (cur.length) { chunks.push(cur); cur = []; } }
+    D.groups.forEach(function(g){
+      if (cur.length && cur.length > per - 3) flush();
+      push({ t: 'band', g: g, cont: false });
+      g.rows.forEach(function(x){
+        if (cur.length >= per) { flush(); push({ t: 'band', g: g, cont: true }); }
+        push({ t: 'row', x: x });
+      });
+      if (many) { if (cur.length >= per) { flush(); push({ t: 'band', g: g, cont: true }); } push({ t: 'sub', g: g }); }
+    });
+    flush();
+    var cg = '<colgroup><col style="width:18%"><col style="width:5%"><col style="width:4.5%"><col style="width:4.5%"><col style="width:5%"><col style="width:5.5%"><col style="width:7.5%"><col style="width:7%"><col style="width:7%"><col style="width:7.5%"><col style="width:6%"><col style="width:12%"><col style="width:10.5%"></colgroup>';
     chunks.forEach(function(ch, ci){
       var last = ci === chunks.length - 1;
       var h = '<div class="dtop"><span>الوقت: ' + hhmm + '</span><span>التاريخ: ' + todayS() + '</span><span class="pg">' + (ci + 1) + ' / ' + chunks.length + '</span></div>' +
         '<div class="dtt">شيت العمــالة تفصيلي</div>' +
         '<div class="dti"><div class="r"><span>البيان : </span></div><div class="l"><div><span>السنة : </span><b>' + p.year + '</b><span>&nbsp;&nbsp;&nbsp;&nbsp;مسلسل : </span><b>1</b><span>&nbsp;&nbsp;&nbsp;&nbsp;الفترة : </span><b>' + p.period_no + '</b></div>' +
         '<div><span>من </span><b>' + fdmy(p.from_date) + '</b><span>&nbsp;&nbsp;&nbsp;الى&nbsp;&nbsp;&nbsp;</span><b>' + fdmy(p.to_date) + '</b></div></div></div>' +
-        '<table class="dtb"><colgroup><col style="width:12%"><col style="width:5%"><col style="width:4.5%"><col style="width:4.5%"><col style="width:5%"><col style="width:5.5%"><col style="width:7.5%"><col style="width:7.5%"><col style="width:7.5%"><col style="width:7.5%"><col style="width:8.5%"><col style="width:12%"><col style="width:13%"></colgroup>' +
+        '<table class="dtb">' + cg +
         '<thead><tr><th>اسم العامل</th><th>قيمة<br>اليومية</th><th>عدد<br>الأيام</th><th>سهرات</th><th>إجمالي<br>الأيام</th><th>قيمة<br>الإضافي</th><th>القبض قبل<br>السلف</th><th>سلف الأسبوع<br>الأول</th><th>سلف الأسبوع<br>الثاني</th><th>القبض</th><th>الأسبوع</th><th>اسم المشروع</th><th>ملاحظات</th></tr></thead><tbody>';
-      ch.forEach(function(x){
-        h += '<tr><td class="nm">' + esc(x.name) + '</td><td>' + fmt(x.rate) + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td class="y">' + fd(x.tot) + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td><td>' + WEEKN[x.wk] + '</td><td class="pj">' + esc(x.pname) + '</td><td class="nt">' + esc(x.note) + '</td></tr>';
+      ch.forEach(function(it){
+        if (it.t === 'band') {
+          h += '<tr class="grp"><td colspan="' + NC + '">👤 المدخل : ' + esc(it.g.eb) + (it.cont ? ' (تابع)' : '') + '</td></tr>';
+        } else if (it.t === 'sub') {
+          var t = it.g.tot;
+          h += '<tr class="sub"><td colspan="2" class="lb">إجمالي ' + esc(it.g.eb) + '</td><td>' + fmt(t.days) + '</td><td>' + z(t.otd) + '</td><td>' + fmt(t.tot) + '</td><td>' + z(t.extra) + '</td><td>' + fmt(t.before) + '</td><td>' + z(t.a1) + '</td><td>' + z(t.a2) + '</td><td>' + fmt(t.net) + '</td><td colspan="3"></td></tr>';
+        } else {
+          var x = it.x;
+          h += '<tr><td class="nm">' + esc(x.name) + '</td><td>' + fmt(x.rate) + '</td><td>' + x.days + '</td><td>' + z(x.otd) + '</td><td class="y">' + fd(x.tot) + '</td><td>' + z(x.extra) + '</td><td class="y">' + fmt(x.before) + '</td><td>' + z(x.a1) + '</td><td>' + z(x.a2) + '</td><td class="y">' + fmt(x.net) + '</td><td>' + WEEKN[x.wk] + '</td><td class="pj">' + esc(x.pname) + '</td><td class="nt">' + esc(x.note) + '</td></tr>';
+        }
       });
-      if (last) h += '<tr class="tot"><td colspan="2" class="lb">الإجمالي</td><td>' + fmt(T.days) + '</td><td>' + z(T.otd) + '</td><td>' + fmt(T.tot) + '</td><td>' + z(T.extra) + '</td><td>' + fmt(T.before) + '</td><td>' + z(T.a1) + '</td><td>' + z(T.a2) + '</td><td>' + fmt(T.net) + '</td><td colspan="3"></td></tr>';
+      if (last) h += '<tr class="tot"><td colspan="2" class="lb">الإجمالي' + (many ? ' العام' : '') + '</td><td>' + fmt(T.days) + '</td><td>' + z(T.otd) + '</td><td>' + fmt(T.tot) + '</td><td>' + z(T.extra) + '</td><td>' + fmt(T.before) + '</td><td>' + z(T.a1) + '</td><td>' + z(T.a2) + '</td><td>' + fmt(T.net) + '</td><td colspan="3"></td></tr>';
       h += '</tbody></table>';
       pages.push({ orient: 'port dt', html: h });
     });
@@ -18047,7 +18101,9 @@ window.safeFileName = function(str){
     if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
     var D; try { D = detailData(p); } catch (e) { return Promise.reject(e); }
     if (!D.rows.length) return Promise.reject(new Error('مفيش حضور أو سلف مسجّل في الفترة دي'));
-    var T = D.tot, NC = 13, HR = 6, FIRST = HR + 1, LAST = HR + D.rows.length;
+    var T = D.tot, NC = 13, HR = 6, FIRST = HR + 1, many = D.groups.length > 1, lines = [];
+    D.groups.forEach(function(g){ lines.push({ t: 'band', g: g }); g.rows.forEach(function(x){ lines.push({ t: 'row', x: x }); }); if (many) lines.push({ t: 'sub', g: g }); });
+    var LAST = HR + lines.length;
     var now = new Date(), hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     var wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال'; wb.created = now;
     var ws = wb.addWorksheet('شيت العمالة تفصيلي', {
@@ -18059,7 +18115,7 @@ window.safeFileName = function(str){
     var INK = 'FF1A237E', RED = 'FF8B0000', BLUE = 'FF1A3FB0';
     var blk = { style: 'thin', color: { argb: 'FF000000' } }, gry = { style: 'thin', color: { argb: 'FF555555' } };
     var fillY = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFBE0' } }, fillH = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE9E9E9' } }, fillT = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF59D' } };
-    [24, 12, 10, 9, 11, 12, 15, 14, 14, 13, 16, 28, 34].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
+    [32, 12, 10, 9, 11, 12, 15, 14, 14, 13, 11, 28, 32].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
     // عنوان الشيت في النص داخل إطار مزدوج
     ws.mergeCells(1, 4, 1, 9);
     var tc = ws.getCell(1, 4); tc.value = 'شيت العمــالة تفصيلي'; tc.font = { name: 'Arial', size: 18, bold: true, color: { argb: RED } }; tc.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -18085,8 +18141,26 @@ window.safeFileName = function(str){
     ws.getRow(HR).height = 34;
     // الصفوف: سطر لكل عامل/أسبوع/مشروع (الأعمدة E و G و J معادلات حيّة)
     var MONEY = '#,##0', BLANK0 = '[=0]"";#,##0', BLANKG = '[=0]"";General';
-    D.rows.forEach(function(x, i){
+    var subRows = [], gStart = 0;
+    var fillB = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDFE6FB' } }, fillS = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
+    lines.forEach(function(L, i){
       var n = FIRST + i, r = ws.getRow(n);
+      if (L.t === 'band') {
+        gStart = n + 1; ws.mergeCells(n, 1, n, NC);
+        var bc2 = r.getCell(1); bc2.value = '👤 المدخل : ' + L.g.eb; bc2.fill = fillB;
+        bc2.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } }; bc2.alignment = { horizontal: 'right', vertical: 'middle', indent: 1 };
+        for (var kb = 1; kb <= NC; kb++) r.getCell(kb).border = { top: blk, bottom: blk, left: blk, right: blk };
+        r.height = 20; return;
+      }
+      if (L.t === 'sub') {
+        var t = L.g.tot; subRows.push(n); ws.mergeCells(n, 1, n, 2); r.getCell(1).value = 'إجمالي ' + L.g.eb;
+        [[3, 'C', t.days, BLANKG], [4, 'D', t.otd, BLANKG], [5, 'E', t.tot, BLANKG], [6, 'F', t.extra, BLANK0], [7, 'G', t.before, MONEY], [8, 'H', t.a1, BLANK0], [9, 'I', t.a2, BLANK0], [10, 'J', t.net, MONEY]].forEach(function(sx){
+          var c = r.getCell(sx[0]); c.value = { formula: 'SUM(' + sx[1] + gStart + ':' + sx[1] + (n - 1) + ')', result: sx[2] }; c.numFmt = sx[3];
+        });
+        for (var ks = 1; ks <= NC; ks++) { var sc = r.getCell(ks); sc.fill = fillS; sc.font = { name: 'Arial', size: 10.5, bold: true, color: { argb: RED } }; sc.alignment = { horizontal: ks === 1 ? 'right' : 'center', vertical: 'middle', indent: ks === 1 ? 1 : 0 }; sc.border = { top: blk, bottom: blk, left: blk, right: blk }; }
+        r.height = 19; return;
+      }
+      var x = L.x;
       r.getCell(1).value = x.name; r.getCell(2).value = x.rate; r.getCell(3).value = x.days;
       r.getCell(4).value = x.otd || null;
       r.getCell(5).value = { formula: 'C' + n + '+D' + n, result: x.tot };
@@ -18097,7 +18171,7 @@ window.safeFileName = function(str){
       r.getCell(11).value = WEEKN[x.wk]; r.getCell(12).value = x.pname; r.getCell(13).value = x.note || null;
       for (var k = 1; k <= NC; k++) {
         var cell = r.getCell(k);
-        cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: k === 12 ? BLUE : 'FF000000' } };
+        cell.font = { name: 'Arial', size: k === 1 ? 11 : 10, bold: true, color: { argb: k === 12 ? BLUE : 'FF000000' } };
         cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: k === 13 };
         cell.border = { top: gry, bottom: gry, left: gry, right: gry };
         if (k === 5 || k === 7 || k === 10) cell.fill = fillY;
@@ -18108,16 +18182,16 @@ window.safeFileName = function(str){
     });
     // إجماليات الأعمدة
     var tn = LAST + 1, tr = ws.getRow(tn);
-    ws.mergeCells(tn, 1, tn, 2); tr.getCell(1).value = 'الإجمالي';
+    ws.mergeCells(tn, 1, tn, 2); tr.getCell(1).value = many ? 'الإجمالي العام' : 'الإجمالي';
     [[3, 'C', T.days, BLANKG], [4, 'D', T.otd, BLANKG], [5, 'E', T.tot, BLANKG], [6, 'F', T.extra, BLANK0], [7, 'G', T.before, MONEY], [8, 'H', T.a1, BLANK0], [9, 'I', T.a2, BLANK0], [10, 'J', T.net, MONEY]].forEach(function(s){
-      var c = tr.getCell(s[0]); c.value = { formula: 'SUM(' + s[1] + FIRST + ':' + s[1] + LAST + ')', result: s[2] }; c.numFmt = s[3];
+      var c = tr.getCell(s[0]); c.value = { formula: many ? subRows.map(function(q){ return s[1] + q; }).join('+') : 'SUM(' + s[1] + (FIRST + 1) + ':' + s[1] + LAST + ')', result: s[2] }; c.numFmt = s[3];
     });
     for (var k2 = 1; k2 <= NC; k2++) {
       var tcell = tr.getCell(k2); tcell.fill = fillT; tcell.font = { name: 'Arial', size: 11, bold: true, color: { argb: RED } };
       tcell.alignment = { horizontal: k2 === 1 ? 'right' : 'center', vertical: 'middle', indent: k2 === 1 ? 1 : 0 }; tcell.border = { top: blk, bottom: { style: 'double', color: { argb: 'FF000000' } }, left: blk, right: blk };
     }
     tr.height = 22;
-    ws.autoFilter = { from: { row: HR, column: 1 }, to: { row: LAST, column: NC } };
+    if (!many) ws.autoFilter = { from: { row: HR, column: 1 }, to: { row: LAST, column: NC } };
     return wb.xlsx.writeBuffer().then(function(buf){ return new Blob([buf], { type: XLSX_MIME }); });
   }
 
