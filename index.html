@@ -16885,7 +16885,7 @@ window.safeFileName = function(str){
     var h = '<option value="__ALL__"' + (S.filterEmp === '__ALL__' ? ' selected' : '') + '>— الكل —</option>';
     var seen = {};
     emps.forEach(function(n){ if (seen[n]) return; seen[n] = true; h += '<option value="' + esc(n) + '"' + (S.filterEmp === n ? ' selected' : '') + '>' + esc(n) + '</option>'; });
-    if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '"' + (S.filterEmp === meName ? ' selected' : '') + '>' + esc(meName) + '</option>';
+    // اسم الموظف الحالي ما بيضافش لو مدخلش حاجة (القايمة = المدخلين الفعليين بس)
     sel.innerHTML = h;
     row.style.display = '';
   }
@@ -16905,7 +16905,8 @@ window.safeFileName = function(str){
     var seen = {};
     if (isEmp && !canAll) { emps = []; sel = meName; }
     emps.forEach(function(n){ if (seen[n]) return; seen[n] = true; h += '<option value="' + esc(n) + '"' + (sel === n ? ' selected' : '') + '>' + esc(n) + '</option>'; });
-    if (isEmp && meName && !seen[meName]) h += '<option value="' + esc(meName) + '"' + (sel === meName ? ' selected' : '') + '>' + esc(meName) + '</option>';
+    // موظف بدون صلاحية الكل: لازم يبان اسمه (هو الاختيار الوحيد)؛ أما صاحب صلاحية الكل فبيشوف المدخلين الفعليين بس
+    if (isEmp && !canAll && meName && !seen[meName]) h += '<option value="' + esc(meName) + '"' + (sel === meName ? ' selected' : '') + '>' + esc(meName) + '</option>';
     h += '</select>';
     return h;
   }
@@ -17276,7 +17277,7 @@ window.safeFileName = function(str){
         var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null, eng_week1_approved: false, eng_week1_approved_by: null, eng_week1_approved_at: null, eng_week2_approved: false, eng_week2_approved_by: null, eng_week2_approved_at: null };
         var copy = el.querySelector('#npC') && el.querySelector('#npC').checked;
         S.periods.push(np); enqueue('up', 'wl_periods', np); S.dm[np.id] = new Map();
-        if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1, entered_by: who() }; S.workers.push(nw); saveWorker(nw); });
+        if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1, entered_by: w.entered_by || who() }; S.workers.push(nw); saveWorker(nw); });
         close(); selectPeriod(np.id); toast('تم فتح الفترة ' + n);
       };
     });
