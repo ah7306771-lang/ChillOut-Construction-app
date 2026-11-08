@@ -16616,11 +16616,30 @@ window.safeFileName = function(str){
       snap.forEach(function(o){ var k = o.table + ':' + (o.id || o.row.id); if (Q[k] && Q[k].v === o.v) delete Q[k]; });
       LS.set('sk_q', Q); S.online = true; S.missing = false; setSync(Object.keys(Q).length ? 'pending' : 'ok');
       if (Object.keys(Q).length) schedule(300);
+      else if (S.needReload) { S.needReload = false; loadServer().then(function(){ return S.cur ? loadDays(S.cur) : null; }).then(function(){ renderAll(); }).catch(function(){}); }
     }).catch(function(e){ return onFlushErr(e, snap); }).then(function(){ flushing = false; if (again) { again = false; schedule(100); } });
   }
   var TORDER = ['wl_items', 'wl_projects', 'wl_periods', 'wl_workers', 'wl_days'];
   function isPermErr(e, m){
     return !!(e && e.status >= 400 && e.status < 500 && e.status !== 404 && e.status !== 408 && e.status !== 429 && !/modified_by|entered_by|eng_week[12]_|extra_amt/.test(m));
+  }
+  // فترة اتعملت محليًا بنفس (السنة + الرقم) لفترة موجودة على السيرفر: نربط كل بيانات الجهاز بفترة السيرفر ونشيل المكررة
+  function mergeDupPeriods(snap){
+    var ops = snap.filter(function(o){ return o.table === 'wl_periods' && o.op === 'up' && o.row; }), any = false, chain = Promise.resolve();
+    ops.forEach(function(o){
+      chain = chain.then(function(){
+        return api('wl_periods?select=id&year=eq.' + o.row.year + '&period_no=eq.' + o.row.period_no).then(function(rows){
+          var sid = rows && rows[0] && rows[0].id, lid = o.row.id; if (!sid || sid === lid) return;
+          any = true; delete Q['wl_periods:' + lid];
+          Object.keys(Q).forEach(function(k){ var q = Q[k]; if (q && q.row && q.row.period_id === lid) q.row.period_id = sid; });
+          S.periods = S.periods.filter(function(x){ return x.id !== lid; });
+          S.workers.forEach(function(w){ if (w.period_id === lid) w.period_id = sid; });
+          if (S.dm[lid]) { var mm = S.dm[sid] || new Map(); S.dm[lid].forEach(function(r, k){ r.period_id = sid; mm.set(k, r); }); S.dm[sid] = mm; delete S.dm[lid]; }
+          if (S.cur === lid) S.cur = sid;
+        });
+      });
+    });
+    return chain.then(function(){ if (any) LS.set('sk_q', Q); return any; });
   }
   function sendOne(o){
     if (o.op === 'up') return api(o.table + '?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([sendRow(o.table, o.row)]) });
@@ -16629,6 +16648,7 @@ window.safeFileName = function(str){
   // لو دفعة اترفضت (4xx): نجرّب كل حركة لوحدها، واللي السيرفر بيرفضها نركنها في DEAD وتتشال من الطابور
   function onFlushErr(e, snap){
     var m = String((e && e.message) || e); S.lastErr = m;
+    if (/wl_periods_year_period_no_key/.test(m)) return mergeDupPeriods(snap).then(function(done){ if (done) { S.needReload = true; schedule(100); } else return onFlushErr({ status: 400, message: 'wl_periods — ' + m.replace(/wl_periods_year_period_no_key/g, 'dup') }, snap); }).catch(handleErr);
     if (!isPermErr(e, m)) return handleErr(e);
     var list = snap.slice().sort(function(a, b){ return (a.op === 'del') - (b.op === 'del') || TORDER.indexOf(a.table) - TORDER.indexOf(b.table); });
     var chain = Promise.resolve();
@@ -17317,11 +17337,19 @@ window.safeFileName = function(str){
         if (!y || !n || !f || !t) { m.textContent = 'كمّل كل البيانات'; return; }
         if (t < f) { m.textContent = 'تاريخ النهاية قبل البداية'; return; }
         if (S.periods.some(function(x){ return x.year === y && x.period_no === n; })) { m.textContent = 'رقم الفترة موجود بالفعل في نفس السنة'; return; }
+        function doCreate(){
         var np = { id: uid(), year: y, period_no: n, from_date: f, to_date: t, status: 'open', notes: null, closed_at: null, eng_week1_approved: false, eng_week1_approved_by: null, eng_week1_approved_at: null, eng_week2_approved: false, eng_week2_approved_by: null, eng_week2_approved_at: null };
         var copy = el.querySelector('#npC') && el.querySelector('#npC').checked;
         S.periods.push(np); enqueue('up', 'wl_periods', np); S.dm[np.id] = new Map();
         if (copy) WK(last.id).forEach(function(w, i){ var nw = { id: uid(), period_id: np.id, name: w.name, profession: w.profession, daily_rate: w.daily_rate, project_id: w.project_id, item_id: w.item_id || null, sort: i + 1, entered_by: w.entered_by || who() }; S.workers.push(nw); saveWorker(nw); });
         close(); selectPeriod(np.id); toast('تم فتح الفترة ' + n);
+        }
+        // نتأكد من السيرفر إن رقم الفترة مش موجود (النسخة المحلية ممكن تكون قديمة فتتعمل فترة مكررة)
+        m.style.color = '#666'; m.textContent = 'جارٍ التحقق من السيرفر…';
+        api('wl_periods?select=id&year=eq.' + y + '&period_no=eq.' + n).then(function(rows){
+          if (rows && rows.length) { m.style.color = '#b3261e'; m.textContent = 'الفترة دي موجودة بالفعل على السيرفر — اقفل الشاشة وافتحها تاني لتحديث البيانات'; return; }
+          doCreate();
+        }).catch(function(){ doCreate(); });
       };
     });
   }
