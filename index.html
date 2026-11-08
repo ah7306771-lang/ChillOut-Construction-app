@@ -1676,6 +1676,20 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-mark{color:#1f7a4c;font-weight:800;font-size:16px}
 .sk-mark small{display:block;font-size:10px;color:var(--ink-soft);font-weight:600}
 .sk-hd{cursor:pointer}
+
+/* ===== تعليمات وملاحظات الإدارة (الجرس) ===== */
+#sarrakiScreen .sk-bell{position:relative;width:30px;height:26px;font-size:15px}
+#sarrakiScreen .sk-bdg{display:none;position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:#d93025;color:#fff;font:800 10px/16px 'Cairo',sans-serif;font-style:normal;text-align:center;border:1.5px solid #fff}
+#sarrakiScreen .sk-bell.has .sk-bdg{display:block}
+#sarrakiScreen .sk-bell.has{border-color:#d93025;background:#fff4f3;animation:skRing 1.6s ease-in-out infinite}
+@keyframes skRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-14deg)}20%{transform:rotate(12deg)}30%{transform:rotate(-8deg)}40%{transform:rotate(6deg)}50%{transform:rotate(0)}}
+.sk-nt{border:1px solid var(--panel-line);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fffaf5}
+.sk-nt.new{border-color:#d93025;background:#fff4f3}
+.sk-nt .nb{font-size:14px;line-height:1.9;font-weight:600;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.sk-nt .nm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:6px}
+.sk-nt .nm .tag{background:#d93025;color:#fff;border-radius:6px;padding:0 6px;font-size:10px}
+.sk-nt .nm button{border:1px solid var(--panel-line);background:#fff;border-radius:6px;font:700 11px 'Cairo',sans-serif;padding:1px 8px;cursor:pointer}
+.sk-md textarea.nt-in{width:100%;min-height:84px;border:1px solid var(--panel-line);border-radius:8px;padding:8px;font-family:'Cairo',sans-serif;font-size:14px;box-sizing:border-box;resize:vertical;direction:rtl}
 /* نوافذ */
 .sk-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10050;display:flex;align-items:center;justify-content:center;padding:14px}
 .sk-md{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:18px;direction:rtl;font-family:'Cairo',sans-serif;color:var(--ink)}
@@ -2758,7 +2772,7 @@ body.cg-compact .wa-float-btn{display:none !important}
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card">
-    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-head-r"><span class="sk-sync" id="skSync">…</span><button type="button" class="sk-coll" id="skColl" title="إخفاء / إظهار بيانات الفترة">▾</button></span></div>
+    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-head-r"><button type="button" class="sk-coll sk-bell" id="skNotice" title="تعليمات وملاحظات الإدارة" aria-label="التعليمات">🔔<i class="sk-bdg" id="skNoticeBdg"></i></button><span class="sk-sync" id="skSync">…</span><button type="button" class="sk-coll" id="skColl" title="إخفاء / إظهار بيانات الفترة">▾</button></span></div>
     <div class="sk-master">
       <div class="mrow">
         <div class="sk-f w-year"><label>السنة</label><input id="skYear" readonly></div>
@@ -18450,6 +18464,119 @@ window.safeFileName = function(str){
   Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.addEventListener('click', function(){ S.view = b.getAttribute('data-v'); renderAll(); }); });
   $('#backHomeBtnSarraki').addEventListener('click', function(){ window.showScreen_('home'); });
 
+
+  // ---------- تعليمات وملاحظات الإدارة (🔔) ----------
+  // جدول wl_notices مستقل عن طابور المزامنة (علشان لو لسه ماتعملش ما يعطّلش باقي السراكي).
+  var NT = { list: LS.get('sk_notices', []), reads: {}, missing: false, timer: null };
+  function ntTs(v){ var t = Date.parse(v || ''); return isNaN(t) ? 0 : t; }
+  function ntStamp(n){ return ntTs(n.updated_at || n.created_at); }
+  function ntLocalKey(){ return 'sk_nread_' + who(); }
+  // مقروءة عند الموظف الحالي بس: (هو كاتبها) أو (له سجل قراءة على السيرفر/الجهاز بعد آخر تعديل)
+  function ntIsRead(n){
+    var me = who();
+    var r = NT.reads[n.id] && NT.reads[n.id][me]; if (r && ntTs(r) >= ntStamp(n)) return true;
+    var l = LS.get(ntLocalKey(), {})[n.id]; return !!(l && l >= ntStamp(n));
+  }
+  function ntUnread(){ return NT.list.filter(function(n){ return !ntIsRead(n); }); }
+  function ntBadge(){
+    var b = $('#skNotice'), d = $('#skNoticeBdg'); if (!b) return;
+    var c = ntUnread().length; b.classList.toggle('has', c > 0); d.textContent = c > 9 ? '9+' : String(c);
+    b.title = c ? 'يوجد ' + c + ' تعليمات جديدة' : 'تعليمات وملاحظات الإدارة';
+  }
+  // تسجيل إن الموظف ده بالذات قرأ التعليمات (على السيرفر + نسخة على الجهاز) — مفيش تأثير على باقي الموظفين
+  function ntMarkSeen(){
+    var me = who(), un = ntUnread(); if (!un.length) { ntBadge(); return; }
+    var now = new Date().toISOString(), loc = LS.get(ntLocalKey(), {}), rows = [];
+    un.forEach(function(n){ loc[n.id] = Date.now(); (NT.reads[n.id] = NT.reads[n.id] || {})[me] = now; rows.push({ notice_id: n.id, reader: me, seen_at: now }); });
+    LS.set(ntLocalKey(), loc); ntBadge();
+    api('wl_notice_reads?on_conflict=notice_id,reader', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows) }).catch(function(){});
+  }
+  function ntLoad(announce){
+    var me = who(), adm = canApprove();
+    return api('wl_notices?select=*&order=created_at.desc').then(function(rows){
+      NT.missing = false; NT.list = rows || []; LS.set('sk_notices', NT.list);
+      // الكاتب بيشوف كل سجلات القراءة؛ باقي الموظفين سجلاتهم هم بس
+      return api('wl_notice_reads?select=notice_id,reader,seen_at' + (adm ? '' : '&reader=eq.' + encodeURIComponent(me))).then(function(rd){
+        var m = {}; (rd || []).forEach(function(r){ (m[r.notice_id] = m[r.notice_id] || {})[r.reader] = r.seen_at; }); NT.reads = m;
+      }).catch(function(){ /* جدول القراءة لسه ماتعملش: نكمّل بسجل الجهاز */ });
+    }).then(function(){
+      var before = ntUnread().length; ntBadge();
+      if (announce && before) toast('🔔 يوجد ' + before + ' تعليمات جديدة من الإدارة');
+    }).catch(function(e){
+      var m = String((e && e.message) || e);
+      if (e && (e.status === 404 || /PGRST205|PGRST200|does not exist|relation/i.test(m))) NT.missing = true;
+      ntBadge();
+    });
+  }
+  function ntPoll(){
+    clearInterval(NT.timer);
+    NT.timer = setInterval(function(){ if (root.style.display !== 'none' && !document.hidden) ntLoad(true); }, 60000);
+  }
+  function ntFmt(iso){ try { var d = new Date(iso); return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }) + ' ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function noticesModal(){
+    var isAdm = canApprove(), newIds = {}, editId = null;
+    ntUnread().forEach(function(n){ newIds[n.id] = 1; });
+    function readersOf(n){
+      var r = NT.reads[n.id] || {}, names = Object.keys(r).filter(function(k){ return ntTs(r[k]) >= ntStamp(n); });
+      return names.length ? '👁 قرأها (' + names.length + '): ' + esc(names.join('، ')) : '👁 لم يقرأها أحد بعد';
+    }
+    function body(){
+      var h = '<h3>🔔 تعليمات وملاحظات الإدارة</h3>';
+      if (isAdm) h += '<label class="l">✍ اكتب تعليمات جديدة للموظفين</label><textarea class="nt-in" id="ntTxt" placeholder="اكتب التعليمات هنا…"></textarea><div class="btns" style="margin-top:6px"><button class="btn btn-primary" id="ntPub">📢 نشر</button><button class="btn btn-secondary" id="ntCancel" style="display:none">إلغاء التعديل</button></div>';
+      if (NT.missing) h += '<p class="msg" style="color:#b3261e">جدول <code>wl_notices</code> غير موجود في Supabase. ' + (isAdm ? 'شغّل ملف <code>wl_notices.sql</code> في SQL Editor مرة واحدة.' : 'بلّغ الإدارة.') + '</p>';
+      else if (!NT.list.length) h += '<p class="msg" style="text-align:center;margin:14px 0">لا توجد تعليمات حاليًا.</p>';
+      NT.list.forEach(function(n){
+        var isNew = !!newIds[n.id];
+        h += '<div class="sk-nt' + (isNew ? ' new' : '') + '"><div class="nb">' + esc(n.body) + '</div><div class="nm">' + (isNew ? '<span class="tag">جديد</span>' : '') + '<span>👤 ' + esc(n.created_by || 'الإدارة') + '</span><span>' + esc(ntFmt(n.created_at)) + '</span>' +
+          (isAdm ? '<span>' + readersOf(n) + '</span><button data-e="' + esc(n.id) + '">✏ تعديل</button><button data-d="' + esc(n.id) + '">🗑 حذف</button>' : '') + '</div></div>';
+      });
+      return h + '<div class="btns"><button class="btn btn-secondary" id="ntClose">إغلاق</button></div>';
+    }
+    modal(body(), function(el, close){
+      function draw(){
+        var box = el; box.innerHTML = body(); wire();
+      }
+      function wire(){
+        el.querySelector('#ntClose').onclick = function(){ ntMarkSeen(); close(); };
+        if (!isAdm) return;
+        var txt = el.querySelector('#ntTxt'), cancel = el.querySelector('#ntCancel');
+        el.querySelector('#ntPub').onclick = function(){
+          var v = txt.value.trim(); if (!v) { toast('اكتب نص التعليمات أولاً'); return; }
+          var now = new Date().toISOString(), old = editId && NT.list.filter(function(x){ return x.id === editId; })[0];
+          var row = old ? { id: old.id, body: v, created_by: old.created_by, created_at: old.created_at, updated_at: now } : { id: uid(), body: v, created_by: who(), created_at: now, updated_at: now };
+          api('wl_notices?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([row]) }).then(function(){
+            NT.missing = false; NT.list = NT.list.filter(function(x){ return x.id !== row.id; }); NT.list.unshift(row);
+            NT.list.sort(function(a, b){ return String(b.created_at).localeCompare(String(a.created_at)); });
+            LS.set('sk_notices', NT.list);
+            // التعديل يصفّر القراءة للجميع (يرجع جديد عند كل الموظفين)، والتعليمات تتحسب مقروءة عند الكاتب
+            if (old) { api('wl_notice_reads?notice_id=eq.' + encodeURIComponent(row.id), { method: 'DELETE' }).catch(function(){}); NT.reads[row.id] = {}; }
+            // الكاتب الحالي قرأها بالتأكيد
+            (NT.reads[row.id] = NT.reads[row.id] || {})[who()] = now; var lc = LS.get(ntLocalKey(), {}); lc[row.id] = Date.now(); LS.set(ntLocalKey(), lc);
+            api('wl_notice_reads?on_conflict=notice_id,reader', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ notice_id: row.id, reader: who(), seen_at: now }]) }).catch(function(){});
+            editId = null; ntBadge(); toast(old ? 'تم تعديل التعليمات' : 'تم نشر التعليمات'); draw();
+          }).catch(function(e){ var m = String((e && e.message) || e); if (e && (e.status === 404 || /PGRST205|does not exist|relation/i.test(m))) NT.missing = true; toast('تعذّر النشر — تأكد من إنشاء جدول wl_notices'); draw(); });
+        };
+        cancel.onclick = function(){ editId = null; draw(); };
+        Array.prototype.forEach.call(el.querySelectorAll('[data-e]'), function(b){ b.onclick = function(){
+          var n = NT.list.filter(function(x){ return x.id === b.getAttribute('data-e'); })[0]; if (!n) return;
+          editId = n.id; txt.value = n.body; cancel.style.display = ''; el.querySelector('#ntPub').textContent = '💾 حفظ التعديل'; txt.focus();
+        }; });
+        Array.prototype.forEach.call(el.querySelectorAll('[data-d]'), function(b){ b.onclick = function(){
+          var id = b.getAttribute('data-d');
+          ask('حذف التعليمات', 'حذف هذه التعليمات نهائيًا؟', 'حذف').then(function(ok){
+            if (!ok) return;
+            api('wl_notices?id=eq.' + encodeURIComponent(id), { method: 'DELETE' }).then(function(){
+              NT.list = NT.list.filter(function(x){ return x.id !== id; }); LS.set('sk_notices', NT.list); ntBadge(); toast('تم الحذف');
+            }).catch(function(){ toast('تعذّر الحذف'); }).then(function(){ close(); noticesModal(); });
+          });
+        }; });
+      }
+      wire(); ntMarkSeen();
+    });
+  }
+  $('#skNotice').addEventListener('click', function(){ ntLoad(false).then(noticesModal); });
+  ntBadge();
+
   // ---------- فتح الشاشة ----------
   var opened = false;
   function open(){
@@ -18468,6 +18595,7 @@ window.safeFileName = function(str){
       } else resolve();
     });
     renderAll();
+    ntBadge(); ntLoad(true); ntPoll();
     refreshPerms.then(function(){
       renderAll();
       return loadServer();
