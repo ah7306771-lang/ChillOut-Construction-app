@@ -2675,7 +2675,7 @@
   {
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2900,
-    "lastSellPrice": 0,
+    "lastSellPrice": 2900,
     "saleOrderNo": 76,
     "paymentMethod": "",
     "lastInvoiceDate": "01/11/2026",
@@ -2711,7 +2711,7 @@
   {
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2850,
-    "lastSellPrice": 0,
+    "lastSellPrice": 2900,
     "saleOrderNo": 80,
     "paymentMethod": "",
     "lastInvoiceDate": "02/11/2026",
@@ -2720,7 +2720,7 @@
   {
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2850,
-    "lastSellPrice": 0,
+    "lastSellPrice": 2900,
     "saleOrderNo": 80,
     "paymentMethod": "",
     "lastInvoiceDate": "02/11/2026",
@@ -2729,7 +2729,7 @@
   {
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2850,
-    "lastSellPrice": 0,
+    "lastSellPrice": 2900,
     "saleOrderNo": 80,
     "paymentMethod": "",
     "lastInvoiceDate": "02/11/2026",
@@ -2737,8 +2737,8 @@
   },
   {
     "client": "اشرف حفناوي",
-    "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastBuyPrice": 3850,
+    "lastSellPrice": 4100,
     "saleOrderNo": 79,
     "paymentMethod": "",
     "lastInvoiceDate": "05/11/2026",
@@ -2746,7 +2746,7 @@
   },
   {
     "client": "الامين",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 81,
     "paymentMethod": "",
@@ -2755,7 +2755,7 @@
   },
   {
     "client": "الامين",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 81,
     "paymentMethod": "",
@@ -2764,7 +2764,7 @@
   },
   {
     "client": "الامين",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 81,
     "paymentMethod": "",
@@ -2773,7 +2773,7 @@
   },
   {
     "client": "الامين",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 39650,
     "lastSellPrice": 43000,
     "saleOrderNo": 82,
     "paymentMethod": "",
@@ -2782,7 +2782,7 @@
   },
   {
     "client": "الامين",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 82,
     "paymentMethod": "",

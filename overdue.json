@@ -1,6 +1,12 @@
 {
   "rows": [
     {
+      "client": "اشرف حفناوي",
+      "count": 3,
+      "amount": 446500,
+      "avgDelay": 7.333333333335759
+    },
+    {
       "client": "الامين",
       "count": 4,
       "amount": 2929586,
@@ -20,14 +26,14 @@
     },
     {
       "client": "ويكادي",
-      "count": 2,
-      "amount": 6009635,
-      "avgDelay": 15
+      "count": 3,
+      "amount": 8331605,
+      "avgDelay": 10.333333333335759
     }
   ],
   "grandTotal": {
-    "count": 9,
-    "amount": 14724791.56140351,
-    "avgDelay": 16.66666666666424
+    "count": 13,
+    "amount": 17493261.56140351,
+    "avgDelay": 13.307692307695106
   }
 }
