@@ -1609,7 +1609,8 @@
 
 /* ================= سراكي عمال ================= */
 #sarrakiScreen{align-items:flex-start;padding:70px 10px 40px}
-#sarrakiScreen .back-bar{top:30px !important;padding:6px 12px !important}
+#sarrakiScreen .back-bar{top:14px !important;padding:4px 12px !important}
+#sarrakiScreen .back-btn{padding:5px 14px !important}
 #sarrakiScreen .gate-card{max-width:min(99vw,1900px);text-align:right}
 #sarrakiScreen .gate-title{font-size:20px;margin:0;text-align:right}
 .sk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
@@ -2115,6 +2116,7 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-chip.on{background:linear-gradient(135deg,var(--k-navy),var(--k-navy2));border-color:var(--k-navy);box-shadow:0 4px 12px rgba(27,37,64,.28)}
 #sarrakiScreen .sk-chip.on span{color:#cfd8ee}
 #sarrakiScreen .sk-chip.on i{background:var(--k-acc);color:#fff}
+#sarrakiScreen .sk-chip.on,#sarrakiScreen .sk-chip.on b,#sarrakiScreen .sk-chip.on.fri b,#sarrakiScreen .sk-chip.on.today b{color:#fff !important}
 /* أدوات اليوم + إضافة عامل */
 #sarrakiScreen .sk-tools button{background:#fff;border-color:var(--k-line);color:var(--k-navy);transition:background .15s,border-color .15s}
 #sarrakiScreen .sk-tools button:hover{background:#eef1f7;border-color:var(--k-navy2)}
@@ -2177,6 +2179,8 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-eng-check.is-approved{background:#e7f6ef;color:#0f8a5f;border-color:#b5e3cf}
 #sarrakiScreen .sk-eng-check input{width:15px;height:15px;min-width:15px;margin:0;accent-color:#0f9d70;cursor:pointer}
 #sarrakiScreen .sk-eng-check input:disabled{cursor:not-allowed;opacity:.75}
+#sarrakiScreen .sk-lock.one{padding:3px 10px !important;margin:3px 0 !important;font-size:12px !important;line-height:1.4 !important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+#sarrakiScreen .sk-t th,#sarrakiScreen .sk-t.sk-day th,#sarrakiScreen .sk-t.sk-day th.nm,#sarrakiScreen .sk-t.sk-day th.n{text-align:center !important}
 #sarrakiScreen .sk-zm{margin-inline-start:auto;display:flex;align-items:center;gap:3px;padding-bottom:2px}
 #sarrakiScreen .sk-zm button{width:26px;height:24px;border:1px solid #e3e8f1;background:#fff;border-radius:6px;font-size:11px;cursor:pointer;line-height:1;padding:0}
 #sarrakiScreen .sk-zm span{min-width:38px;text-align:center;font-size:11px;font-weight:800;color:#6b7690;cursor:pointer}
@@ -11506,6 +11510,7 @@ window.safeFileName = function(str){
     { id: 'sarrakiSettings', label: 'إعدادات السراكي 🛠️', defaultOn: false },
     { id: 'sarrakiApprove', label: 'اعتماد مهندس السراكي ✅', defaultOn: false },
     { id: 'sarrakiAllEmployees', label: 'عرض قائمة كل الموظفين في السراكي 👥', defaultOn: false },
+    { id: 'sarrakiReviewAll', label: 'مراجعة السراكي: عرض كل الموظفين 🔎', defaultOn: false },
     { id: 'loginSarrakyPeriod', label: 'قبض فترة السراكي (شاشة الدخول) 👷', defaultOn: false }
   ];
   function notifPermById_(id){
@@ -16748,14 +16753,16 @@ window.safeFileName = function(str){
   // صلاحيات المشاريع (نفس مصدر تقرير العهد: cost_center.allowed_employees). الموظف يشوف بس المشاريع المسموحة له، والأدمن يشوف الكل.
   // بتتخزن على الجهاز عشان تفضل شغالة أوفلاين؛ ولو مفيش بيانات صلاحيات للمشروع الموظف مايشوفوش (نفس قاعدة العهد).
   // ===== فلاتر الأعمدة (بند / مهنة / مشروع) بنظام الشيك بوكس — بتخفي الصفوف بس ومابتغيّرش البيانات =====
-  var CF = { item: {}, prof: {}, proj: {} };
-  var CF_T = { item: 'البند', prof: 'المهنة', proj: 'المشروع' };
+  var CF = { name: {}, item: {}, prof: {}, proj: {} };
+  var CF_T = { name: 'اسم العامل', item: 'البند', prof: 'المهنة', proj: 'المشروع' };
   function cfKey(col, w, r){
+    if (col === 'name') return String(w.name || '').trim();
     if (col === 'item') return w.item_id || '';
     if (col === 'prof') return String(w.profession || '').trim();
     return (r && r.project_id) || w.project_id || '';
   }
   function cfLabel(col, k){
+    if (col === 'name') return k || '(بدون اسم)';
     if (col === 'item') return k ? (itemName(k) || '—') : '(بدون بند)';
     if (col === 'prof') return k || '(بدون مهنة)';
     if (!k) return '(بدون مشروع)';
@@ -16763,8 +16770,8 @@ window.safeFileName = function(str){
     return '—';
   }
   function cfActive(col){ for (var k in CF[col]) if (CF[col][k]) return true; return false; }
-  function cfAny(){ return cfActive('item') || cfActive('prof') || cfActive('proj'); }
-  function rowPass(w, r){ return !CF.item[cfKey('item', w, r)] && !CF.prof[cfKey('prof', w, r)] && !CF.proj[cfKey('proj', w, r)]; }
+  function cfAny(){ return cfActive('name') || cfActive('item') || cfActive('prof') || cfActive('proj'); }
+  function rowPass(w, r){ return !CF.name[cfKey('name', w, r)] && !CF.item[cfKey('item', w, r)] && !CF.prof[cfKey('prof', w, r)] && !CF.proj[cfKey('proj', w, r)]; }
   function applyCF(){
     var body = document.getElementById('skBody'); if (!body || S.view !== 'day') return;
     var act = document.activeElement, n = 0, tot = 0;
@@ -16776,7 +16783,7 @@ window.safeFileName = function(str){
       tr.style.display = ok ? '' : 'none';
       if (ok) { n++; var c = tr.querySelector('td.n'); if (c) c.textContent = n; }
     });
-    ['item', 'prof', 'proj'].forEach(function(col){ var th = body.querySelector('th[data-cf="' + col + '"]'); if (th) th.classList.toggle('on', cfActive(col)); });
+    ['name', 'item', 'prof', 'proj'].forEach(function(col){ var th = body.querySelector('th[data-cf="' + col + '"]'); if (th) th.classList.toggle('on', cfActive(col)); });
     var bar = document.getElementById('skCfBar');
     if (bar) bar.innerHTML = cfAny() ? '🔽 فلتر مفعّل — ظاهر ' + n + ' من ' + tot + ' عامل<button type="button" data-cfclear>✖ مسح الفلاتر</button>' : '';
   }
@@ -16922,7 +16929,9 @@ window.safeFileName = function(str){
     var c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
     if (!c.isEmp) return true;
     var l = c.perms || [];
-    return l.indexOf('allow_sarrakiAllEmployees') > -1;
+    // داخل شاشة «مراجعة السراكي» الصلاحية مستقلة (allow_sarrakiReviewAll)، وفي باقي الشاشات allow_sarrakiAllEmployees
+    var inReview = !!(S.rvBuild || document.getElementById('rvFilterEmp'));
+    return l.indexOf(inReview ? 'allow_sarrakiReviewAll' : 'allow_sarrakiAllEmployees') > -1;
   }
   // قائمة الموظفين اللي عندهم صلاحية عرض السراكي (لبناء فلتر "عرض مدخلات")
   // الموظف يظهر في الفلتر فقط لو عنده allow_sarraki صراحةً في صلاحياته.
@@ -17178,14 +17187,14 @@ window.safeFileName = function(str){
       var c = 0; all.forEach(function(w){ var r = dm.get(w.id + '|' + d); if (r && r.present) c++; });
       return '<button type="button" class="sk-chip' + (d === S.day ? ' on' : '') + (d === t ? ' today' : '') + (c ? ' has' : '') + (pd(d).getDay() === 5 ? ' fri' : '') + '" data-day="' + d + '"><b>' + dayName(d) + '</b><span>' + short(d) + '</span><i data-cnt="' + d + '">' + c + ' حاضر</i></button>';
     }).join('') + '</div>';
-    if (closed) h += lockedDay ? '<div class="sk-lock">🔒 اليوم ده معتمد من المهندس — العرض فقط. لتعديله الغي الاعتماد أو غيّر تاريخه.</div>' : '<div class="sk-lock">🔒 الفترة مقفلة — العرض فقط. لإعادة فتحها: الإعدادات ← إعدادات السراكي.</div>';
+    if (closed) h += lockedDay ? '<div class="sk-lock one" title="اليوم معتمد — العرض فقط. لتعديله الغي الاعتماد أو غيّر تاريخه.">🔒 تم اعتماد المهندس</div>' : '<div class="sk-lock">🔒 الفترة مقفلة — العرض فقط. لإعادة فتحها: الإعدادات ← إعدادات السراكي.</div>';
     else {
       var addOpen = addOpenNow(ws);
       h += '<div class="sk-tools"><button type="button" data-t="copy">📋 نسخ اليوم السابق</button><button type="button" data-t="clear" class="red">✖ مسح اليوم</button><button type="button" data-t="add" class="' + (addOpen ? 'on' : '') + '">' + (addOpen ? '▲ إخفاء الإضافة' : '＋ إضافة عامل') + '</button></div>';
       if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm">اسم العامل</th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr></thead><tbody>';
+    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm cf" data-cf="name" title="فلتر اسم العامل">اسم العامل <b class="cfb">▾</b></th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -17306,7 +17315,7 @@ window.safeFileName = function(str){
     var el = e.target;
     if (el.closest('.rz')) return;
     var cfh = el.closest('[data-cf]'); if (cfh) { openCF(cfh.getAttribute('data-cf'), cfh); return; }
-    if (el.closest('[data-cfclear]')) { CF = { item: {}, prof: {}, proj: {} }; closeCF(); renderAll(); return; }
+    if (el.closest('[data-cfclear]')) { CF = { name: {}, item: {}, prof: {}, proj: {} }; closeCF(); renderAll(); return; }
     var chip = el.closest('[data-day]'); if (chip) { S.day = chip.getAttribute('data-day'); renderAll(); return; }
     var hd = el.closest('[data-goday]'); if (hd) { S.day = hd.getAttribute('data-goday'); S.view = 'day'; renderAll(); return; }
     if (el.id === 'skaBtn') { addWorker(); return; }
@@ -17596,6 +17605,7 @@ window.safeFileName = function(str){
   // تقرير مراجعة السراكي: نفس الشيت التفصيلي، مستقل عن اعتماد المهندس.
   function reviewSarrakiModal(){
     var p = P(); if (!p) return;
+    S.rvBuild = true; setTimeout(function(){ S.rvBuild = false; }, 0);
     var prevFilter = S.filterEmp; // نحفظ الحالة قبل المودال
     modal('<h3>🔎 مراجعة السراكي</h3><p class="msg">التقرير التفصيلي لكل عامل حسب الأسبوع والمشروع — لا يتطلب اعتماد المهندس.</p>' +
       '<label class="l">👤 عرض مدخلات</label>' + filterEmpSelectHTML('rvFilterEmp') +
@@ -18813,7 +18823,7 @@ window.safeFileName = function(str){
   var opened = false;
   function open(){
     window.showScreen_('sarraki');
-    loadCache(); S.picked = false; S.filterEmp = null; CF = { item: {}, prof: {}, proj: {} }; closeCF(); autoPeriod();
+    loadCache(); S.picked = false; S.filterEmp = null; CF = { name: {}, item: {}, prof: {}, proj: {} }; closeCF(); autoPeriod();
     if (noExtra) {
       noExtra = false; LS.set('sk_noextra', 0);
       Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null }); }); });
