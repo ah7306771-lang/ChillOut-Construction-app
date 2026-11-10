@@ -1,14 +1,5 @@
 [
   {
-    "client": "ويكادي",
-    "number": 551298792,
-    "value": 3433000,
-    "dueDate": "20/10/2026",
-    "bank": "CIB",
-    "notes": "",
-    "type": "أ.ق"
-  },
-  {
     "client": "بينتاكون",
     "number": null,
     "value": 1923110,
