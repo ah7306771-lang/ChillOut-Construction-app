@@ -1699,6 +1699,8 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-chat .ch-live{font-size:11px;font-weight:800;background:rgba(255,255,255,.22);padding:2px 9px;border-radius:10px;margin-inline:auto 10px}
 .sk-chat .ch-live.on{background:#1ea952}
 .sk-chat .ch-hd button{border:0;background:rgba(255,255,255,.2);color:#fff;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer}
+.sk-chat .ch-push{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#fff7e6;border-bottom:1px solid #f0d9a8;font-size:12.5px;font-weight:800;color:#7a4b00}
+.sk-chat .ch-push button{border:0;background:#e2621f;color:#fff;border-radius:14px;padding:4px 14px;font:800 12.5px 'Cairo',sans-serif;cursor:pointer;flex:none}
 .sk-chat .ch-list{flex:1;overflow-y:auto;padding:10px 10px 6px;background:#efeae2;display:flex;flex-direction:column;gap:3px;-webkit-overflow-scrolling:touch}
 .sk-chat .ch-empty{margin:auto;text-align:center;font-size:14px;font-weight:700;color:var(--ink-soft);padding:20px}
 .sk-chat .ch-day{text-align:center;margin:8px 0 4px}
@@ -5357,7 +5359,15 @@ window.safeFileName = function(str){
               var unit = d.unit ? (' ' + d.unit) : '';
               body = body + (body ? ' — ' : '') + d.qty + unit;
             }
-            try { if (window.__notifOnPush) window.__notifOnPush({ title: title, body: body, topic: topic, dedupId: d.dedupId || '' }); } catch (e) {}
+            if (topic === 'chat') {
+              try {
+                var _meC = (typeof window.__skChatMe_ === 'function') ? window.__skChatMe_() : '';
+                var _did = String(d.dedupId || '');
+                if (_did.indexOf('chat|' + _meC + '|') === 0) return;                                   // رسالة أنا اللي بعتّها
+                if (typeof window.__skChatOpen_ === 'function' && window.__skChatOpen_()) return;     // الشات مفتوح وبيتحدّث لحظيًا
+              } catch (e) {}
+            }
+            try { if (window.__notifOnPush && topic !== 'chat') window.__notifOnPush({ title: title, body: body, topic: topic, dedupId: d.dedupId || '' }); } catch (e) {}
             // قاعدة عامة ثابتة لعزل إشعارات طلبات الاعتماد:
             //   - approval_admin  = للأدمن والمراقب فقط. أي حد تاني يتجاهله.
             //   - approval        = لصاحب القرار بس (target). الموظف يتجاهل
@@ -5431,6 +5441,7 @@ window.safeFileName = function(str){
     });
   }
 
+  window.enablePushNotifications_ = enablePushNotifications; // بتستخدمها محادثة الموظفين (topic = chat)
   function registerPushToken(token, statusEl, employeeName, topic){
     if (!ATTENDANCE_SCRIPT_URL) { pushStatus_(statusEl, 'رابط السيرفر مش متظبط، كلم المطوّر.', true); return; }
 
@@ -5450,7 +5461,7 @@ window.safeFileName = function(str){
       try {
         ['fcmTokenRegistered','fcmEmployeeTokenRegistered','fcmChecksTokenRegistered',
          'fcmOrderTokenRegistered','fcmOverdueTokenRegistered','fcmApprovalTokenRegistered',
-         'fcmApprovalAdminTokenRegistered','fcmVaultTokenRegistered','fcmAllEventsTokenRegistered']
+         'fcmApprovalAdminTokenRegistered','fcmVaultTokenRegistered','fcmAllEventsTokenRegistered','fcmChatTokenRegistered']
           .forEach(function(k){
             var v = localStorage.getItem(k);
             if (v && v !== token) oldTokens[v] = true;
@@ -14882,6 +14893,36 @@ window.safeFileName = function(str){
     for (var key in paramBtnMap) {
       if (qp.get(key) === '1') { btnId = paramBtnMap[key]; break; }
     }
+    // فتح الشات مباشرة من إشعار Firebase: openChat=1 → بنفتح السراكي ثم المحادثة
+    if (qp.get('openChat') === '1') {
+      try {
+        var cleanUrlC = location.pathname + location.hash;
+        history.replaceState({ chilloutLoginBase: true }, '', cleanUrlC);
+      } catch(eC){}
+      window.__openChatOnLoad_ = true;
+      var tryOpenChat = function(tries){
+        if (tries > 60) return; // ~30 ثانية كحد أقصى
+        var tile = document.getElementById('openSarrakiBtn');
+        // لو تايل السراكي ظاهر (يعني الصلاحيات حُمِّلت والمستخدم مسموحله) افتحه
+        if (tile && tile.offsetParent !== null) {
+          try { tile.click(); } catch(eT){}
+          // بعد ما السراكي يفتح، ندوس على جرس الإشعارات اللي بيفتح الشات
+          var tryOpenNotice = function(n){
+            if (n > 40) return;
+            var bell = document.getElementById('skNotice');
+            var sarrakiScreen = document.getElementById('sarrakiScreen');
+            if (bell && sarrakiScreen && sarrakiScreen.style.display !== 'none') {
+              try { bell.click(); window.__openChatOnLoad_ = false; } catch(eB){}
+            } else setTimeout(function(){ tryOpenNotice(n + 1); }, 300);
+          };
+          setTimeout(function(){ tryOpenNotice(0); }, 600);
+          return;
+        }
+        setTimeout(function(){ tryOpenChat(tries + 1); }, 500);
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ tryOpenChat(0); });
+      else tryOpenChat(0);
+    }
     if (btnId) {
       // شيل الـ query params من الـ URL الظاهر (من غير إعادة تحميل)، عشان
       // لو المستخدم عمل تحديث للصفحة بعد كده ما يرجعش يفتح نفس الشاشة تاني.
@@ -16297,6 +16338,7 @@ window.safeFileName = function(str){
   }
   function logNotif(n){
     if (!n || !n.title) return;
+    if (String(n.topic || '').toLowerCase() === 'chat') return; // رسايل المحادثة مالهاش مكان في مركز الإشعارات
     var topic = topicOf(n.topic, n.dedupId, n.title);
     // تجاهل إشعارات الاختبار — مش بتبقى حدث حقيقي يستاهل يبان في مركز الإشعارات.
     if (topic === 'test') return;
@@ -18861,6 +18903,18 @@ window.safeFileName = function(str){
     ws.onerror = function(){ try { ws.close(); } catch (e) {} };
   }
   document.addEventListener('visibilitychange', function(){ if (!document.hidden && root.style.display !== 'none') { ntLoad(false); ntRealtime(); } });
+  // ---------- إشعارات الموبايل للمحادثة (Firebase عن طريق نفس سكريبت الإشعارات: topic = chat) ----------
+  function ntPush(msg){
+    try {
+      var url = window.ATTENDANCE_SCRIPT_URL; if (!url) return;
+      var b = String(msg.body || '').replace(/\s+/g, ' ').trim(); if (b.length > 120) b = b.slice(0, 120) + '…';
+      var q = new URLSearchParams({ action: 'notifyEvent', title: '💬 ' + (msg.created_by || 'الإدارة'), body: b, topic: 'chat',
+        dedupId: 'chat|' + (msg.created_by || '') + '|' + msg.id });
+      fetch(url + '?' + q.toString()).catch(function(){});
+    } catch (e) {}
+  }
+  window.__skChatMe_ = function(){ return who(); };
+  window.__skChatOpen_ = function(){ return !!NT.onUpdate && !document.hidden; };
   function ntFmt(iso){ try { var d = new Date(iso); return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }) + ' ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
   function ntTime(iso){ try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
   function ntDayLbl(iso){
@@ -18902,6 +18956,7 @@ window.safeFileName = function(str){
       return h;
     }
     modal('<div class="ch-hd"><b>💬 محادثة الموظفين</b><span class="ch-live" id="chLive"></span><button type="button" id="chX" aria-label="إغلاق">✕</button></div>' +
+      '<div class="ch-push" id="chPush" style="display:none"><span id="chPushTxt">🔔 فعّل الإشعارات علشان توصلك الرسايل حتى والتطبيق مقفول</span><button type="button" id="chPushBtn">تفعيل</button></div>' +
       '<div class="ch-list" id="chList"></div>' +
       '<div class="ch-ed" id="chEd" style="display:none"><span>✏ تعديل الرسالة</span><button type="button" id="chEdX">إلغاء</button></div>' +
       '<div class="ch-in"><textarea id="chTxt" rows="1" placeholder="اكتب رسالة…"></textarea><button type="button" id="chSend" aria-label="إرسال">➤</button></div>',
@@ -18961,7 +19016,7 @@ window.safeFileName = function(str){
         }
         var msg = { id: uid(), body: v, created_by: me, created_at: now, updated_at: now };
         NT.list.unshift(msg); persist(); txt.value = ''; txt.style.height = ''; render(true); list.scrollTop = list.scrollHeight;
-        api('wl_notices?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([msg]) }).then(function(){ NT.missing = false; }).catch(function(e){
+        api('wl_notices?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([msg]) }).then(function(){ NT.missing = false; ntPush(msg); }).catch(function(e){
           var m = String((e && e.message) || e); if (e && (e.status === 404 || /PGRST205|does not exist|relation/i.test(m))) NT.missing = true;
           NT.list = NT.list.filter(function(x){ return x.id !== msg.id; }); persist(); txt.value = v; render(true); toast('تعذّر الإرسال — تأكد من الاتصال وإنشاء جدول wl_notices');
         });
@@ -18996,6 +19051,14 @@ window.safeFileName = function(str){
       });
       // تحديث لحظي: كل 4 ثواني والشات مفتوح (رسائل جديدة + علامات القراءة)
       NT.onUpdate = function(){ if (!document.body.contains(el)) { NT.onUpdate = null; return; } if (!document.hidden) ntMarkSeen(); render(false); };
+      function pushOn(){ try { return !!localStorage.getItem('fcmChatTokenRegistered') && Notification.permission === 'granted'; } catch (e) { return false; } }
+      var pb = el.querySelector('#chPush'), pbtn = el.querySelector('#chPushBtn'), ptx = el.querySelector('#chPushTxt');
+      if (typeof window.enablePushNotifications_ === 'function' && 'Notification' in window && 'serviceWorker' in navigator && !pushOn()) pb.style.display = 'flex';
+      pbtn.onclick = function(){
+        ptx.dataset.regKey = 'fcmChatTokenRegistered';
+        window.enablePushNotifications_(ptx, who(), 'chat');
+        var n = 0, w = setInterval(function(){ n++; if (pushOn()) { clearInterval(w); setTimeout(function(){ pb.style.display = 'none'; }, 1800); } else if (n > 25) clearInterval(w); }, 1000);
+      };
       var tick = 0;
       var iv = setInterval(function(){
         if (!document.body.contains(el)) { clearInterval(iv); NT.onUpdate = null; ntBadge(); return; }
