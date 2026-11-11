@@ -1,5 +1,31 @@
 [
   {
+    "date": "11/11/2026",
+    "orderNo": 85,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 43500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 3188332.5,
+    "actualWeight": 73.295,
+    "paymentMethod": ""
+  },
+  {
+    "date": "11/11/2026",
+    "orderNo": 83,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 43000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 2625150.0,
+    "actualWeight": 61.05,
+    "paymentMethod": ""
+  },
+  {
     "date": "07/11/2026",
     "orderNo": 82,
     "client": "الامين",
@@ -778,5 +804,18 @@
     "sellTotal": 1963416.0000000002,
     "actualWeight": 48.720000000000006,
     "paymentMethod": "شيك 60يوم"
+  },
+  {
+    "date": null,
+    "orderNo": 84,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 40500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 0.0,
+    "actualWeight": 0.0,
+    "paymentMethod": ""
   }
 ]
