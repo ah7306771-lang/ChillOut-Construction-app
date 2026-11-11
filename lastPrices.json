@@ -2791,7 +2791,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 83,
     "paymentMethod": "",
@@ -2800,7 +2800,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 83,
     "paymentMethod": "",
@@ -2809,7 +2809,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41500,
     "lastSellPrice": 43000,
     "saleOrderNo": 83,
     "paymentMethod": "",
@@ -2818,7 +2818,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41900,
     "lastSellPrice": 43500,
     "saleOrderNo": 85,
     "paymentMethod": "",
@@ -2827,7 +2827,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41900,
     "lastSellPrice": 43500,
     "saleOrderNo": 85,
     "paymentMethod": "",
@@ -2836,7 +2836,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41900,
     "lastSellPrice": 43500,
     "saleOrderNo": 85,
     "paymentMethod": "",
@@ -2845,7 +2845,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41900,
     "lastSellPrice": 43500,
     "saleOrderNo": 85,
     "paymentMethod": "",
@@ -2854,7 +2854,7 @@
   },
   {
     "client": "ويكادي",
-    "lastBuyPrice": 0,
+    "lastBuyPrice": 41900,
     "lastSellPrice": 43500,
     "saleOrderNo": 85,
     "paymentMethod": "",
@@ -2864,29 +2864,29 @@
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 40500,
+    "lastSellPrice": 0,
     "saleOrderNo": 84,
     "paymentMethod": "",
-    "lastInvoiceDate": null,
-    "actualWeight": 0
+    "lastInvoiceDate": "11/11/2026",
+    "actualWeight": 70
   },
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 40500,
+    "lastSellPrice": 0,
     "saleOrderNo": 84,
     "paymentMethod": "",
-    "lastInvoiceDate": null,
-    "actualWeight": 0
+    "lastInvoiceDate": "11/11/2026",
+    "actualWeight": 16.72
   },
   {
     "client": "الامين",
-    "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastBuyPrice": 4100,
+    "lastSellPrice": 4300,
     "saleOrderNo": 86,
     "paymentMethod": "",
     "lastInvoiceDate": null,
-    "actualWeight": 0
+    "actualWeight": 80
   },
   {
     "client": "الامين",
