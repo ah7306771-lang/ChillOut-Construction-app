@@ -2887,5 +2887,14 @@
     "paymentMethod": "",
     "lastInvoiceDate": null,
     "actualWeight": 0
+  },
+  {
+    "client": "الامين",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 87,
+    "paymentMethod": "",
+    "lastInvoiceDate": null,
+    "actualWeight": 0
   }
 ]
