@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-11-09",
-  "updatedAt": "2026-11-09T02:05:03.865032+00:00",
+  "date": "2026-11-11",
+  "updatedAt": "2026-11-11T02:59:41.689834+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -19,7 +19,34 @@
   ],
   "late": [],
   "dashboardRows": [],
-  "dashboardRequestRows": [],
+  "dashboardRequestRows": [
+    {
+      "id": "mwaytbm8-jmjw55",
+      "name": "شهد خالد",
+      "type": "إجازة",
+      "date": "2026-11-11",
+      "from": "",
+      "to": "",
+      "reason": "[اعتيادي] إذن/من/م/عماد -\nمحاضرات في الجامعه",
+      "status": "موافق",
+      "submittedAt": "2026-11-10T17:29:41.000Z",
+      "leaveFrom": "2026-11-11",
+      "leaveTo": "2026-11-11"
+    },
+    {
+      "id": "mwam2sej-jxeyz1",
+      "name": "محمود كارم",
+      "type": "إجازة",
+      "date": "2026-11-10",
+      "from": "",
+      "to": "",
+      "reason": "[بدون مرتب]",
+      "status": "موافق",
+      "submittedAt": "2026-11-10T11:33:08.000Z",
+      "leaveFrom": "2026-11-10",
+      "leaveTo": "2026-11-30"
+    }
+  ],
   "dashboardOfficialOut": {
     "أحمد مفرح": "16:00",
     "بكر": "16:00",
