@@ -1682,7 +1682,8 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-bell{position:relative;width:30px;height:26px;font-size:15px}
 #sarrakiScreen .sk-bdg{display:none;position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:9px;background:#d93025;color:#fff;font:800 10px/16px 'Cairo',sans-serif;font-style:normal;text-align:center;border:1.5px solid #fff}
 #sarrakiScreen .sk-bell.has .sk-bdg{display:block}
-#sarrakiScreen .sk-bell.has{border-color:#d93025;background:#fff4f3;animation:skRing 1.6s ease-in-out infinite}
+#sarrakiScreen .sk-bell.has{border-color:#d93025;background:#fff4f3;animation:skPulse 1.8s ease-in-out infinite}
+@keyframes skPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
 @keyframes skRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-14deg)}20%{transform:rotate(12deg)}30%{transform:rotate(-8deg)}40%{transform:rotate(6deg)}50%{transform:rotate(0)}}
 .sk-nt{border:1px solid var(--panel-line);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fffaf5}
 .sk-nt.new{border-color:#d93025;background:#fff4f3}
@@ -1691,6 +1692,52 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-nt .nm .tag{background:#d93025;color:#fff;border-radius:6px;padding:0 6px;font-size:10px}
 .sk-nt .nm button{border:1px solid var(--panel-line);background:#fff;border-radius:6px;font:700 11px 'Cairo',sans-serif;padding:1px 8px;cursor:pointer}
 .sk-md textarea.nt-in{width:100%;min-height:84px;border:1px solid var(--panel-line);border-radius:8px;padding:8px;font-family:'Cairo',sans-serif;font-size:14px;box-sizing:border-box;resize:vertical;direction:rtl}
+
+/* ===== محادثة الموظفين (شبه واتساب) ===== */
+.sk-md.sk-chat{padding:0;display:flex;flex-direction:column;height:min(88vh,660px);overflow:hidden;max-width:480px}
+.sk-chat .ch-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#e2621f;color:#fff;font-size:16px}
+.sk-chat .ch-live{font-size:11px;font-weight:800;background:rgba(255,255,255,.22);padding:2px 9px;border-radius:10px;margin-inline:auto 10px}
+.sk-chat .ch-live.on{background:#1ea952}
+.sk-chat .ch-hd button{border:0;background:rgba(255,255,255,.2);color:#fff;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer}
+.sk-chat .ch-list{flex:1;overflow-y:auto;padding:10px 10px 6px;background:#efeae2;display:flex;flex-direction:column;gap:3px;-webkit-overflow-scrolling:touch}
+.sk-chat .ch-empty{margin:auto;text-align:center;font-size:14px;font-weight:700;color:var(--ink-soft);padding:20px}
+.sk-chat .ch-day{text-align:center;margin:8px 0 4px}
+.sk-chat .ch-day span{background:#fff;color:var(--ink-soft);font-size:11.5px;font-weight:700;border-radius:8px;padding:2px 10px;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.sk-chat .ch-new{text-align:center;margin:8px 0;position:relative}
+.sk-chat .ch-new span{background:#d93025;color:#fff;font-size:11.5px;font-weight:800;border-radius:10px;padding:2px 12px}
+.sk-chat .ch-m{max-width:82%;border-radius:10px;padding:5px 9px 3px;box-shadow:0 1px 1px rgba(0,0,0,.1);position:relative;cursor:pointer;word-break:break-word}
+.sk-chat .ch-m.me{align-self:flex-start;background:#d9fdd3;border-top-right-radius:2px}
+.sk-chat .ch-m.ot{align-self:flex-end;background:#fff;border-top-left-radius:2px}
+.sk-chat .ch-n{font-size:12px;font-weight:800;margin-bottom:1px}
+.sk-chat .ch-b{font-size:14.5px;line-height:1.7;font-weight:600;white-space:pre-wrap;color:var(--ink)}
+.sk-chat .ch-t{font-size:10.5px;color:#667781;font-weight:700;text-align:left;direction:ltr;margin-top:1px;display:flex;gap:4px;justify-content:flex-end;align-items:center}
+.sk-chat .ch-t i{font-style:normal;direction:rtl}
+.sk-chat .ch-t .tk{font-size:12px;letter-spacing:-3px;color:#8696a0}
+.sk-chat .ch-t .tk.rd{color:#34a0e6}
+.sk-chat .ch-a{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid rgba(0,0,0,.08);margin-top:4px;padding-top:4px;font-size:11px;font-weight:700;color:var(--ink-soft)}
+.sk-chat .ch-a button{border:1px solid var(--panel-line);background:#fff;border-radius:6px;font:700 11px 'Cairo',sans-serif;padding:1px 8px;cursor:pointer}
+.sk-chat .ch-ed{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;background:#fff7e6;border-top:1px solid #f0d9a8;font-size:12px;font-weight:800}
+.sk-chat .ch-ed button{border:0;background:none;color:#b3261e;font:800 12px 'Cairo',sans-serif;cursor:pointer}
+.sk-chat .ch-in{display:flex;gap:8px;align-items:flex-end;padding:8px 10px;background:#f0f2f5;border-top:1px solid var(--panel-line)}
+.sk-chat .ch-in textarea{flex:1;min-height:40px;max-height:110px;border:1px solid var(--panel-line);border-radius:20px;padding:8px 14px;font:600 14.5px 'Cairo',sans-serif;direction:rtl;resize:none;box-sizing:border-box;background:#fff;line-height:1.6}
+.sk-chat .ch-in button{width:42px;height:42px;border:0;border-radius:50%;background:#e2621f;color:#fff;font-size:17px;cursor:pointer;flex:none;transform:scaleX(-1)}
+
+/* ===== معلومات الرسالة (شبه واتساب) ===== */
+.sk-md.sk-chat{position:relative}
+.sk-chat .ch-info{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:flex-end}
+.sk-chat .ci-bd{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sk-chat .ci-sh{position:relative;background:#fff;border-radius:16px 16px 0 0;max-height:82%;overflow-y:auto;padding-bottom:10px;animation:ciUp .2s ease-out}
+@keyframes ciUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sk-chat .ci-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--panel-line);font-size:15px;position:sticky;top:0;background:#fff;z-index:1}
+.sk-chat .ci-h button{border:0;background:#f0f2f5;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer}
+.sk-chat .ci-pv{background:#efeae2;padding:10px 12px;display:flex;flex-direction:column}
+.sk-chat .ci-pv .ch-m{max-width:100%;cursor:default}
+.sk-chat .ci-s{padding:10px 14px 4px;font-size:12.5px;font-weight:800;color:var(--ink-soft);border-top:1px solid var(--panel-line);margin-top:6px;display:flex;gap:6px;align-items:center}
+.sk-chat .ci-s .tk{font-size:13px;letter-spacing:-3px;color:#8696a0}
+.sk-chat .ci-s .tk.rd{color:#34a0e6}
+.sk-chat .ci-r{display:flex;justify-content:space-between;gap:10px;padding:6px 14px;font-size:13.5px;font-weight:700;color:var(--ink)}
+.sk-chat .ci-r .tm{font-size:11.5px;color:#667781;font-weight:700;white-space:nowrap}
+.sk-chat .ci-e{padding:4px 14px 8px;font-size:12.5px;font-weight:700;color:#667781}
 /* نوافذ */
 .sk-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10050;display:flex;align-items:center;justify-content:center;padding:14px}
 .sk-md{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:18px;direction:rtl;font-family:'Cairo',sans-serif;color:var(--ink)}
@@ -2818,7 +2865,7 @@ body.cg-compact .wa-float-btn{display:none !important}
     <div class="back-bar-datetime live-datetime">—</div>
   </div>
   <div class="gate-card home-card">
-    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-head-r"><button type="button" class="sk-coll sk-bell" id="skNotice" title="تعليمات وملاحظات الإدارة" aria-label="التعليمات">🔔<i class="sk-bdg" id="skNoticeBdg"></i></button><span class="sk-sync" id="skSync">…</span><button type="button" class="sk-coll" id="skColl" title="إخفاء / إظهار بيانات الفترة">▾</button></span></div>
+    <div class="sk-head"><h1 class="gate-title">👷 سراكي عمال</h1><span class="sk-head-r"><button type="button" class="sk-coll sk-bell" id="skNotice" title="محادثة الموظفين" aria-label="المحادثة">💬<i class="sk-bdg" id="skNoticeBdg"></i></button><span class="sk-sync" id="skSync">…</span><button type="button" class="sk-coll" id="skColl" title="إخفاء / إظهار بيانات الفترة">▾</button></span></div>
     <div class="sk-master">
       <div class="mrow">
         <div class="sk-f w-year"><label>السنة</label><input id="skYear" readonly></div>
@@ -18711,11 +18758,12 @@ window.safeFileName = function(str){
   // جدول wl_notices مستقل عن طابور المزامنة (علشان لو لسه ماتعملش ما يعطّلش باقي السراكي).
   var NT = { list: LS.get('sk_notices', []), reads: {}, missing: false, timer: null };
   function ntTs(v){ var t = Date.parse(v || ''); return isNaN(t) ? 0 : t; }
-  function ntStamp(n){ return ntTs(n.updated_at || n.created_at); }
+  function ntStamp(n){ return ntTs(n.created_at); }
   function ntLocalKey(){ return 'sk_nread_' + who(); }
   // مقروءة عند الموظف الحالي بس: (هو كاتبها) أو (له سجل قراءة على السيرفر/الجهاز بعد آخر تعديل)
   function ntIsRead(n){
     var me = who();
+    if ((n.created_by || '') === me) return true; // رسالتي أنا
     var r = NT.reads[n.id] && NT.reads[n.id][me]; if (r && ntTs(r) >= ntStamp(n)) return true;
     var l = LS.get(ntLocalKey(), {})[n.id]; return !!(l && l >= ntStamp(n));
   }
@@ -18723,7 +18771,7 @@ window.safeFileName = function(str){
   function ntBadge(){
     var b = $('#skNotice'), d = $('#skNoticeBdg'); if (!b) return;
     var c = ntUnread().length; b.classList.toggle('has', c > 0); d.textContent = c > 9 ? '9+' : String(c);
-    b.title = c ? 'يوجد ' + c + ' تعليمات جديدة' : 'تعليمات وملاحظات الإدارة';
+    b.title = c ? 'يوجد ' + c + ' رسائل جديدة' : 'محادثة الموظفين';
   }
   // تسجيل إن الموظف ده بالذات قرأ التعليمات (على السيرفر + نسخة على الجهاز) — مفيش تأثير على باقي الموظفين
   function ntMarkSeen(){
@@ -18735,15 +18783,17 @@ window.safeFileName = function(str){
   }
   function ntLoad(announce){
     var me = who(), adm = canApprove();
-    return api('wl_notices?select=*&order=created_at.desc').then(function(rows){
+    return api('wl_notices?select=*&order=created_at.desc&limit=500').then(function(rows){
       NT.missing = false; NT.list = rows || []; LS.set('sk_notices', NT.list);
       // الكاتب بيشوف كل سجلات القراءة؛ باقي الموظفين سجلاتهم هم بس
-      return api('wl_notice_reads?select=notice_id,reader,seen_at' + (adm ? '' : '&reader=eq.' + encodeURIComponent(me))).then(function(rd){
+      return selectAll('wl_notice_reads', 'select=notice_id,reader,seen_at&order=seen_at.desc').then(function(rd){
         var m = {}; (rd || []).forEach(function(r){ (m[r.notice_id] = m[r.notice_id] || {})[r.reader] = r.seen_at; }); NT.reads = m;
       }).catch(function(){ /* جدول القراءة لسه ماتعملش: نكمّل بسجل الجهاز */ });
     }).then(function(){
       var before = ntUnread().length; ntBadge();
-      if (announce && before) toast('🔔 يوجد ' + before + ' تعليمات جديدة من الإدارة');
+      if (announce && !NT.onUpdate && before > (NT.lastN || 0)) toast('💬 ' + before + (before === 1 ? ' رسالة جديدة' : ' رسائل جديدة') + ' في محادثة الموظفين');
+      NT.lastN = before;
+      if (NT.onUpdate) NT.onUpdate();
     }).catch(function(e){
       var m = String((e && e.message) || e);
       if (e && (e.status === 404 || /PGRST205|PGRST200|does not exist|relation/i.test(m))) NT.missing = true;
@@ -18752,68 +18802,209 @@ window.safeFileName = function(str){
   }
   function ntPoll(){
     clearInterval(NT.timer);
-    NT.timer = setInterval(function(){ if (root.style.display !== 'none' && !document.hidden) ntLoad(true); }, 60000);
+    NT.timer = setInterval(function(){ if (root.style.display !== 'none' && !document.hidden) ntLoad(true); }, 30000);
   }
+  // ---------- Supabase Realtime: وصول الرسايل لحظياً عبر WebSocket (بدون مكتبات) ----------
+  var RT = { ws: null, hb: null, retry: 0, timer: null, ref: 0 };
+  NT.live = false;
+  function ntSetLive(b){
+    NT.live = !!b; var e = document.getElementById('chLive');
+    if (e) { e.className = 'ch-live' + (b ? ' on' : ''); e.textContent = b ? '● مباشر' : '○ بيتحدّث كل ثواني'; }
+  }
+  function rtSend(topic, event, payload){ try { RT.ws.send(JSON.stringify({ topic: topic, event: event, payload: payload || {}, ref: String(++RT.ref) })); } catch (e) {} }
+  function ntApply(d){
+    if (!d || !d.table) return;
+    var rec = d.record || {}, old = d.old_record || {}, ty = d.type, fresh = null;
+    if (d.table === 'wl_notices') {
+      var id = rec.id || old.id; if (!id) return;
+      var had = NT.list.some(function(x){ return x.id === id; });
+      NT.list = NT.list.filter(function(x){ return x.id !== id; });
+      if (ty !== 'DELETE') { NT.list.unshift(rec); if (ty === 'INSERT' && !had) fresh = rec; }
+      NT.list.sort(function(a, b){ return String(b.created_at).localeCompare(String(a.created_at)); });
+      LS.set('sk_notices', NT.list); NT.missing = false;
+    } else if (d.table === 'wl_notice_reads') {
+      if (ty === 'DELETE') {
+        if (!old.notice_id) { ntLoad(false); return; }
+        if (old.reader) { if (NT.reads[old.notice_id]) delete NT.reads[old.notice_id][old.reader]; } else NT.reads[old.notice_id] = {};
+      } else if (rec.notice_id) { (NT.reads[rec.notice_id] = NT.reads[rec.notice_id] || {})[rec.reader] = rec.seen_at; }
+    } else return;
+    ntBadge();
+    if (fresh && (fresh.created_by || '') !== who() && !NT.onUpdate && root.style.display !== 'none') {
+      var b = String(fresh.body || ''); toast('💬 ' + (fresh.created_by || 'الإدارة') + ': ' + (b.length > 40 ? b.slice(0, 40) + '…' : b));
+    }
+    NT.lastN = ntUnread().length;
+    if (NT.onUpdate) NT.onUpdate();
+  }
+  function ntRealtime(){
+    if (!window.WebSocket) return;
+    if (RT.ws && (RT.ws.readyState === 0 || RT.ws.readyState === 1)) return;
+    clearTimeout(RT.timer);
+    var ws;
+    try { ws = new WebSocket(SB.replace(/^http/, 'ws') + '/realtime/v1/websocket?apikey=' + encodeURIComponent(KEY) + '&vsn=1.0.0'); } catch (e) { return; }
+    RT.ws = ws;
+    ws.onopen = function(){
+      rtSend('realtime:sk-chat', 'phx_join', { config: { broadcast: { ack: false, self: false }, presence: { key: '' }, private: false,
+        postgres_changes: [{ event: '*', schema: 'public', table: 'wl_notices' }, { event: '*', schema: 'public', table: 'wl_notice_reads' }] }, access_token: KEY });
+      clearInterval(RT.hb); RT.hb = setInterval(function(){ rtSend('phoenix', 'heartbeat', {}); }, 25000);
+    };
+    ws.onmessage = function(m){
+      var d; try { d = JSON.parse(m.data); } catch (e) { return; }
+      if (d.topic === 'realtime:sk-chat' && d.event === 'phx_reply') {
+        if (d.payload && d.payload.status === 'ok') { RT.retry = 0; ntSetLive(true); ntLoad(false); } else ntSetLive(false);
+      } else if (d.event === 'postgres_changes') { ntApply(d.payload && d.payload.data); }
+      else if (d.event === 'phx_error') { ntSetLive(false); }
+    };
+    ws.onclose = function(){
+      clearInterval(RT.hb); if (RT.ws === ws) RT.ws = null; ntSetLive(false);
+      RT.timer = setTimeout(ntRealtime, Math.min(30000, 2000 * Math.pow(2, RT.retry++)));
+    };
+    ws.onerror = function(){ try { ws.close(); } catch (e) {} };
+  }
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden && root.style.display !== 'none') { ntLoad(false); ntRealtime(); } });
   function ntFmt(iso){ try { var d = new Date(iso); return d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }) + ' ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function ntTime(iso){ try { return new Date(iso).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function ntDayLbl(iso){
+    var d = new Date(iso), n = new Date();
+    var diff = Math.round((new Date(n.getFullYear(), n.getMonth(), n.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    if (diff === 0) return 'اليوم'; if (diff === 1) return 'أمس';
+    try { return d.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }); } catch (e) { return ''; }
+  }
+  function ntColor(name){
+    var c = ['#c2410c','#0e7490','#7c3aed','#be185d','#15803d','#b45309','#1d4ed8','#9f1239'], h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return c[h % c.length];
+  }
+  // ---------- محادثة الموظفين (شبه واتساب) ----------
   function noticesModal(){
-    var isAdm = canApprove(), newIds = {}, editId = null;
+    var me = who(), isAdm = canApprove(), newIds = {}, editId = null, openId = null, infoId = null, lastSig = null;
     ntUnread().forEach(function(n){ newIds[n.id] = 1; });
-    function readersOf(n){
-      var r = NT.reads[n.id] || {}, names = Object.keys(r).filter(function(k){ return ntTs(r[k]) >= ntStamp(n); });
-      return names.length ? '👁 قرأها (' + names.length + '): ' + esc(names.join('، ')) : '👁 لم يقرأها أحد بعد';
-    }
-    function body(){
-      var h = '<h3>🔔 تعليمات وملاحظات الإدارة</h3>';
-      if (isAdm) h += '<label class="l">✍ اكتب تعليمات جديدة للموظفين</label><textarea class="nt-in" id="ntTxt" placeholder="اكتب التعليمات هنا…"></textarea><div class="btns" style="margin-top:6px"><button class="btn btn-primary" id="ntPub">📢 نشر</button><button class="btn btn-secondary" id="ntCancel" style="display:none">إلغاء التعديل</button></div>';
-      if (NT.missing) h += '<p class="msg" style="color:#b3261e">جدول <code>wl_notices</code> غير موجود في Supabase. ' + (isAdm ? 'شغّل ملف <code>wl_notices.sql</code> في SQL Editor مرة واحدة.' : 'بلّغ الإدارة.') + '</p>';
-      else if (!NT.list.length) h += '<p class="msg" style="text-align:center;margin:14px 0">لا توجد تعليمات حاليًا.</p>';
-      NT.list.forEach(function(n){
-        var isNew = !!newIds[n.id];
-        h += '<div class="sk-nt' + (isNew ? ' new' : '') + '"><div class="nb">' + esc(n.body) + '</div><div class="nm">' + (isNew ? '<span class="tag">جديد</span>' : '') + '<span>👤 ' + esc(n.created_by || 'الإدارة') + '</span><span>' + esc(ntFmt(n.created_at)) + '</span>' +
-          (isAdm ? '<span>' + readersOf(n) + '</span><button data-e="' + esc(n.id) + '">✏ تعديل</button><button data-d="' + esc(n.id) + '">🗑 حذف</button>' : '') + '</div></div>';
+    function msgs(){ return NT.list.slice().sort(function(a, b){ return String(a.created_at).localeCompare(String(b.created_at)); }); }
+    function readersOf(n){ var r = NT.reads[n.id] || {}; return Object.keys(r).filter(function(k){ return k !== (n.created_by || ''); }); }
+    function listHtml(){
+      var h = '', last = '', sep = false, ms = msgs();
+      if (NT.missing) return '<div class="ch-empty" style="color:#b3261e">جدول <code>wl_notices</code> غير موجود في Supabase. ' + (isAdm ? 'شغّل ملف <code>wl_notices.sql</code> مرة واحدة.' : 'بلّغ الإدارة.') + '</div>';
+      if (!ms.length) return '<div class="ch-empty">ابدأ المحادثة… اكتب أول رسالة 👋</div>';
+      ms.forEach(function(n){
+        var day = ntDayLbl(n.created_at), mine = (n.created_by || '') === me, rd = readersOf(n);
+        if (day !== last) { h += '<div class="ch-day"><span>' + esc(day) + '</span></div>'; last = day; }
+        if (newIds[n.id] && !sep) { h += '<div class="ch-new" id="chNew"><span>رسائل جديدة</span></div>'; sep = true; }
+        h += '<div class="ch-m ' + (mine ? 'me' : 'ot') + '" data-id="' + esc(n.id) + '">' +
+          (mine ? '' : '<div class="ch-n" style="color:' + ntColor(n.created_by || '') + '">' + esc(n.created_by || 'الإدارة') + '</div>') +
+          '<div class="ch-b">' + esc(n.body) + '</div>' +
+          '<div class="ch-t">' + (n.updated_at && n.updated_at !== n.created_at ? '<i>معدّلة</i> ' : '') + esc(ntTime(n.created_at)) +
+          (mine ? ' <span class="tk' + (rd.length ? ' rd' : '') + '" data-i="' + esc(n.id) + '">' + (rd.length ? '✓✓' : '✓') + '</span>' : '') + '</div>';
+        if (openId === n.id) {
+          h += '<div class="ch-a">' + '<button data-i="' + esc(n.id) + '">ℹ معلومات الرسالة</button>' +
+            (mine ? '<button data-e="' + esc(n.id) + '">✏ تعديل</button>' : '') + ((mine || isAdm) ? '<button data-d="' + esc(n.id) + '">🗑 حذف</button>' : '') + '</div>';
+        }
+        h += '</div>';
       });
-      return h + '<div class="btns"><button class="btn btn-secondary" id="ntClose">إغلاق</button></div>';
+      return h;
     }
-    modal(body(), function(el, close){
-      function draw(){
-        var box = el; box.innerHTML = body(); wire();
+    modal('<div class="ch-hd"><b>💬 محادثة الموظفين</b><span class="ch-live" id="chLive"></span><button type="button" id="chX" aria-label="إغلاق">✕</button></div>' +
+      '<div class="ch-list" id="chList"></div>' +
+      '<div class="ch-ed" id="chEd" style="display:none"><span>✏ تعديل الرسالة</span><button type="button" id="chEdX">إلغاء</button></div>' +
+      '<div class="ch-in"><textarea id="chTxt" rows="1" placeholder="اكتب رسالة…"></textarea><button type="button" id="chSend" aria-label="إرسال">➤</button></div>',
+    function(el, close){
+      el.classList.add('sk-chat'); ntSetLive(NT.live);
+      var list = el.querySelector('#chList'), txt = el.querySelector('#chTxt'), edBar = el.querySelector('#chEd');
+      function pendingOf(n){
+        var set = {}, c = (typeof window.custodyCtx_ === 'function') ? window.custodyCtx_() : {};
+        (c.employees || []).forEach(function(x){ x = String(x || '').trim(); if (x) set[x] = 1; });
+        NT.list.forEach(function(m){ if (m.created_by) set[m.created_by] = 1; });
+        var r = NT.reads[n.id] || {}; Object.keys(r).forEach(function(k){ set[k] = 1; });
+        delete set[n.created_by || ''];
+        return Object.keys(set).filter(function(k){ return !(r[k] && ntTs(r[k]) >= ntStamp(n)); }).sort(function(a, b){ return a.localeCompare(b, 'ar'); });
       }
-      function wire(){
-        el.querySelector('#ntClose').onclick = function(){ ntMarkSeen(); close(); };
-        if (!isAdm) return;
-        var txt = el.querySelector('#ntTxt'), cancel = el.querySelector('#ntCancel');
-        el.querySelector('#ntPub').onclick = function(){
-          var v = txt.value.trim(); if (!v) { toast('اكتب نص التعليمات أولاً'); return; }
-          var now = new Date().toISOString(), old = editId && NT.list.filter(function(x){ return x.id === editId; })[0];
-          var row = old ? { id: old.id, body: v, created_by: old.created_by, created_at: old.created_at, updated_at: now } : { id: uid(), body: v, created_by: who(), created_at: now, updated_at: now };
-          api('wl_notices?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([row]) }).then(function(){
-            NT.missing = false; NT.list = NT.list.filter(function(x){ return x.id !== row.id; }); NT.list.unshift(row);
-            NT.list.sort(function(a, b){ return String(b.created_at).localeCompare(String(a.created_at)); });
-            LS.set('sk_notices', NT.list);
-            // التعديل يصفّر القراءة للجميع (يرجع جديد عند كل الموظفين)، والتعليمات تتحسب مقروءة عند الكاتب
-            if (old) { api('wl_notice_reads?notice_id=eq.' + encodeURIComponent(row.id), { method: 'DELETE' }).catch(function(){}); NT.reads[row.id] = {}; }
-            // الكاتب الحالي قرأها بالتأكيد
-            (NT.reads[row.id] = NT.reads[row.id] || {})[who()] = now; var lc = LS.get(ntLocalKey(), {}); lc[row.id] = Date.now(); LS.set(ntLocalKey(), lc);
-            api('wl_notice_reads?on_conflict=notice_id,reader', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ notice_id: row.id, reader: who(), seen_at: now }]) }).catch(function(){});
-            editId = null; ntBadge(); toast(old ? 'تم تعديل التعليمات' : 'تم نشر التعليمات'); draw();
-          }).catch(function(e){ var m = String((e && e.message) || e); if (e && (e.status === 404 || /PGRST205|does not exist|relation/i.test(m))) NT.missing = true; toast('تعذّر النشر — تأكد من إنشاء جدول wl_notices'); draw(); });
-        };
-        cancel.onclick = function(){ editId = null; draw(); };
-        Array.prototype.forEach.call(el.querySelectorAll('[data-e]'), function(b){ b.onclick = function(){
-          var n = NT.list.filter(function(x){ return x.id === b.getAttribute('data-e'); })[0]; if (!n) return;
-          editId = n.id; txt.value = n.body; cancel.style.display = ''; el.querySelector('#ntPub').textContent = '💾 حفظ التعديل'; txt.focus();
-        }; });
-        Array.prototype.forEach.call(el.querySelectorAll('[data-d]'), function(b){ b.onclick = function(){
-          var id = b.getAttribute('data-d');
-          ask('حذف التعليمات', 'حذف هذه التعليمات نهائيًا؟', 'حذف').then(function(ok){
+      function drawInfo(){
+        var box = el.querySelector('#chInfo');
+        var n = infoId && NT.list.filter(function(x){ return x.id === infoId; })[0];
+        if (!n) { infoId = null; if (box) box.remove(); return; }
+        var r = NT.reads[n.id] || {}, names = readersOf(n).filter(function(k){ return ntTs(r[k]) >= ntStamp(n); });
+        names.sort(function(a, b){ return ntTs(r[a]) - ntTs(r[b]); });
+        var pend = pendingOf(n);
+        var h = '<div class="ci-bd" data-x="1"></div><div class="ci-sh"><div class="ci-h"><b>ℹ معلومات الرسالة</b><button type="button" data-x="1" aria-label="إغلاق">✕</button></div>' +
+          '<div class="ci-pv"><div class="ch-m ' + ((n.created_by || '') === me ? 'me' : 'ot') + '"><div class="ch-b">' + esc(n.body) + '</div><div class="ch-t">' + esc(ntFmt(n.created_at)) + '</div></div></div>' +
+          '<div class="ci-s"><span class="tk rd">✓✓</span> قرأها (' + names.length + ')</div>';
+        if (!names.length) h += '<div class="ci-e">لم يقرأها أحد بعد</div>';
+        names.forEach(function(k){ h += '<div class="ci-r"><span class="nm">' + esc(k) + '</span><span class="tm">' + esc(ntFmt(r[k])) + '</span></div>'; });
+        h += '<div class="ci-s"><span class="tk">✓</span> لم يقرأها بعد (' + pend.length + ')</div>';
+        if (!pend.length) h += '<div class="ci-e">الكل قرأها 👌</div>';
+        pend.forEach(function(k){ h += '<div class="ci-r"><span class="nm">' + esc(k) + '</span><span class="tm">—</span></div>'; });
+        h += '<div class="ci-s">📤 تم الإرسال</div><div class="ci-r"><span class="nm">' + esc(n.created_by || 'الإدارة') + '</span><span class="tm">' + esc(ntFmt(n.created_at)) + '</span></div></div>';
+        if (!box) { box = document.createElement('div'); box.id = 'chInfo'; box.className = 'ch-info'; el.appendChild(box);
+          box.addEventListener('click', function(e){ if (e.target.closest('[data-x]')) { infoId = null; box.remove(); } }); }
+        var keep = box.querySelector('.ci-sh') ? box.querySelector('.ci-sh').scrollTop : 0;
+        box.innerHTML = h; var sh = box.querySelector('.ci-sh'); if (sh) sh.scrollTop = keep;
+      }
+      function render(force){
+        var ms = msgs(), sig = ms.map(function(n){ return n.id + (n.updated_at || '') + readersOf(n).length; }).join('|') + '#' + openId + '#' + NT.missing + '#' + infoId;
+        if (!force && sig === lastSig) { if (infoId) drawInfo(); return; } lastSig = sig;
+        var atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80, keep = list.scrollTop;
+        list.innerHTML = listHtml();
+        if (atBottom) list.scrollTop = list.scrollHeight; else list.scrollTop = keep;
+        if (infoId) drawInfo();
+      }
+      function persist(){ LS.set('sk_notices', NT.list); }
+      function send(){
+        var v = txt.value.trim(); if (!v) return;
+        var now = new Date().toISOString();
+        if (editId) {
+          var old = NT.list.filter(function(x){ return x.id === editId; })[0]; if (!old) { editId = null; return; }
+          var row = { id: old.id, body: v, created_by: old.created_by, created_at: old.created_at, updated_at: now }, backup = old;
+          NT.list = NT.list.map(function(x){ return x.id === row.id ? row : x; }); persist();
+          editId = null; edBar.style.display = 'none'; txt.value = ''; txt.style.height = ''; render(true);
+          api('wl_notices?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([row]) }).catch(function(){
+            NT.list = NT.list.map(function(x){ return x.id === row.id ? backup : x; }); persist(); render(true); toast('تعذّر حفظ التعديل');
+          });
+          return;
+        }
+        var msg = { id: uid(), body: v, created_by: me, created_at: now, updated_at: now };
+        NT.list.unshift(msg); persist(); txt.value = ''; txt.style.height = ''; render(true); list.scrollTop = list.scrollHeight;
+        api('wl_notices?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([msg]) }).then(function(){ NT.missing = false; }).catch(function(e){
+          var m = String((e && e.message) || e); if (e && (e.status === 404 || /PGRST205|does not exist|relation/i.test(m))) NT.missing = true;
+          NT.list = NT.list.filter(function(x){ return x.id !== msg.id; }); persist(); txt.value = v; render(true); toast('تعذّر الإرسال — تأكد من الاتصال وإنشاء جدول wl_notices');
+        });
+      }
+      el.querySelector('#chSend').onclick = function(){ send(); txt.focus(); };
+      el.querySelector('#chX').onclick = function(){ ntMarkSeen(); close(); };
+      el.querySelector('#chEdX').onclick = function(){ editId = null; edBar.style.display = 'none'; txt.value = ''; txt.style.height = ''; };
+      var touch = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+      txt.addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey && !touch) { e.preventDefault(); send(); } });
+      txt.addEventListener('input', function(){ txt.style.height = 'auto'; txt.style.height = Math.min(txt.scrollHeight, 110) + 'px'; });
+      list.addEventListener('click', function(e){
+        var be = e.target.closest('[data-e]'), bd = e.target.closest('[data-d]'), bi = e.target.closest('[data-i]');
+        if (bi) { infoId = bi.getAttribute('data-i'); drawInfo(); return; }
+        if (be) {
+          var n = NT.list.filter(function(x){ return x.id === be.getAttribute('data-e'); })[0]; if (!n) return;
+          editId = n.id; txt.value = n.body; edBar.style.display = ''; openId = null; render(true); txt.focus(); txt.dispatchEvent(new Event('input')); return;
+        }
+        if (bd) {
+          var id = bd.getAttribute('data-d');
+          ask('حذف الرسالة', 'حذف هذه الرسالة نهائيًا للجميع؟', 'حذف').then(function(ok){
             if (!ok) return;
             api('wl_notices?id=eq.' + encodeURIComponent(id), { method: 'DELETE' }).then(function(){
-              NT.list = NT.list.filter(function(x){ return x.id !== id; }); LS.set('sk_notices', NT.list); ntBadge(); toast('تم الحذف');
-            }).catch(function(){ toast('تعذّر الحذف'); }).then(function(){ close(); noticesModal(); });
+              NT.list = NT.list.filter(function(x){ return x.id !== id; }); persist(); openId = null; render(true); toast('تم الحذف');
+            }).catch(function(){ toast('تعذّر الحذف'); });
           });
-        }; });
-      }
-      wire(); ntMarkSeen();
+          return;
+        }
+        var m = e.target.closest('.ch-m'); if (!m) return;
+        var mid = m.getAttribute('data-id'), n2 = NT.list.filter(function(x){ return x.id === mid; })[0];
+        if (!n2) return;
+        openId = (openId === mid) ? null : mid; render(true);
+      });
+      // تحديث لحظي: كل 4 ثواني والشات مفتوح (رسائل جديدة + علامات القراءة)
+      NT.onUpdate = function(){ if (!document.body.contains(el)) { NT.onUpdate = null; return; } if (!document.hidden) ntMarkSeen(); render(false); };
+      var tick = 0;
+      var iv = setInterval(function(){
+        if (!document.body.contains(el)) { clearInterval(iv); NT.onUpdate = null; ntBadge(); return; }
+        tick++; if (!document.hidden && (!NT.live || tick % 8 === 0)) ntLoad(false);
+      }, 4000);
+      render(true);
+      var nw = el.querySelector('#chNew'); if (nw) list.scrollTop = Math.max(0, nw.offsetTop - 40); else list.scrollTop = list.scrollHeight;
+      ntMarkSeen();
+      if (!touch) txt.focus();
     });
   }
   $('#skNotice').addEventListener('click', function(){ ntLoad(false).then(noticesModal); });
@@ -18837,7 +19028,7 @@ window.safeFileName = function(str){
       } else resolve();
     });
     renderAll();
-    ntBadge(); ntLoad(true); ntPoll();
+    ntBadge(); ntLoad(true); ntPoll(); ntRealtime();
     refreshPerms.then(function(){
       renderAll();
       return loadServer();
