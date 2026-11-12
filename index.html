@@ -5141,7 +5141,11 @@ window.safeFileName = function(str){
     var loginTopBar = document.getElementById('loginTopBar');
     if (loginTopBar) loginTopBar.style.display = (name === 'login') ? 'flex' : 'none';
     var loginRadioBtn = document.getElementById('loginRadioBtn');
-    if (loginRadioBtn) loginRadioBtn.style.display = 'flex';
+    if (loginRadioBtn) {
+      // شاشة سراكي العمال: إخفاء أيقونة الراديو (ولو شغّالة بتتوقف الأول)
+      if (name === 'sarraki' && loginRadioBtn.classList.contains('is-playing')) loginRadioBtn.click();
+      loginRadioBtn.style.display = (name === 'sarraki') ? 'none' : 'flex';
+    }
     // قوايم الإشعارات يمين/شمال: بتظهر في صفحة الدخول بس لو اليوزر أو
     // الباسورد فيهم قيمة (محفوظة بـ"تذكرني" أو مكتوبة). لو الاتنين فاضيين
     // (null/فاضي) بتتخفي.
