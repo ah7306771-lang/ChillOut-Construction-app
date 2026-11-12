@@ -5468,9 +5468,11 @@ window.safeFileName = function(str){
           });
       } catch(e){}
       // بادئة الجهاز = الجزء قبل : في التوكن (ثابتة لنفس الجهاز رغم تغيّر التسجيل)
+      // مهم جدًا: تحديد صفوف نفس "الجهاز" يبقى بالتوكن أو بادئة الجهاز فقط —
+      // مش باسم الموظف. لو موظف داخل على كذا جهاز (كمبيوتر + موبايل) كل جهاز
+      // يفضل بصف مستقل، غير كده كل تفعيل من جهاز بيحذف تسجيل الجهاز التاني.
       var devicePrefix = String(token).split(':')[0];
       var orParts = ['token.eq.' + encodeURIComponent(token)];
-      if (who) orParts.push('employee.eq.' + encodeURIComponent(who));
       Object.keys(oldTokens).forEach(function(t){ orParts.push('token.eq.' + encodeURIComponent(t)); });
       if (devicePrefix && devicePrefix.length > 20) orParts.push('token.like.' + encodeURIComponent(devicePrefix + '%'));
       var getUrl = SUPABASE_URL + '/rest/v1/push_tokens?select=id,employee,topics,token&or=(' + orParts.join(',') + ')';
@@ -14892,36 +14894,6 @@ window.safeFileName = function(str){
     var btnId = null;
     for (var key in paramBtnMap) {
       if (qp.get(key) === '1') { btnId = paramBtnMap[key]; break; }
-    }
-    // فتح الشات مباشرة من إشعار Firebase: openChat=1 → بنفتح السراكي ثم المحادثة
-    if (qp.get('openChat') === '1') {
-      try {
-        var cleanUrlC = location.pathname + location.hash;
-        history.replaceState({ chilloutLoginBase: true }, '', cleanUrlC);
-      } catch(eC){}
-      window.__openChatOnLoad_ = true;
-      var tryOpenChat = function(tries){
-        if (tries > 60) return; // ~30 ثانية كحد أقصى
-        var tile = document.getElementById('openSarrakiBtn');
-        // لو تايل السراكي ظاهر (يعني الصلاحيات حُمِّلت والمستخدم مسموحله) افتحه
-        if (tile && tile.offsetParent !== null) {
-          try { tile.click(); } catch(eT){}
-          // بعد ما السراكي يفتح، ندوس على جرس الإشعارات اللي بيفتح الشات
-          var tryOpenNotice = function(n){
-            if (n > 40) return;
-            var bell = document.getElementById('skNotice');
-            var sarrakiScreen = document.getElementById('sarrakiScreen');
-            if (bell && sarrakiScreen && sarrakiScreen.style.display !== 'none') {
-              try { bell.click(); window.__openChatOnLoad_ = false; } catch(eB){}
-            } else setTimeout(function(){ tryOpenNotice(n + 1); }, 300);
-          };
-          setTimeout(function(){ tryOpenNotice(0); }, 600);
-          return;
-        }
-        setTimeout(function(){ tryOpenChat(tries + 1); }, 500);
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ tryOpenChat(0); });
-      else tryOpenChat(0);
     }
     if (btnId) {
       // شيل الـ query params من الـ URL الظاهر (من غير إعادة تحميل)، عشان
