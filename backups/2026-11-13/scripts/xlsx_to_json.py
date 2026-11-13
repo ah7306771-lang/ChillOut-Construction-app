@@ -92,7 +92,14 @@ def find_header_row(rows, required_headers, max_scan=10):
 
 def convert_checks(ws):
     rows = list(ws.iter_rows(values_only=True))
-    header_i, cols = find_header_row(rows, ['العميل', 'تاريخ الاستحقاق'])
+    # شيت الشيكات هيدر اسم العمود الأول = "العميل"، وشيت "شيكات علينا" هيدره
+    # = "المورد" (أو "المستفيد"). نجرب الاتنين على التوالي.
+    name_header_options = ['العميل', 'اسم العميل', 'المورد', 'اسم المورد', 'المستفيد']
+    header_i, cols = -1, {}
+    for name_h in name_header_options:
+        header_i, cols = find_header_row(rows, [name_h, 'تاريخ الاستحقاق'])
+        if header_i != -1:
+            break
     if header_i == -1:
         return []
 
@@ -102,7 +109,7 @@ def convert_checks(ws):
                 return cols[n]
         return -1
 
-    c_client = col('العميل', 'اسم العميل')
+    c_client = col('العميل', 'اسم العميل', 'المورد', 'اسم المورد', 'المستفيد')
     c_number = col('الرقم')
     c_value = col('القيمة', 'القيمه')
     c_due = col('تاريخ الاستحقاق', 'تاريخه الاستحقاق')
@@ -243,18 +250,22 @@ def convert_last_prices(ws):
     'اخر طريقة السداد'/'تاريخ اخر فاتورة') وتحته صفوف البيانات (عميل واحد
     في كل صف — آخر عملية توريد ليه)."""
     rows = list(ws.iter_rows(values_only=True))
-    header_i, cols = find_header_row(
-        rows, ['اسم العميل', 'اخر سعر شراء', 'اخر سعر بيع']
-    )
+    # نقبل أي header يبدأ بـ "اسم العميل" أو "العميل".
+    header_i, cols = find_header_row(rows, ['اسم العميل'])
+    if header_i == -1:
+        header_i, cols = find_header_row(rows, ['العميل'])
     if header_i == -1:
         return []
 
-    c_client = cols.get('اسم العميل', 0)
-    c_buy = cols.get('اخر سعر شراء', 1)
-    c_sell = cols.get('اخر سعر بيع', 2)
-    c_order = cols.get('رقم امر البيع', 3)
-    c_payment = cols.get('اخر طريقة السداد', 4)
-    c_date = cols.get('تاريخ اخر فاتورة', 5)
+    # نفس منطق convert_all_sales: المواضع ثابتة من الماكرو، نتجاهل نصوص الهيدر
+    # لأنها ممكن تكون غير مطابقة لمواضع البيانات الفعلية.
+    c_client = 0
+    c_buy = 1
+    c_sell = 2
+    c_order = 3
+    c_payment = 4
+    c_date = 5
+    c_weight = 8  # عمود I = الوزن الفعلي
 
     out = []
     for row in rows[header_i + 1:]:
@@ -268,6 +279,7 @@ def convert_last_prices(ws):
             'saleOrderNo': (row[c_order] if c_order < len(row) and row[c_order] is not None else ''),
             'paymentMethod': (str(row[c_payment]).strip() if c_payment < len(row) and row[c_payment] is not None else ''),
             'lastInvoiceDate': cell_to_ddmmyyyy(row[c_date]) if c_date < len(row) else None,
+            'actualWeight': to_number(row[c_weight]) if c_weight < len(row) else 0,
         })
     return out
 
@@ -282,24 +294,27 @@ def convert_all_sales(ws):
     القديمة والجديدة (يعني اخر سعر شراء / سعر شراء / إلخ) عشان يشتغل قبل
     وبعد أي تغيير في أسماء الهيدر."""
     rows = list(ws.iter_rows(values_only=True))
+    # نقبل "اسم العميل" أو "العميل" كـ header للعمود الأول (في APP.xlsx الاسم
+    # بقى "العميل" بس بعد تعديل الماكرو، فما نجيبش -1).
     header_i, cols = find_header_row(rows, ['اسم العميل'])
+    if header_i == -1:
+        header_i, cols = find_header_row(rows, ['العميل'])
     if header_i == -1:
         return []
 
-    def col(*names, default=None):
-        for n in names:
-            if n in cols:
-                return cols[n]
-        return default
-
-    c_client = col('اسم العميل', default=0)
-    c_buy = col('سعر شراء', 'اخر سعر شراء', default=1)
-    c_sell = col('سعر بيع', 'اخر سعر بيع', default=2)
-    c_order = col('رقم امر البيع', 'رقم أمر البيع', default=3)
-    c_payment = col('طريقة السداد', 'اخر طريقة السداد', default=4)
-    c_date = col('تاريخ الفاتورة', 'التاريخ', 'تاريخ اخر فاتورة', default=5)
-    c_buy_total_col = col('إجمالي سعر الشراء', 'اجمالي سعر الشراء', 'اجمالي سعرالشراء', default=6)
-    c_sell_total_col = col('إجمالي سعر البيع', 'اجمالي سعر البيع', 'اجمالي سعرالبيع', default=7)
+    # هيدرز الأعمدة في الشيت ممكن تبقى غلط (مش مطابقة لمواضع الداتا)،
+    # فبنعتمد على المواضع الثابتة اللي بيكتبها الماكرو مش على نصوص الهيدر:
+    # A=العميل, B=سعر الشراء, C=سعر البيع, D=رقم أمر البيع, E=طريقة السداد,
+    # F=التاريخ, G=إجمالي الشراء, H=إجمالي البيع.
+    c_client = 0
+    c_buy = 1
+    c_sell = 2
+    c_order = 3
+    c_payment = 4
+    c_date = 5
+    c_buy_total_col = 6
+    c_sell_total_col = 7
+    c_weight = 8  # عمود I = الوزن الفعلي (طن)
 
     # Group by (client + orderNo) — كل مفتاح فيه: totals مُجمَّعة + أول سعر
     # شراء/بيع لقيته + مجموعة الأسعار المختلفة (لو الأمر فيه أصناف بأسعار
@@ -322,15 +337,18 @@ def convert_all_sales(ws):
                 'sell_prices': [],
                 'buyTotal': 0.0,
                 'sellTotal': 0.0,
+                'actualWeight': 0.0,
                 'paymentMethod': '',
             }
             order_list.append(key)
         g = grouped[key]
-        # جمع الإجماليات
+        # جمع الإجماليات والوزن الفعلي
         bt = to_number(row[c_buy_total_col]) if c_buy_total_col < len(row) else 0
         st = to_number(row[c_sell_total_col]) if c_sell_total_col < len(row) else 0
+        wt = to_number(row[c_weight]) if c_weight < len(row) else 0
         g['buyTotal'] += bt
         g['sellTotal'] += st
+        g['actualWeight'] += wt
         # لو الأمر بأكتر من سعر (أصناف مختلفة)، نجمع الأسعار المتميزة
         bp = to_number(row[c_buy]) if c_buy < len(row) else 0
         sp = to_number(row[c_sell]) if c_sell < len(row) else 0
@@ -369,6 +387,7 @@ def convert_all_sales(ws):
             'sellPrice2': sell_price2,
             'buyTotal': g['buyTotal'],
             'sellTotal': g['sellTotal'],
+            'actualWeight': g['actualWeight'],
             'paymentMethod': g['paymentMethod'],
         })
 
@@ -452,6 +471,7 @@ def main():
     wb = openpyxl.load_workbook(xlsx_path, data_only=True)
 
     checks = convert_checks(wb['الشيكات'])
+    checks_against_us = convert_checks(wb['شيكات علينا']) if 'شيكات علينا' in wb.sheetnames else []
     parties = convert_parties(wb['العملاء والموردين'])
     salaries = convert_salaries(wb['الرواتب'])
     overdue = convert_overdue(wb['اجمالي متأخرات']) if 'اجمالي متأخرات' in wb.sheetnames else {'rows': [], 'grandTotal': {'count': 0, 'amount': 0, 'avgDelay': 0}}
@@ -461,6 +481,8 @@ def main():
 
     with open(os.path.join(out_dir, 'checks.json'), 'w', encoding='utf-8') as f:
         json.dump(checks, f, ensure_ascii=False, indent=2)
+    with open(os.path.join(out_dir, 'checksAgainstUs.json'), 'w', encoding='utf-8') as f:
+        json.dump(checks_against_us, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'parties.json'), 'w', encoding='utf-8') as f:
         json.dump(parties, f, ensure_ascii=False, indent=2)
     with open(os.path.join(out_dir, 'salaries.json'), 'w', encoding='utf-8') as f:
@@ -480,7 +502,7 @@ def main():
     with open(os.path.join(out_dir, 'dataUpdatedAt.json'), 'w', encoding='utf-8') as f:
         json.dump({'updatedAt': datetime.now(timezone.utc).isoformat()}, f, ensure_ascii=False, indent=2)
 
-    print('checks:', len(checks), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices), '| installments rows:', len(installments['rows']))
+    print('checks:', len(checks), '| checksAgainstUs:', len(checks_against_us), '| clients:', len(parties['clients']), '| suppliers:', len(parties['suppliers']), '| salaries:', len(salaries), '| overdue rows:', len(overdue['rows']), '| last prices rows:', len(last_prices), '| installments rows:', len(installments['rows']))
 
 
 if __name__ == '__main__':
