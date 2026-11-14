@@ -1,5 +1,18 @@
 [
   {
+    "date": "12/11/2026",
+    "orderNo": 87,
+    "client": "الامين",
+    "buyPrice": 4100,
+    "sellPrice": 4300,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 369000.0,
+    "sellTotal": 387000.0,
+    "actualWeight": 90.0,
+    "paymentMethod": ""
+  },
+  {
     "date": "11/11/2026",
     "orderNo": 86,
     "client": "الامين",
@@ -23,6 +36,19 @@
     "buyTotal": 3071060.5,
     "sellTotal": 3188332.5,
     "actualWeight": 73.295,
+    "paymentMethod": ""
+  },
+  {
+    "date": "11/11/2026",
+    "orderNo": 84,
+    "client": "ويكادي",
+    "buyPrice": 40300,
+    "sellPrice": 40500,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 3494816.0,
+    "sellTotal": 3512160.0,
+    "actualWeight": 86.72,
     "paymentMethod": ""
   },
   {

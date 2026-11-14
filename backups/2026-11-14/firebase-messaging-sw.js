@@ -32,7 +32,8 @@ var TOPIC_STYLES = {
   salary:   { icon: 'icon-salary.png',   badge: 'icon-salary.png',   tag: 'hhm-salary',   vibrate: [200] },
   presence: { icon: 'icon-presence.png',  badge: 'icon-presence.png',  tag: 'hhm-presence',  vibrate: [200] },
   departure:{ icon: 'icon-departure.png', badge: 'icon-departure.png', tag: 'hhm-departure', vibrate: [200] },
-  request:  { icon: 'icon-192.png',      badge: 'icon-192.png',      tag: 'hhm-request',  vibrate: [200, 100, 200] }
+  request:  { icon: 'icon-192.png',      badge: 'icon-192.png',      tag: 'hhm-request',  vibrate: [200, 100, 200] },
+  chat:     { icon: 'icon-192.png',      badge: 'icon-192.png',      tag: 'hhm-chat',     vibrate: [100, 50, 100] }
 };
 
 // كاش صغير لمنع تكرار نفس الإشعار خلال 60 ثانية — لو نفس الرسالة وصلت
@@ -99,6 +100,10 @@ self.addEventListener('notificationclick', function (event) {
   var actionParam = actionParamMap[data.action];
   if (actionParam) {
     targetUrl += (targetUrl.indexOf('?') === -1 ? '?' : '&') + actionParam + '=1';
+  }
+  // لو إشعار شات → افتح/ركّز التطبيق على شاشة المحادثة مباشرة
+  if (String(data.topic || '').toLowerCase() === 'chat') {
+    targetUrl += (targetUrl.indexOf('?') === -1 ? '?' : '&') + 'openChat=1';
   }
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
