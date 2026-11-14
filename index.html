@@ -18122,9 +18122,9 @@ window.safeFileName = function(str){
     var m = pmap(p), dates = rangeDates(p), w2 = addD(p.__baseFromDate || p.from_date, 7), map = {}, rows = [], advs = [];
     function pOrd(id){ for (var i = 0; i < S.projects.length; i++) if (S.projects[i].id === id) return i; return 1e6; }
     function cmp(a, b){ return a.eb.localeCompare(b.eb, 'ar') || a.name.localeCompare(b.name, 'ar', { numeric: true }) || (a.rate - b.rate) || (a.wk - b.wk) || (pOrd(a.pj) - pOrd(b.pj)); }
-    function blank(a){ return { name: a.name, eb: a.eb, rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0, notes: [] }; }
+    function blank(a){ return { name: a.name, eb: a.eb, it: a.it || '', rate: a.rate, wk: a.wk, pj: a.pj, days: 0, otd: 0, extra: 0, a1: 0, a2: 0, notes: [] }; }
     WK(p.id).forEach(function(w){
-      var rate = +w.daily_rate || 0, nm = String(w.name || '').trim();
+      var rate = +w.daily_rate || 0, nm = String(w.name || '').trim(), wit = w.item_id || '';
       dates.forEach(function(d){
         var r = m.get(w.id + '|' + d); if (!r) return;
         var pj = r.project_id || w.project_id || '', wk = d < w2 ? 1 : 2;
@@ -18132,12 +18132,12 @@ window.safeFileName = function(str){
         var days = r.present ? 1 : 0, otd = +r.overtime || 0, ex = +r.extra_amt || 0, adv = +r.advance || 0;
         var nTxt = r.note ? (short(d) + ': ' + String(r.note).trim()) : '';
         if (days || otd || ex) {
-          var k = eb + '|' + nm + '|' + rate + '|' + wk + '|' + pj, x = map[k];
-          if (!x) { x = map[k] = blank({ name: nm, eb: eb, rate: rate, wk: wk, pj: pj }); rows.push(x); }
+          var k = eb + '|' + nm + '|' + rate + '|' + wk + '|' + pj + '|' + wit, x = map[k];
+          if (!x) { x = map[k] = blank({ name: nm, eb: eb, it: wit, rate: rate, wk: wk, pj: pj }); rows.push(x); }
           x.days += days; x.otd += otd; x.extra += ex;
           if (nTxt) x.notes.push(nTxt);
         }
-        if (adv) advs.push({ name: nm, eb: eb, rate: rate, wk: wk, pj: pj, adv: adv, note: (days || otd || ex) ? '' : nTxt });
+        if (adv) advs.push({ name: nm, eb: eb, it: wit, rate: rate, wk: wk, pj: pj, adv: adv, note: (days || otd || ex) ? '' : nTxt });
       });
     });
     rows.sort(cmp);
@@ -18152,7 +18152,7 @@ window.safeFileName = function(str){
     });
     var T = { days: 0, otd: 0, tot: 0, extra: 0, before: 0, a1: 0, a2: 0, net: 0 };
     rows.forEach(function(x){
-      x.tot = x.days + x.otd; x.before = x.tot * x.rate + x.extra; x.net = x.before - x.a1 - x.a2; x.pname = x.pj ? projName(x.pj) : ''; x.note = (x.notes || []).join(' | ');
+      x.tot = x.days + x.otd; x.before = x.tot * x.rate + x.extra; x.net = x.before - x.a1 - x.a2; x.pname = x.pj ? projName(x.pj) : ''; x.iname = x.it ? itemName(x.it) : 'بدون بند'; x.note = (x.notes || []).join(' | ');
       for (var k in T) T[k] += x[k];
     });
     var groups = [], gm = {};
@@ -18399,7 +18399,7 @@ window.safeFileName = function(str){
     if (!window.ExcelJS) return Promise.reject(new Error('مكتبة Excel غير محمّلة'));
     var D; try { D = detailData(p); } catch (e) { return Promise.reject(e); }
     if (!D.rows.length) return Promise.reject(new Error('مفيش حضور أو سلف مسجّل في الفترة دي'));
-    var T = D.tot, NC = 13, many = D.groups.length > 1;
+    var T = D.tot, NC = 14, many = D.groups.length > 1;
     var now = new Date(), hhmm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     var wb = new ExcelJS.Workbook(); wb.creator = 'سراكي عمال'; wb.created = now;
     var ws = wb.addWorksheet('شيت العمالة تفصيلي', {
@@ -18410,21 +18410,21 @@ window.safeFileName = function(str){
     var INK = 'FF1A237E', RED = 'FF8B0000', BLUE = 'FF1A3FB0';
     var blk = { style: 'thin', color: { argb: 'FF000000' } }, gry = { style: 'thin', color: { argb: 'FF555555' } };
     var fillY = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFBE0' } }, fillH = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE9E9E9' } }, fillT = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF59D' } }, fillS = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
-    [32, 12, 10, 9, 11, 12, 15, 14, 14, 13, 11, 28, 32].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
+    [32, 22, 12, 10, 9, 11, 12, 15, 14, 14, 13, 11, 28, 32].forEach(function(w, i){ ws.getColumn(i + 1).width = w; });
     // عنوان الشيت في النص داخل إطار مزدوج
-    ws.mergeCells(1, 4, 1, 9);
-    var tc = ws.getCell(1, 4); tc.value = 'شيت العمــالة تفصيلي'; tc.font = { name: 'Arial', size: 18, bold: true, color: { argb: RED } }; tc.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.mergeCells(1, 5, 1, 10);
+    var tc = ws.getCell(1, 5); tc.value = 'شيت العمــالة تفصيلي'; tc.font = { name: 'Arial', size: 18, bold: true, color: { argb: RED } }; tc.alignment = { horizontal: 'center', vertical: 'middle' };
     var dbl = { style: 'double', color: { argb: RED } };
-    for (var c1 = 4; c1 <= 9; c1++) { var bc = ws.getCell(1, c1); bc.border = { top: dbl, bottom: dbl, left: c1 === 4 ? dbl : undefined, right: c1 === 9 ? dbl : undefined }; }
+    for (var c1 = 5; c1 <= 10; c1++) { var bc = ws.getCell(1, c1); bc.border = { top: dbl, bottom: dbl, left: c1 === 5 ? dbl : undefined, right: c1 === 10 ? dbl : undefined }; }
     ws.getRow(1).height = 32;
-    ws.mergeCells(2, 9, 2, 12);
-    var dc = ws.getCell(2, 9); dc.value = 'الوقت: ' + hhmm + '      التاريخ: ' + todayS(); dc.font = { name: 'Arial', size: 9, bold: true, color: { argb: INK } }; dc.alignment = { horizontal: 'left' };
+    ws.mergeCells(2, 10, 2, 13);
+    var dc = ws.getCell(2, 10); dc.value = 'الوقت: ' + hhmm + '      التاريخ: ' + todayS(); dc.font = { name: 'Arial', size: 9, bold: true, color: { argb: INK } }; dc.alignment = { horizontal: 'left' };
 
     var MONEY = '#,##0', BLANK0 = '[=0]"";#,##0', BLANKG = '[=0]"";General';
-    var HEAD = ['اسم العامل', 'قيمة اليومية', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض', 'الأسبوع', 'اسم المشروع', 'ملاحظات'];
+    var HEAD = ['اسم العامل', 'البند', 'قيمة اليومية', 'عدد الأيام', 'سهرات', 'إجمالي الأيام', 'قيمة الإضافي', 'القبض قبل السلف', 'سلف الأسبوع الأول', 'سلف الأسبوع الثاني', 'القبض', 'الأسبوع', 'اسم المشروع', 'ملاحظات'];
     function sumCells(r, label, t, rngFn, fill, size, dbl2){
-      ws.mergeCells(r.number, 1, r.number, 2); r.getCell(1).value = label;
-      [[3, 'C', t.days, BLANKG], [4, 'D', t.otd, BLANKG], [5, 'E', t.tot, BLANKG], [6, 'F', t.extra, BLANK0], [7, 'G', t.before, MONEY], [8, 'H', t.a1, BLANK0], [9, 'I', t.a2, BLANK0], [10, 'J', t.net, MONEY]].forEach(function(q){
+      ws.mergeCells(r.number, 1, r.number, 3); r.getCell(1).value = label;
+      [[4, 'D', t.days, BLANKG], [5, 'E', t.otd, BLANKG], [6, 'F', t.tot, BLANKG], [7, 'G', t.extra, BLANK0], [8, 'H', t.before, MONEY], [9, 'I', t.a1, BLANK0], [10, 'J', t.a2, BLANK0], [11, 'K', t.net, MONEY]].forEach(function(q){
         var c = r.getCell(q[0]); c.value = { formula: rngFn(q[1]), result: q[2] }; c.numFmt = q[3];
       });
       for (var k = 1; k <= NC; k++) {
@@ -18439,11 +18439,11 @@ window.safeFileName = function(str){
       // ماستر المدخل: البيان (اسم المدخل) + السنة/مسلسل/الفترة + من/إلى
       ws.mergeCells(cur, 1, cur, 4);
       var bt = ws.getCell(cur, 1); bt.value = 'البيان :  ' + g.eb; bt.font = { name: 'Arial', size: 13, bold: true, color: { argb: RED } }; bt.alignment = { horizontal: 'right', vertical: 'middle' };
-      ws.mergeCells(cur, 8, cur, 12);
-      var yt = ws.getCell(cur, 8); yt.value = 'السنة : ' + p.year + '        مسلسل : ' + (gi + 1) + '        الفترة : ' + p.period_no; yt.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } }; yt.alignment = { horizontal: 'left', vertical: 'middle' };
+      ws.mergeCells(cur, 9, cur, 13);
+      var yt = ws.getCell(cur, 9); yt.value = 'السنة : ' + p.year + '        مسلسل : ' + (gi + 1) + '        الفترة : ' + p.period_no; yt.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } }; yt.alignment = { horizontal: 'left', vertical: 'middle' };
       ws.getRow(cur).height = 22;
-      ws.mergeCells(cur + 1, 8, cur + 1, 12);
-      var ft = ws.getCell(cur + 1, 8); ft.value = 'من  ' + fdmy(p.from_date) + '    الى    ' + fdmy(p.to_date); ft.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } }; ft.alignment = { horizontal: 'left', vertical: 'middle' };
+      ws.mergeCells(cur + 1, 9, cur + 1, 13);
+      var ft = ws.getCell(cur + 1, 9); ft.value = 'من  ' + fdmy(p.from_date) + '    الى    ' + fdmy(p.to_date); ft.font = { name: 'Arial', size: 11, bold: true, color: { argb: INK } }; ft.alignment = { horizontal: 'left', vertical: 'middle' };
       ws.getRow(cur + 2).height = 6;
       var hr = cur + 3;
       HEAD.forEach(function(h, i){
@@ -18454,23 +18454,23 @@ window.safeFileName = function(str){
       var first = hr + 1;
       g.rows.forEach(function(x, i){
         var n = first + i, r = ws.getRow(n);
-        r.getCell(1).value = x.name; r.getCell(2).value = x.rate; r.getCell(3).value = x.days;
-        r.getCell(4).value = x.otd || null;
-        r.getCell(5).value = { formula: 'C' + n + '+D' + n, result: x.tot };
-        r.getCell(6).value = x.extra || null;
-        r.getCell(7).value = { formula: 'E' + n + '*B' + n + '+F' + n, result: x.before };
-        r.getCell(8).value = x.a1 || null; r.getCell(9).value = x.a2 || null;
-        r.getCell(10).value = { formula: 'G' + n + '-H' + n + '-I' + n, result: x.net };
-        r.getCell(11).value = WEEKN[x.wk]; r.getCell(12).value = x.pname; r.getCell(13).value = x.note || null;
+        r.getCell(1).value = x.name; r.getCell(2).value = x.iname; r.getCell(3).value = x.rate; r.getCell(4).value = x.days;
+        r.getCell(5).value = x.otd || null;
+        r.getCell(6).value = { formula: 'D' + n + '+E' + n, result: x.tot };
+        r.getCell(7).value = x.extra || null;
+        r.getCell(8).value = { formula: 'F' + n + '*C' + n + '+G' + n, result: x.before };
+        r.getCell(9).value = x.a1 || null; r.getCell(10).value = x.a2 || null;
+        r.getCell(11).value = { formula: 'H' + n + '-I' + n + '-J' + n, result: x.net };
+        r.getCell(12).value = WEEKN[x.wk]; r.getCell(13).value = x.pname; r.getCell(14).value = x.note || null;
         for (var k = 1; k <= NC; k++) {
           var cell = r.getCell(k);
-          cell.font = { name: 'Arial', size: k === 1 ? 11 : 10, bold: true, color: { argb: k === 12 ? BLUE : 'FF000000' } };
-          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: k === 13 };
+          cell.font = { name: 'Arial', size: k === 1 ? 11 : 10, bold: true, color: { argb: (k === 13 || k === 2) ? BLUE : 'FF000000' } };
+          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: k === 14 || k === 2 };
           cell.border = { top: gry, bottom: gry, left: gry, right: gry };
-          if (k === 5 || k === 7 || k === 10) cell.fill = fillY;
+          if (k === 6 || k === 8 || k === 11) cell.fill = fillY;
         }
-        r.getCell(2).numFmt = MONEY; r.getCell(7).numFmt = MONEY; r.getCell(10).numFmt = MONEY;
-        r.getCell(6).numFmt = BLANK0; r.getCell(8).numFmt = BLANK0; r.getCell(9).numFmt = BLANK0; r.getCell(4).numFmt = BLANKG;
+        r.getCell(3).numFmt = MONEY; r.getCell(8).numFmt = MONEY; r.getCell(11).numFmt = MONEY;
+        r.getCell(7).numFmt = BLANK0; r.getCell(9).numFmt = BLANK0; r.getCell(10).numFmt = BLANK0; r.getCell(5).numFmt = BLANKG;
         r.height = 18;
       });
       var last = first + g.rows.length - 1, sn = last + 1, sr = ws.getRow(sn);
