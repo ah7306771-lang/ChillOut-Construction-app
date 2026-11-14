@@ -2222,6 +2222,25 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-md input:focus,.sk-md select:focus{outline:none;border-color:#e2621f;box-shadow:0 0 0 3px rgba(226,98,31,.14)}
 .sk-md .btns .btn-primary{background:linear-gradient(135deg,#e2621f,#c24e13);color:#fff;border:none}
 .sk-md .btns .btn-secondary{background:#eef1f7;color:#1b2540;border:1px solid #dde3ee}
+/* فلتر التاريخ في نوافذ التقارير */
+.sk-md .rpdates{display:flex;gap:8px;margin:8px 0}
+.sk-md .rpdates>div{flex:1;min-width:0}
+.sk-md .rpdates input{width:100%;box-sizing:border-box;min-width:0}
+/* موبايل: خطوط أكبر وأوضح داخل نوافذ السراكي (16px في الحقول يمنع زووم الأيفون عند الضغط) */
+@media (max-width:600px){
+  .sk-md{padding:14px 12px;max-height:92vh}
+  .sk-md h3{font-size:16px;line-height:1.5}
+  .sk-md label.l{font-size:13px}
+  .sk-md input[type=text],.sk-md input[type=number],.sk-md input[type=date],.sk-md select{font-size:16px;height:42px}
+  .sk-md .msg{font-size:14px;line-height:1.9}
+  .sk-md .chk{font-size:14px;line-height:1.6}
+  .sk-md .rpsec{font-size:14px;line-height:1.6}
+  .sk-md .btns{gap:6px}
+  .sk-md .btns.sm{display:grid;grid-template-columns:1fr 1fr}
+  .sk-md .btns.sm .btn{min-width:0;width:100%;padding:10px 6px;font-size:13.5px;line-height:1.4;white-space:normal}
+  .sk-md .btns.sm .btn:last-child:nth-child(odd){grid-column:1/-1}
+  .sk-md .btns .btn{font-size:14px}
+}
 /* اعتماد المهندس + المُدخِل */
 #sarrakiScreen .sk-eng{font-weight:800;white-space:nowrap}
 #sarrakiScreen .sk-eng-check{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:7px;background:#fff4d6;color:#8a5a00;border:1px solid #f0d594;font-weight:700;white-space:nowrap;cursor:pointer;user-select:none;font-size:12px;height:29px;box-sizing:border-box}
@@ -16974,11 +16993,24 @@ window.safeFileName = function(str){
   function engMissing(){ return noEng || (S.periods.length > 0 && !S.periods.some(function(x){ return 'eng_week1_approved' in x && 'eng_week2_approved' in x; })); }
   function weekApproved(p, w){ var f = engFields(w); return !!(p && p[f.ok]); }
   function approvedWeeks(p){ var a=[]; if (weekApproved(p,1)) a.push(1); if (weekApproved(p,2) && weekDates(p,2).length) a.push(2); return a; }
+  // سطر حالة اعتماد المهندس لكل أسبوع (للعرض في التقارير والمودال بس — مفيش أي تأثير على الحسابات)
+  function approvalNote(p){
+    if (!p || engMissing()) return '';
+    var base = { from_date: p.__baseFromDate || p.from_date, to_date: p.__baseToDate || p.to_date }, out = [];
+    [1, 2].forEach(function(w){
+      var wds = weekDates(base, w); if (!wds.length) return;
+      out.push('الأسبوع ' + (w === 1 ? 'الأول' : 'الثاني') + ': ' + (weekApproved(p, w) ? 'معتمد لغاية ' + approvedUntil(p, w, wds) : 'غير معتمد'));
+    });
+    return out.join(' — ');
+  }
   function toggleEng(){
     var p = P(); if (!p) return;
     var w = S.week, f = engFields(w), check = document.getElementById('skEngCheck');
     var on = !!(check && check.checked);
-    if (engMissing()) { toast('شغّل سكريبت Supabase لإضافة أعمدة اعتماد كل أسبوع'); renderMaster(); return; }
+    if (engMissing()) {
+      modal('<h3>⚙️ الاعتماد محتاج تجهيز في Supabase</h3><p class="msg">جدول <b>wl_periods</b> ناقصه أعمدة اعتماد الأسبوعين (<b>eng_week1_approved</b> و <b>eng_week2_approved</b>)، فمش هينفع تعتمد أسبوع لحد ما تشغّل سكريبت التحديث على Supabase.</p><p class="msg">✅ التقارير ومراجعة السراكي شغالين عادي ومش متأثرين بالموضوع ده.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
+      renderMaster(); return;
+    }
     if (!canApprove()) { toast(weekApproved(p,w) ? 'الأسبوع معتمد من المهندس' : 'الأسبوع غير معتمد — ليس لديك صلاحية الاعتماد'); renderMaster(); return; }
     var wds = weekDates(p, w), ed = document.getElementById('skEngDate'), until = ed ? ed.value : '';
     if (on && (!until || wds.indexOf(until) < 0)) { toast('اختر تاريخ الاعتماد داخل الأسبوع'); renderMaster(); return; }
@@ -17211,7 +17243,7 @@ window.safeFileName = function(str){
           ed.classList.toggle('apr', !!ap);
         }
         ew.classList.toggle('is-approved', ap);
-        ew.title = ap ? 'معتمد بواسطة ' + (p[ef.by] || 'المهندس') + (p[ef.at] ? ' بتاريخ ' + String(p[ef.at]).slice(0, 10) : '') + ' — لغاية ' + approvedUntil(p, S.week, weekDates(p, S.week)) : 'غير معتمد';
+        ew.title = engMissing() ? 'الاعتماد غير مفعّل: أعمدة eng_week1/2_approved ناقصة في جدول wl_periods على Supabase (التقارير شغالة عادي)' : ap ? 'معتمد بواسطة ' + (p[ef.by] || 'المهندس') + (p[ef.at] ? ' بتاريخ ' + String(p[ef.at]).slice(0, 10) : '') + ' — لغاية ' + approvedUntil(p, S.week, weekDates(p, S.week)) : 'غير معتمد';
       }
     }
     Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-v') === S.view); b.style.display = p ? '' : 'none'; });
@@ -17677,8 +17709,8 @@ window.safeFileName = function(str){
     var prevFilter = S.filterEmp; // نحفظ الحالة قبل المودال
     modal('<h3>🔎 مراجعة السراكي</h3><p class="msg">التقرير التفصيلي لكل عامل حسب الأسبوع والمشروع — لا يتطلب اعتماد المهندس.</p>' +
       '<label class="l">👤 عرض مدخلات</label>' + filterEmpSelectHTML('rvFilterEmp') +
-      '<div style="display:flex;gap:8px;margin:8px 0"><div style="flex:1;min-width:0"><label class="l">📅 من تاريخ</label><input type="date" id="rvFrom" value="' + p.from_date + '" min="' + p.from_date + '" max="' + p.to_date + '" style="width:100%;height:34px;border:1px solid #dde3ee;border-radius:8px;padding:0 6px;font:inherit;box-sizing:border-box"></div>' +
-      '<div style="flex:1;min-width:0"><label class="l">📅 إلى تاريخ</label><input type="date" id="rvTo" value="' + p.to_date + '" min="' + p.from_date + '" max="' + p.to_date + '" style="width:100%;height:34px;border:1px solid #dde3ee;border-radius:8px;padding:0 6px;font:inherit;box-sizing:border-box"></div></div>' +
+      '<div class="rpdates"><div style="flex:1;min-width:0"><label class="l">📅 من تاريخ</label><input type="date" id="rvFrom" value="' + p.from_date + '" min="' + p.from_date + '" max="' + p.to_date + '"></div>' +
+      '<div style="flex:1;min-width:0"><label class="l">📅 إلى تاريخ</label><input type="date" id="rvTo" value="' + p.to_date + '" min="' + p.from_date + '" max="' + p.to_date + '"></div></div>' +
       '<div class="rpsec">الشيت التفصيلي (سطر لكل عامل / أسبوع / مشروع)</div>' +
       '<div class="btns sm"><button class="btn btn-secondary" id="rvView">👁 عرض</button><button class="btn btn-primary" id="rvPDF">📋 PDF</button><button class="btn btn-primary" id="rvXLS">📊 Excel</button><button class="btn btn-secondary" id="rvShare">📤 مشاركة PDF</button></div>' +
       '<p class="msg" id="rvM"></p><div class="btns"><button class="btn btn-secondary" id="rvClose">إغلاق</button></div>', function(el, close){
@@ -17742,8 +17774,10 @@ window.safeFileName = function(str){
     var p = Object.assign({}, pp, { __baseFromDate: pp.from_date, __baseToDate: pp.to_date });
     var prevFilter = S.filterEmp; // نحفظ الحالة قبل المودال
     var ws = WK();
-    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">كل أيام الفترة (من غير الاعتماد على اعتماد المهندس) — من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
+    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">كل أيام الفترة (من غير الاعتماد على اعتماد المهندس) — من ' + p.from_date + ' إلى ' + p.to_date + (approvalNote(p) ? '<br>🛠 حالة اعتماد المهندس — ' + esc(approvalNote(p)) : '') + '</p>' +
       '<label class="l">👤 عرض مدخلات</label>' + filterEmpSelectHTML('rpFilterEmp') +
+      '<div class="rpdates"><div style="flex:1;min-width:0"><label class="l">📅 من تاريخ</label><input type="date" id="rpFrom" value="' + p.from_date + '" min="' + p.from_date + '" max="' + p.to_date + '"></div>' +
+      '<div style="flex:1;min-width:0"><label class="l">📅 إلى تاريخ</label><input type="date" id="rpTo" value="' + p.to_date + '" min="' + p.from_date + '" max="' + p.to_date + '"></div></div>' +
       '<div class="rpsec">① الشيت الإجمالي (حسب البند)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-primary" id="rpIX">📊 Excel</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpIXS">📤 مشاركة Excel</button></div>' +
       '<div class="rpsec">①.أ المشروع حسب البنود (كل مشروع فيه بنوده + إجمالي كل بند + إجمالي المشروع + إجمالي عام)</div>' +
@@ -17762,6 +17796,17 @@ window.safeFileName = function(str){
       var msg = function(m){ q('#rpM').textContent = m || ''; q('#rpGo').style.display = 'none'; };
       var opt = function(){ return { worker: q('#rpW').value, slips: q('#rpS').checked }; };
       var fail = function(pre){ return function(e){ msg(pre + ': ' + ((e && e.message) || e)); }; };
+      // فلتر التاريخ: لو اتغيّر بنبدّل p (كل الأزرار بتقرأه وقت الضغط) من غير ما نلمس باقي الكود
+      var baseP = p;
+      function applyRange(){
+        var fi = q('#rpFrom'), ti = q('#rpTo'), f = fi.value || baseP.from_date, t = ti.value || baseP.to_date;
+        if (f < baseP.from_date) f = baseP.from_date; if (t > baseP.to_date) t = baseP.to_date;
+        if (f > t) { fi.value = baseP.from_date; ti.value = baseP.to_date; p = baseP; msg('تاريخ البداية بعد النهاية — رجّعنا الفترة كلها'); return; }
+        fi.value = f; ti.value = t;
+        p = (f === baseP.from_date && t === baseP.to_date) ? baseP : Object.assign({}, baseP, { __rvFrom: f, __rvTo: t });
+        msg(p === baseP ? '' : 'التقارير هتطلع من ' + f + ' إلى ' + t);
+      }
+      q('#rpFrom').onchange = applyRange; q('#rpTo').onchange = applyRange;
       // فلتر "عرض مدخلات" — عند التغيير نعيد بناء قائمة العمال وحفظ الاختيار الحالي
       var fe = q('#rpFilterEmp');
       if (fe) {
@@ -17842,7 +17887,7 @@ window.safeFileName = function(str){
     var thin = { style: 'thin', color: { argb: 'FFD9CFC3' } }, border = { top: thin, left: thin, bottom: thin, right: thin };
     function title(ws, text, cols){
       ws.mergeCells(1, 1, 1, cols); ws.getCell(1, 1).value = text; ws.getCell(1, 1).font = { bold: true, size: 16, color: { argb: 'FFE2621F' } }; ws.getCell(1, 1).alignment = { horizontal: 'center' };
-      ws.mergeCells(2, 1, 2, cols); ws.getCell(2, 1).value = 'من ' + p.from_date + ' إلى ' + p.to_date; ws.getCell(2, 1).alignment = { horizontal: 'center' }; ws.getCell(2, 1).font = { bold: true, color: { argb: 'FF555555' } };
+      ws.mergeCells(2, 1, 2, cols); ws.getCell(2, 1).value = 'من ' + p.from_date + ' إلى ' + p.to_date + (approvalNote(p) ? ' — ' + approvalNote(p) : ''); ws.getCell(2, 1).alignment = { horizontal: 'center' }; ws.getCell(2, 1).font = { bold: true, color: { argb: 'FF555555' } };
     }
     function head(row){ row.eachCell(function(cell){ cell.fill = hdrFill; cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; cell.border = border; }); row.height = 30; }
     function body(row, nameCol){ row.eachCell({ includeEmpty: true }, function(cell){ cell.border = border; cell.alignment = { horizontal: 'center', vertical: 'middle' }; }); if (nameCol) row.getCell(nameCol).alignment = { horizontal: 'right' }; }
@@ -17916,7 +17961,7 @@ window.safeFileName = function(str){
   }
 
   function pageHead(p, title){
-    return '<div class="ph"><h1>' + esc(title) + '</h1><div class="sub">الفترة رقم <b>' + p.period_no + '</b> — سنة <b>' + p.year + '</b><br>من ' + p.from_date + ' إلى ' + p.to_date + '</div></div>';
+    return '<div class="ph"><h1>' + esc(title) + '</h1><div class="sub">الفترة رقم <b>' + p.period_no + '</b> — سنة <b>' + p.year + '</b><br>من ' + p.from_date + ' إلى ' + p.to_date + (approvalNote(p) ? '<br><span style="font-size:.85em">' + esc(approvalNote(p)) + '</span>' : '') + '</div></div>';
   }
   function pageFoot(i, n){ return '<div class="foot"><span>سراكي عمال</span><span>صفحة ' + i + ' / ' + n + '</span><span>' + todayS() + '</span></div>'; }
   function buildPages(p, o){
