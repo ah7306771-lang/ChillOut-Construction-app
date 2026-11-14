@@ -17738,21 +17738,11 @@ window.safeFileName = function(str){
   }
   function reportModal(){
     var pp = P(); if (!pp) return;
-    if (engMissing()) {
-      modal('<h3>🔒 التقارير مقفولة</h3><p class="msg">لا يمكن فتح التقارير قبل إضافة أعمدة اعتماد الأسبوع الأول والثاني في Supabase وتشغيل سكريبت التحديث.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
-      return;
-    }
-    var weeks = approvedWeeks(pp);
-    if (!weeks.length) {
-      modal('<h3>🔒 لا توجد أسابيع معتمدة</h3><p class="msg">لا يمكن فتح التقارير؛ اعتمد الأسبوع الأول أو الثاني أولاً. التقارير ستعرض الأسابيع المعتمدة فقط.</p><div class="btns"><button class="btn btn-primary" data-n>حاضر</button></div>', function(el, close){ el.querySelector('[data-n]').onclick = close; });
-      return;
-    }
-    // كل التقارير العادية تعمل على أيام الأسابيع المعتمدة فقط، مع الاحتفاظ بترقيم الأسبوع الأصلي.
-    var p = Object.assign({}, pp, { __approvedWeeks: weeks, __baseFromDate: pp.from_date, __baseToDate: pp.to_date });
-    var dates = rangeDates(p); p.from_date = dates[0]; p.to_date = dates[dates.length - 1];
+    // التقارير مستقلة عن اعتماد المهندس: بتشتغل على كل أيام الفترة سواء الأسبوع معتمد أو لا.
+    var p = Object.assign({}, pp, { __baseFromDate: pp.from_date, __baseToDate: pp.to_date });
     var prevFilter = S.filterEmp; // نحفظ الحالة قبل المودال
     var ws = WK();
-    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">الأسابيع المعتمدة: ' + weeks.map(function(w){ return w === 1 ? 'الأول' : 'الثاني'; }).join(' + ') + ' — من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
+    modal('<h3>📄 تقارير الفترة ' + p.period_no + ' / ' + p.year + '</h3><p class="msg">كل أيام الفترة (من غير الاعتماد على اعتماد المهندس) — من ' + p.from_date + ' إلى ' + p.to_date + '</p>' +
       '<label class="l">👤 عرض مدخلات</label>' + filterEmpSelectHTML('rpFilterEmp') +
       '<div class="rpsec">① الشيت الإجمالي (حسب البند)</div>' +
       '<div class="btns sm"><button class="btn btn-primary" id="rpI">📑 PDF</button><button class="btn btn-primary" id="rpIX">📊 Excel</button><button class="btn btn-secondary" id="rpIS">📤 مشاركة PDF</button><button class="btn btn-secondary" id="rpIXS">📤 مشاركة Excel</button></div>' +
