@@ -2904,7 +2904,16 @@
     "saleOrderNo": 88,
     "paymentMethod": "",
     "lastInvoiceDate": "12/11/2026",
-    "actualWeight": 12.33
+    "actualWeight": 9.155
+  },
+  {
+    "client": "فالتور",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 88,
+    "paymentMethod": "",
+    "lastInvoiceDate": "12/11/2026",
+    "actualWeight": 6.25
   },
   {
     "client": "فالتور",
@@ -2940,16 +2949,7 @@
     "saleOrderNo": 89,
     "paymentMethod": "",
     "lastInvoiceDate": "12/11/2026",
-    "actualWeight": 9.155
-  },
-  {
-    "client": "فالتور",
-    "lastBuyPrice": 0,
-    "lastSellPrice": 0,
-    "saleOrderNo": 89,
-    "paymentMethod": "",
-    "lastInvoiceDate": "12/11/2026",
-    "actualWeight": 6.25
+    "actualWeight": 12.33
   },
   {
     "client": "فالتور",
