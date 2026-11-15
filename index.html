@@ -16657,7 +16657,7 @@ window.safeFileName = function(str){
   };
 
   // ---------- الحالة ----------
-  var S = { items: [], projects: [], periods: [], workers: [], dm: {}, cur: null, week: 1, day: null, view: 'day', online: null, missing: false, loading: false, filterEmp: null };
+  var S = { items: [], projects: [], periods: [], workers: [], dm: {}, cur: null, week: 1, day: null, view: 'day', online: null, missing: false, loading: false, filterEmp: null, fresh: true };
   var DEAD = LS.get('sk_dead', []); // حركات رفضها السيرفر (خطأ 4xx) — بتتشال من الطابور عشان ما تعطّلش باقي الشغل
   var Q = LS.get('sk_q', {}), ver = 0, flushing = false, again = false, flushTimer = null, retryTimer = null, cacheTimer = null;
   // لو عمود extra_amt لسه مااتضافش في جدول wl_days: بنكمّل شغل عادي (بنشيله من الإرسال) ونعرض تنبيه
@@ -17248,6 +17248,14 @@ window.safeFileName = function(str){
     }
     Array.prototype.forEach.call(root.querySelectorAll('.sk-tab'), function(b){ b.classList.toggle('on', b.getAttribute('data-v') === S.view); b.style.display = p ? '' : 'none'; });
   }
+  // أول ما التطبيق/الفترة تفتح: نروح على يوم النهارده تلقائي حتى لو في الأسبوع الثاني (من غير ما تختار الأسبوع)
+  function goTodayOnce(){
+    if (!S.fresh) return;
+    var p = P(); if (!p) return;
+    S.fresh = false;
+    var t = todayS();
+    for (var w = 1; w <= 2; w++) { if (weekDates(p, w).indexOf(t) > -1) { S.week = w; S.day = t; return; } }
+  }
   function ensureDay(){
     var p = P(); if (!p) return;
     var wd = weekDates(p, S.week);
@@ -17264,7 +17272,7 @@ window.safeFileName = function(str){
   }
   function renderAll(){ renderAllInner(); var b = $('#skBody'); if (b) b.classList.toggle('dayv', S.view === 'day' && !!P() && !S.loading); paintFix(); }
   function renderAllInner(){
-    renderMaster(); ensureDay();
+    goTodayOnce(); renderMaster(); ensureDay();
     var body = $('#skBody'), p = P();
     if (!p) {
       body.innerHTML = '<div class="sk-empty">لا توجد فترات بعد.<br>افتح أول فترة من <b>الإعدادات ← إعدادات السراكي</b>.</div>';
@@ -17556,7 +17564,7 @@ window.safeFileName = function(str){
 
   // ---------- الفترات ----------
   function selectPeriod(id){
-    S.cur = id; S.picked = true; LS.set('sk_cur', id); S.week = 1; S.day = null;
+    S.cur = id; S.picked = true; LS.set('sk_cur', id); S.week = 1; S.day = null; S.fresh = true;
     var need = S.online !== false && !S.missing && !Object.keys(Q).length && id;
     S.loading = !!need && !S.dm[id]; renderAll();
     if (need) loadDays(id).catch(function(){}).then(function(){ S.loading = false; if (S.cur === id) renderAll(); });
@@ -17627,7 +17635,7 @@ window.safeFileName = function(str){
   }
   function autoPeriod(){
     var id = defaultPeriodId();
-    if (id !== S.cur) { S.cur = id; S.week = 1; S.day = null; if (id) LS.set('sk_cur', id); }
+    if (id !== S.cur) { S.cur = id; S.week = 1; S.day = null; if (id) LS.set('sk_cur', id); S.fresh = true; }
   }
   function pickDefaultPeriod(){
     if (P()) return;
@@ -19091,7 +19099,7 @@ window.safeFileName = function(str){
   var opened = false;
   function open(){
     window.showScreen_('sarraki');
-    loadCache(); S.picked = false; S.filterEmp = null; CF = { name: {}, item: {}, prof: {}, proj: {} }; closeCF(); autoPeriod();
+    loadCache(); S.picked = false; S.fresh = true; S.filterEmp = null; CF = { name: {}, item: {}, prof: {}, proj: {} }; closeCF(); autoPeriod();
     if (noExtra) {
       noExtra = false; LS.set('sk_noextra', 0);
       Object.keys(S.dm).forEach(function(pid){ S.dm[pid].forEach(function(r){ if (+r.extra_amt) enqueue('up', 'wl_days', { id: r.id, period_id: r.period_id, worker_id: r.worker_id, work_date: r.work_date, present: !!r.present, project_id: r.project_id || null, overtime: +r.overtime || 0, advance: +r.advance || 0, extra_amt: +r.extra_amt || 0, note: r.note || null, entered_by: r.entered_by || null, modified_by: r.modified_by || null }); }); });
