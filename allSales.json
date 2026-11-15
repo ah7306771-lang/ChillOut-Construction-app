@@ -1,5 +1,31 @@
 [
   {
+    "date": "13/11/2026",
+    "orderNo": 90,
+    "client": "فالتور",
+    "buyPrice": 0,
+    "sellPrice": 42462.5,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 2100195.25,
+    "actualWeight": 49.46,
+    "paymentMethod": "كاش 50% - 25%  اجل 45 يوم - 25%  اجل 75 يوم"
+  },
+  {
+    "date": "13/11/2026",
+    "orderNo": 89,
+    "client": "فالتور",
+    "buyPrice": 0,
+    "sellPrice": 42312.22,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 4263802.4094,
+    "actualWeight": 100.77000000000001,
+    "paymentMethod": "كاش 50% - 25%  اجل 45 يوم - 25%  اجل 75 يوم"
+  },
+  {
     "date": "12/11/2026",
     "orderNo": 87,
     "client": "الامين",
@@ -10,7 +36,7 @@
     "buyTotal": 369000.0,
     "sellTotal": 387000.0,
     "actualWeight": 90.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 50% - 50%  اجل 30 يوم"
   },
   {
     "date": "11/11/2026",
@@ -23,7 +49,7 @@
     "buyTotal": 328000.0,
     "sellTotal": 344000.0,
     "actualWeight": 80.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 50% - 50%  اجل 30 يوم"
   },
   {
     "date": "11/11/2026",
@@ -36,7 +62,7 @@
     "buyTotal": 3071060.5,
     "sellTotal": 3188332.5,
     "actualWeight": 73.295,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم"
   },
   {
     "date": "11/11/2026",
@@ -49,7 +75,7 @@
     "buyTotal": 3494816.0,
     "sellTotal": 3512160.0,
     "actualWeight": 86.72,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم"
   },
   {
     "date": "11/11/2026",
@@ -62,7 +88,7 @@
     "buyTotal": 2533575.0,
     "sellTotal": 2625150.0,
     "actualWeight": 61.05,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم"
   },
   {
     "date": "07/11/2026",
@@ -75,7 +101,7 @@
     "buyTotal": 2869119.5,
     "sellTotal": 3091055.0,
     "actualWeight": 71.885,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 50% - 50%  اجل 30 يوم"
   },
   {
     "date": "07/11/2026",
@@ -88,7 +114,7 @@
     "buyTotal": 2865160.0,
     "sellTotal": 2968720.0,
     "actualWeight": 69.03999999999999,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 50% - 50%  اجل 30 يوم"
   },
   {
     "date": "05/11/2026",
@@ -101,7 +127,7 @@
     "buyTotal": 269500.0,
     "sellTotal": 287000.0,
     "actualWeight": 70.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "05/11/2026",
@@ -114,7 +140,7 @@
     "buyTotal": 2272213.5,
     "sellTotal": 2321970.0,
     "actualWeight": 55.285,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "04/11/2026",
@@ -127,7 +153,7 @@
     "buyTotal": 717500.0,
     "sellTotal": 752500.0,
     "actualWeight": 175.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 50% - 50%  اجل 30 يوم"
   },
   {
     "date": "02/11/2026",
@@ -140,7 +166,7 @@
     "buyTotal": 94050.0,
     "sellTotal": 95700.0,
     "actualWeight": 33.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "01/11/2026",
@@ -153,7 +179,7 @@
     "buyTotal": 15578.8,
     "sellTotal": 15578.8,
     "actualWeight": 5.372,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "01/11/2026",
@@ -166,7 +192,7 @@
     "buyTotal": 8358288.0,
     "sellTotal": 8474700.0,
     "actualWeight": 199.875,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "01/11/2026",
@@ -179,7 +205,7 @@
     "buyTotal": 4164791.5,
     "sellTotal": 4250820.0,
     "actualWeight": 101.21000000000001,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "19/10/2026",
