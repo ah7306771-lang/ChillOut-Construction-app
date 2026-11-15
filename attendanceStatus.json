@@ -1,7 +1,7 @@
 {
   "ok": true,
   "date": "2026-11-15",
-  "updatedAt": "2026-11-15T15:04:45.728027+00:00",
+  "updatedAt": "2026-11-15T20:22:53.771432+00:00",
   "absent": [
     "محمود كارم",
     "سيد كارم",
@@ -74,6 +74,16 @@
       "device": ""
     },
     {
+      "name": "شهد خالد",
+      "type": "انصراف",
+      "date": "2026-11-15",
+      "time": "17:09:53",
+      "lat": "29.98502",
+      "lng": "",
+      "map": "https://maps.google.com/?q=29.98502,30.9529282",
+      "device": ""
+    },
+    {
       "name": "أحمد مفرح",
       "type": "حضور",
       "date": "2026-11-15",
@@ -129,7 +139,7 @@
     "محمود كارم": "17:00",
     "مني محمد": "17:00"
   },
-  "pendingRequestsCount": 0,
+  "pendingRequestsCount": 1,
   "employees": [
     {
       "name": "أحمد مفرح",
@@ -163,7 +173,7 @@
     },
     {
       "name": "محمود رجب",
-      "pass": "16",
+      "pass": "16666",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
     },
