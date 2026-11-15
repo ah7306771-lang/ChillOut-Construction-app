@@ -2280,6 +2280,7 @@ select.sk-in{padding:0 4px;min-width:130px}
 .sk-cfp .cff .cfx{color:#d93025;border-color:#f0b8b4}
 #sarrakiScreen #skEngDate{height:24px;font:inherit;font-size:11px;padding:0 3px;border:1px solid #e0b84a;border-radius:6px;background:#fff;color:var(--ink);min-width:0;width:118px;flex:0 1 auto;cursor:pointer}
 #sarrakiScreen #skEngDate:disabled{background:#f1f1f1;cursor:not-allowed}
+#sarrakiScreen #skFrom:disabled,#sarrakiScreen #skTo:disabled{background:#f4f6fa;color:#1b2540;-webkit-text-fill-color:#1b2540;opacity:1;cursor:not-allowed}
 #sarrakiScreen #skEngDate.apr,#sarrakiScreen #skEngDate.apr:disabled{background:#fdeceb;border-color:#d93025;color:#c0392b;-webkit-text-fill-color:#c0392b;font-weight:800;opacity:1}
 
 /* ====== إصلاح عرض السراكي على الموبايل ====== */
@@ -17220,7 +17221,7 @@ window.safeFileName = function(str){
     sel.innerHTML = list.length ? list.map(function(x){ return '<option value="' + x.id + '"' + (x.id === S.cur ? ' selected' : '') + '>' + x.period_no + '</option>'; }).join('') : '<option value="">—</option>';
     $('#skYear').value = p ? p.year : '';
     $('#skFrom').value = p ? p.from_date : ''; $('#skTo').value = p ? p.to_date : '';
-    $('#skFrom').disabled = $('#skTo').disabled = isClosed();
+    $('#skFrom').disabled = $('#skTo').disabled = true; $('#skFrom').title = $('#skTo').title = 'تاريخ الفترة للعرض فقط'; // عرض فقط: محدش يعدّل تواريخ الفترة من هنا
     $('#skWeek').value = String(S.week); $('#skWeek').disabled = !p;
     var st = $('#skState'); st.textContent = !p ? '' : p.status === 'closed' ? '🔴' : '🟢'; st.title = !p ? '' : p.status === 'closed' ? 'الفترة مقفلة' : 'الفترة مفتوحة'; st.className = 'sk-badge';
     $('#skRep').style.display = p ? '' : 'none';
@@ -18755,6 +18756,7 @@ window.safeFileName = function(str){
   $('#skPeriod').addEventListener('change', function(){ if (this.value) selectPeriod(this.value); });
   $('#skWeek').addEventListener('change', function(){ S.week = +this.value; S.day = null; renderAll(); });
   function dateChange(){
+    return; // تواريخ الفترة عرض فقط
     var p = P(); if (!p || isClosed()) return;
     var f = $('#skFrom').value, t = $('#skTo').value; if (!f || !t) return;
     if (t < f) { toast('تاريخ النهاية قبل البداية'); renderMaster(); return; }
