@@ -3040,5 +3040,32 @@
     "paymentMethod": "",
     "lastInvoiceDate": "16/11/2026",
     "actualWeight": 34.49
+  },
+  {
+    "client": "اشرف حفناوي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 93,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/11/2026",
+    "actualWeight": 19.825
+  },
+  {
+    "client": "اشرف حفناوي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 93,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/11/2026",
+    "actualWeight": 19.755
+  },
+  {
+    "client": "اشرف حفناوي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 93,
+    "paymentMethod": "",
+    "lastInvoiceDate": "17/11/2026",
+    "actualWeight": 20.28
   }
 ]
