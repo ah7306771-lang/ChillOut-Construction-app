@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-10-17",
-  "updatedAt": "2026-10-16T23:52:35.255202+00:00",
+  "date": "2026-11-17",
+  "updatedAt": "2026-11-17T00:28:46.286807+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -13,23 +13,38 @@
     "بكر",
     "عماد",
     "محمود شعبان",
-    "25"
+    "25",
+    "محمد عويس",
+    "YOSRY"
   ],
   "late": [],
   "dashboardRows": [],
   "dashboardRequestRows": [
     {
-      "id": "mvbas2o4-ktsu7f",
+      "id": "mwi62sar-3qja84",
       "name": "صبري يحي",
       "type": "إجازة",
-      "date": "2026-10-17",
+      "date": "2026-11-17",
       "from": "",
       "to": "",
-      "reason": "ظروف شخصيه",
+      "reason": "[اعتيادي]",
       "status": "موافق",
-      "submittedAt": "2026-10-16T18:24:56.000Z",
-      "leaveFrom": "2026-10-17",
-      "leaveTo": "2026-10-18"
+      "submittedAt": "2026-11-15T18:27:23.000Z",
+      "leaveFrom": "2026-11-17",
+      "leaveTo": "2026-11-17"
+    },
+    {
+      "id": "mwam2sej-jxeyz1",
+      "name": "محمود كارم",
+      "type": "إجازة",
+      "date": "2026-11-10",
+      "from": "",
+      "to": "",
+      "reason": "[بدون مرتب]",
+      "status": "موافق",
+      "submittedAt": "2026-11-10T11:33:08.000Z",
+      "leaveFrom": "2026-11-10",
+      "leaveTo": "2026-11-30"
     }
   ],
   "dashboardOfficialOut": {
@@ -76,7 +91,7 @@
     },
     {
       "name": "محمود رجب",
-      "pass": "16",
+      "pass": "16666",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
     },
@@ -106,6 +121,18 @@
     },
     {
       "name": "25",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "محمد عويس",
+      "pass": "22",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "YOSRY",
       "pass": "25",
       "hiddenIcons": "",
       "birthday": ""
