@@ -16876,6 +16876,7 @@ window.safeFileName = function(str){
       if (ok) { n++; var c = tr.querySelector('td.n'); if (c) c.textContent = n; }
     });
     ['name', 'item', 'prof', 'proj'].forEach(function(col){ var th = body.querySelector('th[data-cf="' + col + '"]'); if (th) th.classList.toggle('on', cfActive(col)); });
+    var sn = document.getElementById('skSN'); if (sn) sn.textContent = n + ' عامل';
     var bar = document.getElementById('skCfBar');
     if (bar) bar.innerHTML = cfAny() ? '🔽 فلتر مفعّل — ظاهر ' + n + ' من ' + tot + ' عامل<button type="button" data-cfclear>✖ مسح الفلاتر</button>' : '';
   }
@@ -17312,7 +17313,7 @@ window.safeFileName = function(str){
       if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm cf" data-cf="name" title="فلتر اسم العامل">اسم العامل <b class="cfb">▾</b></th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr><tr class="sk-dsum"><td class="n"></td><td class="nm">الإجمالي</td><td></td><td></td><td id="skSR" title="مجموع يوميات الحاضرين"></td><td></td><td id="skSO" title="مجموع السهرات"></td><td id="skSX" title="مجموع القيمة الإضافية"></td><td id="skSA" title="مجموع السلف"></td><td></td><td></td><td></td><td></td></tr></thead><tbody>';
+    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm cf" data-cf="name" title="فلتر اسم العامل">اسم العامل <b class="cfb">▾</b></th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr><tr class="sk-dsum"><td class="n"></td><td class="nm" id="skSN" title="عدد العمال"></td><td></td><td></td><td></td><td></td><td id="skSO" title="مجموع السهرات"></td><td id="skSX" title="مجموع القيمة الإضافية"></td><td id="skSA" title="مجموع السلف"></td><td></td><td></td><td></td><td></td></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -17360,7 +17361,7 @@ window.safeFileName = function(str){
     ws.forEach(function(w){ var r = dayRow(w.id, S.day); if (!r) return; if (!rowPass(w, r)) return; var rate = +w.daily_rate || 0; sumX += +r.extra_amt || 0; if (r.present) { c++; wages += rate; sumR += rate; } ot += +r.overtime || 0; wages += (+r.overtime || 0) * rate + (+r.extra_amt || 0); adv += +r.advance || 0; });
     var set = function(id, v){ var e = $('#' + id); if (e) e.textContent = v; };
     set('skfP', c + ' حاضر'); set('skfO', fmt(ot)); set('skfA', fmt(adv));
-    set('skSR', sumR ? fmt(sumR) : ''); set('skSO', ot ? fmt(ot) : ''); set('skSX', sumX ? fmt(sumX) : ''); set('skSA', adv ? fmt(adv) : '');
+    set('skSO', ot ? fmt(ot) : ''); set('skSX', sumX ? fmt(sumX) : ''); set('skSA', adv ? fmt(adv) : '');
     var hr = root.querySelector('.sk-t.sk-day thead tr:first-child'), sr = root.querySelector('.sk-t.sk-day tr.sk-dsum');
     if (hr && sr) { var hh = hr.offsetHeight + 'px'; Array.prototype.forEach.call(sr.children, function(td){ td.style.top = hh; }); }
     Array.prototype.forEach.call(root.querySelectorAll('[data-cnt]'), function(e){
