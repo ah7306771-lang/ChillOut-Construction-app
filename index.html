@@ -1979,9 +1979,10 @@ select.sk-in{padding:0 4px;min-width:130px}
 #sarrakiScreen .sk-t.sk-day td.c-item{width:112px;min-width:112px}
 #sarrakiScreen .sk-t.sk-day td.c-ot{width:46px;min-width:46px}
 #sarrakiScreen .sk-t.sk-day td.c-adv{width:66px;min-width:66px}
-#sarrakiScreen .sk-t.sk-day tr.sk-sum td{position:sticky;top:26px;z-index:3;background:#e8edf6;color:#1b2540;font-weight:800;font-size:11px;text-align:center;padding:1px 3px;height:20px;line-height:1.2;border-bottom:2px solid var(--k-navy,#1b2540);white-space:nowrap}
-#sarrakiScreen .sk-t.sk-day tr.sk-sum td.n,#sarrakiScreen .sk-t.sk-day tr.sk-sum td.nm{z-index:5;box-shadow:none}
-#sarrakiScreen .sk-t.sk-day tr.sk-sum td.nm{text-align:right}
+#sarrakiScreen .sk-t.sk-day tr.sk-dsum td{position:sticky;top:26px;z-index:3;background:#e8edf6;color:#1b2540;font-weight:800;font-size:11px;text-align:center;padding:0 2px;height:26px;line-height:20px;border:0;border-bottom:2px solid var(--k-navy,#1b2540);white-space:nowrap}
+#sarrakiScreen .sk-t.sk-day tr.sk-dsum td[id]{background:#fff;background-clip:padding-box;border:3px solid #e8edf6;border-bottom:3px solid #e8edf6;border-radius:9px;box-shadow:inset 0 0 0 1px #b9c4dc;color:#1b2540}
+#sarrakiScreen .sk-t.sk-day tr.sk-dsum td.n,#sarrakiScreen .sk-t.sk-day tr.sk-dsum td.nm{z-index:5;box-shadow:none}
+#sarrakiScreen .sk-t.sk-day tr.sk-dsum td.nm{text-align:right}
 #sarrakiScreen .sk-t.sk-day td.c-proj{width:140px;min-width:140px}
 #sarrakiScreen .sk-t.sk-day td.act{width:64px;min-width:64px;white-space:nowrap}
 #sarrakiScreen .sk-t.sk-day td.c-note{width:150px;min-width:150px}
@@ -17311,7 +17312,7 @@ window.safeFileName = function(str){
       if (addOpen) h += '<div class="sk-add"><input id="skaName" list="skDir" placeholder="اسم العامل *" autocomplete="off"><input id="skaProf" placeholder="المهنة *"><select id="skaItem">' + itemOpts('') + '</select><input id="skaRate" inputmode="decimal" placeholder="اليومية *"><select id="skaProj">' + projOpts('', true) + '</select><button type="button" id="skaBtn">＋ إضافة لليوم</button></div>';
       h += '<datalist id="skDir">' + dirList().map(function(w){ return '<option value="' + esc(w.name) + '">'; }).join('') + '</datalist>';
     }
-    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm cf" data-cf="name" title="فلتر اسم العامل">اسم العامل <b class="cfb">▾</b></th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr><tr class="sk-sum"><td class="n"></td><td class="nm">الإجمالي</td><td></td><td></td><td id="skSR" title="مجموع يوميات الحاضرين"></td><td></td><td id="skSO" title="مجموع السهرات"></td><td id="skSX" title="مجموع القيمة الإضافية"></td><td id="skSA" title="مجموع السلف"></td><td></td><td></td><td></td><td></td></tr></thead><tbody>';
+    h += '<div id="skCfBar"></div><div class="sk-wrap day"><table class="sk-t sk-day"><thead><tr><th class="n">م</th><th class="nm cf" data-cf="name" title="فلتر اسم العامل">اسم العامل <b class="cfb">▾</b></th><th class="cf" data-cf="item" title="فلتر البند">البند <b class="cfb">▾</b></th><th class="cf" data-cf="prof" title="فلتر المهنة">المهنة <b class="cfb">▾</b></th><th>اليومية</th><th class="cf" data-cf="proj" title="فلتر المشروع">المشروع <b class="cfb">▾</b></th><th>سهرات</th><th>قيمة إضافية</th><th>سلفة</th><th>ملاحظة</th><th></th><th>مدخل الحركة</th><th>مُعدِّل الحركة</th></tr><tr class="sk-dsum"><td class="n"></td><td class="nm">الإجمالي</td><td></td><td></td><td id="skSR" title="مجموع يوميات الحاضرين"></td><td></td><td id="skSO" title="مجموع السهرات"></td><td id="skSX" title="مجموع القيمة الإضافية"></td><td id="skSA" title="مجموع السلف"></td><td></td><td></td><td></td><td></td></tr></thead><tbody>';
     var dis = closed ? ' disabled' : '';
     ws.forEach(function(w, i){
       h += '<tr data-w="' + w.id + '" style="--ic:' + itemColor(w.item_id) + '"><td class="n">' + (i + 1) + '</td>' +
@@ -17360,7 +17361,7 @@ window.safeFileName = function(str){
     var set = function(id, v){ var e = $('#' + id); if (e) e.textContent = v; };
     set('skfP', c + ' حاضر'); set('skfO', fmt(ot)); set('skfA', fmt(adv));
     set('skSR', sumR ? fmt(sumR) : ''); set('skSO', ot ? fmt(ot) : ''); set('skSX', sumX ? fmt(sumX) : ''); set('skSA', adv ? fmt(adv) : '');
-    var hr = root.querySelector('.sk-t.sk-day thead tr:first-child'), sr = root.querySelector('.sk-t.sk-day tr.sk-sum');
+    var hr = root.querySelector('.sk-t.sk-day thead tr:first-child'), sr = root.querySelector('.sk-t.sk-day tr.sk-dsum');
     if (hr && sr) { var hh = hr.offsetHeight + 'px'; Array.prototype.forEach.call(sr.children, function(td){ td.style.top = hh; }); }
     Array.prototype.forEach.call(root.querySelectorAll('[data-cnt]'), function(e){
       var d = e.getAttribute('data-cnt'), n = 0; ws.forEach(function(w){ var r = dayRow(w.id, d); if (r && r.present) n++; }); e.textContent = n + ' حاضر';
