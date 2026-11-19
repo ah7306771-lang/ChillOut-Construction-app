@@ -1,5 +1,18 @@
 [
   {
+    "date": "19/11/2026",
+    "orderNo": 94,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 42000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 2121840.0,
+    "actualWeight": 50.52,
+    "paymentMethod": ""
+  },
+  {
     "date": "17/11/2026",
     "orderNo": 93,
     "client": "اشرف حفناوي",

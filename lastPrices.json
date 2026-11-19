@@ -3067,5 +3067,14 @@
     "paymentMethod": "",
     "lastInvoiceDate": "17/11/2026",
     "actualWeight": 20.28
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 42000,
+    "saleOrderNo": 94,
+    "paymentMethod": "",
+    "lastInvoiceDate": "19/11/2026",
+    "actualWeight": 50.52
   }
 ]
