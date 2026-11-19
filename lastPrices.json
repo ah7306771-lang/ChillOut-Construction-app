@@ -3080,8 +3080,8 @@
   {
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2850,
-    "lastSellPrice": 0,
-    "saleOrderNo": "",
+    "lastSellPrice": 2900,
+    "saleOrderNo": 95,
     "paymentMethod": "",
     "lastInvoiceDate": "17/11/2026",
     "actualWeight": 11
@@ -3090,7 +3090,7 @@
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2900,
     "lastSellPrice": 2900,
-    "saleOrderNo": "",
+    "saleOrderNo": 96,
     "paymentMethod": "",
     "lastInvoiceDate": "14/11/2026",
     "actualWeight": 9
@@ -3099,7 +3099,7 @@
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2900,
     "lastSellPrice": 2900,
-    "saleOrderNo": "",
+    "saleOrderNo": 96,
     "paymentMethod": "",
     "lastInvoiceDate": "15/11/2026",
     "actualWeight": 11
@@ -3108,7 +3108,7 @@
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2900,
     "lastSellPrice": 2900,
-    "saleOrderNo": "",
+    "saleOrderNo": 96,
     "paymentMethod": "",
     "lastInvoiceDate": "16/11/2026",
     "actualWeight": 11
@@ -3117,9 +3117,9 @@
     "client": "اشرف حفناوي",
     "lastBuyPrice": 2900,
     "lastSellPrice": 2900,
-    "saleOrderNo": "",
+    "saleOrderNo": 96,
     "paymentMethod": "",
     "lastInvoiceDate": "17/11/2026",
-    "actualWeight": 9
+    "actualWeight": 11
   }
 ]
