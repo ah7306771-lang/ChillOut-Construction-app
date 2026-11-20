@@ -1,0 +1,39 @@
+{
+  "rows": [
+    {
+      "client": "اشرف حفناوي",
+      "count": 6,
+      "amount": 3066098.8,
+      "avgDelay": 10.666666666664241
+    },
+    {
+      "client": "الامين",
+      "count": 6,
+      "amount": 2822001,
+      "avgDelay": 18.33333333333576
+    },
+    {
+      "client": "بينتاكون",
+      "count": 1,
+      "amount": 17305,
+      "avgDelay": 36
+    },
+    {
+      "client": "فالتور",
+      "count": 4,
+      "amount": 2408938.818640351,
+      "avgDelay": 5
+    },
+    {
+      "client": "ويكادي",
+      "count": 5,
+      "amount": 10322563.25,
+      "avgDelay": 5.19999999999709
+    }
+  ],
+  "grandTotal": {
+    "count": 22,
+    "amount": 18636906.86864035,
+    "avgDelay": 11.636363636360329
+  }
+}
