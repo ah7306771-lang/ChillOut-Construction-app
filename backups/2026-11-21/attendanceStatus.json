@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "date": "2026-10-21",
-  "updatedAt": "2026-10-21T00:07:30.235463+00:00",
+  "date": "2026-11-21",
+  "updatedAt": "2026-11-21T00:26:40.521768+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
@@ -13,23 +13,25 @@
     "بكر",
     "عماد",
     "محمود شعبان",
-    "25"
+    "25",
+    "محمد عويس",
+    "YOSRY"
   ],
   "late": [],
   "dashboardRows": [],
   "dashboardRequestRows": [
     {
-      "id": "mvgdl3y1-yh45ih",
+      "id": "mwam2sej-jxeyz1",
       "name": "محمود كارم",
       "type": "إجازة",
-      "date": "2026-10-18",
+      "date": "2026-11-10",
       "from": "",
       "to": "",
-      "reason": "اجازه بإذن مسبق من المرتب",
+      "reason": "[بدون مرتب]",
       "status": "موافق",
-      "submittedAt": "2026-10-20T07:42:21.000Z",
-      "leaveFrom": "2026-10-18",
-      "leaveTo": "2026-10-22"
+      "submittedAt": "2026-11-10T11:33:08.000Z",
+      "leaveFrom": "2026-11-10",
+      "leaveTo": "2026-11-30"
     }
   ],
   "dashboardOfficialOut": {
@@ -40,7 +42,7 @@
     "صبري يحي": "16:00",
     "محمود رجب": "17:00",
     "محمود كارم": "17:00",
-    "مني محمد": "17:00"
+    "مني محمد": "16:00"
   },
   "pendingRequestsCount": 0,
   "employees": [
@@ -76,7 +78,7 @@
     },
     {
       "name": "محمود رجب",
-      "pass": "16",
+      "pass": "16666",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
     },
@@ -106,6 +108,18 @@
     },
     {
       "name": "25",
+      "pass": "25",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "محمد عويس",
+      "pass": "22",
+      "hiddenIcons": "",
+      "birthday": ""
+    },
+    {
+      "name": "YOSRY",
       "pass": "25",
       "hiddenIcons": "",
       "birthday": ""
