@@ -3121,5 +3121,86 @@
     "paymentMethod": "",
     "lastInvoiceDate": "17/11/2026",
     "actualWeight": 11
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 98,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 4.08
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 98,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 19.605
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 98,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 13.92
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 99,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 8.33
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 99,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 9.785
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 99,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 62.315
+  },
+  {
+    "client": "ويكادي",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 0,
+    "saleOrderNo": 99,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 33.74
+  },
+  {
+    "client": "م / ابرام",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43300,
+    "saleOrderNo": 100,
+    "paymentMethod": "كاش 100 %",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 13.56
+  },
+  {
+    "client": "م / ابرام",
+    "lastBuyPrice": 0,
+    "lastSellPrice": 43300,
+    "saleOrderNo": 100,
+    "paymentMethod": "",
+    "lastInvoiceDate": "23/11/2026",
+    "actualWeight": 15.34
   }
 ]
