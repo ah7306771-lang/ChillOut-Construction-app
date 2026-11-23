@@ -13,6 +13,32 @@
     "paymentMethod": "كاش 100 %"
   },
   {
+    "date": "23/11/2026",
+    "orderNo": 99,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 43000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 4909310.0,
+    "actualWeight": 114.17000000000002,
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم"
+  },
+  {
+    "date": "23/11/2026",
+    "orderNo": 98,
+    "client": "ويكادي",
+    "buyPrice": 0,
+    "sellPrice": 42000,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 1579410.0,
+    "actualWeight": 37.605000000000004,
+    "paymentMethod": "كاش 100 %"
+  },
+  {
     "date": "19/11/2026",
     "orderNo": 94,
     "client": "ويكادي",
@@ -23,7 +49,7 @@
     "buyTotal": 2076372.0000000002,
     "sellTotal": 2121840.0,
     "actualWeight": 50.52,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "17/11/2026",
@@ -36,7 +62,7 @@
     "buyTotal": 31350.0,
     "sellTotal": 31900.0,
     "actualWeight": 11.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "17/11/2026",
@@ -49,7 +75,7 @@
     "buyTotal": 2400386.0,
     "sellTotal": 2514120.0,
     "actualWeight": 59.86,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "16/11/2026",
@@ -62,7 +88,7 @@
     "buyTotal": 2591809.0,
     "sellTotal": 2684816.5,
     "actualWeight": 62.005,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم"
   },
   {
     "date": "16/11/2026",
@@ -75,7 +101,7 @@
     "buyTotal": 2035272.0000000002,
     "sellTotal": 2079840.0000000002,
     "actualWeight": 49.52,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "14/11/2026",
@@ -88,7 +114,7 @@
     "buyTotal": 121800.0,
     "sellTotal": 121800.0,
     "actualWeight": 42.0,
-    "paymentMethod": ""
+    "paymentMethod": "كاش 100 %"
   },
   {
     "date": "13/11/2026",

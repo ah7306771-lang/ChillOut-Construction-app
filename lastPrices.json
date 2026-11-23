@@ -3010,7 +3010,7 @@
     "lastBuyPrice": 41100,
     "lastSellPrice": 42000,
     "saleOrderNo": 91,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 100 %",
     "lastInvoiceDate": "16/11/2026",
     "actualWeight": 49.52
   },
@@ -3019,7 +3019,7 @@
     "lastBuyPrice": 41800,
     "lastSellPrice": 43300,
     "saleOrderNo": 92,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم",
     "lastInvoiceDate": "16/11/2026",
     "actualWeight": 15.8
   },
@@ -3046,7 +3046,7 @@
     "lastBuyPrice": 40100,
     "lastSellPrice": 42000,
     "saleOrderNo": 93,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 100 %",
     "lastInvoiceDate": "17/11/2026",
     "actualWeight": 19.825
   },
@@ -3073,7 +3073,7 @@
     "lastBuyPrice": 41100,
     "lastSellPrice": 42000,
     "saleOrderNo": 94,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 100 %",
     "lastInvoiceDate": "19/11/2026",
     "actualWeight": 50.52
   },
@@ -3082,7 +3082,7 @@
     "lastBuyPrice": 2850,
     "lastSellPrice": 2900,
     "saleOrderNo": 95,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 100 %",
     "lastInvoiceDate": "17/11/2026",
     "actualWeight": 11
   },
@@ -3091,7 +3091,7 @@
     "lastBuyPrice": 2900,
     "lastSellPrice": 2900,
     "saleOrderNo": 96,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 100 %",
     "lastInvoiceDate": "14/11/2026",
     "actualWeight": 9
   },
@@ -3125,16 +3125,16 @@
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 42000,
     "saleOrderNo": 98,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 100 %",
     "lastInvoiceDate": "23/11/2026",
     "actualWeight": 4.08
   },
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 42000,
     "saleOrderNo": 98,
     "paymentMethod": "",
     "lastInvoiceDate": "23/11/2026",
@@ -3143,7 +3143,7 @@
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 42000,
     "saleOrderNo": 98,
     "paymentMethod": "",
     "lastInvoiceDate": "23/11/2026",
@@ -3152,16 +3152,16 @@
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 43000,
     "saleOrderNo": 99,
-    "paymentMethod": "",
+    "paymentMethod": "كاش 25% - 75%  اجل 30 يوم",
     "lastInvoiceDate": "23/11/2026",
     "actualWeight": 8.33
   },
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 43000,
     "saleOrderNo": 99,
     "paymentMethod": "",
     "lastInvoiceDate": "23/11/2026",
@@ -3170,7 +3170,7 @@
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 43000,
     "saleOrderNo": 99,
     "paymentMethod": "",
     "lastInvoiceDate": "23/11/2026",
@@ -3179,7 +3179,7 @@
   {
     "client": "ويكادي",
     "lastBuyPrice": 0,
-    "lastSellPrice": 0,
+    "lastSellPrice": 43000,
     "saleOrderNo": 99,
     "paymentMethod": "",
     "lastInvoiceDate": "23/11/2026",
