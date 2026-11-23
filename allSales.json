@@ -14,6 +14,19 @@
   },
   {
     "date": "23/11/2026",
+    "orderNo": 100,
+    "client": "م / ابرام",
+    "buyPrice": 0,
+    "sellPrice": 43300,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 0.0,
+    "sellTotal": 1251370.0,
+    "actualWeight": 28.9,
+    "paymentMethod": "كاش 100 %"
+  },
+  {
+    "date": "23/11/2026",
     "orderNo": 99,
     "client": "ويكادي",
     "buyPrice": 41400,
