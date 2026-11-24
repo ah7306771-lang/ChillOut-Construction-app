@@ -1,14 +1,13 @@
 {
   "ok": true,
   "date": "2026-11-24",
-  "updatedAt": "2026-11-23T22:51:37.506986+00:00",
+  "updatedAt": "2026-11-24T06:52:00.615177+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
     "مني محمد",
     "شهد خالد",
     "سيد كارم",
-    "محمود رجب",
     "صبري يحي",
     "بكر",
     "عماد",
@@ -53,7 +52,6 @@
     "سيد كارم": "17:00",
     "شهد خالد": "17:00",
     "صبري يحي": "16:00",
-    "محمود رجب": "17:00",
     "محمود كارم": "17:00",
     "مني محمد": "16:00"
   },
@@ -87,12 +85,6 @@
       "name": "سيد كارم",
       "pass": "15",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
-      "birthday": ""
-    },
-    {
-      "name": "محمود رجب",
-      "pass": "16666",
-      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
     },
     {
