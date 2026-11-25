@@ -1,5 +1,18 @@
 [
   {
+    "date": "25/11/2026",
+    "orderNo": 103,
+    "client": "اشرف حفناوي",
+    "buyPrice": 2900,
+    "sellPrice": 2900,
+    "buyPrice2": 0,
+    "sellPrice2": 0,
+    "buyTotal": 34800.0,
+    "sellTotal": 34800.0,
+    "actualWeight": 12.0,
+    "paymentMethod": ""
+  },
+  {
     "date": "23/11/2026",
     "orderNo": 102,
     "client": "اشرف حفناوي",
