@@ -1,14 +1,13 @@
 {
   "ok": true,
-  "date": "2026-10-25",
-  "updatedAt": "2026-10-25T00:23:27.314770+00:00",
+  "date": "2026-11-25",
+  "updatedAt": "2026-11-25T02:49:53.422698+00:00",
   "absent": [
     "أحمد مفرح",
     "محمود كارم",
     "مني محمد",
     "شهد خالد",
     "سيد كارم",
-    "محمود رجب",
     "صبري يحي",
     "بكر",
     "عماد",
@@ -21,17 +20,17 @@
   "dashboardRows": [],
   "dashboardRequestRows": [
     {
-      "id": "mvmdrelq-s12mhk",
+      "id": "mwam2sej-jxeyz1",
       "name": "محمود كارم",
       "type": "إجازة",
-      "date": "2026-10-24",
+      "date": "2026-11-10",
       "from": "",
       "to": "",
       "reason": "[بدون مرتب]",
       "status": "موافق",
-      "submittedAt": "2026-10-24T12:33:52.000Z",
-      "leaveFrom": "2026-10-24",
-      "leaveTo": "2026-10-26"
+      "submittedAt": "2026-11-10T11:33:08.000Z",
+      "leaveFrom": "2026-11-10",
+      "leaveTo": "2026-11-30"
     }
   ],
   "dashboardOfficialOut": {
@@ -40,9 +39,8 @@
     "سيد كارم": "17:00",
     "شهد خالد": "17:00",
     "صبري يحي": "16:00",
-    "محمود رجب": "17:00",
     "محمود كارم": "17:00",
-    "مني محمد": "17:00"
+    "مني محمد": "16:00"
   },
   "pendingRequestsCount": 0,
   "employees": [
@@ -74,12 +72,6 @@
       "name": "سيد كارم",
       "pass": "15",
       "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
-      "birthday": ""
-    },
-    {
-      "name": "محمود رجب",
-      "pass": "16",
-      "hiddenIcons": "loginDashboardBtn,loginBellBtn,loginAbsentBtn,loginLateBtn,loginChecksBtn,loginPartiesBtn,loginOverdueBtn,loginInstallmentsBtn,loginLastPricesBtn,openTafweedMenuBtn,openFormsMenuBtn,openAttendanceBtn,openAttendanceDashboardBtn,openAttendanceApprovalsBtn,openAppBtn,openGeneralBtn,openChecksBtn,openOrderBtn,openQuoteBtn,openLeaveBtn,openPermissionBtn,openCustodyBtn,homeSettingsBtn,openEmployeeManageTileBtn,openIconManageTileBtn",
       "birthday": ""
     },
     {
