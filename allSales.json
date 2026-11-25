@@ -16,11 +16,11 @@
     "date": "24/11/2026",
     "orderNo": 101,
     "client": "ويكادي",
-    "buyPrice": 0,
+    "buyPrice": 43800,
     "sellPrice": 44300,
     "buyPrice2": 0,
     "sellPrice2": 0,
-    "buyTotal": 0.0,
+    "buyTotal": 8168919.0,
     "sellTotal": 8262171.5,
     "actualWeight": 186.50500000000002,
     "paymentMethod": ""
