@@ -4,42 +4,42 @@
       "client": "اشرف حفناوي",
       "count": 8,
       "amount": 3132798.8,
-      "avgDelay": 13
+      "avgDelay": 14
     },
     {
       "client": "الامين",
-      "count": 3,
-      "amount": 822001.5,
-      "avgDelay": 32.66666666666424
+      "count": 1,
+      "amount": 22002,
+      "avgDelay": 9
     },
     {
       "client": "بينتاكون",
-      "count": 2,
-      "amount": 1940415,
-      "avgDelay": 23
+      "count": 1,
+      "amount": 17305,
+      "avgDelay": 43
     },
     {
       "client": "فالتور",
       "count": 5,
       "amount": 6095934.934429824,
-      "avgDelay": 9.400000000001455
+      "avgDelay": 10.400000000001455
     },
     {
       "client": "م / ابرام",
       "count": 1,
       "amount": 1251370,
-      "avgDelay": 3
+      "avgDelay": 4
     },
     {
       "client": "ويكادي",
       "count": 3,
-      "amount": 4900484.5,
-      "avgDelay": 4.333333333335759
+      "amount": 3700484.5,
+      "avgDelay": 5.333333333335759
     }
   ],
   "grandTotal": {
-    "count": 22,
-    "amount": 18143004.73442982,
-    "avgDelay": 14.136363636360329
+    "count": 19,
+    "amount": 14219895.234429825,
+    "avgDelay": 12.421052631580096
   }
 }

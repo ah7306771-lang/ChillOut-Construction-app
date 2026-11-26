@@ -42,11 +42,11 @@
     "date": "23/11/2026",
     "orderNo": 100,
     "client": "م / ابرام",
-    "buyPrice": 0,
+    "buyPrice": 43800,
     "sellPrice": 43300,
     "buyPrice2": 0,
     "sellPrice2": 0,
-    "buyTotal": 0.0,
+    "buyTotal": 1265820.0,
     "sellTotal": 1251370.0,
     "actualWeight": 28.9,
     "paymentMethod": "كاش 100 %"
